@@ -82,22 +82,27 @@ class Universe:
                            velocity = [ 0.0, 0.0, 0 ],
                            orientation = [ 0.0, 0.0, 0.0 ],
                            mass = 10.0,
-                           radius = 1.0):
+                           radius = 1.0,
+                           thrust = 0.0):
             self.position = Vector3(position)
             self.velocity = Vector3(velocity)
             self.orientation = Vector3(orientation)
             self.mass = mass
             self.radius = radius
+            self.thrust = thrust
             
     class PhysShip(PhysicsObject):
         def __init__(self, uni, client):
+            PhysicsObject.__init__(self)
             self.uni = uni
             self.client = client
+            self.thrust = 0.0
 
         def handle(self):
             # The other end is trying to say something we weren't expecting.
             pass
 
+    #just to distinguish between objects which impart significant gravity, and those that do not (for now)
     class GravitationalBody(PhysicsObject):
         pass
 
