@@ -45,24 +45,25 @@ def receive(channel):
 
 
 class MIMOServer:
-    """ Simple chat server using select """
-
     def __init__(self, callback, port=5505, backlog=5):
+        self.running = 0
         self.callback = callback
+        
         self.clients = 0
-        self.clientmap = []
-        # Output socket list
+        self.contextmap = dict()
         self.outputs = []
+        
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server.bind(('',port))
-        print 'Listening to port',port,'...'
-        self.server.listen(backlog)
+        self.port = port
+        self.backlog = backlog
         
         # Trap keyboard interrupts
         signal.signal(signal.SIGINT, self.sighandler)
 
-    def sighandler(self, signum, frame):
+    def stop(self):
+        self.running = 0
+        thread.join(self.serve_thread)
         # Close the server
         print 'Shutting down server...'
         # Close existing client sockets
@@ -70,18 +71,35 @@ class MIMOServer:
             o.close()
         self.server.close()
 
+    def sighandler(self, signum, frame):
+        self.shutdown()
+
+    def start(self):
+        if self.running == 0:
+            self.server.bind(('', self.port))
+            print 'Listening to port', self.port, '...'
+            self.server.listen(self.backlog)
+            self.serve_thread = thread.start_new_thread(self.serve, ())
+
+    # This gets called when a client hangs up on us.
+    def hangup(self, client):
+        print '%d hung up' % client.fileno()
+        sys.stdout.flush()
+        self.clients -= 1
+        client.close()
+        self.inputs.remove(client)
+        self.outputs.remove(client)
+        del self.contextmap[client]
+        
     def serve(self):
-
-        inputs = [self.server]
+        self.inputs = [self.server]
         self.outputs = []
+        self.running = 1
 
-        running = 1
+        while self.running:
 
-        while running:
-
-            sys.stdout.flush()
             try:
-                inputready,outputready,exceptready = select.select(inputs, self.outputs, [])
+                inputready,outputready,exceptready = select.select(self.inputs, self.outputs, [])
             except select.error, e:
                 print e
                 break
@@ -94,27 +112,23 @@ class MIMOServer:
                     # handle the server socket
                     client, address = self.server.accept()
                     print 'got connection %d from %s' % (client.fileno(), address)
-                    context = callback(client)
-                    self.clientmap[client] = context
+                    sys.stdout.flush()
+                    context = self.callback(client)
+                    self.contextmap[client] = context
+                    #thread.start_new_thread(context.handle, ())
+                    context.handle()
+
                     self.clients += 1
-                    inputs.append(client)
-                    thread.start_new_thread(callback, (client,))
+                    self.inputs.append(client)
                     self.outputs.append(client)
                 else:
                     # handle all other sockets
                     try:
-                        ret = clientmap[s].handle()
-                        
-                        if not ret:
-                            print '%d hung up' % s.fileno()
-                            self.clients -= 1
-                            s.close()
-                            inputs.remove(s)
-                            self.outputs.remove(s)
+                        #thread.start_new_thread(self.contextmap[s].handle, ())
+                        self.handlingmap[s] = 1
+                        self.contextmap[s].handle()
 
                     except socket.error, e:
                         # Remove
                         inputs.remove(s)
                         self.outputs.remove(s)
-
-        self.server.close()
