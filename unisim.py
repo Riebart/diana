@@ -15,6 +15,11 @@ class Vector3:
         self.x = v[0]
         self.y = v[1]
         self.z = v[2]
+        
+    #def __init__(self, x, y, z):
+        #self.x = x
+        #self.y = y
+        #self.z = z
 
     def length(self):
         r = self.x * self.x + self.y * self.y + self.z * self.z
@@ -57,7 +62,7 @@ class Vector3:
         
     #override +
     def __add__(self, other):
-        return (Vector3(self.x+other.x, self.y+other.y, self.z+other.z))
+        return Vector3([self.x+other.x, self.y+other.y, self.z+other.z])
 
     def sub(self, v):
         self.x -= v.x
@@ -66,7 +71,7 @@ class Vector3:
         
     #override -
     def __sub__(self, other):
-        return (Vector3(self.x-other.x, self.y-other.y, self.z-other.z))
+        return Vector3([self.x-other.x, self.y-other.y, self.z-other.z])
         
     def dot(self, v):
         return self.x * v.x + self.y * v.y + self.z * v.z
@@ -83,11 +88,18 @@ class Universe:
             self.orientation = Vector3(orientation)
             self.mass = mass
             self.radius = radius
+            
+    class PhysShip(PhysicsObject):
+        def __init__(self, uni, client):
+            self.uni = uni
+            self.client = client
+
+        def handle(self):
+            # The other end is trying to say something we weren't expecting.
+            pass
 
     class GravitationalBody(PhysicsObject):
         pass
-
-    from physship import PhysShip(PhysicsObject)
 
     def __init__(self):
         self.attractors = []
