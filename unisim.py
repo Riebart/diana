@@ -174,13 +174,21 @@ class Universe:
             t2 = time.clock()
             # On my machine, 1.2 million clock-pairs with zero objects takes about 9.2s
             # This works out to about 8 microseconds
+            
             dt = t2 - t1
             # if we're spinning too fast, wait up for a little bit. Cap things at 1000 FPS
-            if dt < 0.001:
-                go_time = t2 + 0.001
-                while t2 < go_time:
-                    t2 = time.clock()
+            #if dt < 0.001:
+                #go_time = t2 + 0.001
+                #while t2 < go_time:
+                    #t2 = time.clock()
+                #dt = t2 - t1
+                
+            #better to sleep than busy-wait - less accurate, though
+            while dt < 0.001:
+                time.sleep(0.001 - dt)
+                t2 = time.clock()
                 dt = t2 - t1
+                
             total_time += r * dt
             i += 1
         return [total_time, i]
