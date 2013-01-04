@@ -22,10 +22,12 @@ class Missile(SpaceObject):
         self.thrust = thrust
         self.payload = payload
         
-    #do a scan, for targetting purposes
-    def do_scan(self):
-        #TODO: request a scan from the uni, via the os
-        pass
+    #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
+    #how we want to implement them
+    def do_scan(self):        
+        return os.do_scan(self.osid)
+        
+
         
 
 class Client:
@@ -53,7 +55,7 @@ class ObjectSim:
         #TODO: send new client some messages
         
     #assume object already constructed, with appropriate vals?
-    def spawn_object(obj):
+    def spawn_object(self, obj):
         self.object_list[] = obj
         
         #TODO: give object its osid?
@@ -62,6 +64,16 @@ class ObjectSim:
         #TODO: send object data to unisim
         pass
     
-    def destroy_object(obj, osid):        
-        
+    
+    #assumes object already 'destroyed', unregisters the object and removes it from unisim
+    def destroy_object(self, osid):
         pass
+    
+    def do_scan(self, osid):
+        #TODO: the scan! Bad example, as we haven't decided yet how we want to implement scans
+        # - possibly as spawned objects instead of special message
+        pass
+    
+    
+    
+    
