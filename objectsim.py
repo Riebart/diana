@@ -18,15 +18,17 @@ class SpaceObject:
 class Missile(SpaceObject):
     def __init__(self, osim, osid=0, uniid=0, thrust=0.0, typ="dummy", payload=0):
         SpaceObject.__init__(osim, osid, uniid)
-        self.typ = typ      #annoyingly, 'type' is a python keyword
+        self.type = type      #annoyingly, 'type' is a python keyword
         self.thrust = thrust
         self.payload = payload
         
     #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
     #how we want to implement them
     def do_scan(self):        
-        return os.do_scan(self.osid)
+        pass
         
+    def detonate(self):
+        pass
 
         
 
@@ -35,12 +37,14 @@ class Client:
         self.sock = sock
 
 class ObjectSim:
-    def __init__(self, port=5506):
+    def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):
         
-        #TODO:connect to unisim
+        #connect to unisim
+        self.unisim_sock = socket.socket()
+        self.unisim_sock.connect( (unisim_addr, unisim_port) )
         
         #TODO:listen for clients
-        self.client_net = MIMOServer(self.register_client, port = port)
+        self.client_net = MIMOServer(self.register_client, port = listen_port)
         
         self.object_list = []       #should this be a dict? using osids?
         self.ship_list = []         #likewise
@@ -50,13 +54,13 @@ class ObjectSim:
     
     def register_client(self, sock):
         #append new client
-        self.client_list[] = Client(sock)
+        self.client_list.append(Client(sock))
         
         #TODO: send new client some messages
         
     #assume object already constructed, with appropriate vals?
     def spawn_object(self, obj):
-        self.object_list[] = obj
+        self.object_list.append(obj)
         
         #TODO: give object its osid?
         
@@ -68,12 +72,13 @@ class ObjectSim:
     #assumes object already 'destroyed', unregisters the object and removes it from unisim
     def destroy_object(self, osid):
         pass
+
     
-    def do_scan(self, osid):
-        #TODO: the scan! Bad example, as we haven't decided yet how we want to implement scans
-        # - possibly as spawned objects instead of special message
+    
+if __name__ == "__main__":    
+        
+    osim = ObjectSim()
+    
+    while True:
         pass
-    
-    
-    
     
