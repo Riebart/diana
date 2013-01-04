@@ -14,11 +14,10 @@ class Universe:
         self.attractors = []
         self.phys_objects = []
         self.nonphys_objects = []
-        self.ships = []
+        self.ships = [] #'ships' are all 'smart' objects that can interact with the server
         self.phys_lock = threading.Lock()
         self.net = MIMOServer(self.register_ship, port = 5505)
         self.net.start()
-        self.spawn = Vector3([0, 0, 0])
 
     def stop_net(self):
         self.net.stop()
@@ -36,6 +35,7 @@ class Universe:
     def register_ship(self, client):
         # Now we need to talk to the client.
         newship = PhysShip(self, client)
+        self.add_object(newship)
         return newship
 
     @staticmethod
@@ -104,6 +104,7 @@ if __name__ == "__main__":
     r = 1000
     t = 100
 
+    #make 1000 random physics objects
     for i in range(0, 1000):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
@@ -116,6 +117,7 @@ if __name__ == "__main__":
     r = 10000000
     t = 100000
 
+    #make 100 random gravitation objects
     for i in range(0, 100):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
