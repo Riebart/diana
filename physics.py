@@ -72,6 +72,18 @@ class Vector3:
 
     def dot(self, v):
         return self.x * v.x + self.y * v.y + self.z * v.z
+    
+    #overrid []
+    def __getitem__(self, index):
+        if index == 0:
+            return self.x
+        if index == 1:
+            return self.y
+        if index == 2:
+            return self.z
+
+        raise ValueError('Vector3 has only 3 dimensions')
+            
 
 class PhysicsObject:
     def __init__(self, universe,

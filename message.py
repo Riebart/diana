@@ -221,6 +221,14 @@ class VisualMetaDataEnableMsg(Message):
     def __init__(self, s):
         self.enabled = Message.read_int(s[0].rstrip())
 
+    @staticmethod
+    def send(client, arg):
+        msg = "VISMETADATAENABLE\n%d\n" % arg
+        
+        ret = Message.sendall(client, msg)
+        return ret
+
+
 class VisualMetaDataMsg(Message):
     @staticmethod
     def send(client, args):
