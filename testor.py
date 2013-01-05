@@ -7,16 +7,24 @@ import threading
 
 def testVisData():
     
-    miss = objectsim.Missile()
-    osim.spawn_object(miss)
+    miss1 = objectsim.Missile()
+    osim.spawn_object(miss1)
     
-    print "My osimid id is: %d" % miss.osid
-    print "My unisim id is: %d" % miss.uniid
+    miss2 = objectsim.Missile()
+    miss2.location[0] = 100.0
+    osim.spawn_object(miss2)
     
-    osim.enable_visdata(miss.osid)
+    print "miss1 osimid id is: %d" % miss1.osid
+    print "miss1 unisim id is: %d" % miss1.uniid
+    
+    print "miss2 osimid id is: %d" % miss2.osid
+    print "miss2 unisim id is: %d" % miss2.uniid
+    
+    
+    osim.enable_visdata(miss1.osid)
     
     while True:
-        print miss.sock.recv(1024)
+        print miss1.sock.recv(1024)
     
     pass
 

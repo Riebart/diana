@@ -7,12 +7,19 @@ import message
 import threading
 
 from mimosrv import MIMOServer
+from physics import Vector3
 
 class SpaceObject:
     def __init__(self, osim, osid=0, uniid=0):
         self.osim = osim
         self.osid=osid      #the object sim id
         self.uniid=uniid    #the universe sim id
+        self.mass = 0.0
+        self.location = Vector3((0.0,0.0,0.0))
+        self.velocity = Vector3((0.0,0.0,0.0))
+        self.thrust = Vector3((0.0,0.0,0.0))
+        self.orient = Vector3((0.0,0.0,0.0))
+        self.radius = 0.0
         pass
 
 
@@ -25,11 +32,12 @@ class SmartObject(SpaceObject):
 
 #a missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim=0, osid=0, uniid=0, thrust=0.0, typ="dummy", payload=0):
+    def __init__(self, osim=0, osid=0, uniid=0, typ="dummy", payload=0.0):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
-        self.thrust = thrust
         self.payload = payload
+        self.radius = 1.0
+        self.mass = 100.0
 
     #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
     #how we want to implement them
@@ -92,11 +100,18 @@ class ObjectSim:
                 obj.uniid = reply.endpoint_id
                         
         #TODO: send object data to unisim
-            #message.PhysicalPropertiesMessage.send(obj.sock,
-                #obj.
+            message.PhysicalPropertiesMsg.send(obj.sock, (
+                obj.mass,
+                obj.location[0], obj.location[1], obj.location[2],
+                obj.velocity[0], obj.velocity[1], obj.velocity[2],                
+                obj.orient[0], obj.orient[1], obj.orient[2],
+                obj.thrust[0], obj.thrust[1], obj.thrust[2],
+                obj.radius
+                ) )
         
         else:
             #do what? If there's no connection, how do I send data?
+            #will non-smart objects be multiplexed over a single osim connection (probably)
             pass
         
 
