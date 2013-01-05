@@ -32,7 +32,7 @@ class SmartObject(SpaceObject):
 
 #a missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim=0, osid=0, uniid=0, typ="dummy", payload=0.0):
+    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=0.0):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
         self.payload = payload
@@ -94,12 +94,13 @@ class ObjectSim:
             
             if not isinstance(reply, message.HelloMsg):
                 #fail
+                print "Fail!"
                 pass
             
             else:
                 obj.uniid = reply.endpoint_id
                         
-        #TODO: send object data to unisim
+            #TODO: send object data to unisim
             message.PhysicalPropertiesMsg.send(obj.sock, (
                 obj.mass,
                 obj.location[0], obj.location[1], obj.location[2],
@@ -110,6 +111,7 @@ class ObjectSim:
                 ) )
         
         else:
+            print "Fail!"
             #do what? If there's no connection, how do I send data?
             #will non-smart objects be multiplexed over a single osim connection (probably)
             pass
@@ -121,11 +123,10 @@ class ObjectSim:
         pass
 
     def enable_visdata(self, osid):
-        return message.VisualMetaDataEnableMsg.send(self.object_list[osid].sock, 1)
-        #step 1: get 
-        
+        return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 1)
+
     def disable_visdata(self, osid):
-        return message.VisualMetaDataEnableMsg.send(self.object_list[osid].sock, 0)
+        return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 0)
     
     def set_thrust(self, osid, x, y=None, z=None):
         if (y==None):
@@ -138,7 +139,6 @@ class ObjectSim:
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
         #return message.
         pass
-    
 
 
 if __name__ == "__main__":

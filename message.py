@@ -216,6 +216,13 @@ class VisualPropertiesMsg(Message):
 class VisualDataEnableMsg(Message):
     def __init__(self, s):
         self.enabled = Message.read_int(s[0].rstrip())
+        
+    @staticmethod
+    def send(client, arg):
+        msg = "VISDATAENABLE\n%d\n" % arg
+        
+        ret = Message.sendall(client, msg)
+        return ret
 
 class VisualMetaDataEnableMsg(Message):
     def __init__(self, s):
