@@ -94,11 +94,28 @@ class ObjectSim:
 
     #assumes object already 'destroyed', unregisters the object and removes it from unisim
     def destroy_object(self, osid):
+        del self.object_list[osid]
         pass
 
     def enable_visdata(self, osid):
         return message.VisualMetaDataEnableMsg.send(self.object_list[osid].sock, 1)
         #step 1: get 
+        
+    def disable_visdata(self, osid):
+        return message.VisualMetaDataEnableMsg.send(self.object_list[osid].sock, 0)
+    
+    def set_thrust(self, osid, x, y=None, z=None):
+        if (y==None):
+            return self.set_thrust(osid, thrust[0], thrust[1], thrust[2])
+        #return message.
+        pass
+    
+    def set_orientation(self, osid, x, y=None, z=None):
+        if (y==None):
+            return self.set_orientation(osid, orient[0], orient[1], orient[2])
+        #return message.
+        pass
+    
 
 
 if __name__ == "__main__":
