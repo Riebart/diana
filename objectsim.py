@@ -131,13 +131,27 @@ class ObjectSim:
     def set_thrust(self, osid, x, y=None, z=None):
         if (y==None):
             return self.set_thrust(osid, thrust[0], thrust[1], thrust[2])
-        #return message.
+        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
+            "",
+            "", "", "",
+            "", "", "",
+            "", "", "",
+            x, y, z,
+            ""
+            ) )
         pass
     
     def set_orientation(self, osid, x, y=None, z=None):
         if (y==None):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
-        #return message.
+        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
+            "",
+            "", "", "",
+            "", "", "",
+            x, y, z,
+            "", "", "",
+            ""
+            ) )
         pass
 
 

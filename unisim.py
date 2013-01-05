@@ -261,7 +261,7 @@ class Universe:
 
     # Number of real seconds and a rate of simulation.
     def sim(self, t = 1, r = 1):
-        min_frametime = 0.001
+        min_frametime = 0.1
         total_time = 0;
         dt = 0.01
         i = 0
