@@ -33,6 +33,7 @@ class Universe:
         self.net.start()
         self.sim_thread = Universe.ThreadSim(self)
         self.simulating = 0
+        self.next_id = 0
 
     def stop_net(self):
         self.net.stop()
@@ -46,6 +47,10 @@ class Universe:
             self.ships.append(obj)
 
         self.phys_objects.append(obj)
+
+    def get_id(self):
+        self.next_id += 1
+        return self.next_id - 1
 
     def register_ship(self, client):
         # Now we need to talk to the client.
@@ -141,7 +146,7 @@ if __name__ == "__main__":
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = PhysicsObject(position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
+        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
         uni.add_object(obj)
 
     r = 10000000
@@ -154,7 +159,7 @@ if __name__ == "__main__":
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
         
-        obj = GravitationalBody(position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000 + 1e18)
+        obj = GravitationalBody(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000 + 1e18)
         uni.add_object(obj)
 
     print len(uni.phys_objects)

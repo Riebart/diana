@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import sys
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer, send, receive
+from message import Message, HelloMsg
 
 class Vector3:
     def __init__(self, v):
@@ -70,29 +72,46 @@ class Vector3:
         return self.x * v.x + self.y * v.y + self.z * v.z
 
 class PhysicsObject:
-    def __init__(self, position = [ 0.0, 0.0, 0 ],
-                        velocity = [ 0.0, 0.0, 0 ],
-                        orientation = [ 0.0, 0.0, 0.0 ],
-                        mass = 10.0,
-                        radius = 1.0,
-                        thrust = 0.0):
+    def __init__(self, universe,
+                       position = [ 0.0, 0.0, 0 ],
+                       velocity = [ 0.0, 0.0, 0 ],
+                       orientation = [ 0.0, 0.0, 0.0 ],
+                       mass = 10.0,
+                       radius = 1.0,
+                       thrust = [0.0, 0.0, 0.0]):
+        self.phys_id = universe.get_id()
         self.position = Vector3(position)
         self.velocity = Vector3(velocity)
         self.orientation = Vector3(orientation)
         self.mass = mass
         self.radius = radius
-        self.thrust = thrust
+        self.thrust = Vector3(thrust)
 
 #just to distinguish between objects which impart significant gravity, and those that do not (for now)
 class GravitationalBody(PhysicsObject):
     pass
 
 class PhysShip(PhysicsObject):
-    def __init__(self, uni, client):
-        PhysicsObject.__init__(self)
-        self.uni = uni
+    def __init__(self, universe, client,
+                       position = [ 0.0, 0.0, 0 ],
+                       velocity = [ 0.0, 0.0, 0 ],
+                       orientation = [ 0.0, 0.0, 0.0 ],
+                       mass = 10.0,
+                       radius = 1.0,
+                       thrust = [0.0, 0.0, 0.0]):
+        PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust)
+        self.uni = universe
         self.client = client
-        self.thrust = Vector3([ 0.0, 0.0, 0.0 ])
+        self.sim_id = None
+        
 
     def handle(self, client):
-        data = self.client.recv(1024)
+        msg = Message.get_message(client)
+
+        if isinstance(msg, HelloMsg):
+            self.sim_id = msg.endpoint_id
+            HelloMsg.send(client, self.phys_id)
+        
+        #data = self.client.recv(1024)
+        #data = self.client.readline()
+        
