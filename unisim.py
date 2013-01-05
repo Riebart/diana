@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import random
 import time
 import threading
@@ -10,6 +11,18 @@ from mimosrv import MIMOServer
 VERSION = 0
 
 class Universe:
+    # ======================================================================
+
+    class ThreadSim(threading.Thread):
+        def __init__(self, universe):
+            threading.Thread.__init__(self)
+            self.universe = universe
+
+        def run(self):
+            self.universe.sim(t = 0)
+
+    # ======================================================================
+        
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
@@ -18,6 +31,8 @@ class Universe:
         self.phys_lock = threading.Lock()
         self.net = MIMOServer(self.register_ship, port = 5505)
         self.net.start()
+        self.sim_thread = Universe.ThreadSim(self)
+        self.simulating = 0
 
     def stop_net(self):
         self.net.stop()
@@ -71,13 +86,25 @@ class Universe:
             o.velocity.z += dt * gforce.z
         self.phys_lock.release()
 
+
+    def start_sim(self):
+        if self.simulating == 0:
+            self.simulating = 1
+            self.sim_thread.start()
+
+    def stop_sim(self):
+        if self.simulating == 1:
+            self.simulating = 0
+            self.sim_thread.join()
+            self.sim_thread = Universe.ThreadSim(self)
+
     # Number of real seconds and a rate of simulation.
     def sim(self, t = 1, r = 1):
         min_frametime = 0.001
         total_time = 0;
         dt = 0.01
         i = 0
-        while t == 0 or total_time < r * t:
+        while self.simulating == 1 and (t == 0 or total_time < r * t):
             t1 = time.clock()
             self.tick(r * dt)
             t2 = time.clock()
@@ -90,11 +117,14 @@ class Universe:
                 time.sleep(min_frametime - dt)
                 t2 = time.clock()
                 dt = t2 - t1
-                
+
+            self.frametime = dt
             total_time += r * dt
             i += 1
         return [total_time, i]
-        
+
+    def get_frametime(self):
+        return self.frametime
 
 if __name__ == "__main__":
     rand = random.Random()
@@ -131,6 +161,15 @@ if __name__ == "__main__":
     print len(uni.attractors)
 
     print uni.phys_objects[0].position.dist(uni.attractors[0].position)
-    print uni.sim(t=0)
+    uni.start_sim()
+    time.sleep(1)
+    print "%f s per physics tick" % uni.get_frametime()
+    print "Press Enter to continue..."
+    sys.stdout.flush()
+    raw_input()
     print uni.phys_objects[0].position.dist(uni.attractors[0].position)
+    print "Stopping simulation"
+    uni.stop_sim()
+    print "Stopping network"
     uni.stop_net()
+    print "Stopped"

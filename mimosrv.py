@@ -9,6 +9,11 @@ import signal
 import thread
 import threading
 
+
+# ==============================================================================
+# This implements sending serializable objects back and forth. We won't use it
+# but this is kept around for fun
+
 import cPickle
 import struct
 
@@ -54,20 +59,24 @@ class MIMOServer:
     # ======================================================================
     
     class ThreadHandler(threading.Thread):
-        def __init__(self, client, context, server):
+        def __init__(self, client, context, event):
             threading.Thread.__init__(self)
             self.client = client
             self.context = context
-            self.server = server
-            #self.ran = 0
+            self.event = event
+            self.running = 1
 
         def run(self):
-            #if self.ran == 0:
-                #self.ran = 1
-                #return
+            while self.running:
+                self.event.wait()
+                if not self.running:
+                    break
+                    
+                self.context.handle(self.client)
+                self.event.clear()
 
-            self.context.handle(self.client)
-            del self.server.handlingmap[self.client]
+        def stop(self):
+            self.running = 0
 
     # ======================================================================
             
@@ -77,8 +86,8 @@ class MIMOServer:
         
         self.num_clients = 0
         self.contextmap = dict()
-        self.handlingmap= dict()
         self.threadmap = dict()
+        self.eventmap = dict()
         self.inputs = []
         self.outputs = []
 
@@ -110,7 +119,7 @@ class MIMOServer:
         print 'Shutting down server...'
         # Close existing client sockets
         for o in self.outputs:
-            o.close()
+            self.hangup(o)
 
     # This gets called when a client hangs up on us.
     def hangup(self, client):
@@ -118,13 +127,14 @@ class MIMOServer:
         sys.stdout.flush()
         self.num_clients -= 1
         client.close()
-        
         self.inputs.remove(client)
         self.outputs.remove(client)
-        
-        #del self.contextmap[client]
-        #if self.handlingmap[client]:
-            #del self.handlingmap[client]
+        self.threadmap[client].stop()
+        self.eventmap[client].set()
+        self.threadmap[client].join()
+        del self.threadmap[client]
+        del self.contextmap[client]
+        del self.eventmap[client]
         
     def serve(self):
         self.inputs = [self.server]
@@ -146,9 +156,6 @@ class MIMOServer:
                 break
 
             for s in inputready:
-                if s in self.handlingmap:
-                    continue
-
                 if s == self.server:
                     # handle the server socket
                     client, address = self.server.accept()
@@ -157,12 +164,14 @@ class MIMOServer:
 
                     context = self.callback(client)
                     self.contextmap[client] = context
-                    self.threadmap[client] = MIMOServer.ThreadHandler(client, context, self)
+                    self.eventmap[client] = threading.Event()
+                    self.threadmap[client] = MIMOServer.ThreadHandler(client, context, self.eventmap[client])
+                    self.threadmap[client].start()
                     
                     self.num_clients += 1
                     self.inputs.append(client)
                     self.outputs.append(client)
-                else:
+                elif not self.eventmap[s].is_set():
                     # handle all other sockets
                     try:
                         print "reading from %d" % s.fileno()
@@ -175,11 +184,8 @@ class MIMOServer:
                             self.hangup(s)
                             continue
 
-                        # If they didn't hang up on us, let's mark this as
-                        # handled so we don't spin through its input ready state
-                        # and spool off the handler
-                        self.handlingmap[s] = 1
-                        self.threadmap[s].run()
+                        # Set the event to set the thread in motion.
+                        self.eventmap[s].set()
 
                     except socket.error, e:
                         # Remove
@@ -202,9 +208,10 @@ def cb(client):
 if __name__ == "__main__":
     srv = MIMOServer(cb)
     srv.start()
-    raw_input("Press Enter to continue...")
+    raw_input("Press Enter to continue...\n")
     srv.stop()
-    #raw_input("Press Enter to continue...")
+    #raw_input("Press Enter to continue...\n")
     #srv.start()
-    #raw_input("Press Enter to continue...")
+    #raw_input("Press Enter to continue...\n")
     #srv.stop()
+    

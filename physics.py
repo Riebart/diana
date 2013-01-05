@@ -94,11 +94,5 @@ class PhysShip(PhysicsObject):
         self.client = client
         self.thrust = Vector3([ 0.0, 0.0, 0.0 ])
 
-    def handle(self, handlingmap):
-        # The other end is trying to say something we weren't expecting.
-        data = receive(self.client)
-
-        if not data:
-            self.uni.net.hangup(self.client)
-
-        handlingmap[self.client] = 0
+    def handle(self, client):
+        data = self.client.recv(1024)
