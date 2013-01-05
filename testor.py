@@ -4,6 +4,8 @@ import message
 import objectsim
 import unisim
 import threading
+import ship
+from physics import Vector3
 
 def testVisData():
     
@@ -30,12 +32,25 @@ def testVisData():
 
 
 
+def testShip():
+    
+    ship1 = ship.Ship(osim)
+    osim.spawn_object(ship1)
 
+    print "ship1 osimid is: %d" % ship1.osid
+    print "ship1 unisim is: %d" % ship1.uniid
+    
+    direction = Vector3((1.0, 0.0,0.0))
+    miss1 = ship1.fire_missile(direction, 500)
+    
+    print "miss1 osimid is: %d" % miss1.osid
+    print "miss1 unisim is: %d" % miss1.uniid    
 
 #unism.test()
 
 osim = objectsim.ObjectSim()
 
-testVisData()
+#testVisData()
+testShip()
 
 
