@@ -2,7 +2,7 @@
 
 import sys
 from math import sin, cos, pi, sqrt
-from mimosrv import MIMOServer, send, receive
+from mimosrv import MIMOServer
 from message import Message
 from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg
 from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
@@ -110,15 +110,15 @@ class SmartPhysicsObject(PhysicsObject):
         self.vis_meta_data = 0
 
 
-    def handle(self, client):
-        msg = Message.get_message(client)
+    def handle(self, f):
+        msg = Message.get_message(f)
 
         if isinstance(msg, HelloMsg):
             if msg.endpoint_id == None:
                 return
                 
             self.sim_id = msg.endpoint_id
-            HelloMsg.send(client, self.phys_id)
+            HelloMsg.send(f, self.phys_id)
 
         # If we don't have a sim_id by this point, we can't accept any of the
         # following in good conscience...
@@ -144,7 +144,7 @@ class SmartPhysicsObject(PhysicsObject):
             if msg.radius:
                 self.radius = msg.radius
 
-            PhysicalPropertiesMsg.send(client, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
+            #PhysicalPropertiesMsg.send(f, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
             
         elif isinstance(msg, VisualPropertiesMsg):
             if self.art_id == None:

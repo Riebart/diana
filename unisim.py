@@ -40,6 +40,9 @@ class ArtCurator:
             file_str.write(`a.mesh`)
             file_str.write(`a.texture`)
 
+        #TODO: FINISH THIS!
+        msg = file_str.getvalue().replace("'","")
+
     def register_art(self, mesh = None, texture = None):
         a = ArtCurator.ArtAsset(self.total_art, mesh, texture)
         self.art_asset_lock.acquire()

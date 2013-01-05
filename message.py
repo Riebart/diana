@@ -3,26 +3,62 @@
 import sys
 
 class Message:
-    def __init__(self, f):
+    def __init__(self, client):
         pass
+
+    @staticmethod
+    def get_message_size(client):
+        try:
+            msg_length = int(client.recv(10).rstrip())
+            return msg_length
+        except:
+            print "There was an error getting message header from client %d" % client.fileno()
+            print "Error:", sys.exc_info()[0]
+            return None
+
+    @staticmethod
+    def big_read(client, num_bytes):
+        num_got = 0
+
+        from cStringIO import StringIO
+        file_str = StringIO()
+        
+        while num_got < num_bytes:
+            cur_read = min(4096, num_bytes - num_got)
+            cur_msg = client.recv(cur_read)
+            num_got += len(cur_msg)
+            file_str.write(cur_msg)
+
+        return file_str.getvalue()
+            
         
     @staticmethod
     # Reads a single message from the socket and returns that object.
     def get_message(client):
-        f = client.makefile()
+        # First grab the message size
+        msg_size = Message.get_message_size(client)
+        if msg_size == None:
+            print "Error getting message length"
+            return None
+            
+        msg = Message.big_read(client, msg_size).split("\n")
+        msgtype = msg[0]
+        del msg[0]
 
-        # The first line should be
-        msgtype = f.readline().rstrip()
         if msgtype in MessageTypes:
-            return MessageTypes[msgtype](f)
+            m = MessageTypes[msgtype](msg)
+            return m
         else:
             print "Unknown message type: \"%s\"" % msgtype
             sys.stdout.flush()
             return None
+        pass
 
     @staticmethod
     def sendall(client, msg):
         try:
+            msg_len = "%09d\n" % len(msg)
+            client.sendall(msg_len)
             client.sendall(msg)
             return 1
         except:
@@ -43,6 +79,18 @@ class Message:
         if s != "":
             try:
                 f = float(s)
+                return f
+            except:
+                print "Error:", sys.exc_info()[0]
+                return None
+        else:
+            return None
+
+    @staticmethod
+    def read_int(s):
+        if s != "":
+            try:
+                f = int(s)
                 return f
             except:
                 print "Error:", sys.exc_info()[0]
@@ -77,9 +125,9 @@ class UnknownMsg(Message):
         self.msgtype = msgtype
 
 class HelloMsg(Message):
-    def __init__(self, f):
+    def __init__(self, s):
         try:
-            self.endpoint_id = int(f.readline().rstrip())
+            self.endpoint_id = Message.read_int(s[0].rstrip())
         except:
             print "Error:", sys.exc_info()[0]
             self.endpoint_id = None
@@ -92,46 +140,46 @@ class HelloMsg(Message):
         return ret
 
 class PhysicalPropertiesMsg(Message):
-    def __init__(self, f):
-        tmp = Message.read_double(f.readline().rstrip())
+    def __init__(self, s):
+        tmp = Message.read_double(s[0].rstrip())
         if tmp:
             self.mass = tmp
         else:
             self.mass = None
 
-        tmp = [ Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()) ]
+        tmp = [ Message.read_double(s[1].rstrip()),
+                Message.read_double(s[2].rstrip()),
+                Message.read_double(s[3].rstrip()) ]
         if tmp[0] and tmp[1] and tmp[2]:
             self.position = tmp
         else:
             self.position = None
 
-        tmp = [ Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()) ]
+        tmp = [ Message.read_double(s[4].rstrip()),
+                Message.read_double(s[5].rstrip()),
+                Message.read_double(s[6].rstrip()) ]
         if tmp[0] and tmp[1] and tmp[2]:
             self.velocity = tmp
         else:
             self.velocity = None
 
-        tmp = [ Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()) ]
+        tmp = [ Message.read_double(s[7].rstrip()),
+                Message.read_double(s[8].rstrip()),
+                Message.read_double(s[9].rstrip()) ]
         if tmp[0] and tmp[1] and tmp[2]:
             self.orientation = tmp
         else:
             self.orientation = None
 
-        tmp = [ Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()),
-                Message.read_double(f.readline().rstrip()) ]
+        tmp = [ Message.read_double(s[10].rstrip()),
+                Message.read_double(s[11].rstrip()),
+                Message.read_double(s[12].rstrip()) ]
         if tmp[0] and tmp[1] and tmp[2]:
             self.thrust = tmp
         else:
             self.thrust = None
 
-        tmp = Message.read_double(f.readline().rstrip())
+        tmp = Message.read_double(s[13].rstrip())
         if tmp:
             self.radius = tmp
         else:
@@ -161,17 +209,17 @@ class PhysicalPropertiesMsg(Message):
         return ret
 
 class VisualPropertiesMsg(Message):
-    def __init__(self, f):
-        self.mesh = Message.read_mesh(f.readline().rstrip())
-        self.texture = Message.read_texture(f.readline().rstrip())
+    def __init__(self, s):
+        self.mesh = Message.read_mesh(s[0].rstrip())
+        self.texture = Message.read_texture(s[1].rstrip())
 
 class VisualDataEnableMsg(Message):
-    def __init__(self, f):
-        self.enabled = int(f.readline().rstrip())
+    def __init__(self, s):
+        self.enabled = Message.read_int(s[0].rstrip())
 
 class VisualMetaDataEnableMsg(Message):
-    def __init__(self, f):
-        self.enabled = int(f.readline().rstrip())
+    def __init__(self, s):
+        self.enabled = Message.read_int(s[0].rstrip())
 
 class VisualMetaDataMsg(Message):
     @staticmethod
