@@ -22,7 +22,7 @@ class Universe:
             self.universe.sim(t = 0)
 
     # ======================================================================
-        
+
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
@@ -158,7 +158,7 @@ if __name__ == "__main__":
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
-        
+
         obj = GravitationalBody(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000 + 1e18)
         uni.add_object(obj)
 

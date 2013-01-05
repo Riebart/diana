@@ -3,7 +3,7 @@
 import sys
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer, send, receive
-from message import Message, HelloMsg
+from message import Message, HelloMsg, PhysicalPropertiesMsg
 
 class Vector3:
     def __init__(self, v):
@@ -73,12 +73,12 @@ class Vector3:
 
 class PhysicsObject:
     def __init__(self, universe,
-                       position = [ 0.0, 0.0, 0 ],
-                       velocity = [ 0.0, 0.0, 0 ],
-                       orientation = [ 0.0, 0.0, 0.0 ],
-                       mass = 10.0,
-                       radius = 1.0,
-                       thrust = [0.0, 0.0, 0.0]):
+                    position = [ 0.0, 0.0, 0 ],
+                    velocity = [ 0.0, 0.0, 0 ],
+                    orientation = [ 0.0, 0.0, 0.0 ],
+                    mass = 10.0,
+                    radius = 1.0,
+                    thrust = [0.0, 0.0, 0.0]):
         self.phys_id = universe.get_id()
         self.position = Vector3(position)
         self.velocity = Vector3(velocity)
@@ -93,17 +93,17 @@ class GravitationalBody(PhysicsObject):
 
 class PhysShip(PhysicsObject):
     def __init__(self, universe, client,
-                       position = [ 0.0, 0.0, 0 ],
-                       velocity = [ 0.0, 0.0, 0 ],
-                       orientation = [ 0.0, 0.0, 0.0 ],
-                       mass = 10.0,
-                       radius = 1.0,
-                       thrust = [0.0, 0.0, 0.0]):
+                    position = [ 0.0, 0.0, 0 ],
+                    velocity = [ 0.0, 0.0, 0 ],
+                    orientation = [ 0.0, 0.0, 0.0 ],
+                    mass = 10.0,
+                    radius = 1.0,
+                    thrust = [0.0, 0.0, 0.0]):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust)
         self.uni = universe
         self.client = client
         self.sim_id = None
-        
+
 
     def handle(self, client):
         msg = Message.get_message(client)
@@ -111,7 +111,27 @@ class PhysShip(PhysicsObject):
         if isinstance(msg, HelloMsg):
             self.sim_id = msg.endpoint_id
             HelloMsg.send(client, self.phys_id)
-        
+        elif isinstance(msg, PhysicalPropertiesMsg):
+            if msg.mass:
+                self.mass = msg.mass
+
+            if msg.position:
+                self.position = Vector3(msg.position)
+
+            if msg.velocity:
+                self.velocity = Vector3(msg.velocity)
+
+            if msg.orientation:
+                self.orientation = Vector3(msg.orientation)
+
+            if msg.thrust:
+                self.thrust = Vector3(msg.thrust)
+
+            if msg.radius:
+                self.radius = msg.radius
+
+            PhysicalPropertiesMsg.send(client, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
+
         #data = self.client.recv(1024)
         #data = self.client.readline()
         

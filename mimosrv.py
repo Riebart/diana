@@ -46,18 +46,18 @@ def receive(channel):
 
 class MIMOServer:
     # ======================================================================
-    
+
     class ThreadServer(threading.Thread):
         def __init__(self, server):
             threading.Thread.__init__(self)
             self.server = server
-            
+
         def run(self):
             self.server.serve()
 
     # ======================================================================
     # ======================================================================
-    
+
     class ThreadHandler(threading.Thread):
         def __init__(self, client, context, event):
             threading.Thread.__init__(self)
@@ -71,7 +71,7 @@ class MIMOServer:
                 self.event.wait()
                 if not self.running:
                     break
-                    
+
                 self.context.handle(self.client)
                 self.event.clear()
 
@@ -79,11 +79,11 @@ class MIMOServer:
             self.running = 0
 
     # ======================================================================
-            
+
     def __init__(self, callback, port=5505, backlog=5):
         self.running = 0
         self.callback = callback
-        
+
         self.num_clients = 0
         self.contextmap = dict()
         self.threadmap = dict()
@@ -93,7 +93,7 @@ class MIMOServer:
 
         self.port = port
         self.backlog = backlog
-        
+
         # Trap keyboard interrupts
         signal.signal(signal.SIGINT, self.sighandler)
 
@@ -135,7 +135,7 @@ class MIMOServer:
         del self.threadmap[client]
         del self.contextmap[client]
         del self.eventmap[client]
-        
+
     def serve(self):
         self.inputs = [self.server]
         self.outputs = []
@@ -167,7 +167,7 @@ class MIMOServer:
                     self.eventmap[client] = threading.Event()
                     self.threadmap[client] = MIMOServer.ThreadHandler(client, context, self.eventmap[client])
                     self.threadmap[client].start()
-                    
+
                     self.num_clients += 1
                     self.inputs.append(client)
                     self.outputs.append(client)
@@ -201,7 +201,7 @@ class Tester:
         print "handling %d" % client.fileno()
         sys.stdout.flush()
         print client.recv(1024)
-        
+
 def cb(client):
     return Tester(client)
 
@@ -214,4 +214,3 @@ if __name__ == "__main__":
     #srv.start()
     #raw_input("Press Enter to continue...\n")
     #srv.stop()
-    
