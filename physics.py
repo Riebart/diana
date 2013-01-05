@@ -82,7 +82,17 @@ class Vector3:
         if index == 2:
             return self.z
 
-        raise ValueError('Vector3 has only 3 dimensions')
+        raise IndexError('Vector3 has only 3 dimensions')
+    
+    def __setitem__(self, index, value):
+        if index == 0:
+            self.x = value
+        elif index == 1:
+            self.y = value
+        elif index == 2:
+            self.z = value
+        else:
+            raise IndexError('Vector3 has only 3 dimensions')
             
 
 class PhysicsObject:
