@@ -10,6 +10,9 @@ def testVisData():
     miss = objectsim.Missile()
     osim.spawn_object(miss)
     
+    print "My osimid id is: %d" % miss.osid
+    print "My unisim id is: %d" % miss.uniid
+    
     osim.enable_visdata(miss.osid)
     
     while True:

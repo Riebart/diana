@@ -81,7 +81,15 @@ class ObjectSim:
             obj.sock.connect(self.unisim)
             
             message.HelloMsg.send(obj.sock, obj.osid)
-            #TODO: get reply, and parse unisim id
+            
+            reply = message.Message.get_message(obj.sock)
+            
+            if not isinstance(reply, message.HelloMsg):
+                #fail
+                pass
+            
+            else:
+                obj.uniid = reply.endpoint_id
                         
         #TODO: send object data to unisim
             #message.PhysicalPropertiesMessage.send(obj.sock,
