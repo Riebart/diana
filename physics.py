@@ -88,9 +88,7 @@ class PhysicsObject:
         self.mass = mass
         self.radius = radius
         self.thrust = Vector3(thrust)
-
-        self.mesh = None
-        self.texture = None
+        self.art_id = None
 
 #just to distinguish between objects which impart significant gravity, and those that do not (for now)
 class GravitationalBody(PhysicsObject):
@@ -149,34 +147,23 @@ class SmartPhysicsObject(PhysicsObject):
             PhysicalPropertiesMsg.send(client, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
             
         elif isinstance(msg, VisualPropertiesMsg):
-            if msg.mesh:
-                self.mesh = msg.mesh
-
-            if msg.texture:
-                self.texture = msg.texture
-
-            if msg.mesh or msg.texture:
-                self.universe.notify_updated_vis_meta_data(self)
+            if self.art_id == None:
+                self.art_id = self.universe.curator.register_art(msg.mesh, msg.texture)
+            else:
+                self.universe.curator.update_art(self.art_id, msg.mesh, msg.texture)
+                self.universe.curator.attach_art_asset(self.art_id, self.phys_id)
                 
         elif isinstance(msg, VisualDataEnableMsg):
-            if self.vis_data != msg.enabled:
-                changed = 1
-            else:
-                changed = 0
-                
+            changed = msg.enabled - self.vis_meta_data
             self.vis_data = msg.enabled
 
-            if changed:
+            if changed != 0:
                 self.universe.register_for_vis_data(self, self.vis_data)
                 
         elif isinstance(msg, VisualMetaDataEnableMsg):
-            if self.vis_meta_data != msg.enabled:
-                changed = 1
-            else:
-                changed = 0
-            
+            changed = msg.enabled - self.vis_meta_data
             self.vis_meta_data = msg.enabled
 
-            if changed:
-                self.universe.register_for_vis_meta_data(self, self.vis_meta_data)
+            if changed != 0:
+                self.universe.curator.register_client(self, self.vis_meta_data)
 

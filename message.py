@@ -3,6 +3,9 @@
 import sys
 
 class Message:
+    def __init__(self, f):
+        pass
+        
     @staticmethod
     # Reads a single message from the socket and returns that object.
     def get_message(client):
@@ -173,15 +176,14 @@ class VisualMetaDataEnableMsg(Message):
 class VisualMetaDataMsg(Message):
     @staticmethod
     def send(client, args):
-        msg = "VISMETADATA\n%d\n" % len(args)
+        msg = "VISMETADATA\n"
 
-        for o in args:
-            phys_id = o[0]
-            mesh = o[1]
-            texture = o[2]
-            msg += "%d\n" % phys_id
-            msg += Message.prep_mesh(mesh) + "\n"
-            msg += Message.prep_texture(texture) + "\n"
+        art_id = args[0]
+        mesh = args[1]
+        texture = args[2]
+        msg += "%d\n" % art_id
+        msg += Message.prep_mesh(mesh) + "\n"
+        msg += Message.prep_texture(texture) + "\n"
 
         ret = Message.sendall(client, msg)
         return ret
