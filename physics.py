@@ -3,7 +3,9 @@
 import sys
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer, send, receive
-from message import Message, HelloMsg, PhysicalPropertiesMsg
+from message import Message
+from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg
+from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 
 class Vector3:
     def __init__(self, v):
@@ -87,11 +89,14 @@ class PhysicsObject:
         self.radius = radius
         self.thrust = Vector3(thrust)
 
+        self.mesh = None
+        self.texture = None
+
 #just to distinguish between objects which impart significant gravity, and those that do not (for now)
 class GravitationalBody(PhysicsObject):
     pass
 
-class PhysShip(PhysicsObject):
+class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client,
                     position = [ 0.0, 0.0, 0 ],
                     velocity = [ 0.0, 0.0, 0 ],
@@ -100,18 +105,29 @@ class PhysShip(PhysicsObject):
                     radius = 1.0,
                     thrust = [0.0, 0.0, 0.0]):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust)
-        self.uni = universe
+        self.universe = universe
         self.client = client
         self.sim_id = None
+        self.vis_data = 0
+        self.vis_meta_data = 0
 
 
     def handle(self, client):
         msg = Message.get_message(client)
 
         if isinstance(msg, HelloMsg):
+            if msg.endpoint_id == None:
+                return
+                
             self.sim_id = msg.endpoint_id
             HelloMsg.send(client, self.phys_id)
-        elif isinstance(msg, PhysicalPropertiesMsg):
+
+        # If we don't have a sim_id by this point, we can't accept any of the
+        # following in good conscience...
+        if self.sim_id == None:
+            return
+            
+        if isinstance(msg, PhysicalPropertiesMsg):
             if msg.mass:
                 self.mass = msg.mass
 
@@ -131,7 +147,36 @@ class PhysShip(PhysicsObject):
                 self.radius = msg.radius
 
             PhysicalPropertiesMsg.send(client, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
+            
+        elif isinstance(msg, VisualPropertiesMsg):
+            if msg.mesh:
+                self.mesh = msg.mesh
 
-        #data = self.client.recv(1024)
-        #data = self.client.readline()
-        
+            if msg.texture:
+                self.texture = msg.texture
+
+            if msg.mesh or msg.texture:
+                self.universe.notify_updated_vis_meta_data(self)
+                
+        elif isinstance(msg, VisualDataEnableMsg):
+            if self.vis_data != msg.enabled:
+                changed = 1
+            else:
+                changed = 0
+                
+            self.vis_data = msg.enabled
+
+            if changed:
+                self.universe.register_for_vis_data(self, self.vis_data)
+                
+        elif isinstance(msg, VisualMetaDataEnableMsg):
+            if self.vis_meta_data != msg.enabled:
+                changed = 1
+            else:
+                changed = 0
+            
+            self.vis_meta_data = msg.enabled
+
+            if changed:
+                self.universe.register_for_vis_meta_data(self, self.vis_meta_data)
+
