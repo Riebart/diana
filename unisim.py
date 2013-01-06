@@ -227,7 +227,7 @@ class Universe:
                 if isinstance(o, SmartPhysicsObject):
                     force.add(o.thrust)
                     
-                    force.scale(1 / o.mass)
+                force.scale(1 / o.mass)
 
             # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
             o.position.x += o.velocity.x * dt + 0.5 * dt * dt * force.x
@@ -261,7 +261,7 @@ class Universe:
 
     # Number of real seconds and a rate of simulation.
     def sim(self, t = 1, r = 1):
-        min_frametime = 0.1
+        min_frametime = 0.001
         total_time = 0;
         dt = 0.01
         i = 0
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     t = 100
 
     #make 1000 random physics objects
-    for i in range(0, 1000):
+    for i in range(0, 1):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
@@ -313,7 +313,7 @@ if __name__ == "__main__":
     t = 100000
 
     #make 100 random gravitation objects
-    for i in range(0, 100):
+    for i in range(0, 1):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t

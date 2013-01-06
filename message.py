@@ -10,10 +10,14 @@ class Message:
     def get_message_size(client):
         try:
             msg_length = int(client.recv(10).rstrip())
-            return msg_length
+            # We really don't want zero-length messages
+            if msg_length > 0:
+                return msg_length
+            else:
+                return None
         except:
-            print "There was an error getting message header from client %d" % client.fileno()
-            print "Error:", sys.exc_info()[0]
+            print "There was an error getting message size header from client %d" % client.fileno()
+            print "Error:", sys.exc_info()
             return None
 
     @staticmethod
@@ -24,12 +28,39 @@ class Message:
         file_str = StringIO()
         
         while num_got < num_bytes:
+            if client.fileno() == -1:
+                break
+                
             cur_read = min(4096, num_bytes - num_got)
-            cur_msg = client.recv(cur_read)
+            try:
+                cur_msg = client.recv(cur_read)
+            except:
+                print "There was an error getting message from client %d" % client.fileno()
+                print "Error:", sys.exc_info()
+                return None
             num_got += len(cur_msg)
             file_str.write(cur_msg)
 
         return file_str.getvalue()
+
+    @staticmethod
+    def big_send(client, msg):
+        num_sent = 0
+        num_bytes = len(msg)
+        
+        while num_sent < num_bytes:
+            if client.fileno() == -1:
+                return num_sent
+                
+            try:
+                cur_sent = client.send(msg[num_sent:])
+            except:
+                print "There was an error sending message to client %d" % client.fileno()
+                print "Error:", sys.exc_info()
+                return num_sent
+            num_sent += cur_sent
+
+        return num_sent
             
         
     @staticmethod
@@ -42,29 +73,33 @@ class Message:
             return None
             
         msg = Message.big_read(client, msg_size).split("\n")
-        msgtype = msg[0]
-        del msg[0]
 
-        if msgtype in MessageTypes:
-            m = MessageTypes[msgtype](msg)
-            return m
+        if not msg == None:
+            msgtype = msg[0]
+            del msg[0]
+
+            if msgtype in MessageTypes:
+                m = MessageTypes[msgtype](msg)
+                return m
+            else:
+                print "Unknown message type: \"%s\"" % msgtype
+                sys.stdout.flush()
+                return None
         else:
-            print "Unknown message type: \"%s\"" % msgtype
-            sys.stdout.flush()
             return None
-        pass
 
     @staticmethod
     def sendall(client, msg):
-        try:
-            msg_len = "%09d\n" % len(msg)
-            client.sendall(msg_len)
-            client.sendall(msg)
-            return 1
-        except:
-            print "There was an error sending to client %d" % client.fileno()
-            print "Error:", sys.exc_info()[0]
+        # Detect a hangup
+        if client.fileno() == -1:
             return 0
+
+        msg_len = "%09d\n" % len(msg)
+        num_sent = Message.big_send(client, msg_len)
+        if num_sent == 0:
+            return 0
+        Message.big_send(client, msg)
+        return 1
 
     @staticmethod
     def prep_double(d):
@@ -81,7 +116,7 @@ class Message:
                 f = float(s)
                 return f
             except:
-                print "Error:", sys.exc_info()[0]
+                print "Error:", sys.exc_info()
                 return None
         else:
             return None
@@ -93,7 +128,7 @@ class Message:
                 f = int(s)
                 return f
             except:
-                print "Error:", sys.exc_info()[0]
+                print "Error:", sys.exc_info()
                 return None
         else:
             return None
@@ -129,7 +164,7 @@ class HelloMsg(Message):
         try:
             self.endpoint_id = Message.read_int(s[0].rstrip())
         except:
-            print "Error:", sys.exc_info()[0]
+            print "Error:", sys.exc_info()
             self.endpoint_id = None
 
     @staticmethod
@@ -215,6 +250,7 @@ class VisualPropertiesMsg(Message):
 
 class VisualDataEnableMsg(Message):
     def __init__(self, s):
+        sys.stdout.flush()
         self.enabled = Message.read_int(s[0].rstrip())
         
     @staticmethod

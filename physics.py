@@ -176,7 +176,7 @@ class SmartPhysicsObject(PhysicsObject):
                 self.universe.curator.attach_art_asset(self.art_id, self.phys_id)
                 
         elif isinstance(msg, VisualDataEnableMsg):
-            changed = msg.enabled - self.vis_meta_data
+            changed = msg.enabled - self.vis_data
             self.vis_data = msg.enabled
 
             if changed != 0:
