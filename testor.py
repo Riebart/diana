@@ -39,12 +39,21 @@ def testShip():
 
     print "ship1 osimid is: %d" % ship1.osid
     print "ship1 unisim is: %d" % ship1.uniid
+        
+    ship2 = ship.Ship(osim)
+    osim2.location = Vector3( (100.0,0.0,0.0) )
+    osim2.spawn_object(ship2)
+    
+    print "ship2 osimid is: %d" % ship2.osid
+    print "ship2 unisim is: %d" % ship2.uniid
     
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_missile(direction, 500)
     
     print "miss1 osimid is: %d" % miss1.osid
     print "miss1 unisim is: %d" % miss1.uniid    
+    
+    
 
 #unism.test()
 

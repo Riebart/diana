@@ -22,11 +22,16 @@ class SpaceObject:
         self.radius = 0.0
         pass
 
-
+#TODO: add handler for code for receiving messages asynchronously
+#(I make it sound so easy!)
 class SmartObject(SpaceObject):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
         self.sock = socket.socket()
+        pass
+    
+    
+    def messageHandler(self):
         pass
 
 
