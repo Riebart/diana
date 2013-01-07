@@ -26,11 +26,11 @@ class Message:
 
         from cStringIO import StringIO
         file_str = StringIO()
-        
+
         while num_got < num_bytes:
             if client.fileno() == -1:
                 break
-                
+
             cur_read = min(4096, num_bytes - num_got)
             try:
                 cur_msg = client.recv(cur_read)
@@ -44,25 +44,37 @@ class Message:
         return file_str.getvalue()
 
     @staticmethod
-    def big_send(client, msg):
-        num_sent = 0
-        num_bytes = len(msg)
-        
-        while num_sent < num_bytes:
-            if client.fileno() == -1:
-                return num_sent
-                
-            try:
-                cur_sent = client.send(msg[num_sent:])
-            except:
-                print "There was an error sending message to client %d" % client.fileno()
-                print "Error:", sys.exc_info()
-                return num_sent
-            num_sent += cur_sent
+    # Chunked indicates whether or not we want to be allowed to have other threds
+    # grab and write to the socket in between our send() calls. Normall, this
+    # is not something we tolerate.
+    def big_send(client, msg, chunked = 0):
+        if chunked:
+            num_sent = 0
+            num_bytes = len(msg)
 
-        return num_sent
-            
-        
+            while num_sent < num_bytes:
+                if client.fileno() == -1:
+                    return num_sent
+
+                try:
+                    cur_sent = client.send(msg[num_sent:])
+                except:
+                    print "There was an error sending message to client %d" % client.fileno()
+                    print "Error:", sys.exc_info()
+                    return num_sent
+                num_sent += cur_sent
+
+            return num_sent
+        else:
+            try:
+                client.sendall(msg)
+            except:
+                if client.fileno() != -1:
+                    print "There was an error sending message to client %d" % client.fileno()
+                    print "Error:", sys.exc_info()
+                return 0
+
+
     @staticmethod
     # Reads a single message from the socket and returns that object.
     def get_message(client):
@@ -71,7 +83,7 @@ class Message:
         if msg_size == None:
             print "Error getting message length"
             return None
-            
+
         msg = Message.big_read(client, msg_size).split("\n")
 
         if not msg == None:
@@ -122,6 +134,16 @@ class Message:
             return None
 
     @staticmethod
+    def read_double3(sx, sy, sz):
+        tmp = [ Message.read_double(sx.rstrip()),
+                Message.read_double(sy.rstrip()),
+                Message.read_double(sz.rstrip()) ]
+        if tmp[0] and tmp[1] and tmp[2]:
+            return tmp
+        else:
+            return None
+
+    @staticmethod
     def read_int(s):
         if s != "":
             try:
@@ -161,11 +183,7 @@ class UnknownMsg(Message):
 
 class HelloMsg(Message):
     def __init__(self, s):
-        try:
             self.endpoint_id = Message.read_int(s[0].rstrip())
-        except:
-            print "Error:", sys.exc_info()
-            self.endpoint_id = None
 
     @staticmethod
     def send(client, args):
@@ -176,53 +194,14 @@ class HelloMsg(Message):
 
 class PhysicalPropertiesMsg(Message):
     def __init__(self, s):
-        tmp = Message.read_double(s[0].rstrip())
-        if tmp:
-            self.mass = tmp
-        else:
-            self.mass = None
-
-        tmp = [ Message.read_double(s[1].rstrip()),
-                Message.read_double(s[2].rstrip()),
-                Message.read_double(s[3].rstrip()) ]
-        if tmp[0] and tmp[1] and tmp[2]:
-            self.position = tmp
-        else:
-            self.position = None
-
-        tmp = [ Message.read_double(s[4].rstrip()),
-                Message.read_double(s[5].rstrip()),
-                Message.read_double(s[6].rstrip()) ]
-        if tmp[0] and tmp[1] and tmp[2]:
-            self.velocity = tmp
-        else:
-            self.velocity = None
-
-        tmp = [ Message.read_double(s[7].rstrip()),
-                Message.read_double(s[8].rstrip()),
-                Message.read_double(s[9].rstrip()) ]
-        if tmp[0] and tmp[1] and tmp[2]:
-            self.orientation = tmp
-        else:
-            self.orientation = None
-
-        tmp = [ Message.read_double(s[10].rstrip()),
-                Message.read_double(s[11].rstrip()),
-                Message.read_double(s[12].rstrip()) ]
-        if tmp[0] and tmp[1] and tmp[2]:
-            self.thrust = tmp
-        else:
-            self.thrust = None
-
-        tmp = Message.read_double(s[13].rstrip())
-        if tmp:
-            self.radius = tmp
-        else:
-            self.radius = None
+        self.mass = Message.read_double(s[0].rstrip())
+        self.position = Message.read_double3(s[1], s[2], s[3])
+        self.velocity = Message.read_double3(s[4], s[5], s[6])
+        self.orientation = Message.read_double3(s[7], s[8], s[9])
+        self.thrust = Message.read_double3(s[10], s[11], s[12])
+        self.radius = Message.read_double(s[13].rstrip())
 
     @staticmethod
-    # This won't ever actually get called, but it is instructive to see how it is
-    # implemented.
     def send(client, args):
         msg = "PHYSPROPS\n"
         msg += Message.prep_double(args[0]) + "\n"
@@ -239,7 +218,7 @@ class PhysicalPropertiesMsg(Message):
         msg += Message.prep_double(args[11]) + "\n"
         msg += Message.prep_double(args[12]) + "\n"
         msg += Message.prep_double(args[13]) + "\n"
-        
+
         ret = Message.sendall(client, msg)
         return ret
 
@@ -248,15 +227,24 @@ class VisualPropertiesMsg(Message):
         self.mesh = Message.read_mesh(s[0].rstrip())
         self.texture = Message.read_texture(s[1].rstrip())
 
+    @staticmethod
+    def send(client, args):
+        msg = "VISPROPS\n"
+        msg += Message.prep_mesh(args[0])
+        msg += Message.prep_texture(args[1])
+
+        ret = Message.sendall(client, msg)
+        return ret
+
 class VisualDataEnableMsg(Message):
     def __init__(self, s):
         sys.stdout.flush()
         self.enabled = Message.read_int(s[0].rstrip())
-        
+
     @staticmethod
     def send(client, arg):
         msg = "VISDATAENABLE\n%d\n" % arg
-        
+
         ret = Message.sendall(client, msg)
         return ret
 
@@ -267,12 +255,17 @@ class VisualMetaDataEnableMsg(Message):
     @staticmethod
     def send(client, arg):
         msg = "VISMETADATAENABLE\n%d\n" % arg
-        
+
         ret = Message.sendall(client, msg)
         return ret
 
 
 class VisualMetaDataMsg(Message):
+    def __init__(self, s):
+        self.art_id = Message.read_int(s[0])
+        self.mesh = Message.read_mesh(s[1])
+        self.texture = Message.read_texture(s[2])
+
     @staticmethod
     def send(client, args):
         msg = "VISMETADATA\n"
@@ -288,6 +281,12 @@ class VisualMetaDataMsg(Message):
         return ret
 
 class VisualDataMsg(Message):
+    def __init__(self, s):
+        self.phys_id = Message.read_int(s[0])
+        self.radius = Message.read_double(s[1])
+        self.position = Message.read_double3(s[2], s[3], s[4])
+        self.orientation = Message.read_double3(s[5], s[6], s[7])
+
     @staticmethod
     # This one is special, since these updates will be going to multiple clients
     # at the same time, quite frequently, we shouldn't need to rebuild this for
@@ -298,10 +297,19 @@ class VisualDataMsg(Message):
         ret = Message.sendall(client, args)
         return ret
 
+class BeamMsg(Message):
+    def __init__(self, s):
+        pass
+
+    @staticmethod
+    def send(client, args):
+        pass
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
                 "VISDATAENABLE": VisualDataEnableMsg,
                 "VISMETADATAENABLE": VisualMetaDataEnableMsg,
                 "VISMETADATA": VisualMetaDataMsg,
-                "VISDATA": VisualDataMsg }
+                "VISDATA": VisualDataMsg,
+                "BEAM": BeamMsg }

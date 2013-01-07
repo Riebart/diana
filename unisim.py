@@ -31,18 +31,6 @@ class ArtCurator:
             self.clients.append(client)
             self.update_client(client)
 
-    def stringify_assets(self, level):
-        from cStringIO import StringIO
-        file_str = StringIO()
-
-        for a in self.art_assets:
-            file_str.write(`a.art_id`)
-            file_str.write(`a.mesh`)
-            file_str.write(`a.texture`)
-
-        #TODO: FINISH THIS!
-        msg = file_str.getvalue().replace("'","")
-
     def register_art(self, mesh = None, texture = None):
         a = ArtCurator.ArtAsset(self.total_art, mesh, texture)
         self.art_asset_lock.acquire()
@@ -65,7 +53,7 @@ class ArtCurator:
         if texture != None:
             self.art_assets[art_id].texture = texture
         self.art_asset_lock.release()
-        
+
         if mesh != None or texture != None:
             self.update_clients(art_id)
 
@@ -166,44 +154,31 @@ class Universe:
     def broadcast_vis_data(self):
         if len(self.vis_data_clients) == 0:
             return
-            
-        from cStringIO import StringIO
-        file_str = StringIO()
-        
-        self.phys_lock.acquire()
 
+        self.phys_lock.acquire()
         num_objects = len(self.phys_objects)
+        msgs = []
 
         for o in self.phys_objects:
-            file_str.write(`o.phys_id`)
-            file_str.write("\n")
-            #file_str.write(`"%.55f" % o.position.x`)
-            file_str.write(`o.radius`)
-            file_str.write("\n")
-            file_str.write(`o.position.x`)
-            file_str.write("\n")
-            file_str.write(`o.position.y`)
-            file_str.write("\n")
-            file_str.write(`o.position.z`)
-            file_str.write("\n")
-            file_str.write(`o.orientation.x`)
-            file_str.write("\n")
-            file_str.write(`o.orientation.y`)
-            file_str.write("\n")
-            file_str.write(`o.orientation.z`)
-            file_str.write("\n")
+            msgs.append("VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
+                        o.phys_id, o.radius,
+                        o.position.x, o.position.y, o.position.z,
+                        o.orientation.x, o.orientation.y, o.orientation.z))
 
         self.phys_lock.release()
 
-        msg = "VISDATA\n%d\n" % num_objects
-        msg += file_str.getvalue().replace("'","")
-
+        for_removal = []
         for c in self.vis_data_clients:
-            ret = VisualDataMsg.send(c.client, msg)
+            for m in msgs:
+                ret = VisualDataMsg.send(c.client, m)
 
-            if not ret:
-                c.vis_data = 0
-                self.vis_data_clients.remove(c)
+                if not ret:
+                    c.vis_data = 0
+                    for_removal.append(c)
+                    break
+
+        for c in for_removal:
+            self.vis_data_clients.remove(c)
 
     @staticmethod
     def gravity(big, small):
@@ -217,16 +192,16 @@ class Universe:
         for o in self.phys_objects:
             if isinstance(o, GravitationalBody):
                 continue
-                
+
             force = Vector3([0, 0, 0])
             if o.mass > 0:
                 # First get the attraction between this object, and all of the attractors.
                 for a in self.attractors:
                     force.add(Universe.gravity(a, o))
-                    
+
                 if isinstance(o, SmartPhysicsObject):
                     force.add(o.thrust)
-                    
+
                 force.scale(1 / o.mass)
 
             # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -243,9 +218,9 @@ class Universe:
             o.position.x += o.velocity.x * dt
             o.position.y += o.velocity.y * dt
             o.position.z += o.velocity.z * dt
-            
+
         self.phys_lock.release()
-        
+
         self.broadcast_vis_data()
 
     def start_sim(self):
@@ -300,7 +275,7 @@ if __name__ == "__main__":
     t = 100
 
     #make 1000 random physics objects
-    for i in range(0, 1):
+    for i in range(0, 1000):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
@@ -313,7 +288,7 @@ if __name__ == "__main__":
     t = 100000
 
     #make 100 random gravitation objects
-    for i in range(0, 1):
+    for i in range(0, 100):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t

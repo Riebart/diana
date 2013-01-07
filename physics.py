@@ -6,6 +6,7 @@ from mimosrv import MIMOServer
 from message import Message
 from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg
 from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
+from message import BeamMsg
 
 class Vector3:
     def __init__(self, v):
@@ -72,7 +73,7 @@ class Vector3:
 
     def dot(self, v):
         return self.x * v.x + self.y * v.y + self.z * v.z
-    
+
     #overrid []
     def __getitem__(self, index):
         if index == 0:
@@ -83,7 +84,7 @@ class Vector3:
             return self.z
 
         raise IndexError('Vector3 has only 3 dimensions')
-    
+
     def __setitem__(self, index, value):
         if index == 0:
             self.x = value
@@ -93,7 +94,7 @@ class Vector3:
             self.z = value
         else:
             raise IndexError('Vector3 has only 3 dimensions')
-            
+
 
 class PhysicsObject:
     def __init__(self, universe,
@@ -125,28 +126,27 @@ class SmartPhysicsObject(PhysicsObject):
                     radius = 1.0,
                     thrust = [0.0, 0.0, 0.0]):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust)
-        self.universe = universe
         self.client = client
+        self.universe = universe
         self.sim_id = None
         self.vis_data = 0
         self.vis_meta_data = 0
 
-
-    def handle(self, f):
-        msg = Message.get_message(f)
+    def handle(self, client):
+        msg = Message.get_message(client)
 
         if isinstance(msg, HelloMsg):
             if msg.endpoint_id == None:
                 return
-                
+
             self.sim_id = msg.endpoint_id
-            HelloMsg.send(f, self.phys_id)
+            HelloMsg.send(client, self.phys_id)
 
         # If we don't have a sim_id by this point, we can't accept any of the
         # following in good conscience...
         if self.sim_id == None:
             return
-            
+
         if isinstance(msg, PhysicalPropertiesMsg):
             if msg.mass:
                 self.mass = msg.mass
@@ -167,21 +167,21 @@ class SmartPhysicsObject(PhysicsObject):
                 self.radius = msg.radius
 
             #PhysicalPropertiesMsg.send(f, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
-            
+
         elif isinstance(msg, VisualPropertiesMsg):
             if self.art_id == None:
                 self.art_id = self.universe.curator.register_art(msg.mesh, msg.texture)
             else:
                 self.universe.curator.update_art(self.art_id, msg.mesh, msg.texture)
                 self.universe.curator.attach_art_asset(self.art_id, self.phys_id)
-                
+
         elif isinstance(msg, VisualDataEnableMsg):
             changed = msg.enabled - self.vis_data
             self.vis_data = msg.enabled
 
             if changed != 0:
                 self.universe.register_for_vis_data(self, self.vis_data)
-                
+
         elif isinstance(msg, VisualMetaDataEnableMsg):
             changed = msg.enabled - self.vis_meta_data
             self.vis_meta_data = msg.enabled
@@ -189,3 +189,35 @@ class SmartPhysicsObject(PhysicsObject):
             if changed != 0:
                 self.universe.curator.register_client(self, self.vis_meta_data)
 
+        elif isinstance(msg, BeamMsg):
+            pass
+
+class Beam:
+    def __init__(self, universe, beam_type,
+                    origin, normals,
+                    pri_range, falloff,
+                    max_damage = 0):
+        self.universe = universe
+        self.beam_type = beam_type
+        self.origin = origin
+        self.normals = normals
+        self.pri_range = pri_range
+        self.falloff = falloff
+        self.max_damage = max_damage
+
+    def handle(self, client):
+        msg = Message.get_message(client)
+
+        # We only accept one kind of message here: a BEAM message.
+
+        if isinstance(msg, HelloMsg):
+            if msg.endpoint_id == None:
+                return
+
+            self.sim_id = msg.endpoint_id
+            HelloMsg.send(f, self.phys_id)
+
+        # If we don't have a sim_id by this point, we can't accept any of the
+        # following in good conscience...
+        if self.sim_id == None:
+            return

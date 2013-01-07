@@ -29,8 +29,8 @@ class SmartObject(SpaceObject):
         SpaceObject.__init__(self, osim, osid, uniid)
         self.sock = socket.socket()
         pass
-    
-    
+
+
     def messageHandler(self):
         pass
 
@@ -80,47 +80,47 @@ class ObjectSim:
         #TODO: send new client some messages
 
     #assume object already constructed, with appropriate vals?
-    def spawn_object(self, obj):        
+    def spawn_object(self, obj):
         #give object its osid
         self.id_lock.acquire()
         self.total_objs += 1
         obj.osid = self.total_objs
         self.id_lock.release()
-        
+
         self.object_list[obj.osid] = obj
 
         #connect object to unisim
         if isinstance(obj, SmartObject):
             obj.sock.connect(self.unisim)
-            
+
             message.HelloMsg.send(obj.sock, obj.osid)
-            
+
             reply = message.Message.get_message(obj.sock)
-            
+
             if not isinstance(reply, message.HelloMsg):
                 #fail
                 print "Fail!"
                 pass
-            
+
             else:
                 obj.uniid = reply.endpoint_id
-                        
+
             #TODO: send object data to unisim
             message.PhysicalPropertiesMsg.send(obj.sock, (
                 obj.mass,
                 obj.location[0], obj.location[1], obj.location[2],
-                obj.velocity[0], obj.velocity[1], obj.velocity[2],                
+                obj.velocity[0], obj.velocity[1], obj.velocity[2],
                 obj.orient[0], obj.orient[1], obj.orient[2],
                 obj.thrust[0], obj.thrust[1], obj.thrust[2],
                 obj.radius
                 ) )
-        
+
         else:
             print "Fail!"
             #do what? If there's no connection, how do I send data?
             #will non-smart objects be multiplexed over a single osim connection (probably)
             pass
-        
+
 
     #assumes object already 'destroyed', unregisters the object and removes it from unisim
     def destroy_object(self, osid):
@@ -132,11 +132,11 @@ class ObjectSim:
 
     def disable_visdata(self, osid):
         return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 0)
-    
+
     def set_thrust(self, osid, x, y=None, z=None):
         if (y==None):
             return self.set_thrust(osid, thrust[0], thrust[1], thrust[2])
-        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
+        return message.PhysicalPropertiesMsg.send(obj.sock, (
             "",
             "", "", "",
             "", "", "",
@@ -145,11 +145,11 @@ class ObjectSim:
             ""
             ) )
         pass
-    
+
     def set_orientation(self, osid, x, y=None, z=None):
         if (y==None):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
-        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
+        return message.PhysicalPropertiesMsg.send(obj.sock, (
             "",
             "", "", "",
             "", "", "",
