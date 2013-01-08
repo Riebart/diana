@@ -8,6 +8,24 @@ from message import VisualDataMsg, VisualMetaDataMsg
 
 VERSION = 0
 
+def hold_up(function, args, frametime):
+    t1 = time.clock()
+    
+    if args == None:
+        function()
+    else:
+        function(args)
+        
+    t2 = time.clock()
+    dt = t2 - t1
+    
+    while dt < frametime:
+        time.sleep(frametime - dt)
+        t2 = time.clock()
+        dt = t2 - t1
+        
+    return dt
+
 class ArtCurator:
     class ArtAsset:
         def __init__(self, art_id, mesh, texture):
@@ -93,17 +111,22 @@ class Universe:
     # ======================================================================
 
     class ThreadVisData(threading.Thread):
-        def __init__(self, universe):
-            threading.Thread.__init__(self, update_rate)
+        def __init__(self, universe, update_rate = 0):
+            threading.Thread.__init__(self)
             self.universe = universe
             self.running = 0
             self.update_rate = update_rate
+            self.frametime = 0.0001
 
         def run(self):
             self.running = 1
             print "Starting visdata thread"
             while self.running:
-                self.universe.broadcast_vis_data()
+                self.frametime = hold_up(self.universe.broadcast_vis_data, None, self.update_rate)
+                if self.frametime < 0.0001:
+                    print "WARNING: Visdata thread has a frametime low enough to cause severe lock contention."
+                    print "         Considering increasing frametime to a minimum of 0.0001 seconds."
+
             print "Stopping visdata thread"
 
     # ======================================================================
@@ -133,7 +156,7 @@ class Universe:
 
     def start_net(self):
         self.net.start()
-        self.visdata_thread = Universe.ThreadVisData(self)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -301,34 +324,25 @@ class Universe:
         min_frametime = 0.1
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.2
+        
         total_time = 0;
         dt = 0.01
         i = 0
 
         while self.simulating == 1 and (t == 0 or total_time < r * t):
-            t1 = time.clock()
-            self.tick(r * dt)
-            t2 = time.clock()
-            # On my machine, 1.2 million clock-pairs with zero objects takes about 9.2s
-            # This works out to about 8 microseconds per pair
-            dt = t2 - t1
+            dt = hold_up(self.tick, r * dt, min_frametime)
 
-            # sleep to bring the frametimes down to the minimum if we're going too fast
-            while dt < min_frametime:
-                time.sleep(min_frametime - dt)
-                t2 = time.clock()
-                dt = t2 - t1
-
-            # shrink the frametime if it we are ticking too long.
+            # Artificially shrink the frametime if we are ticking too long.
             # This has the effect of slowing down time, but whatever.
             dt = min(max_frametime, dt)
             self.frametime = dt
             total_time += r * dt
             i += 1
+
         return [total_time, i]
 
     def get_frametime(self):
-        return self.frametime
+        return [self.frametime, self.visdata_thread.frametime]
 
 if __name__ == "__main__":
     import sys
@@ -372,7 +386,7 @@ if __name__ == "__main__":
     print uni.phys_objects[0].position.dist(uni.attractors[0].position)
     uni.start_sim()
     time.sleep(1)
-    print "%f s per physics tick" % uni.get_frametime()
+    print "%fs per physics tick" % uni.get_frametime()[0]
     print "Press Enter to continue..."
     sys.stdout.flush()
     raw_input()
