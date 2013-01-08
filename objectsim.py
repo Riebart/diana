@@ -23,8 +23,7 @@ class SpaceObject:
         self.radius = 0.0
         pass
 
-#TODO: add handler for code for receiving messages asynchronously
-#(I make it sound so easy!)
+
 class SmartObject(SpaceObject, threading.Thread):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
@@ -41,10 +40,25 @@ class SmartObject(SpaceObject, threading.Thread):
             ret = None
             
         return ret
+
+    #create and launch a beam object. Assumes beam object is already populated with proper values
+    def fire_beam(self, beam):
+        beam.send_it()
+    
+    def handle_collision(self):
+        pass
+    
     
     def run(self):
+        #TODO: properly parse and branch wrt message recieved
         while True:
-            print self.messageHandler()
+            mess = self.messageHandler()
+            
+            if isinstance(mess, message.CollisionMessage):
+                print "Collision! " + mess
+                
+            else:
+                print mess
         
 
 
@@ -52,31 +66,60 @@ class SmartObject(SpaceObject, threading.Thread):
 
 
 class Beam(SpaceObject):
-    def __init__(self, osim, osid=0, uniid=0, type="laser", power=0.0, additional_falloff=0.0, direction=0, origin=0, focus=0.0, initial_radius=0, speed=299792458):
-        SpaceObject.__init__(osim, osid, uniid)
+    def __init__(self, osim, osid=0, uniid=0, type="WEAP", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0):
+        SpaceObject.__init__(self, osim, osid, uniid)
         self.type=type
         self.power = power
-        self.additional_falloff = additional_falloff
-        self.direction = direction
-        self.origin = origin
-        self.focus = focus
-        self.initial_radius = initial_radius
-        self.speed = speed
+        if velocity != None:
+            self.velocity = velocity
+        else:
+            self.velocity = Vector3((299792458.0, 0.0, 0.0))
+        if origin != None:
+            self.origin = origin
+        else:
+            self.origin = Vector3((0.0,0.0,0.0))
+        if up != None:
+            self.up = up
+        else:
+            self.up = Vector3((0.0,0.0,0.0))
+        self.h_focus = h_focus
+        self.v_focus = v_focus
         
-        self.plane1 = Vector3( (0.0,0.0,0.0) )
-        self.plane2 = Vector3( (0.0,0.0,0.0) )
-        self.plane3 = Vector3( (0.0,0.0,0.0) )
-        self.plane4 = Vector3( (0.0,0.0,0.0) )
-        self.falloff = additional_falloff
+    def build_common(self):
+        return ([self.origin[0], self.origin[1], self.origin[2],
+                self.velocity[0], self.velocity[1], self.velocity[2],
+                self.up[0], self.up[1], self.up[2],
+                self.h_focus,
+                self.v_focus,
+                self.power,
+                self.type ])
+                
+         
+    def send_it(self, sock):
+        message.Beam.send(sock, self.build_common())   
         
         
-    #recalculate planes and falloff, based on updated info
-    #I think I need Mike to do this
-    def update_vals(self):
-        self.falloff = 0
-        pass
+class CommBeam(Beam):
+    def __init__(self, osim, osid=0, uniid=0, type="COMM", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0, message=""):
+        Beam.__init__(self, osim, osid, uniid, type, power, velocity, origin, up, h_focus, v_focus)
+        self.message = message
+    
+    def send_it(self, sock):
+        message.Beam.send(sock, self.build_common().append(self.message))
         
         
+class WeaponBeam(Beam):
+    def __init__(self, osim, osid=0, uniid=0, type="WEAP", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0, subtype="laser"):
+        Beam.__init__(self, osim, osid, uniid, type, power, velocity, origin, up, h_focus, v_focus)
+        self.subtype = subtype
+        
+    def send_it(self, sock):
+        message.Beam.send(sock, self.build_common().append(self.subtype))
+        
+class ScanBeam(Beam):
+    def __init__(self, osim, osid=0, uniid=0, type="SCAN", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0):
+        Beam.__init__(self, osim, osid, uniid, type, power, velocity, origin, up, h_focus, v_focus)
+            
 
 #a missile, for example
 class Missile(SmartObject):
@@ -92,7 +135,7 @@ class Missile(SmartObject):
     #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
     #how we want to implement them
     def do_scan(self):
-        print "Performing scan!"
+        print str(self) + " Performing scan!"
         pass
 
     def detonate(self):
@@ -117,7 +160,6 @@ class Client:
 class ObjectSim:
     def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):
 
-        #TODO:listen for clients
         self.client_net = MIMOServer(self.register_client, port = listen_port)
 
         self.object_list = dict()       #should this be a dict? using osids?
@@ -132,6 +174,7 @@ class ObjectSim:
     def register_client(self, sock):
         #append new client
         self.client_list.append(Client(sock))
+        sock.send("Hi There! Thanks for connecting to the object simulator! There is nothing to do here, yet.")
 
         #TODO: send new client some messages
 
@@ -185,6 +228,8 @@ class ObjectSim:
     def destroy_object(self, osid):
         del self.object_list[osid]
         pass
+
+
 
     def enable_visdata(self, osid):
         return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 1)

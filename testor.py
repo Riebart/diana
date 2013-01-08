@@ -7,6 +7,21 @@ import threading
 import ship
 from physics import Vector3
 
+def testSimple():
+    miss1 = objectsim.Missile(osim)
+    osim.spawn_object(miss1)
+
+    print "miss1 osimid is: %d" % miss1.osid
+    print "miss1 unisim is: %d" % miss1.uniid
+
+def testSimpleShip():
+    ship1 = ship.Ship(osim)
+    osim.spawn_object(ship1)
+
+    print "ship1 osimid is: %d" % ship1.osid
+    print "ship1 unisim is: %d" % ship1.uniid
+    
+    
 def testVisData():
     
     miss1 = objectsim.Missile(osim)
@@ -60,6 +75,6 @@ def testShip():
 osim = objectsim.ObjectSim()
 
 #testVisData()
-testShip()
-
+#testShip()
+testSimpleShip()
 
