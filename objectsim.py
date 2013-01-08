@@ -48,6 +48,37 @@ class SmartObject(SpaceObject, threading.Thread):
     def handle_collision(self):
         pass
     
+    def enable_visdata(self):
+        return message.VisualDataEnableMsg.send(self.sock, 1)
+
+    def disable_visdata(self):
+        return message.VisualDataEnableMsg.send(self.sock, 0)
+    
+    def set_thrust(self, x, y=None, z=None):
+        if (y==None):
+            return self.set_thrust(thrust[0], thrust[1], thrust[2])
+        return message.PhysicalPropertiesMsg.send(self.sock, ( 
+            "",
+            "", "", "",
+            "", "", "",
+            "", "", "",
+            x, y, z,
+            ""
+            ) )
+        pass
+    
+    def set_orientation(self, x, y=None, z=None):
+        if (y==None):
+            return self.set_orientation(osid, orient[0], orient[1], orient[2])
+        return message.PhysicalPropertiesMsg.send(self.sock, ( 
+            "",
+            "", "", "",
+            "", "", "",
+            x, y, z,
+            "", "", "",
+            ""
+            ) )
+        pass    
     
     def run(self):
         #TODO: properly parse and branch wrt message recieved
@@ -176,7 +207,6 @@ class ObjectSim:
         self.client_list.append(Client(sock))
         sock.send("Hi There! Thanks for connecting to the object simulator! There is nothing to do here, yet.")
 
-        #TODO: send new client some messages
 
     #assume object already constructed, with appropriate vals?
     def spawn_object(self, obj):        
@@ -230,38 +260,6 @@ class ObjectSim:
         pass
 
 
-
-    def enable_visdata(self, osid):
-        return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 1)
-
-    def disable_visdata(self, osid):
-        return message.VisualDataEnableMsg.send(self.object_list[osid].sock, 0)
-    
-    def set_thrust(self, osid, x, y=None, z=None):
-        if (y==None):
-            return self.set_thrust(osid, thrust[0], thrust[1], thrust[2])
-        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
-            "",
-            "", "", "",
-            "", "", "",
-            "", "", "",
-            x, y, z,
-            ""
-            ) )
-        pass
-    
-    def set_orientation(self, osid, x, y=None, z=None):
-        if (y==None):
-            return self.set_orientation(osid, orient[0], orient[1], orient[2])
-        return message.PhysicalPropertiesMsg.send(obj.sock, ( 
-            "",
-            "", "", "",
-            "", "", "",
-            x, y, z,
-            "", "", "",
-            ""
-            ) )
-        pass
 
 
 if __name__ == "__main__":

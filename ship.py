@@ -20,26 +20,30 @@ class Ship(SmartObject):
     
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
-        missile = Missile(self.osim)
+        if (self.cur_missiles > 0):
+            missile = Missile(self.osim)
+            
+            #TODO: set the initial location of the missile some small distance of the ship,
+            #to avoid collisions. Distance must be in the direction the missile wants to go
+            tmp = direction.ray(Vector3((0.0,0.0,0.0)))
+            tmp.scale(self.radius * -1)
+            missile.location = self.location + tmp
+            
+            #should missile have our initial velocity?
+            missile.velocity = self.velocity
+            
+            tmp = direction.ray(Vector3((0.0,0.0,0.0)))
+            tmp.scale(thrust_power * -1)                
+            missile.thrust = tmp        
+            missile.orient = direction
+                    
+            self.osim.spawn_object(missile)
+            
+            self.cur_missiles -= 1
+            
         
-        #TODO: set the initial location of the missile some small distance of the ship,
-        #to avoid collisions. Distance must be in the direction the missile wants to go
-        tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-        tmp.scale(self.radius * -1)
-        missile.location = self.location + tmp
+            #shouldn't really return this, but for now, testing, etc
+            return missile
         
-        #should missile have our initial velocity?
-        missile.velocity = self.velocity
-        
-        tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-        tmp.scale(thrust_power * -1)                
-        missile.thrust = tmp        
-        missile.orient = direction
-                
-        self.osim.spawn_object(missile)
-        
-        self.cur_missiles -= 1
-        
-        #shouldn't really return this, but for now, testing, etc
-        return missile
+        return None
         

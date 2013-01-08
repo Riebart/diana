@@ -38,7 +38,7 @@ def testVisData():
     print "miss2 unisim is: %d" % miss2.uniid
     
     
-    osim.enable_visdata(miss1.osid)
+    miss1.enable_visdata()
     
     while True:
         print miss1.sock.recv(1024)
@@ -56,7 +56,7 @@ def testShip():
     print "ship1 unisim is: %d" % ship1.uniid
         
     ship2 = ship.Ship(osim)
-    osim.location = Vector3( (100.0,0.0,0.0) )
+    ship2.location = Vector3( (100.0,0.0,0.0) )
     osim.spawn_object(ship2)
     
     print "ship2 osimid is: %d" % ship2.osid
