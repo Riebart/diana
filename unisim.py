@@ -3,7 +3,6 @@
 import threading
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
-from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import VisualDataMsg, VisualMetaDataMsg
 
@@ -93,15 +92,31 @@ class Universe:
 
     # ======================================================================
 
+    class ThreadVisData(threading.Thread):
+        def __init__(self, universe):
+            threading.Thread.__init__(self, update_rate)
+            self.universe = universe
+            self.running = 0
+            self.update_rate = update_rate
+
+        def run(self):
+            self.running = 1
+            print "Starting visdata thread"
+            while self.running:
+                self.universe.broadcast_vis_data()
+            print "Stopping visdata thread"
+
+    # ======================================================================
+
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
         self.beams = []
         self.smarties = [] # all 'smart' objects that can interact with the server
         self.phys_lock = threading.Lock()
+        self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
         self.net = MIMOServer(self.register_smarty, port = 5505)
-        self.net.start()
         self.sim_thread = Universe.ThreadSim(self)
         self.curator = ArtCurator(self)
         self.vis_data_clients = []
@@ -109,11 +124,17 @@ class Universe:
         self.total_objs = 0
         self.frametime = 0
 
+        self.start_net()
+
     def stop_net(self):
         self.net.stop()
+        self.visdata_thread.running = 0
+        self.visdata_thread.join()
 
     def start_net(self):
         self.net.start()
+        self.visdata_thread = Universe.ThreadVisData(self)
+        self.visdata_thread.start()
 
     def add_object(self, obj):
         self.phys_lock.acquire()
@@ -161,10 +182,12 @@ class Universe:
         return newsmarty
 
     def register_for_vis_data(self, obj, yesno):
+        self.vis_client_lock.acquire()
         if yesno == 1:
             self.vis_data_clients.append(obj)
         else:
             self.vis_data_clients.remove(obj)
+        self.vis_client_lock.release()
 
     def broadcast_vis_data(self):
         if len(self.vis_data_clients) == 0:
@@ -182,6 +205,7 @@ class Universe:
 
         self.phys_lock.release()
 
+        self.vis_client_lock.acquire()
         for_removal = []
         for c in self.vis_data_clients:
             for m in msgs:
@@ -194,6 +218,8 @@ class Universe:
 
         for c in for_removal:
             self.vis_data_clients.remove(c)
+            
+        self.vis_client_lock.release()
 
     @staticmethod
     def gravity(big, small):
@@ -257,8 +283,6 @@ class Universe:
                 
         self.phys_lock.release()
 
-        self.broadcast_vis_data()
-
     def start_sim(self):
         if self.simulating == 0:
             self.simulating = 1
@@ -274,7 +298,7 @@ class Universe:
     # the simulation
     def sim(self, t = 0, r = 1):
         # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.001
+        min_frametime = 0.1
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.2
         total_time = 0;
@@ -310,6 +334,7 @@ if __name__ == "__main__":
     import sys
     import random
     import time
+    from math import sin, cos, pi, sqrt
 
     rand = random.Random()
     rand.seed(0)

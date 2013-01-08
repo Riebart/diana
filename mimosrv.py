@@ -91,7 +91,6 @@ class MIMOServer:
         self.threadmap = dict()
         self.eventmap = dict()
         self.inputs = []
-        self.outputs = []
 
         self.port = port
         self.backlog = backlog
@@ -120,33 +119,37 @@ class MIMOServer:
         # Close the server
         print 'Shutting down server...'
         # Close existing client sockets
-        for o in self.outputs:
+        for o in self.inputs:
             self.hangup(o)
 
     # This gets called when a client hangs up on us.
     def hangup(self, client):
+        if client.fileno() == -1:
+            # Detect an already hung-up client
+            return
+            
         print '%d hung up' % client.fileno()
         sys.stdout.flush()
         self.num_clients -= 1
+        
         client.close()
-        self.inputs.remove(client)
-        self.outputs.remove(client)
         self.threadmap[client].stop()
         self.eventmap[client].set()
         self.threadmap[client].join()
+        
+        self.inputs.remove(client)
         del self.threadmap[client]
         del self.contextmap[client]
         del self.eventmap[client]
 
     def serve(self):
         self.inputs = [self.server]
-        self.outputs = []
         self.running = 1
 
         while self.running:
 
             try:
-                inputready,outputready,exceptready = select.select(self.inputs, self.outputs, [])
+                inputready, outputready, exceptready = select.select(self.inputs, [], [])
             except select.error, e:
                 print e
                 break
@@ -172,7 +175,6 @@ class MIMOServer:
 
                     self.num_clients += 1
                     self.inputs.append(client)
-                    self.outputs.append(client)
                 elif not self.eventmap[s].is_set():
                     # handle all other sockets
                     try:
@@ -191,7 +193,8 @@ class MIMOServer:
 
                     except socket.error, e:
                         # Remove
-                        self.hangup(s)
+                        if s.fileno() != -1:
+                            self.hangup(s)
 
 # ==============================================================================
 
