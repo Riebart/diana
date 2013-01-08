@@ -1,6 +1,7 @@
 #!/usr/bin/env pytho\n
 
 import sys
+from socket import timeout
 
 class Message:
     def __init__(self, client):
@@ -15,6 +16,8 @@ class Message:
                 return msg_length
             else:
                 return None
+        except timeout as e:
+            raise e
         except:
             print "There was an error getting message size header from client %d" % client.fileno()
             print "Error:", sys.exc_info()

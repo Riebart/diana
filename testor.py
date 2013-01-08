@@ -41,8 +41,8 @@ def testShip():
     print "ship1 unisim is: %d" % ship1.uniid
         
     ship2 = ship.Ship(osim)
-    osim2.location = Vector3( (100.0,0.0,0.0) )
-    osim2.spawn_object(ship2)
+    osim.location = Vector3( (100.0,0.0,0.0) )
+    osim.spawn_object(ship2)
     
     print "ship2 osimid is: %d" % ship2.osid
     print "ship2 unisim is: %d" % ship2.uniid
