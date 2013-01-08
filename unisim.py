@@ -2,7 +2,7 @@
 
 import threading
 
-from physics import Vector3, PhysicsObject, GravitationalBody, SmartPhysicsObject
+from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import VisualDataMsg, VisualMetaDataMsg
@@ -96,9 +96,10 @@ class Universe:
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
-        self.nonphys_objects = []
+        self.beams = []
         self.smarties = [] # all 'smart' objects that can interact with the server
         self.phys_lock = threading.Lock()
+        # ### PARAMETER ###  UNIVERSE TCP PORT
         self.net = MIMOServer(self.register_smarty, port = 5505)
         self.net.start()
         self.sim_thread = Universe.ThreadSim(self)
@@ -106,6 +107,7 @@ class Universe:
         self.vis_data_clients = []
         self.simulating = 0
         self.total_objs = 0
+        self.frametime = 0
 
     def stop_net(self):
         self.net.stop()
@@ -115,7 +117,7 @@ class Universe:
 
     def add_object(self, obj):
         self.phys_lock.acquire()
-        if isinstance(obj, GravitationalBody):
+        if obj.emits_gravity:
             self.attractors.append(obj)
 
         if isinstance(obj, SmartPhysicsObject):
@@ -124,15 +126,28 @@ class Universe:
         self.phys_objects.append(obj)
         self.phys_lock.release()
 
+    def add_beam(self, beam):
+        self.phys_lock.acquire()
+        self.beams.append(beam)
+        self.phys_lock.release()
+
     def destroy_object(self, obj):
         self.phys_lock.acquire()
-        if isinstance(obj, GravitationalBody):
+        if obj.emits_gravity:
             self.attractors.remove(obj)
 
         if isinstance(obj, SmartPhysicsObject):
             self.smarties.remove(obj)
 
         self.phys_objects.remove(obj)
+        self.phys_lock.release()
+
+    def update_attractor(self, obj):
+        self.phys_lock.acquire()
+        if obj.emits_gravity:
+            self.attractors.append(obj)
+        else:
+            self.attractors.remove(obj)
         self.phys_lock.release()
 
     def get_id(self):
@@ -187,38 +202,59 @@ class Universe:
         r.scale(m)
         return r
 
+    def move_object(self, obj, force, dt):
+        # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
+        obj.position.x += obj.velocity.x * dt + 0.5 * dt * dt * force.x
+        obj.position.y += obj.velocity.y * dt + 0.5 * dt * dt * force.y
+        obj.position.z += obj.velocity.z * dt + 0.5 * dt * dt * force.z
+        
+        obj.velocity.x += dt * force.x
+        obj.velocity.y += dt * force.y
+        obj.velocity.z += dt * force.z
+
+    # Detect whether the two objects will collide with in the
+    # given time delta into the future
+    def phys_collide(self, obj1, obj2, dt):
+        # ### TODO ### Properly handle forces here.
+        
+        pass
+
+    def get_force(self, obj):
+        force = Vector3([0, 0, 0])
+        if obj.mass == 0:
+            return force
+            
+        # First get the attraction between this object, and all of the attractors.
+        for a in self.attractors:
+            if obj == a:
+                continue
+            force.add(Universe.gravity(a, obj))
+
+        if isinstance(obj, SmartPhysicsObject):
+            force.add(obj.thrust)
+
+        force.scale(1 / obj.mass)
+
+        return force
+
     def tick(self, dt):
         self.phys_lock.acquire()
+
+        # ### TODO ### Multithread this. It is pretty trivially parallelizable.
+        N = len(self.phys_objects)
+        for i in range(0, N):
+            for j in range(i, N):
+                ret = self.phys_collide(self.phys_objects[i], self.phys_objects[j], dt)
+
+            for b in self.beams:
+                b.collide(self.phys_objects[i], dt)
+
         for o in self.phys_objects:
-            if isinstance(o, GravitationalBody):
-                continue
+            self.move_object(o, self.get_force(o), dt)
 
-            force = Vector3([0, 0, 0])
-            if o.mass > 0:
-                # First get the attraction between this object, and all of the attractors.
-                for a in self.attractors:
-                    force.add(Universe.gravity(a, o))
-
-                if isinstance(o, SmartPhysicsObject):
-                    force.add(o.thrust)
-
-                force.scale(1 / o.mass)
-
-            # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-            o.position.x += o.velocity.x * dt + 0.5 * dt * dt * force.x
-            o.position.y += o.velocity.y * dt + 0.5 * dt * dt * force.y
-            o.position.z += o.velocity.z * dt + 0.5 * dt * dt * force.z
-
-            o.velocity.x += dt * force.x
-            o.velocity.y += dt * force.y
-            o.velocity.z += dt * force.z
-
-        for o in self.attractors:
-            # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-            o.position.x += o.velocity.x * dt
-            o.position.y += o.velocity.y * dt
-            o.position.z += o.velocity.z * dt
-
+        for b in self.beams:
+            b.tick(dt)
+                
         self.phys_lock.release()
 
         self.broadcast_vis_data()
@@ -234,12 +270,17 @@ class Universe:
             self.sim_thread.join()
             self.sim_thread = Universe.ThreadSim(self)
 
-    # Number of real seconds and a rate of simulation.
-    def sim(self, t = 1, r = 1):
+    # Number of real seconds and a rate of simulation together will rate-limit
+    # the simulation
+    def sim(self, t = 0, r = 1):
+        # ### PARAMETER ###  MINIMUM FRAME TIME
         min_frametime = 0.001
+        # ### PARAMETER ###  MAXIMUM FRAME TIME
+        max_frametime = 0.2
         total_time = 0;
         dt = 0.01
         i = 0
+
         while self.simulating == 1 and (t == 0 or total_time < r * t):
             t1 = time.clock()
             self.tick(r * dt)
@@ -254,6 +295,9 @@ class Universe:
                 t2 = time.clock()
                 dt = t2 - t1
 
+            # shrink the frametime if it we are ticking too long.
+            # This has the effect of slowing down time, but whatever.
+            dt = min(max_frametime, dt)
             self.frametime = dt
             total_time += r * dt
             i += 1
@@ -294,7 +338,7 @@ if __name__ == "__main__":
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = GravitationalBody(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000 + 1e18)
+        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e18, radius = 5000000 + rand.random() * 2000000)
         uni.add_object(obj)
 
     print len(uni.phys_objects)

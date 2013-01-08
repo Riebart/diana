@@ -47,16 +47,44 @@ class Vector3:
         m = sqrt(x * x + y * y + z * z)
         return Vector3([x / m, y / m, z / m])
 
+    # In this case, self is the first vector in the cross product, because order
+    # matters here
+    def cross(self, v):
+        rx = self.y * v.z - self.z * v.y
+        ry = self.z * v.x - self.x * v.z
+        rz = self.x * v.y - self.y * v.x
+        return Vector3([rx, ry, rz])
+
+    @staticmethod
+    # Combines a linear combination of a bunch of vectors
+    def combine(vecs):
+        rx = 0.0
+        ry = 0.0
+        rz = 0.0
+        
+        for v in vecs:
+            rx += v[0] * v[1].x
+            ry += v[0] * v[1].y
+            rz += v[0] * v[1].z
+
+        return Vector3([rx, ry, rz])
+
+    def normalize(self):
+        l = self.length()
+        self.x /= l
+        self.y /= l
+        self.z /= l
+
     def scale(self, c):
         self.x *= c
         self.y *= c
         self.z *= c
 
     # Adds v to self.
-    def add(self, v):
-        self.x += v.x
-        self.y += v.y
-        self.z += v.z
+    def add(self, v, s = 1):
+        self.x += s * v.x
+        self.y += s * v.y
+        self.z += s * v.z
 
     #override +
     def __add__(self, other):
@@ -95,8 +123,22 @@ class Vector3:
         else:
             raise IndexError('Vector3 has only 3 dimensions')
 
-
+# ### TODO ### implement grids, this ties into physics, but the properties
+#  need to be added here.
 class PhysicsObject:
+    @staticmethod
+    def is_big_enough(mass, min_distance):
+        if mass == None or min_distance == None:
+            return 0
+
+        f = 6.67384e-11 * mass / min_distance
+
+        # ### PARAMETER ### GRAVITY CUTOFF
+        if f >= 0.01:
+            return 1
+        else:
+            return 0
+            
     def __init__(self, universe,
                     position = [ 0.0, 0.0, 0 ],
                     velocity = [ 0.0, 0.0, 0 ],
@@ -112,10 +154,7 @@ class PhysicsObject:
         self.radius = radius
         self.thrust = Vector3(thrust)
         self.art_id = None
-
-#just to distinguish between objects which impart significant gravity, and those that do not (for now)
-class GravitationalBody(PhysicsObject):
-    pass
+        self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
 
 class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client,
@@ -166,6 +205,12 @@ class SmartPhysicsObject(PhysicsObject):
             if msg.radius:
                 self.radius = msg.radius
 
+            new_emits = PhysicsObject.is_big_enough(self.mass, self.radius)
+            diff = self.emits_gravity - new_emits
+
+            if diff != 0:
+                self.universe.update_attractor(self)
+
             #PhysicalPropertiesMsg.send(f, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
 
         elif isinstance(msg, VisualPropertiesMsg):
@@ -190,34 +235,83 @@ class SmartPhysicsObject(PhysicsObject):
                 self.universe.curator.register_client(self, self.vis_meta_data)
 
         elif isinstance(msg, BeamMsg):
-            pass
+            beam = Beam.build(msg, self.universe)
+            self.universe.add_beam(beam)
 
 class Beam:
-    def __init__(self, universe, beam_type,
+    def __init__(self, universe,
                     origin, normals,
-                    pri_range, falloff,
-                    max_damage = 0):
+                    direction, velocity,
+                    energy):
         self.universe = universe
-        self.beam_type = beam_type
         self.origin = origin
+        self.front_position = origin
         self.normals = normals
-        self.pri_range = pri_range
-        self.falloff = falloff
-        self.max_damage = max_damage
+        self.direction = direction
+        self.velocity = velocity
+        self.energy = energy
 
-    def handle(self, client):
-        msg = Message.get_message(client)
+    def collide(self, obj, dt):
+        pass
 
-        # We only accept one kind of message here: a BEAM message.
+    def tick(self, dt):
+        self.front_position.add(self.velocity, dt)
 
-        if isinstance(msg, HelloMsg):
-            if msg.endpoint_id == None:
-                return
+    @staticmethod
+    def build(msg, universe):
+        direction = Vector3(msg.velocity)
+        direction.scale(direction.length())
+        up = Vector3(msg.up)
+        up.scale(up.length())
+        normals = []
 
-            self.sim_id = msg.endpoint_id
-            HelloMsg.send(f, self.phys_id)
+        # Ok, so now we need to convert the direction, up, and spread angles
+        # into plane normals. Yay!
 
-        # If we don't have a sim_id by this point, we can't accept any of the
-        # following in good conscience...
-        if self.sim_id == None:
-            return
+        # First we cross the direction and up to get a vector pointing 'horizontally'.
+        # this vector points 'right', or clockwise, when looking down the up vector.
+        # The order of the cross product here doesn't really matter, but it
+        # helps to follow some reasoning.
+        right = direction.cross(up)
+
+        # Once we have right, we can find vectors inside of the planes, thanks
+        # to some basic trig. Here, cosine is along the direction, and sine
+        # is along the right vector.
+
+        sh = sin(msg.spread_h)
+        ch = cos(msg.spread_h)
+        sv = sin(msg.spread_v)
+        cv = cos(msg.spread_v)
+
+        # The vertical planes (those on the right and left boundaries of the beam)
+        # are obtained by combining the direction and horizontal vector.
+        # That gets us a vector inside the plane
+        plane_r = Vector3.combine([[ch, direction], [sh, right]])
+        plane_l = Vector3.combine([[ch, direction], [-sh, right]])
+
+        # Similarly, the up vector gets us the top and bottom in-plane vectors
+        plane_t = Vector3.combine([[ch, direction], [sh, up]])
+        plane_b = Vector3.combine([[ch, direction], [-sh, up]])
+
+        # We can get the normal vectors through another cross product, this time
+        # between the in-plane vectors, and the right/up vectors.
+
+        # The order of vectors in the cross product is important here. Reversing the
+        # order reverses the direction of the resulting vector, pointing outside of
+        # bounded volume, instead of inside.
+
+        # Following the right-hand rule, point your index finger along the first
+        # vector, middle finger along the second, and the result is your thumb
+
+        # This means that we need the in-plane vectors first. For the left and right
+        # planes, the up vector should be in them, so we can cross them to
+        # get a normal. Similarly, the right vector is in the top and bottom planes.
+
+        normals.append(plane_r.cross(up))
+        normals.append(plane_l.cross(up))
+        normals.append(plane_b.cross(right))
+        normals.append(plane_t.cross(right))
+
+        # Now we have enough information to build our beam object.
+
+        return Beam(universe, Vector3(msg.origin), normals, direction, Vector3(msg.velocity), msg.energy)

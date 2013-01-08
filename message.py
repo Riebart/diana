@@ -122,7 +122,17 @@ class Message:
         return s
 
     @staticmethod
-    def read_double(s):
+    def prep_double3(d1, d2, d3):
+        s = []
+        s.append(Message.prep_double(d1))
+        s.append(Message.prep_double(d2))
+        s.append(Message.prep_double(d3))
+
+    @staticmethod
+    def read_double(sa):
+        s = sa[0]
+        del sa[0]
+
         if s != "":
             try:
                 f = float(s)
@@ -134,17 +144,20 @@ class Message:
             return None
 
     @staticmethod
-    def read_double3(sx, sy, sz):
-        tmp = [ Message.read_double(sx.rstrip()),
-                Message.read_double(sy.rstrip()),
-                Message.read_double(sz.rstrip()) ]
-        if tmp[0] and tmp[1] and tmp[2]:
+    def read_double3(sa):
+        tmp = [ Message.read_double(sa),
+                Message.read_double(sa),
+                Message.read_double(sa) ]
+        if tmp[0] != None and tmp[1] != None and tmp[2] != None:
             return tmp
         else:
             return None
 
     @staticmethod
-    def read_int(s):
+    def read_int(sa):
+        s = sa[0]
+        del sa[0]
+        
         if s != "":
             try:
                 f = int(s)
@@ -160,7 +173,10 @@ class Message:
         return m
 
     @staticmethod
-    def read_mesh(m):
+    def read_mesh(sa):
+        m = sa[0]
+        del sa[0]
+        
         if m != "":
             return m
         else:
@@ -171,7 +187,10 @@ class Message:
         return t
 
     @staticmethod
-    def read_texture(t):
+    def read_texture(sa):
+        t = sa[0]
+        del sa[0]
+        
         if t != "":
             return t
         else:
@@ -183,7 +202,7 @@ class UnknownMsg(Message):
 
 class HelloMsg(Message):
     def __init__(self, s):
-            self.endpoint_id = Message.read_int(s[0].rstrip())
+            self.endpoint_id = Message.read_int(s)
 
     @staticmethod
     def send(client, args):
@@ -194,38 +213,26 @@ class HelloMsg(Message):
 
 class PhysicalPropertiesMsg(Message):
     def __init__(self, s):
-        self.mass = Message.read_double(s[0].rstrip())
-        self.position = Message.read_double3(s[1], s[2], s[3])
-        self.velocity = Message.read_double3(s[4], s[5], s[6])
-        self.orientation = Message.read_double3(s[7], s[8], s[9])
-        self.thrust = Message.read_double3(s[10], s[11], s[12])
-        self.radius = Message.read_double(s[13].rstrip())
+        self.mass = Message.read_double(s)
+        self.position = Message.read_double3(s)
+        self.velocity = Message.read_double3(s)
+        self.orientation = Message.read_double3(s)
+        self.thrust = Message.read_double3(s)
+        self.radius = Message.read_double(s)
 
     @staticmethod
     def send(client, args):
         msg = "PHYSPROPS\n"
-        msg += Message.prep_double(args[0]) + "\n"
-        msg += Message.prep_double(args[1]) + "\n"
-        msg += Message.prep_double(args[2]) + "\n"
-        msg += Message.prep_double(args[3]) + "\n"
-        msg += Message.prep_double(args[4]) + "\n"
-        msg += Message.prep_double(args[5]) + "\n"
-        msg += Message.prep_double(args[6]) + "\n"
-        msg += Message.prep_double(args[7]) + "\n"
-        msg += Message.prep_double(args[8]) + "\n"
-        msg += Message.prep_double(args[9]) + "\n"
-        msg += Message.prep_double(args[10]) + "\n"
-        msg += Message.prep_double(args[11]) + "\n"
-        msg += Message.prep_double(args[12]) + "\n"
-        msg += Message.prep_double(args[13]) + "\n"
+        for i in range(0,14):
+            msg += Message.prep_double(args[i]) + "\n"
 
         ret = Message.sendall(client, msg)
         return ret
 
 class VisualPropertiesMsg(Message):
     def __init__(self, s):
-        self.mesh = Message.read_mesh(s[0].rstrip())
-        self.texture = Message.read_texture(s[1].rstrip())
+        self.mesh = Message.read_mesh(s)
+        self.texture = Message.read_texture(s)
 
     @staticmethod
     def send(client, args):
@@ -239,7 +246,7 @@ class VisualPropertiesMsg(Message):
 class VisualDataEnableMsg(Message):
     def __init__(self, s):
         sys.stdout.flush()
-        self.enabled = Message.read_int(s[0].rstrip())
+        self.enabled = Message.read_int(s)
 
     @staticmethod
     def send(client, arg):
@@ -250,7 +257,7 @@ class VisualDataEnableMsg(Message):
 
 class VisualMetaDataEnableMsg(Message):
     def __init__(self, s):
-        self.enabled = Message.read_int(s[0].rstrip())
+        self.enabled = Message.read_int(s)
 
     @staticmethod
     def send(client, arg):
@@ -262,9 +269,9 @@ class VisualMetaDataEnableMsg(Message):
 
 class VisualMetaDataMsg(Message):
     def __init__(self, s):
-        self.art_id = Message.read_int(s[0])
-        self.mesh = Message.read_mesh(s[1])
-        self.texture = Message.read_texture(s[2])
+        self.art_id = Message.read_int(s)
+        self.mesh = Message.read_mesh(s)
+        self.texture = Message.read_texture(s)
 
     @staticmethod
     def send(client, args):
@@ -282,10 +289,10 @@ class VisualMetaDataMsg(Message):
 
 class VisualDataMsg(Message):
     def __init__(self, s):
-        self.phys_id = Message.read_int(s[0])
-        self.radius = Message.read_double(s[1])
-        self.position = Message.read_double3(s[2], s[3], s[4])
-        self.orientation = Message.read_double3(s[5], s[6], s[7])
+        self.phys_id = Message.read_int(s)
+        self.radius = Message.read_double(s)
+        self.position = Message.read_double3(s)
+        self.orientation = Message.read_double3(s)
 
     @staticmethod
     # This one is special, since these updates will be going to multiple clients
@@ -298,12 +305,51 @@ class VisualDataMsg(Message):
         return ret
 
 class BeamMsg(Message):
+    MsgTypes = { "SCAN": 0, "WEAP": 1, "COMM": 2 }
+    
     def __init__(self, s):
-        pass
+        self.origin = Message.read_double3(s)
+        self.velocity = Message.read_double3(s)
+        self.up = Message.read_double3(s)
+        self.spread_h = Message.read_double(s)
+        self.spread_v = Message.read_double(s)
+        self.energy = Message.read_double(s)
+
+        if s[0] == "SCAN":
+            self.beam_type = BeamMsg.MsgTypes[s[0]]
+        elif s[0] == "WEAP":
+            self.beam_type = BeamMsg.MsgTypes[s[0]]
+        elif s[0] == "COMM":
+            self.beam_type = BeamMsg.MsgTypes[s[0]]
+            self.msg = ""
+            del s[0]
+            for line in s:
+                msg += line + "\n"
+        else:
+            self.beam_type = None
+            
 
     @staticmethod
     def send(client, args):
-        pass
+        msg = "BEAM\n"
+        for i in range(0,12):
+            msg += Message.prep_double(args[i]) + "\n"
+
+        msg += args[12] + "\n"
+
+        if args[12] == "SCAN":
+            pass
+        elif args[12] == "WEAP":
+            pass
+        elif args[12] == "COMM":
+            for i in range(13, len(args)):
+                msg += args[i] + "\n"
+        else:
+            print "Unknown beam subtype \"%s\"." % args[12]
+            return 0
+
+        ret = Message.sendall(client, msg)
+        return ret
 
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
