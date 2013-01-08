@@ -14,6 +14,10 @@ class Ship(SmartObject):
     def do_scan():
         pass
     
+    
+    def fire_beam():
+        pass
+    
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
         missile = Missile(self.osim)
