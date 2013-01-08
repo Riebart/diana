@@ -9,10 +9,15 @@ from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 from message import BeamMsg
 
 class Vector3:
-    def __init__(self, v):
-        self.x = v[0]
-        self.y = v[1]
-        self.z = v[2]
+    def __init__(self, v, y=None, z=None):
+        if y==None:
+            self.x = v[0]
+            self.y = v[1]
+            self.z = v[2]
+        else:
+            self.x = v
+            self.y = y
+            self.z = z
 
     #def __init__(self, x, y, z):
         #self.x = x
