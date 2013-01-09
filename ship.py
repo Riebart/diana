@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from objectsim import SmartObject, ObjectSim, Missile, CommBeam, ScanBeam, WeaponBeam
 from physics import Vector3
+from spaceobj import *
 
 class Ship(SmartObject):
     def __init__(self, osim, osid=0, uniid=0):
