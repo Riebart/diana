@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import select
 import socket
-import sys
 import message
 import threading
-import time
 
 from mimosrv import MIMOServer
 from physics import Vector3
