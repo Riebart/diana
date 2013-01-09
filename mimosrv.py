@@ -60,12 +60,13 @@ class MIMOServer:
     # ======================================================================
     # ======================================================================
 
-    class ThreadHandler(threading.Thread):
-        def __init__(self, client, context, event):
+    class ThreadSocket(threading.Thread):
+        def __init__(self, client, handler, event, on_hangup):
             threading.Thread.__init__(self)
             self.client = client
-            self.context = context
+            self.handler = handler
             self.event = event
+            self.on_hangup = on_hangup
             self.running = 1
 
         def run(self):
@@ -74,8 +75,22 @@ class MIMOServer:
                 if not self.running:
                     break
 
-                self.context.handle(self.client)
+                try:
+                    data = self.client.recv(1, socket.MSG_PEEK)
+                    if not data:
+                        break
+                except:
+                    if self.client.fileno() != -1:
+                        break
+
+                print "reading from %d" % self.client.fileno()
+                sys.stdout.flush()
+
+                self.handler(self.client)
                 self.event.clear()
+
+            self.event.clear()
+            self.on_hangup(self.client)
 
         def stop(self):
             self.running = 0
@@ -91,6 +106,8 @@ class MIMOServer:
         self.threadmap = dict()
         self.eventmap = dict()
         self.inputs = []
+        self.hangup_lock = threading.Lock()
+        self.hangups = []
 
         self.port = port
         self.backlog = backlog
@@ -122,6 +139,13 @@ class MIMOServer:
         for o in self.inputs:
             self.hangup(o)
 
+    # This gets called by a client's thread just before it terminates to tell us
+    # that the client hung up
+    def on_hangup(self, client):
+        self.hangup_lock.acquire()
+        self.hangups.append(client)
+        self.hangup_lock.release()
+
     # This gets called when a client hangs up on us.
     def hangup(self, client):
         if client.fileno() == -1:
@@ -147,7 +171,6 @@ class MIMOServer:
         self.running = 1
 
         while self.running:
-
             try:
                 inputready, outputready, exceptready = select.select(self.inputs, [], [])
             except select.error, e:
@@ -160,6 +183,17 @@ class MIMOServer:
             if not self.running:
                 break
 
+            if len(self.hangups) > 0:
+                self.hangup_lock.acquire()
+            
+                for h in self.hangups:
+                    self.hangup(h)
+                    self.hangups.remove(h)
+                    
+                self.hangup_lock.release()
+
+                continue
+
             for s in inputready:
                 if s == self.server:
                     # handle the server socket
@@ -170,31 +204,14 @@ class MIMOServer:
                     context = self.callback(client)
                     self.contextmap[client] = context
                     self.eventmap[client] = threading.Event()
-                    self.threadmap[client] = MIMOServer.ThreadHandler(client, context, self.eventmap[client])
+                    self.threadmap[client] = MIMOServer.ThreadSocket(client, context.handle, self.eventmap[client], self.on_hangup)
                     self.threadmap[client].start()
 
                     self.num_clients += 1
                     self.inputs.append(client)
+
                 elif not self.eventmap[s].is_set():
-                    # handle all other sockets
-                    try:
-                        print "reading from %d" % s.fileno()
-                        sys.stdout.flush()
-
-                        # This peeks at the first byte of data. If we don't get
-                        # anything, then we know the other end hung up
-                        data = s.recv(1, socket.MSG_PEEK)
-                        if not data:
-                            self.hangup(s)
-                            continue
-
-                        # Set the event to set the thread in motion.
-                        self.eventmap[s].set()
-
-                    except socket.error, e:
-                        # Remove
-                        if s.fileno() != -1:
-                            self.hangup(s)
+                    self.eventmap[s].set()
 
 # ==============================================================================
 

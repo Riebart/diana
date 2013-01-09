@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import threading
+import time
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
@@ -111,12 +112,12 @@ class Universe:
     # ======================================================================
 
     class ThreadVisData(threading.Thread):
-        def __init__(self, universe, update_rate = 0):
+        def __init__(self, universe, update_rate = 0.0001):
             threading.Thread.__init__(self)
             self.universe = universe
             self.running = 0
             self.update_rate = update_rate
-            self.frametime = 0.0001
+            self.frametime = update_rate
 
         def run(self):
             self.running = 1
@@ -156,7 +157,7 @@ class Universe:
 
     def start_net(self):
         self.net.start()
-        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.5)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -321,7 +322,7 @@ class Universe:
     # the simulation
     def sim(self, t = 0, r = 1):
         # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.1
+        min_frametime = 0.001
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.2
         
@@ -347,7 +348,6 @@ class Universe:
 if __name__ == "__main__":
     import sys
     import random
-    import time
     from math import sin, cos, pi, sqrt
 
     rand = random.Random()
