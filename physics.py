@@ -175,6 +175,36 @@ class PhysicsObject:
         # We then find the minimum distance between those two line segments, and
         # compare that with the sum of the radii (the minimum distance the objects
         # need to be away from each other in order to not collide).
+
+        # Because the parameters for the parameterizations of the line segments
+        # will be in [0,1], we'll need to scale the velocity by dt. If we
+        # get around to handling force application we need to scale the acceleration
+        # vector by 0.5*dt^2, and then apply a parameter of t^2 to that term.
+
+        # FYI: Mathematica comes back with about 20,000 arithmetic operations per
+        # parameter... I don't think I'm going to bother. If errors start to get
+        # too high (as in, noticed in gameplay), then forcibly slow down time to
+        # keep the physics ticks fast enough to keep collision error in check.
+
+        # Parameters for force-less trajectories are found for object 1 and 2 (t and v)
+        # thanks to some partial differentiation of parameterizations of the trajectories
+        # using a parameter for each object. Note that this will find the global minimum
+        # and the parameters that come back likely won't be in the [0,1] range.
+
+        # If eiher of the parameters are outside of the range, you should check
+        # the endpoints for the minimum in the applicable range. If both parameters
+        # are in [0,1], then you can skip endpoing checking. Yay!
+
+        # Notes on shorthand here. v1 = (x, y, z), and v2 = (a, b, c). '.' means
+        # dot product, and 'x' means cross product.
+
+        # t = ((o1.v1-o2.v1) (v2.v2)-(o1.v2-o2.v2)(v1.v2))
+        #     --------------------------------------------
+        #              ((v1.v2)^2-(v1.v1) (v2.v2))
+        
+        # v = (o1-o2).(c{-x z,-y z,x^2+y^2}+b{-x y,x^2+z^2,-y z}+a{y^2+z^2,-x y,-x z})
+        #     ------------------------------------------------------------------------
+        #                          (v2 x v1).(v2 x v1)
         
         pass
 

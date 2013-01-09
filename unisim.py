@@ -157,7 +157,8 @@ class Universe:
 
     def start_net(self):
         self.net.start()
-        self.visdata_thread = Universe.ThreadVisData(self, 0.5)
+        # ### PARAMETER ### Minimum time between VISDATA updates
+        self.visdata_thread = Universe.ThreadVisData(self, 0.005)
         self.visdata_thread.start()
 
     def add_object(self, obj):
