@@ -19,6 +19,9 @@ class Message:
         except timeout as e:
             raise e
         except:
+            if client.fileno() == -1:
+                return None
+                
             print "There was an error getting message size header from client %d" % client.fileno()
             print "Error:", sys.exc_info()
             return None
@@ -38,6 +41,9 @@ class Message:
             try:
                 cur_msg = client.recv(cur_read)
             except:
+                if client.fileno() == -1:
+                    return None
+                    
                 print "There was an error getting message from client %d" % client.fileno()
                 print "Error:", sys.exc_info()
                 return None
@@ -61,7 +67,10 @@ class Message:
 
                 try:
                     cur_sent = client.send(msg[num_sent:])
-                except:
+                except socket.error, (errno, errstr):
+                    if client.fileno() == -1:
+                        return num_sent
+                        
                     print "There was an error sending message to client %d" % client.fileno()
                     print "Error:", sys.exc_info()
                     return num_sent
@@ -141,6 +150,7 @@ class Message:
                 f = float(s)
                 return f
             except:
+                print "Error parsing double"
                 print "Error:", sys.exc_info()
                 return None
         else:
@@ -166,6 +176,7 @@ class Message:
                 f = int(s)
                 return f
             except:
+                print "Error parsing int"
                 print "Error:", sys.exc_info()
                 return None
         else:
