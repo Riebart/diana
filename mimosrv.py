@@ -8,6 +8,7 @@ import sys
 import signal
 import thread
 import threading
+import traceback
 
 
 # ==============================================================================
@@ -60,43 +61,57 @@ class MIMOServer:
     # ======================================================================
     # ======================================================================
 
-    class ThreadHandler(threading.Thread):
-        def __init__(self, client, context, event):
+    class ThreadSocket(threading.Thread):
+        def __init__(self, client, handler, on_hangup):
             threading.Thread.__init__(self)
             self.client = client
-            self.context = context
-            self.event = event
+            self.handler = handler
+            self.on_hangup = on_hangup
             self.running = 1
 
         def run(self):
             while self.running:
-                self.event.wait()
                 if not self.running:
                     break
 
-                self.context.handle(self.client)
-                self.event.clear()
+                try:
+                    data = self.client.recv(1, socket.MSG_PEEK)
+                    if not data:
+                        break
+                except socket.error, (errno, errstr):
+                    if self.client.fileno() >= -1:
+                        break
+
+                    print "There was an error peeking at client %d" % self.client.fileno()
+                    print "Error:", sys.exc_info()
+                    sys.stdout.flush()
+                    break
+
+                print "reading from %d" % self.client.fileno()
+                sys.stdout.flush()
+
+                self.handler(self.client)
+
+            sys.stdout.flush()
+            self.on_hangup(self.client)
 
         def stop(self):
             self.running = 0
+            self.client.close()
 
     # ======================================================================
 
     def __init__(self, callback, port=5505, backlog=5):
         self.running = 0
-        self.callback = callback
-
-        self.num_clients = 0
-        self.contextmap = dict()
-        self.threadmap = dict()
-        self.eventmap = dict()
-        self.inputs = []
-
         self.port = port
         self.backlog = backlog
+        self.callback = callback
 
-        # Trap keyboard interrupts
-        signal.signal(signal.SIGINT, self.sighandler)
+        self.contextmap = dict()
+        self.threadmap = dict()
+        self.inputs = []
+        self.hangup_lock = threading.Lock()
+        self.hangups = []
 
     def sighandler(self, signum, frame):
         self.stop()
@@ -108,48 +123,57 @@ class MIMOServer:
             self.server.bind(('', self.port))
             print 'Listening to port', self.port, '...'
             self.server.listen(self.backlog)
+            self.inputs = []
+            self.running = 1
 
             self.serve_thread = MIMOServer.ThreadServer(self)
             self.serve_thread.start()
 
     def stop(self):
-        self.running = 0
-        self.server.close()
-        self.serve_thread.join()
-        # Close the server
-        print 'Shutting down server...'
-        # Close existing client sockets
-        for o in self.inputs:
-            self.hangup(o)
+        if self.running == 1:
+            print "Shutting down server..."
+            sys.stdout.flush()
+            self.server.close()
+            self.running = 0
+            self.serve_thread.join()
+
+            stubborn = 0
+            while len(self.inputs) > 1:
+                print "Hanging up %d %sclient%s" % (len(self.inputs) - 1,
+                                                    "stubborn " if stubborn == 1 else "",
+                                                    "s" if len(self.inputs) > 2 else "")
+                for c in self.inputs:
+                    self.hangup(c)
+                stubborn = 1
+
+            print "All hungup"
+
+            self.hangups = []
+
+    # This gets called by a client's thread just before it terminates to tell us
+    # that the client hung up
+    def on_hangup(self, client):
+        self.hangup_lock.acquire()
+        self.hangups.append(client)
+        self.hangup_lock.release()
 
     # This gets called when a client hangs up on us.
     def hangup(self, client):
+        print "Hanging up %d" % client.fileno()
         if client.fileno() == -1:
             # Detect an already hung-up client
             return
-            
-        print '%d hung up' % client.fileno()
-        sys.stdout.flush()
-        self.num_clients -= 1
-        
-        client.close()
+
         self.threadmap[client].stop()
-        self.eventmap[client].set()
-        self.threadmap[client].join()
-        
         self.inputs.remove(client)
         del self.threadmap[client]
         del self.contextmap[client]
-        del self.eventmap[client]
 
     def serve(self):
-        self.inputs = [self.server]
-        self.running = 1
-
         while self.running:
-
             try:
-                inputready, outputready, exceptready = select.select(self.inputs, [], [])
+                # ### PARAMETER ### How often the server select times out to service hangups
+                inputready, outputready, exceptready = select.select([self.server], [], [], 0.1)
             except select.error, e:
                 print e
                 break
@@ -160,41 +184,30 @@ class MIMOServer:
             if not self.running:
                 break
 
-            for s in inputready:
-                if s == self.server:
-                    # handle the server socket
-                    client, address = self.server.accept()
-                    print 'got connection %d from %s' % (client.fileno(), address)
-                    sys.stdout.flush()
+            if len(self.hangups) > 0:
+                self.hangup_lock.acquire()
+                pre_hangup = len(self.inputs)
 
-                    context = self.callback(client)
-                    self.contextmap[client] = context
-                    self.eventmap[client] = threading.Event()
-                    self.threadmap[client] = MIMOServer.ThreadHandler(client, context, self.eventmap[client])
-                    self.threadmap[client].start()
+                for h in self.hangups:
+                    self.hangup(h)
 
-                    self.num_clients += 1
-                    self.inputs.append(client)
-                elif not self.eventmap[s].is_set():
-                    # handle all other sockets
-                    try:
-                        print "reading from %d" % s.fileno()
-                        sys.stdout.flush()
+                num_hung_up = pre_hangup - len(self.inputs)
+                print "Successfully hung up %d client%s" % (num_hung_up, "s" if num_hung_up > 1 else "")
+                self.hangups = []
+                self.hangup_lock.release()
+                continue
 
-                        # This peeks at the first byte of data. If we don't get
-                        # anything, then we know the other end hung up
-                        data = s.recv(1, socket.MSG_PEEK)
-                        if not data:
-                            self.hangup(s)
-                            continue
+            if len(inputready) > 0:
+                # handle the server socket
+                client, address = self.server.accept()
+                print "got connection %d from %s" % (client.fileno(), address)
+                sys.stdout.flush()
 
-                        # Set the event to set the thread in motion.
-                        self.eventmap[s].set()
-
-                    except socket.error, e:
-                        # Remove
-                        if s.fileno() != -1:
-                            self.hangup(s)
+                context = self.callback(client)
+                self.contextmap[client] = context
+                self.threadmap[client] = MIMOServer.ThreadSocket(client, context.handle, self.on_hangup)
+                self.threadmap[client].start()
+                self.inputs.append(client)
 
 # ==============================================================================
 
