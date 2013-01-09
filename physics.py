@@ -161,6 +161,26 @@ class PhysicsObject:
         self.art_id = None
         self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
 
+    @staticmethod
+    def collide(obj1, obj2, dt):
+        # ### TODO ### Properly handle forces here.
+
+        # Currently we treat dt and forces as small enough that they can be neglected,
+        # and assume that they won't change teh trajectory appreciably over the course
+        # of dt
+
+        # What we do is get the line segments that each object will trace outside
+        # if they followed their current velocity for dt seconds.
+
+        # We then find the minimum distance between those two line segments, and
+        # compare that with the sum of the radii (the minimum distance the objects
+        # need to be away from each other in order to not collide).
+        
+        pass
+
+    def collision(self, obj, dt):
+        pass
+
 class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client,
                     position = [ 0.0, 0.0, 0 ],
@@ -256,7 +276,43 @@ class Beam:
         self.velocity = velocity
         self.energy = energy
 
-    def collide(self, obj, dt):
+    @staticmethod
+    def collide(b, obj, dt):
+        # ### TODO ### Properly handle forces here for the physical object
+
+        # To detect a collition, we grab the normals from the beam, and translate
+        # the object's position to 'beam-space' by subtracting the beam's origin
+        # from the object's position.
+
+        # We dot the resulting vector with each of the beam's normal vectors
+        # and examine the results. Sicne the normals are unit-vectors, the result
+        # is the length of the vector along each normal to the object's position.
+
+        # Since the object could be positioned outside of the beam's frustrum,
+        # but still extend into the beam based on its radius, we check that each
+        # of the dot procuts is >= -obj.radius. If that is satisfied for all
+        # of the dot products, then the object extends (at least partially)
+        # into the beam.
+
+        # Now we need to check that it is actually in the portion of space that
+        # the beam will be carving out during dt. To do this we take the beam's
+        # front_position, or the centre of the wave-front at the start of the tick
+        # and verify that the object's position is between front_position and
+        # front_position + dt * beam velocity. Do this by grabbing a unit vector
+        # along velocity (direction), dotting the (object's position - front_position)
+        # with it, and then comparing the result with dt * beam's speed. The dot
+        # product should be in [-obj.radius, dt * beam_speed + obj.radius]
+        # (the closed interval)
+
+        # If both of the above conditions are met, then we have an object-beam
+        # collision
+
+        # computing the amount of suface area is another topic for another day!
+        # ### TODO ### Collision surface area
+        
+        pass
+
+    def collision(self, obj, dt):
         pass
 
     def tick(self, dt):

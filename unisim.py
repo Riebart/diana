@@ -262,13 +262,6 @@ class Universe:
         obj.velocity.y += dt * force.y
         obj.velocity.z += dt * force.z
 
-    # Detect whether the two objects will collide with in the
-    # given time delta into the future
-    def phys_collide(self, obj1, obj2, dt):
-        # ### TODO ### Properly handle forces here.
-        
-        pass
-
     def get_force(self, obj):
         force = Vector3([0, 0, 0])
         if obj.mass == 0:
@@ -290,17 +283,25 @@ class Universe:
     def tick(self, dt):
         self.phys_lock.acquire()
 
-        # ### TODO ### Multithread this. It is pretty trivially parallelizable.
         N = len(self.phys_objects)
+        forces = []
+
+        for i in range(0, N):
+            forces.append(self.get_force(self.phys_objects[i]))
+
+        # ### TODO ### Multithread this. It is pretty trivially parallelizable.
+        # Collision step
+        # Collide all of the physical objects together in an N-choose-2 fashion
         for i in range(0, N):
             for j in range(i, N):
-                ret = self.phys_collide(self.phys_objects[i], self.phys_objects[j], dt)
+                ret = PhysicsObject.collide([self.phys_objects[i], forces[i]], [self.phys_objects[j], forces[j]], dt)
 
+            # While we're running through the physical objects, collide the 
             for b in self.beams:
-                b.collide(self.phys_objects[i], dt)
+                Beam.collide(b, [self.phys_objects[i], forces[i]], dt)
 
-        for o in self.phys_objects:
-            self.move_object(o, self.get_force(o), dt)
+        for i in range(0, N):
+            self.move_object(self.phys_objects[i], forces[i], dt)
 
         for b in self.beams:
             b.tick(dt)
