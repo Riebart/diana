@@ -62,17 +62,15 @@ class MIMOServer:
     # ======================================================================
 
     class ThreadSocket(threading.Thread):
-        def __init__(self, client, handler, event, on_hangup):
+        def __init__(self, client, handler, on_hangup):
             threading.Thread.__init__(self)
             self.client = client
             self.handler = handler
-            self.event = event
             self.on_hangup = on_hangup
             self.running = 1
 
         def run(self):
             while self.running:
-                self.event.wait()
                 if not self.running:
                     break
 
@@ -89,19 +87,17 @@ class MIMOServer:
                     sys.stdout.flush()
                     break
 
-                #print "reading from %d" % self.client.fileno()
-                #sys.stdout.flush()
+                print "reading from %d" % self.client.fileno()
+                sys.stdout.flush()
 
                 self.handler(self.client)
-                self.event.clear()
 
             sys.stdout.flush()
-            self.event.clear()
             self.on_hangup(self.client)
 
         def stop(self):
             self.running = 0
-            self.event.set()
+            self.client.close()
 
     # ======================================================================
 
@@ -113,13 +109,9 @@ class MIMOServer:
 
         self.contextmap = dict()
         self.threadmap = dict()
-        self.eventmap = dict()
         self.inputs = []
         self.hangup_lock = threading.Lock()
         self.hangups = []
-
-        # Trap keyboard interrupts
-        signal.signal(signal.SIGINT, self.sighandler)
 
     def sighandler(self, signum, frame):
         self.stop()
@@ -131,7 +123,7 @@ class MIMOServer:
             self.server.bind(('', self.port))
             print 'Listening to port', self.port, '...'
             self.server.listen(self.backlog)
-            self.inputs = [self.server]
+            self.inputs = []
             self.running = 1
 
             self.serve_thread = MIMOServer.ThreadServer(self)
@@ -151,9 +143,10 @@ class MIMOServer:
                                                     "stubborn " if stubborn == 1 else "",
                                                     "s" if len(self.inputs) > 2 else "")
                 for c in self.inputs:
-                    if c != self.server:
-                        self.hangup(c)
+                    self.hangup(c)
                 stubborn = 1
+
+            print "All hungup"
 
             self.hangups = []
 
@@ -166,60 +159,55 @@ class MIMOServer:
 
     # This gets called when a client hangs up on us.
     def hangup(self, client):
+        print "Hanging up %d" % client.fileno()
         if client.fileno() == -1:
             # Detect an already hung-up client
             return
 
         self.threadmap[client].stop()
-        client.close()
-
         self.inputs.remove(client)
         del self.threadmap[client]
         del self.contextmap[client]
-        del self.eventmap[client]
 
     def serve(self):
         while self.running:
             try:
-                inputready, outputready, exceptready = select.select(self.inputs, [], [])
+                # ### PARAMETER ### How often the server select times out to service hangups
+                inputready, outputready, exceptready = select.select([self.server], [], [], 0.1)
             except select.error, e:
                 print e
                 break
             except socket.error, e:
                 print e
                 break
-                
+
             if not self.running:
                 break
 
             if len(self.hangups) > 0:
                 self.hangup_lock.acquire()
-                
+                pre_hangup = len(self.inputs)
+
                 for h in self.hangups:
                     self.hangup(h)
 
+                num_hung_up = pre_hangup - len(self.inputs)
+                print "Successfully hung up %d client%s" % (num_hung_up, "s" if num_hung_up > 1 else "")
                 self.hangups = []
-                    
                 self.hangup_lock.release()
                 continue
 
-            for s in inputready:
-                if s == self.server:
-                    # handle the server socket
-                    client, address = self.server.accept()
-                    #print 'got connection %d from %s' % (client.fileno(), address)
-                    sys.stdout.flush()
+            if len(inputready) > 0:
+                # handle the server socket
+                client, address = self.server.accept()
+                print "got connection %d from %s" % (client.fileno(), address)
+                sys.stdout.flush()
 
-                    context = self.callback(client)
-                    self.contextmap[client] = context
-                    self.eventmap[client] = threading.Event()
-                    self.threadmap[client] = MIMOServer.ThreadSocket(client, context.handle, self.eventmap[client], self.on_hangup)
-                    self.threadmap[client].start()
-
-                    self.inputs.append(client)
-
-                elif not self.eventmap[s].is_set():
-                    self.eventmap[s].set()
+                context = self.callback(client)
+                self.contextmap[client] = context
+                self.threadmap[client] = MIMOServer.ThreadSocket(client, context.handle, self.on_hangup)
+                self.threadmap[client].start()
+                self.inputs.append(client)
 
 # ==============================================================================
 

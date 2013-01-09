@@ -322,7 +322,7 @@ class Universe:
     # the simulation
     def sim(self, t = 0, r = 1):
         # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.001
+        min_frametime = 0.1
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.2
         
