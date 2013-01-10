@@ -158,7 +158,7 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.005)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -186,6 +186,11 @@ class Universe:
             self.smarties.remove(obj)
 
         self.phys_objects.remove(obj)
+        self.phys_lock.release()
+
+    def destroy_beam(self, beam):
+        self.phys_lock.acquire()
+        self.beams.remove(beam)
         self.phys_lock.release()
 
     def update_attractor(self, obj):
@@ -282,27 +287,28 @@ class Universe:
         return force
 
     def tick(self, dt):
-        self.phys_lock.acquire()
-
         N = len(self.phys_objects)
-        forces = []
-
-        for i in range(0, N):
-            forces.append(self.get_force(self.phys_objects[i]))
 
         # ### TODO ### Multithread this. It is pretty trivially parallelizable.
         # Collision step
         # Collide all of the physical objects together in an N-choose-2 fashion
         for i in range(0, N):
-            for j in range(i, N):
-                ret = PhysicsObject.collide([self.phys_objects[i], forces[i]], [self.phys_objects[j], forces[j]], dt)
+            for j in range(i + 1, N):
+                ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
+                
+                if ret != -1:
+                    pass
 
             # While we're running through the physical objects, collide the 
             for b in self.beams:
-                Beam.collide(b, [self.phys_objects[i], forces[i]], dt)
+                ret = Beam.collide(b, self.phys_objects[i], dt)
 
+                if ret != -1:
+                    pass
+
+        self.phys_lock.acquire()
         for i in range(0, N):
-            self.move_object(self.phys_objects[i], forces[i], dt)
+            self.move_object(self.phys_objects[i], self.get_force(self.phys_objects[i]), dt)
 
         for b in self.beams:
             b.tick(dt)
@@ -324,9 +330,9 @@ class Universe:
     # the simulation
     def sim(self, t = 0, r = 1):
         # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.1
+        min_frametime = 0.001
         # ### PARAMETER ###  MAXIMUM FRAME TIME
-        max_frametime = 0.2
+        max_frametime = 0.01
         
         total_time = 0;
         dt = 0.01
@@ -334,6 +340,7 @@ class Universe:
 
         while self.simulating == 1 and (t == 0 or total_time < r * t):
             dt = hold_up(self.tick, r * dt, min_frametime)
+            self.real_frametime = dt
 
             # Artificially shrink the frametime if we are ticking too long.
             # This has the effect of slowing down time, but whatever.
@@ -345,7 +352,7 @@ class Universe:
         return [total_time, i]
 
     def get_frametime(self):
-        return [self.frametime, self.visdata_thread.frametime]
+        return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
 
 if __name__ == "__main__":
     import sys
@@ -360,39 +367,39 @@ if __name__ == "__main__":
     t = 100
 
     #make 1000 random physics objects
-    for i in range(0, 1000):
+    for i in range(0, 250):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
+        obj = PhysicsObject(uni, velocity = [ rand.random() * 5, rand.random() * 5, rand.random() * 5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
         uni.add_object(obj)
 
     r = 10000000
     t = 100000
 
     #make 100 random gravitation objects
-    for i in range(0, 100):
+    for i in range(0, 25):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e18, radius = 5000000 + rand.random() * 2000000)
+        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 5000000 + rand.random() * 2000000)
         uni.add_object(obj)
 
     print len(uni.phys_objects)
     print len(uni.attractors)
 
-    print uni.phys_objects[0].position.dist(uni.attractors[0].position)
+    print uni.phys_objects[0].position.dist(uni.attractors[1].position)
     uni.start_sim()
     time.sleep(1)
-    print "%fs per physics tick" % uni.get_frametime()[0]
+    print uni.get_frametime(), "seconds per tick"
     print "Press Enter to continue..."
     sys.stdout.flush()
     raw_input()
-    print uni.phys_objects[0].position.dist(uni.attractors[0].position)
+    print uni.phys_objects[0].position.dist(uni.attractors[1].position)
     print "Stopping simulation"
     uni.stop_sim()
     print "Stopping network"

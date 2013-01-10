@@ -19,6 +19,9 @@ class Vector3:
             self.y = y
             self.z = z
 
+    def clone(self):
+        return Vector3(self.x, self.y, self.z)
+
     #def __init__(self, x, y, z):
         #self.x = x
         #self.y = y
@@ -107,6 +110,21 @@ class Vector3:
     def dot(self, v):
         return self.x * v.x + self.y * v.y + self.z * v.z
 
+    @staticmethod
+    def almost_zeroS(v):
+        # Python doesn't seem to be able to distinguish exponents below -300,
+        # So we'll cut off at -150
+        if -1e-150 < v and v < 1e-150:
+            return 1
+        else:
+            return 0
+
+    def almost_zero(self):
+        if Vector3.almost_zeroS(self.x) and Vector3.almost_zeroS(self.y) and Vector3.almost_zeroS(self.z):
+            return 1
+        else:
+            return 0
+
     #overrid []
     def __getitem__(self, index):
         if index == 0:
@@ -174,39 +192,99 @@ class PhysicsObject:
 
         # We then find the minimum distance between those two line segments, and
         # compare that with the sum of the radii (the minimum distance the objects
-        # need to be away from each other in order to not collide).
+        # need to be away from each other in order to not collide). Becuse sqrt()
+        # is so expensive, we compare the square of everything. Any lengths are
+        # actually the squares of the length, which means that we need to compare
+        # against the square of the sum of the radii of the objects.
 
         # Because the parameters for the parameterizations of the line segments
         # will be in [0,1], we'll need to scale the velocity by dt. If we
         # get around to handling force application we need to scale the acceleration
         # vector by 0.5*dt^2, and then apply a parameter of t^2 to that term.
 
-        # FYI: Mathematica comes back with about 20,000 arithmetic operations per
-        # parameter... I don't think I'm going to bother. If errors start to get
-        # too high (as in, noticed in gameplay), then forcibly slow down time to
-        # keep the physics ticks fast enough to keep collision error in check.
+        ## FYI: Mathematica comes back with about 20,000 arithmetic operations per
+        ## parameter... I don't think I'm going to bother. If errors start to get
+        ## too high (as in, noticed in gameplay), then forcibly slow down time to
+        ## keep the physics ticks fast enough to keep collision error in check.
 
-        # Parameters for force-less trajectories are found for object 1 and 2 (t and v)
-        # thanks to some partial differentiation of parameterizations of the trajectories
-        # using a parameter for each object. Note that this will find the global minimum
+        # Parameters for force-less trajectories are found for object 1 and 2 (t)
+        # thanks to some differentiation of parameterizations of the trajectories
+        # using a parameter for time. Note that this will find the global minimum
         # and the parameters that come back likely won't be in the [0,1] range.
 
-        # If eiher of the parameters are outside of the range, you should check
-        # the endpoints for the minimum in the applicable range. If both parameters
-        # are in [0,1], then you can skip endpoing checking. Yay!
+        # Normally if the parameter is outside of the range [0,1], you should check
+        # the endpoints for the minimum. If the parameter is in [0,1], then you
+        # can skip endpoing checking, yay! In this case though, we know that if
+        # there is an inflection point in [0,1], t will point at it. If there isn't,
+        # then the distance function is otherwise monotonic (it is quadratic in t)
+        # and we can just clip t to [0,1] and get the minimum.
 
-        # Notes on shorthand here. v1 = (x, y, z), and v2 = (a, b, c). '.' means
-        # dot product, and 'x' means cross product.
+        #      (v2-v1).(o1-o2)
+        # t = -----------------
+        #      (v2-v1).(v2-v1)
 
-        # t = ((o1.v1-o2.v1) (v2.v2)-(o1.v2-o2.v2)(v1.v2))
-        #     --------------------------------------------
-        #              ((v1.v2)^2-(v1.v1) (v2.v2))
+        ## Notes on shorthand here. v1 = (x, y, z), and v2 = (a, b, c). '.' means
+        ## dot product, and 'x' means cross product.
+
+        ## t = ((o1.v1-o2.v1) (v2.v2)-(o1.v2-o2.v2)(v1.v2))
+        ##     --------------------------------------------
+        ##              ((v1.v2)^2-(v1.v1) (v2.v2))
         
-        # v = (o1-o2).(c{-x z,-y z,x^2+y^2}+b{-x y,x^2+z^2,-y z}+a{y^2+z^2,-x y,-x z})
-        #     ------------------------------------------------------------------------
-        #                          (v2 x v1).(v2 x v1)
+        ## v = (o1-o2).(c{-x z,-y z,x^2+y^2}+b{-x y,x^2+z^2,-y z}+a{y^2+z^2,-x y,-x z})
+        ##     ------------------------------------------------------------------------
+        ##                          (v2 x v1).(v2 x v1)
+
+        ## I'm going to call the right-hand operand of the dot product in v's numerator 's'
+
+        ## Some values we can precompute to make things faster (in order in the array):
+        ## v2.v2    v1.v2    v2 x v1    xx, xy, xz, yy, yz, zz
         
-        pass
+        ## All together, they save a total of seven additions and eighteen multiplications,
+
+        # So, here we go!
+
+        v1 = obj1.velocity.clone()
+        v1.scale(dt)
+
+        v2 = obj2.velocity.clone()
+        v2.scale(dt)
+
+        vd = v2 - v1
+
+        if vd.almost_zero():
+            return -1
+
+        o1 = obj1.position.clone()
+        o2 = obj2.position.clone()
+
+        t = vd.dot(o1 - o2) / vd.length2()
+
+        ##t = ((o1.dot(v1) - o2.dot(v1)) * pre[0] - (o1.dot(v2) - o2.dot(v2)) * pre[1]) / ((pre[1] * pre[1] - v1.length2()) * pre[0])
+        ##s = Vector3([
+                    ##v2.x * (v1.y * v1.y + v1.z * v1.z) - (
+                        ##v2.y * v1.x * v1.y +
+                        ##v2.z * v1.x * v1.z),
+                    ##v2.y * (v1.x * v1.x + v1.z * v1.z) - (
+                        ##v2.x * v1.x * v1.y +
+                        ##v2.z * v1.y * v1.z),
+                    ##v2.z * (v1.x * v1.x + v1.y * v1.y) - (
+                        ##v2.x * v1.x * v1.z +
+                        ##v2.y * v1.y * v1.z)
+                    ##])
+        ##v = (o1 - o2).dot(s) / pre[2]
+
+        t = min(1, max(0, t))
+
+        o1.add(v1, t)
+        o2.add(v2, t)
+
+        r = (obj1.radius + obj2.radius)
+        r *= r
+        
+        if o1.dist2(o2) <= r:
+            return t
+        else:
+            return -1
 
     def collision(self, obj, dt):
         pass
