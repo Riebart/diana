@@ -10,6 +10,7 @@ class Ship(SmartObject):
         self.type = "dummy-ship"
         self.max_missiles = 10
         self.cur_missiles = self.max_missiles
+        self.radius = 20
         
     def do_scan():
         pass
@@ -26,7 +27,7 @@ class Ship(SmartObject):
             #TODO: set the initial location of the missile some small distance of the ship,
             #to avoid collisions. Distance must be in the direction the missile wants to go
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-            tmp.scale(self.radius * -1)
+            tmp.scale(self.radius * -1.2)
             missile.location = self.location + tmp
             
             #should missile have our initial velocity?

@@ -8,9 +8,10 @@ import ship
 from physics import Vector3
 import random
 import time
+import spaceobj
 
 def testSimple():
-    miss1 = objectsim.Missile(osim)
+    miss1 = spaceobj.Missile(osim)
     osim.spawn_object(miss1)
 
     print "miss1 osimid is: %d" % miss1.osid
@@ -23,13 +24,14 @@ def testSimpleShip():
     print "ship1 osimid is: %d" % ship1.osid
     print "ship1 unisim is: %d" % ship1.uniid
     
-    
+
+#test currently broken    
 def testVisData():
     
-    miss1 = objectsim.Missile(osim)
+    miss1 = spaceobj.Missile(osim)
     osim.spawn_object(miss1)
     
-    miss2 = objectsim.Missile(osim)
+    miss2 = spaceobj.Missile(osim)
     miss2.location[0] = 100.0
     osim.spawn_object(miss2)
     
@@ -48,7 +50,7 @@ def testVisData():
     pass
 
 
-
+#spawns two stationary ships. The first fires a missile at the other
 def testShip():
     
     ship1 = ship.Ship(osim)
@@ -58,14 +60,14 @@ def testShip():
     print "ship1 unisim is: %d" % ship1.uniid
         
     ship2 = ship.Ship(osim)
-    ship2.location = Vector3( (100.0,0.0,0.0) )
+    ship2.location = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
     
     print "ship2 osimid is: %d" % ship2.osid
     print "ship2 unisim is: %d" % ship2.uniid
     
     direction = Vector3((1.0, 0.0,0.0))
-    miss1 = ship1.fire_missile(direction, 500)
+    miss1 = ship1.fire_missile(direction, 50000.0)
     
     print "miss1 osimid is: %d" % miss1.osid
     print "miss1 unisim is: %d" % miss1.uniid    
@@ -112,7 +114,7 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
+testShip()
 #testSimpleShip()
-stressTest()
+#stressTest()
 #test_threads()

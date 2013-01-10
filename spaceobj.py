@@ -3,6 +3,7 @@ import message
 from physics import Vector3
 import socket
 
+import time
 
 class SpaceObject:
     def __init__(self, osim, osid=0, uniid=0):
@@ -14,7 +15,7 @@ class SpaceObject:
         self.velocity = Vector3((0.0,0.0,0.0))
         self.thrust = Vector3((0.0,0.0,0.0))
         self.orient = Vector3((0.0,0.0,0.0))
-        self.radius = 0.0
+        self.radius = 1.0
         pass
 
 
@@ -81,6 +82,8 @@ class SmartObject(SpaceObject, threading.Thread):
             
             if isinstance(mess, message.CollisionMessage):
                 print "Collision! " + mess
+            elif isinstance(mess, message.VisualDataMsg):
+                print mess
                 
             else:
                 print mess
@@ -169,10 +172,10 @@ class Missile(SmartObject):
     def run(self):
         while True:
             
-            val = self.messageHandler()
+            #val = self.messageHandler()
             
             #nothing happened, do a scan
-            if (val == None):
-                self.do_scan()
-        
+            #if (val == None):
+                #self.do_scan()
+            time.sleep(500)
 
