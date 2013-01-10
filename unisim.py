@@ -147,6 +147,7 @@ class Universe:
         self.simulating = 0
         self.total_objs = 0
         self.frametime = 0
+        self.real_frametime = 0
 
         self.start_net()
 
@@ -167,6 +168,7 @@ class Universe:
             self.attractors.append(obj)
 
         if isinstance(obj, SmartPhysicsObject):
+            print "Object added at %f - %f" % (self.total_time, time.clock())
             self.smarties.append(obj)
 
         self.phys_objects.append(obj)
@@ -258,35 +260,24 @@ class Universe:
         r.scale(m)
         return r
 
-    def move_object(self, obj, force, dt):
-        # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-        obj.position.x += obj.velocity.x * dt + 0.5 * dt * dt * force.x
-        obj.position.y += obj.velocity.y * dt + 0.5 * dt * dt * force.y
-        obj.position.z += obj.velocity.z * dt + 0.5 * dt * dt * force.z
-        
-        obj.velocity.x += dt * force.x
-        obj.velocity.y += dt * force.y
-        obj.velocity.z += dt * force.z
-
-    def get_force(self, obj):
-        force = Vector3([0, 0, 0])
+    def get_accel(self, obj):
+        accel = Vector3([0, 0, 0])
         if obj.mass == 0:
-            return force
+            return accel
             
         # First get the attraction between this object, and all of the attractors.
         for a in self.attractors:
             if obj == a:
                 continue
-            force.add(Universe.gravity(a, obj))
+                accel.add(Universe.gravity(a, obj))
 
-        if isinstance(obj, SmartPhysicsObject):
-            force.add(obj.thrust)
+        accel.add(obj.thrust)
+        accel.scale(1 / obj.mass)
 
-        force.scale(1 / obj.mass)
-
-        return force
+        return accel
 
     def tick(self, dt):
+        self.phys_lock.acquire()
         N = len(self.phys_objects)
 
         # ### TODO ### Multithread this. It is pretty trivially parallelizable.
@@ -297,18 +288,18 @@ class Universe:
                 ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
                 
                 if ret != -1:
+                    print "Phys collision %f - %f between %d, velocity (%f,%f,%f) and %d, velocity (%f,%f,%f)" % (self.total_time, time.clock(), self.phys_objects[i].phys_id, self.phys_objects[i].velocity[0], self.phys_objects[i].velocity[1], self.phys_objects[i].velocity[2], self.phys_objects[j].phys_id, self.phys_objects[j].velocity[0], self.phys_objects[i].velocity[1], self.phys_objects[j].velocity[2])
                     pass
 
-            # While we're running through the physical objects, collide the 
+            # While we're running through the physical objects, collide the beams too
             for b in self.beams:
                 ret = Beam.collide(b, self.phys_objects[i], dt)
 
                 if ret != -1:
                     pass
 
-        self.phys_lock.acquire()
         for i in range(0, N):
-            self.move_object(self.phys_objects[i], self.get_force(self.phys_objects[i]), dt)
+            self.phys_objects[i].tick(self.get_accel(self.phys_objects[i]), dt)
 
         for b in self.beams:
             b.tick(dt)
@@ -334,11 +325,11 @@ class Universe:
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.01
         
-        total_time = 0;
+        self.total_time = 0;
         dt = 0.01
         i = 0
 
-        while self.simulating == 1 and (t == 0 or total_time < r * t):
+        while self.simulating == 1 and (t == 0 or self.total_time < r * t):
             dt = hold_up(self.tick, r * dt, min_frametime)
             self.real_frametime = dt
 
@@ -346,10 +337,10 @@ class Universe:
             # This has the effect of slowing down time, but whatever.
             dt = min(max_frametime, dt)
             self.frametime = dt
-            total_time += r * dt
+            self.total_time += r * dt
             i += 1
 
-        return [total_time, i]
+        return [self.total_time, i]
 
     def get_frametime(self):
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
@@ -367,13 +358,13 @@ if __name__ == "__main__":
     t = 100
 
     #make 1000 random physics objects
-    for i in range(0, 250):
+    for i in range(0, 1000):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = PhysicsObject(uni, velocity = [ rand.random() * 5, rand.random() * 5, rand.random() * 5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
+        obj = PhysicsObject(uni, velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
         uni.add_object(obj)
 
     r = 10000000
@@ -396,6 +387,10 @@ if __name__ == "__main__":
     time.sleep(1)
     print uni.get_frametime(), "seconds per tick"
     print "Press Enter to continue..."
+    #while 1:
+        #print a.position.dist(b.position)
+        #time.sleep(1)
+        
     sys.stdout.flush()
     raw_input()
     print "Stopping simulation"

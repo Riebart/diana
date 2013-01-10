@@ -179,6 +179,16 @@ class PhysicsObject:
         self.art_id = None
         self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
 
+    def tick(self, acc, dt):
+        # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
+        self.position.x += self.velocity.x * dt + 0.5 * dt * dt * acc.x
+        self.position.y += self.velocity.y * dt + 0.5 * dt * dt * acc.y
+        self.position.z += self.velocity.z * dt + 0.5 * dt * dt * acc.z
+        
+        self.velocity.x += dt * acc.x
+        self.velocity.y += dt * acc.y
+        self.velocity.z += dt * acc.z
+
     @staticmethod
     def collide(obj1, obj2, dt):
         # ### TODO ### Properly handle forces here.
