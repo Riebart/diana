@@ -377,12 +377,19 @@ class Beam:
                     direction, velocity,
                     energy):
         self.universe = universe
-        self.origin = origin
-        self.front_position = origin
-        self.normals = normals
-        self.direction = direction
-        self.velocity = velocity
+        self.origin = origin if isinstance(origin, Vector3) else Vector3(origin)
+        self.front_position = self.origin.clone()
+
+        self.normals = []
+        for n in normals:
+            self.normals.append(n if isinstance(n, Vector3) else Vector3(n))
+            
+        self.direction = direction if isinstance(direction, Vector3) else Vector3(direction)
+        self.velocity = velocity if isinstance(velocity, Vector3) else Vector3(velocity)
         self.energy = energy
+        
+        self.speed = self.velocity.length()
+        self.distance_travelled = 0
 
     @staticmethod
     def collide(b, obj, dt):
@@ -391,10 +398,6 @@ class Beam:
         # To detect a collition, we grab the normals from the beam, and translate
         # the object's position to 'beam-space' by subtracting the beam's origin
         # from the object's position.
-
-        # We dot the resulting vector with each of the beam's normal vectors
-        # and examine the results. Sicne the normals are unit-vectors, the result
-        # is the length of the vector along each normal to the object's position.
 
         # Since the object could be positioned outside of the beam's frustrum,
         # but still extend into the beam based on its radius, we check that each
@@ -412,18 +415,88 @@ class Beam:
         # product should be in [-obj.radius, dt * beam_speed + obj.radius]
         # (the closed interval)
 
-        # If both of the above conditions are met, then we have an object-beam
-        # collision
+        # For each plane, find out which side the object is on, and whether it
+        # will cross the plane in this tick. If for any plane it is neither in
+        # inside of it, nor will it cross it, then bail. Take the radius into
+        # account here
+
+        # For all planes where the object crosses it, find the t value, and note
+        # whether the object is crossing in or out.
+
+        # Using the t values we found above, determine the potential values for t
+        # where the object is still (at least partially) inside the beam. Do this
+        # by finding the earliest time the beam will leave the beam, and the latest
+        # time that the object will enter the beam. Note that t must be in [0,1]
+        # for these considerations. If the beam leaves before it gets in, bail.
+        # No hit.
+
+        # ### TODO ### I'm not sure if this hunch is right, but I think it is a
+        # close enough approximation. The magic of linear situations might actually
+        # make me right...
+        # If there are still candidate values of t, then just take the middle of
+        # the interval as the 'collision' time.
+
+        # Compute the shadow area by converting the collision-time object's position
+        # into beam-coordinates (dir, right, up)
 
         # computing the amount of suface area is another topic for another day!
         # ### TODO ### Collision surface area
+
+        ps = obj.position.clone()
+        ps.sub(b.origin)
+
+        v = obj.velocity.clone()
+        v.scale(dt)
+
+        pe = Vector3.combine([[1, ps], [1, v]])
+
+        entering = 0.0
+        leaving = 1.0
         
-        pass
+        for n in b.normals:
+            inout = n.dot(ps)
+            willbe = n.dot(pe)
+
+            if inout < -obj.radius:
+                if willbe < -obj.radius:
+                    # staying out
+                    return -1
+                else:
+                    # leaving
+                    param = n.dot(ps) / n.dot(v)
+                    leaving = min(leaving, param)
+            else:
+                if willbe < -obj.radius:
+                    # entering
+                    param = (n.dot(ps) / n.dot(v))
+                    entering = max(entering, param)
+                else:
+                    # staying in
+                    pass
+
+        # If we have to enter some planes, and are leaving other planes, but
+        # we don't enter until after we leave, we can bail.
+        if entering > leaving:
+            return -1
+
+        t = (entering + leaving) / 2.0
+
+        pc = Vector3.combine([[1, ps], [t, v]]).dot(b.direction)
+
+        # If we want collisions for as long as the bounding sphere is intersecting
+        # the front, use:
+        #
+        # if ((pc + obj.radius) >= b.distance_travelled) and ((pc - obj.radius) <= (b.distance_travelled + b.speed * dt)):
+        if pc >= b.distance_travelled and pc <= (b.distance_travelled + b.speed * dt):
+            return t
+        else:
+            return -1
 
     def collision(self, obj, dt):
         pass
 
     def tick(self, dt):
+        self.distance_travelled += self.speed * dt
         self.front_position.add(self.velocity, dt)
 
     @staticmethod

@@ -158,7 +158,7 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.1)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -386,20 +386,18 @@ if __name__ == "__main__":
         c = r + (rand.random() * 2 - 1) * t
         a = rand.random() * t
 
-        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 5000000 + rand.random() * 2000000)
+        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 500000 + rand.random() * 2000000)
         uni.add_object(obj)
-
+        
     print len(uni.phys_objects)
     print len(uni.attractors)
 
-    print uni.phys_objects[0].position.dist(uni.attractors[1].position)
     uni.start_sim()
     time.sleep(1)
     print uni.get_frametime(), "seconds per tick"
     print "Press Enter to continue..."
     sys.stdout.flush()
     raw_input()
-    print uni.phys_objects[0].position.dist(uni.attractors[1].position)
     print "Stopping simulation"
     uni.stop_sim()
     print "Stopping network"
