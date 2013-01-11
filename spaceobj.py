@@ -28,6 +28,7 @@ class SmartObject(SpaceObject, threading.Thread):
         threading.Thread.__init__(self)
         self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
+        self.done = False
         pass
     
     
@@ -88,9 +89,14 @@ class SmartObject(SpaceObject, threading.Thread):
             ) )
         pass    
     
+    def die(self):
+        message.GoodbyeMsg.send(self.sock, self.uniid)
+        self.done = True
+        self.sock.close()
+    
     def run(self):
         #TODO: properly parse and branch wrt message recieved
-        while True:
+        while not self.done:
             mess = self.messageHandler()
             
             if isinstance(mess, message.CollisionMessage):
@@ -180,7 +186,8 @@ class Missile(SmartObject):
         pass
 
     def detonate(self):
-        pass
+        self.make_explosion(self.location, self.payload)
+        self.die()
     
     def run(self):
         while True:
