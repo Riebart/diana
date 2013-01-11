@@ -8,6 +8,7 @@ import time
 
 class SpaceObject:
     def __init__(self, osim, osid=0, uniid=0):
+        self.type = "Dummy SpaceObject (Error!)"
         self.osim = osim
         self.osid=osid      #the object sim id
         self.uniid=uniid    #the universe sim id
@@ -25,7 +26,9 @@ class SmartObject(SpaceObject, threading.Thread):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
         threading.Thread.__init__(self)
+        self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
+        self.done = False
         pass
     
     
@@ -50,8 +53,31 @@ class SmartObject(SpaceObject, threading.Thread):
     #create and launch a beam object. Assumes beam object is already populated with proper values
     def fire_beam(self, beam):
         beam.send_it()
+        
+    def handle_comm(self, mess):
+        pass
     
-    def handle_collision(self):
+    def handle_scan(self, mess):
+        pass
+    
+    def handle_collision(self, collision):
+        if collision.collision_type == "PHYS":
+            #hit by a physical object, take damage
+            print "%d suffered a Physical collision!" % self.osid
+            pass
+        elif collision.collision_type == "WEAP":
+            #hit by a weapon, take damage
+            print "%d suffered a weapon collision!" % self.osid
+            pass
+        elif collision.collision_type == "COMM":
+            #hit by a comm beam, perform apropriate action
+            self.handle_comm(collision)
+        elif collision.collision_type == "SCAN":
+            #hit by a scan beam
+            self.handle_scan(collision)
+        pass
+    
+    def take_damage(self, amount):
         pass
     
     def enable_visdata(self):
@@ -64,6 +90,7 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_thrust(thrust[0], thrust[1], thrust[2])
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
+            "",
             "",
             "", "", "",
             "", "", "",
@@ -78,6 +105,7 @@ class SmartObject(SpaceObject, threading.Thread):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
             "",
+            "",
             "", "", "",
             "", "", "",
             x, y, z,
@@ -86,13 +114,18 @@ class SmartObject(SpaceObject, threading.Thread):
             ) )
         pass    
     
+    def die(self):
+        message.GoodbyeMsg.send(self.sock, self.uniid)
+        self.done = True
+        self.sock.close()
+    
     def run(self):
         #TODO: properly parse and branch wrt message recieved
-        while True:
+        while not self.done:
             mess = self.messageHandler()
             
             if isinstance(mess, message.CollisionMsg):
-                print "Collision! %s %f" % (mess.collision_type, mess.energy)
+                self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
                 print mess
                 
@@ -169,7 +202,7 @@ class Missile(SmartObject):
         self.radius = 1.0
         self.mass = 100.0
         self.tout_val = 10
-        self.sock.settimeout(self.tout_val)
+        #self.sock.settimeout(self.tout_val)
 
     #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
     #how we want to implement them
@@ -178,15 +211,18 @@ class Missile(SmartObject):
         pass
 
     def detonate(self):
-        pass
+        self.make_explosion(self.location, self.payload)
+        self.die()
     
     def run(self):
-        while True:
+        while not self.done:
             
-            #val = self.messageHandler()
+            val = self.messageHandler()
             
             #nothing happened, do a scan
-            #if (val == None):
-                #self.do_scan()
-            time.sleep(500)
+            if (val == None):
+                self.do_scan()
+            #time.sleep(500)
+            elif isinstance(val, message.CollisionMsg):
+                self.handle_collision(val)
 
