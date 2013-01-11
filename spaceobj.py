@@ -29,6 +29,7 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
     
     
+    #make a 360-degree explosion of a specific power at the location
     def make_explosion(self, location, power):
         message.Beam.send(self.sock, [location[0], location[1], location[2],
                 299792458.0, 0.0, 0.0,
@@ -65,6 +66,7 @@ class SmartObject(SpaceObject, threading.Thread):
             return self.set_thrust(thrust[0], thrust[1], thrust[2])
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
             "",
+            "",
             "", "", "",
             "", "", "",
             "", "", "",
@@ -77,6 +79,7 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
+            "",
             "",
             "", "", "",
             "", "", "",
