@@ -530,10 +530,10 @@ class Beam:
         # to some basic trig. Here, cosine is along the direction, and sine
         # is along the right vector.
 
-        sh = sin(msg.spread_h)
-        ch = cos(msg.spread_h)
-        sv = sin(msg.spread_v)
-        cv = cos(msg.spread_v)
+        sh = sin(msg.spread_h)/2
+        ch = cos(msg.spread_h)/2
+        sv = sin(msg.spread_v)/2
+        cv = cos(msg.spread_v)/2
 
         # The vertical planes (those on the right and left boundaries of the beam)
         # are obtained by combining the direction and horizontal vector.
