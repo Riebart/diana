@@ -228,6 +228,7 @@ class HelloMsg(Message):
 class PhysicalPropertiesMsg(Message):
     def __init__(self, s):
         self.object_type = s[0]
+        del s[0]
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
