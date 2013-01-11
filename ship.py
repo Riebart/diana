@@ -27,7 +27,7 @@ class Ship(SmartObject):
             #TODO: set the initial location of the missile some small distance of the ship,
             #to avoid collisions. Distance must be in the direction the missile wants to go
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-            tmp.scale(self.radius * -1.2)
+            tmp.scale((self.radius + missile.radius) * -1.1)
             missile.location = self.location + tmp
             
             #should missile have our initial velocity?
