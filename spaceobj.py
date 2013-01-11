@@ -61,20 +61,23 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
     
     def handle_collision(self, collision):
-        if collision.beam_type == "PHYS":
+        if collision.collision_type == "PHYS":
             #hit by a physical object, take damage
             print "%d suffered a Physical collision!" % self.osid
             pass
-        elif collision.beam_type == "WEAP":
+        elif collision.collision_type == "WEAP":
             #hit by a weapon, take damage
             print "%d suffered a weapon collision!" % self.osid
             pass
-        elif collision.beam_type == "COMM":
+        elif collision.collision_type == "COMM":
             #hit by a comm beam, perform apropriate action
             self.handle_comm(collision)
-        elif collision.beam_type == "SCAN":
+        elif collision.collision_type == "SCAN":
             #hit by a scan beam
             self.handle_scan(collision)
+        pass
+    
+    def take_damage(self, amount):
         pass
     
     def enable_visdata(self):
@@ -121,8 +124,7 @@ class SmartObject(SpaceObject, threading.Thread):
         while not self.done:
             mess = self.messageHandler()
             
-            if isinstance(mess, message.CollisionMessage):
-                print "Collision!"
+            if isinstance(mess, message.CollisionMsg):
                 self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
                 print mess
@@ -200,7 +202,7 @@ class Missile(SmartObject):
         self.radius = 1.0
         self.mass = 100.0
         self.tout_val = 10
-        self.sock.settimeout(self.tout_val)
+        #self.sock.settimeout(self.tout_val)
 
     #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
     #how we want to implement them
@@ -215,10 +217,12 @@ class Missile(SmartObject):
     def run(self):
         while not self.done:
             
-            #val = self.messageHandler()
+            val = self.messageHandler()
             
             #nothing happened, do a scan
-            #if (val == None):
-                #self.do_scan()
-            time.sleep(500)
+            if (val == None):
+                self.do_scan()
+            #time.sleep(500)
+            elif isinstance(val, message.CollisionMsg):
+                self.handle_collision(val)
 
