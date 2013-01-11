@@ -53,8 +53,28 @@ class SmartObject(SpaceObject, threading.Thread):
     #create and launch a beam object. Assumes beam object is already populated with proper values
     def fire_beam(self, beam):
         beam.send_it()
+        
+    def handle_comm(self, mess):
+        pass
     
-    def handle_collision(self):
+    def handle_scan(self, mess):
+        pass
+    
+    def handle_collision(self, collision):
+        if collision.beam_type == "PHYS":
+            #hit by a physical object, take damage
+            print "%d suffered a Physical collision!" % self.osid
+            pass
+        elif collision.beam_type == "WEAP":
+            #hit by a weapon, take damage
+            print "%d suffered a weapon collision!" % self.osid
+            pass
+        elif collision.beam_type == "COMM":
+            #hit by a comm beam, perform apropriate action
+            self.handle_comm(collision)
+        elif collision.beam_type == "SCAN":
+            #hit by a scan beam
+            self.handle_scan(collision)
         pass
     
     def enable_visdata(self):
@@ -100,7 +120,8 @@ class SmartObject(SpaceObject, threading.Thread):
             mess = self.messageHandler()
             
             if isinstance(mess, message.CollisionMessage):
-                print "Collision! " + mess
+                print "Collision!"
+                self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
                 print mess
                 
@@ -190,7 +211,7 @@ class Missile(SmartObject):
         self.die()
     
     def run(self):
-        while True:
+        while not self.done:
             
             #val = self.messageHandler()
             
