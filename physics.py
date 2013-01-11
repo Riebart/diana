@@ -302,7 +302,7 @@ class PhysicsObject:
         
         if o1.dist2(o2) <= r:
             # ### TODO ### Relativistic kinetic energy
-            v = v2 - v1
+            v = obj2.velocity - obj1.velocity
             vl = v.length2()
 
             e1 = 0.5 * obj2.mass * vl
@@ -393,7 +393,7 @@ class SmartPhysicsObject(PhysicsObject):
             if msg.radius != None:
                 self.radius = msg.radius
 
-            if self.mass != None and self.radius != None:
+            if self.exists == 1 and self.mass != None and self.radius != None:
                 new_emits = PhysicsObject.is_big_enough(self.mass, self.radius)
                 diff = self.emits_gravity - new_emits
                 if diff != 0:

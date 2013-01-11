@@ -163,7 +163,6 @@ class Universe:
         self.visdata_thread.start()
 
     def add_object(self, obj):
-        print "Adding object %d at %f" % (obj.phys_id, time.clock())
         self.phys_lock.acquire()
         if obj.emits_gravity:
             self.attractors.append(obj)
@@ -331,7 +330,7 @@ class Universe:
         # ### PARAMETER ###  MINIMUM FRAME TIME
         min_frametime = 0.001
         # ### PARAMETER ###  MAXIMUM FRAME TIME
-        max_frametime = 0.01
+        max_frametime = 0.02
         
         total_time = 0;
         dt = 0.01
@@ -372,7 +371,12 @@ if __name__ == "__main__":
         #c = r + (rand.random() * 2 - 1) * t
         #a = rand.random() * t
 
-        #obj = PhysicsObject(uni, velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
+        #obj = PhysicsObject(uni,
+                            #velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5],
+                            #position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
+                            #mass = rand.random() * 2500 + 7500,
+                            #radius = 10,
+                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid")
         #uni.add_object(obj)
 
     #r = 10000000
@@ -385,7 +389,11 @@ if __name__ == "__main__":
         #c = r + (rand.random() * 2 - 1) * t
         #a = rand.random() * t
 
-        #obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 500000 + rand.random() * 2000000)
+        #obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
+                            #velocity = [ 0.0, 0.0, 0.0 ],
+                            #mass = rand.random() * 100000000 + 1e15,
+                            #radius = 500000 + rand.random() * 2000000,
+                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet")
         #uni.add_object(obj)
         
     print len(uni.phys_objects)
