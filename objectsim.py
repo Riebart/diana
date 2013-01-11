@@ -60,6 +60,7 @@ class ObjectSim:
                         
             #TODO: send object data to unisim
             message.PhysicalPropertiesMsg.send(obj.sock, (
+                obj.type,
                 obj.mass,
                 obj.location[0], obj.location[1], obj.location[2],
                 obj.velocity[0], obj.velocity[1], obj.velocity[2],                

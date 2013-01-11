@@ -228,6 +228,7 @@ class HelloMsg(Message):
 class PhysicalPropertiesMsg(Message):
     def __init__(self, s):
         self.object_type = s[0]
+        del s[0]
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
@@ -460,6 +461,16 @@ class ScanResultMsg(Message):
         ret = Message.sendall(client, msg)
         return ret
 
+class GoodbyeMsg(Message):
+    def __init__(self, s):
+        self.endpoint_id = Message.read_int(s)
+        
+    def send(client, args):
+        msg = "GOODBYE\n%d\n" %args
+        
+        ret = Message.sendall(client, msg)
+        return ret
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
@@ -470,4 +481,5 @@ MessageTypes = { "HELLO": HelloMsg,
                 "BEAM": BeamMsg,
                 "COLLISION": CollisionMsg,
                 "SPAWN": SpawnMsg,
-                "SCANRESULT": ScanResultMsg }
+                "SCANRESULT": ScanResultMsg,
+                "GOODBYE": GoodbyeMsg }
