@@ -16,7 +16,8 @@ class Ship(SmartObject):
         pass
     
     
-    def fire_beam():
+    def fire_laser():
+        #laser = WeaponBeam()
         pass
     
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar

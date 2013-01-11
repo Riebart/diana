@@ -33,7 +33,7 @@ class SmartObject(SpaceObject, threading.Thread):
     
     
     def make_explosion(self, location, power):
-        message.Beam.send(self.sock, [location[0], location[1], location[2],
+        message.BeamMsg.send(self.sock, [location[0], location[1], location[2],
                 299792458.0, 0.0, 0.0,
                 0.0, 0.0, 0.0,
                 2*pi,
@@ -52,7 +52,13 @@ class SmartObject(SpaceObject, threading.Thread):
 
     #create and launch a beam object. Assumes beam object is already populated with proper values
     def fire_beam(self, beam):
-        beam.send_it()
+        beam.send_it(self.sock)
+        
+    def handle_phys(self, mess):
+        pass
+    
+    def handle_weap(self, mess):
+        pass
         
     def handle_comm(self, mess):
         pass
@@ -64,11 +70,11 @@ class SmartObject(SpaceObject, threading.Thread):
         if collision.collision_type == "PHYS":
             #hit by a physical object, take damage
             print "%d suffered a Physical collision!" % self.osid
-            pass
+            self.handle_phys(collision)
         elif collision.collision_type == "WEAP":
             #hit by a weapon, take damage
             print "%d suffered a weapon collision!" % self.osid
-            pass
+            self.handle_weap(collision)
         elif collision.collision_type == "COMM":
             #hit by a comm beam, perform apropriate action
             self.handle_comm(collision)
@@ -177,7 +183,9 @@ class CommBeam(Beam):
         self.message = message
     
     def send_it(self, sock):
-        message.Beam.send(sock, self.build_common().append(self.message))
+        ar = self.build_common()
+        ar.append(self.message)
+        message.BeamMsg.send(sock, ar)
         
         
 class WeaponBeam(Beam):
@@ -186,7 +194,9 @@ class WeaponBeam(Beam):
         self.subtype = subtype
         
     def send_it(self, sock):
-        message.Beam.send(sock, self.build_common().append(self.subtype))
+        ar = self.build_common()
+        ar.append(self.subtype)
+        message.BeamMsg.send(sock, ar)
         
 class ScanBeam(Beam):
     def __init__(self, osim, osid=0, uniid=0, type="SCAN", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0):
@@ -209,6 +219,9 @@ class Missile(SmartObject):
     def do_scan(self):
         print str(self) + " Performing scan!"
         pass
+    
+    def handle_phys(self, mess):
+        self.detonate()
 
     def detonate(self):
         self.make_explosion(self.location, self.payload)

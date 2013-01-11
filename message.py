@@ -465,7 +465,8 @@ class ScanResultMsg(Message):
 class GoodbyeMsg(Message):
     def __init__(self, s):
         self.endpoint_id = Message.read_int(s)
-        
+
+    @staticmethod
     def send(client, args):
         msg = "GOODBYE\n%d\n" %args
         

@@ -10,6 +10,7 @@ import random
 import time
 import spaceobj
 import sys
+import math
 
 def testSimple():
     miss1 = spaceobj.Missile(osim)
@@ -75,7 +76,36 @@ def testShip():
     print "miss1 osimid is: %d" % miss1.osid
     print "miss1 unisim is: %d" % miss1.uniid
     sys.stdout.flush()
+    
+#spawns two stationary ships. The first fires a beam at the other
+def testBeam():
+    
+    ship1 = ship.Ship(osim)
+    osim.spawn_object(ship1)
 
+    print "ship1 osimid is: %d" % ship1.osid
+    print "ship1 unisim is: %d" % ship1.uniid
+    sys.stdout.flush()
+
+    ship2 = ship.Ship(osim)
+    ship2.location = Vector3( (1000.0,0.0,0.0) )
+    osim.spawn_object(ship2)
+
+    print "ship2 osimid is: %d" % ship2.osid
+    print "ship2 unisim is: %d" % ship2.uniid
+    sys.stdout.flush()
+
+    vel = Vector3((500.0, 0.0,0.0))
+    laser = spaceobj.WeaponBeam(osim)
+    laser.velocity=vel
+    laser.h_focus = math.pi/6
+    laser.v_focus = math.pi/6
+    laser.origin = Vector3(100.0,0.0,0.0)
+    ship1.fire_beam(laser)
+    
+    sys.stdout.flush()
+    
+    
 def rand_vec(rand, rang):
     return Vector3((rand.random()*rang, rand.random()*rang, rand.random()*rang))
 
@@ -117,7 +147,8 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-testShip()
+#testShip()
 #testSimpleShip()
 #stressTest()
 #test_threads()
+testBeam()
