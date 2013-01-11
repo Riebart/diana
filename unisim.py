@@ -293,18 +293,18 @@ class Universe:
                 ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
                 
                 if ret != -1:
-                    self.phys_objects[i].collision([self.phys_objects[j], ret[1][0], ret[2][0], ret[3][0]])
-                    self.phys_objects[j].collision([self.phys_objects[i], ret[1][1], ret[2][1], ret[3][1]])
+                    self.phys_objects[i].collision(self.phys_objects[j], ret[1][0], ret[2][0], ret[3][0])
+                    self.phys_objects[j].collision(self.phys_objects[i], ret[1][1], ret[2][1], ret[3][1])
 
             # While we're running through the physical objects, collide the beams too
             # ret from a beam collision is
-            #     [t, occlusion information]
+            #     [t, e, d, p, occlusion information]
             for b in self.beams:
                 ret = Beam.collide(b, self.phys_objects[i], dt)
 
                 if ret != -1:
                     self.phys_objects[i].collision(b, ret[1], ret[2], ret[3])
-                    b.collision(self.phys_objects[i], ret[1])
+                    b.collision(self.phys_objects[i], ret[4])
 
         for i in range(0, N):
             self.phys_objects[i].tick(self.get_accel(self.phys_objects[i]), dt)

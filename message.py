@@ -382,19 +382,19 @@ class CollisionMsg(Message):
         self.energy = Message.read_double(s)
 
         if s[0] == "PHYS":
-            self.beam_type = s[0]
+            self.collision_type = s[0]
         elif s[0] == "SCAN":
-            self.beam_type = s[0]
+            self.collision_type = s[0]
         elif s[0] == "WEAP":
-            self.beam_type = s[0]
+            self.collision_type = s[0]
         elif s[0] == "COMM":
-            self.beam_type = s[0]
+            self.collision_type = s[0]
             self.msg = ""
             del s[0]
             for line in s:
                 msg += line + "\n"
         else:
-            self.beam_type = None
+            self.collision_type = None
 
     @staticmethod
     def send(client, args):

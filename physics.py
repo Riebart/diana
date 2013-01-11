@@ -4,7 +4,7 @@ import sys
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import Message
-from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg
+from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg, CollisionMsg, ScanResultMsg
 from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 from message import BeamMsg
 
@@ -298,12 +298,15 @@ class PhysicsObject:
         
         if o1.dist2(o2) <= r:
             # ### TODO ### Relativistic kinetic energy
-            v = (v1 - v2).length2()
-            e1 = 0.5 * o2.mass * v
-            e2 = 0.5 * o1.mass * v
+            v = v2 - v1
+            vl = v.length2()
 
-            d1 = v2.unit()
-            d2 = v1.unit()
+            e1 = 0.5 * obj2.mass * vl
+            e2 = 0.5 * obj1.mass * vl
+
+            d1 = v.unit()
+            d2 = d1.clone()
+            d2.scale(-1)
 
             p1 = o2 - o1
             p2 = p1.clone()
@@ -424,15 +427,15 @@ class SmartPhysicsObject(PhysicsObject):
     # the other object came from d and hit me at p
     def collision(self, obj, energy, d, p):
         if isinstance(obj, PhysicsObject):
-            CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
+            CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
             self.resolve_phys_collision(energy, d, p)
         elif isinstance(obj, Beam):
             if obj.beam_type == "SCANRESULT":
                 ScanResultMsg.send(self.client, PhysicalPropertiesMsg.make_from_object(obj.scan_target))
             if obj.beam_type == "COMM":
-                CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
+                CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
             else:
-                CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
+                CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
 
 class Beam:
     def __init__(self, universe,
@@ -540,14 +543,15 @@ class Beam:
 
         t = (entering + leaving) / 2.0
 
-        pc = Vector3.combine([[1, ps], [t, v]]).dot(b.direction)
+        collision_point = Vector3.combine([[1, ps], [t, v]])
+        collision_dist = collision_point.dot(b.direction)
 
         # If we want collisions for as long as the bounding sphere is intersecting
         # the front, use:
         #
-        # if ((pc + obj.radius) >= b.distance_travelled) and ((pc - obj.radius) <= (b.distance_travelled + b.speed * dt)):
-        if pc >= b.distance_travelled and pc <= (b.distance_travelled + b.speed * dt):
-            return [t, None]
+        # if ((collision_dist + obj.radius) >= b.distance_travelled) and ((collision_dist - obj.radius) <= (b.distance_travelled + b.speed * dt)):
+        if collision_dist >= b.distance_travelled and collision_dist <= (b.distance_travelled + b.speed * dt):
+            return [t, b.energy, b.direction, collision_point, None]
         else:
             return -1
 
