@@ -227,6 +227,7 @@ class HelloMsg(Message):
 
 class PhysicalPropertiesMsg(Message):
     def __init__(self, s):
+        self.object_type = s[0]
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
@@ -236,12 +237,22 @@ class PhysicalPropertiesMsg(Message):
 
     @staticmethod
     def send(client, args):
-        msg = "PHYSPROPS\n"
-        for i in range(0,14):
+        msg = "PHYSPROPS\n%s" % args[0]
+
+        for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
 
         ret = Message.sendall(client, msg)
         return ret
+
+    @staticmethod
+    def make_from_object(obj):
+        return [ obj.object_type, obj.mass,
+                    obj.position.x, obj.position.y, obj.position.z,
+                    obj.velocity.x, obj.velocity.y, obj.velocity.z,
+                    obj.orientation.x, obj.orientation.y, obj.orientation.z,
+                    obj.thrust.x, obj.thrust.y, obj.thrust.z,
+                    obj.radius ]
 
 class VisualPropertiesMsg(Message):
     def __init__(self, s):
@@ -319,8 +330,6 @@ class VisualDataMsg(Message):
         return ret
 
 class BeamMsg(Message):
-    MsgTypes = { "SCAN": 0, "WEAP": 1, "COMM": 2 }
-    
     def __init__(self, s):
         self.origin = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
@@ -330,11 +339,11 @@ class BeamMsg(Message):
         self.energy = Message.read_double(s)
 
         if s[0] == "SCAN":
-            self.beam_type = BeamMsg.MsgTypes[s[0]]
+            self.beam_type = s[0]
         elif s[0] == "WEAP":
-            self.beam_type = BeamMsg.MsgTypes[s[0]]
+            self.beam_type = s[0]
         elif s[0] == "COMM":
-            self.beam_type = BeamMsg.MsgTypes[s[0]]
+            self.beam_type = s[0]
             self.msg = ""
             del s[0]
             for line in s:
@@ -365,6 +374,92 @@ class BeamMsg(Message):
         ret = Message.sendall(client, msg)
         return ret
 
+class CollisionMsg(Message):
+    def __init__(self, s):
+        self.position = Message.read_double3(s)
+        self.direction = Message.read_double3(s)
+        self.energy = Message.read_double(s)
+
+        if s[0] == "PHYS":
+            self.beam_type = s[0]
+        elif s[0] == "SCAN":
+            self.beam_type = s[0]
+        elif s[0] == "WEAP":
+            self.beam_type = s[0]
+        elif s[0] == "COMM":
+            self.beam_type = s[0]
+            self.msg = ""
+            del s[0]
+            for line in s:
+                msg += line + "\n"
+        else:
+            self.beam_type = None
+
+    @staticmethod
+    def send(client, args):
+        msg = "COLLISION\n"
+
+        for i in range(0,7):
+            msg += Message.prep_double(args[i]) + "\n"
+
+        msg += args[7] + "\n"
+
+        if args[7] == "PHYS":
+            pass
+        elif args[7] == "SCAN":
+            pass
+        elif args[7] == "WEAP":
+            pass
+        elif args[7] == "COMM":
+            for i in range(8, len(args)):
+                msg += args[i] + "\n"
+        else:
+            print "Unknown beam subtype \"%s\"." % args[7]
+            return 0
+
+        ret = Message.sendall(client, msg)
+        return ret
+
+class SpawnMsg(Message):
+    def __init__(self, s):
+        self.object_type = s[0]
+        self.mass = Message.read_double(s)
+        self.position = Message.read_double3(s)
+        self.velocity = Message.read_double3(s)
+        self.orientation = Message.read_double3(s)
+        self.thrust = Message.read_double3(s)
+        self.radius = Message.read_double(s)
+
+    @staticmethod
+    def send(client, args):
+        msg = "SPAWN\n%s" % args[0]
+
+        for i in range(1,15):
+            msg += Message.prep_double(args[i]) + "\n"
+
+        ret = Message.sendall(client, msg)
+        return ret
+
+class ScanResultMsg(Message):
+    def __init__(self, s):
+        self.object_type = s[0]
+        self.mass = Message.read_double(s)
+        self.position = Message.read_double3(s)
+        self.velocity = Message.read_double3(s)
+        self.orientation = Message.read_double3(s)
+        self.thrust = Message.read_double3(s)
+        self.radius = Message.read_double(s)
+
+    @staticmethod
+    def send(client, args):
+        msg = "SCANRESULT\n%s" % args[0]
+
+        for i in range(1,15):
+            msg += Message.prep_double(args[i]) + "\n"
+
+        ret = Message.sendall(client, msg)
+        return ret
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
@@ -372,4 +467,7 @@ MessageTypes = { "HELLO": HelloMsg,
                 "VISMETADATAENABLE": VisualMetaDataEnableMsg,
                 "VISMETADATA": VisualMetaDataMsg,
                 "VISDATA": VisualDataMsg,
-                "BEAM": BeamMsg }
+                "BEAM": BeamMsg,
+                "COLLISION": CollisionMsg,
+                "SPAWN": SpawnMsg,
+                "SCANRESULT": ScanResultMsg }
