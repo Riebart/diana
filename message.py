@@ -1,7 +1,7 @@
 #!/usr/bin/env pytho\n
 
 import sys
-from socket import timeout
+import socket
 
 class Message:
     def __init__(self, client):
@@ -16,10 +16,10 @@ class Message:
                 return msg_length
             else:
                 return None
-        except timeout as e:
+        except socket.timeout as e:
             raise e
-        except:
-            if client.fileno() == -1:
+        except socket.error, (errno, errmsg):
+            if client.fileno() == -1 or errno == 10054:
                 return None
                 
             print "There was an error getting message size header from client %d" % client.fileno()
@@ -68,22 +68,24 @@ class Message:
                 try:
                     cur_sent = client.send(msg[num_sent:])
                 except socket.error, (errno, errstr):
-                    if client.fileno() == -1:
+                    if client.fileno() == -1 or errno == 10504:
                         return num_sent
-                        
-                    print "There was an error sending message to client %d" % client.fileno()
-                    print "Error:", sys.exc_info()
-                    return num_sent
+                    else:
+                        print "There was an error sendall-ing message to client %d" % client.fileno()
+                        print "Error:", sys.exc_info()
+                        return num_sent
+
                 num_sent += cur_sent
 
             return num_sent
         else:
             try:
                 client.sendall(msg)
-            except:
-                if client.fileno() != -1:
-                    print "There was an error sending message to client %d" % client.fileno()
+            except socket.error, (errno, errmsg):
+                if client.fileno() != -1 and errno != 10054:
+                    print "There was an error sendall-ing message to client %d" % client.fileno()
                     print "Error:", sys.exc_info()
+
                 return 0
 
 
@@ -93,7 +95,6 @@ class Message:
         # First grab the message size
         msg_size = Message.get_message_size(client)
         if msg_size == None:
-            print "Error getting message length"
             return None
 
         msg = Message.big_read(client, msg_size).split("\n")
@@ -238,7 +239,7 @@ class PhysicalPropertiesMsg(Message):
 
     @staticmethod
     def send(client, args):
-        msg = "PHYSPROPS\n%s" % args[0]
+        msg = "PHYSPROPS\n%s\n" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"

@@ -9,6 +9,7 @@ from physics import Vector3
 import random
 import time
 import spaceobj
+import sys
 
 def testSimple():
     miss1 = spaceobj.Missile(osim)
@@ -58,20 +59,22 @@ def testShip():
 
     print "ship1 osimid is: %d" % ship1.osid
     print "ship1 unisim is: %d" % ship1.uniid
-        
+    sys.stdout.flush()
+
     ship2 = ship.Ship(osim)
     ship2.location = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
-    
+
     print "ship2 osimid is: %d" % ship2.osid
     print "ship2 unisim is: %d" % ship2.uniid
-    
+    sys.stdout.flush()
+
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_missile(direction, 50000.0)
-    
+
     print "miss1 osimid is: %d" % miss1.osid
-    print "miss1 unisim is: %d" % miss1.uniid    
-    
+    print "miss1 unisim is: %d" % miss1.uniid
+    sys.stdout.flush()
 
 def rand_vec(rand, rang):
     return Vector3((rand.random()*rang, rand.random()*rang, rand.random()*rang))

@@ -9,8 +9,8 @@ from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 from message import BeamMsg
 
 class Vector3:
-    def __init__(self, v, y=None, z=None):
-        if y==None:
+    def __init__(self, v, y = None, z = None):
+        if y == None:
             self.x = v[0]
             self.y = v[1]
             self.z = v[2]
@@ -167,23 +167,27 @@ class PhysicsObject:
             return 0
             
     def __init__(self, universe,
-                    position = [ 0.0, 0.0, 0 ],
-                    velocity = [ 0.0, 0.0, 0 ],
-                    orientation = [ 0.0, 0.0, 0.0 ],
-                    mass = 10.0,
-                    radius = 1.0,
-                    thrust = [0.0, 0.0, 0.0],
+                    position = None,
+                    velocity = None,
+                    orientation = None,
+                    mass = None,
+                    radius = None,
+                    thrust = None,
                     object_type = "Unknown"):
         self.phys_id = universe.get_id()
-        self.position = Vector3(position)
-        self.velocity = Vector3(velocity)
-        self.orientation = Vector3(orientation)
+        self.position = Vector3(position) if position else None
+        self.velocity = Vector3(velocity) if velocity else None
+        self.orientation = Vector3(orientation) if orientation else None
         self.mass = mass
         self.radius = radius
-        self.thrust = Vector3(thrust)
+        self.thrust = Vector3(thrust) if thrust else None
         self.object_type = object_type
         self.art_id = None
-        self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
+
+        if self.mass and self.radius:
+            self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
+        else:
+            self.emits_gravity = 0
 
     def tick(self, acc, dt):
         # ### TODO ### Relativistic mass
@@ -337,12 +341,12 @@ class PhysicsObject:
 
 class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client,
-                    position = [ 0.0, 0.0, 0 ],
-                    velocity = [ 0.0, 0.0, 0 ],
-                    orientation = [ 0.0, 0.0, 0.0 ],
-                    mass = 10.0,
-                    radius = 1.0,
-                    thrust = [0.0, 0.0, 0.0],
+                    position = None,
+                    velocity = None,
+                    orientation = None,
+                    mass = None,
+                    radius = None,
+                    thrust = None,
                     object_type = "Unknown"):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust, object_type)
         self.client = client
@@ -350,6 +354,7 @@ class SmartPhysicsObject(PhysicsObject):
         self.sim_id = None
         self.vis_data = 0
         self.vis_meta_data = 0
+        self.exists = 0
 
     def handle(self, client):
         msg = Message.get_message(client)
@@ -367,32 +372,38 @@ class SmartPhysicsObject(PhysicsObject):
             return
 
         if isinstance(msg, PhysicalPropertiesMsg):
-            if msg.object_type:
+            if msg.object_type != None:
                 self.object_type = msg.object_type
 
-            if msg.mass:
+            if msg.mass != None:
                 self.mass = msg.mass
 
-            if msg.position:
+            if msg.position != None:
                 self.position = Vector3(msg.position)
 
-            if msg.velocity:
+            if msg.velocity != None:
                 self.velocity = Vector3(msg.velocity)
 
-            if msg.orientation:
+            if msg.orientation != None:
                 self.orientation = Vector3(msg.orientation)
 
-            if msg.thrust:
+            if msg.thrust != None:
                 self.thrust = Vector3(msg.thrust)
 
-            if msg.radius:
+            if msg.radius != None:
                 self.radius = msg.radius
 
-            new_emits = PhysicsObject.is_big_enough(self.mass, self.radius)
-            diff = self.emits_gravity - new_emits
+            if self.mass != None and self.radius != None:
+                new_emits = PhysicsObject.is_big_enough(self.mass, self.radius)
+                diff = self.emits_gravity - new_emits
+                if diff != 0:
+                    self.universe.update_attractor(self)
 
-            if diff != 0:
-                self.universe.update_attractor(self)
+            if (self.exists == 0 and self.object_type != None and self.mass != None and
+                self.radius != None and self.position != None and 
+                self.velocity != None and self.orientation != None and self.thrust != None):
+                self.universe.add_object(self)
+                self.exists = 1
 
         elif isinstance(msg, VisualPropertiesMsg):
             if self.art_id == None:

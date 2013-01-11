@@ -163,6 +163,7 @@ class Universe:
         self.visdata_thread.start()
 
     def add_object(self, obj):
+        print "Adding object %d at %f" % (obj.phys_id, time.clock())
         self.phys_lock.acquire()
         if obj.emits_gravity:
             self.attractors.append(obj)
@@ -209,7 +210,6 @@ class Universe:
     def register_smarty(self, client):
         # Now we need to talk to the client.
         newsmarty = SmartPhysicsObject(self, client)
-        self.add_object(newsmarty)
         return newsmarty
 
     def register_for_vis_data(self, obj, yesno):
@@ -365,28 +365,28 @@ if __name__ == "__main__":
     r = 1000
     t = 100
 
-    #make 1000 random physics objects
-    for i in range(0, 250):
-        u = rand.random() * 2 * pi
-        v = rand.random() * 2 * pi
-        c = r + (rand.random() * 2 - 1) * t
-        a = rand.random() * t
+    ##make 1000 random physics objects
+    #for i in range(0, 250):
+        #u = rand.random() * 2 * pi
+        #v = rand.random() * 2 * pi
+        #c = r + (rand.random() * 2 - 1) * t
+        #a = rand.random() * t
 
-        obj = PhysicsObject(uni, velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
-        uni.add_object(obj)
+        #obj = PhysicsObject(uni, velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5], position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 75 + 25)
+        #uni.add_object(obj)
 
-    r = 10000000
-    t = 100000
+    #r = 10000000
+    #t = 100000
 
-    #make 100 random gravitation objects
-    for i in range(0, 25):
-        u = rand.random() * 2 * pi
-        v = rand.random() * 2 * pi
-        c = r + (rand.random() * 2 - 1) * t
-        a = rand.random() * t
+    ##make 100 random gravitation objects
+    #for i in range(0, 25):
+        #u = rand.random() * 2 * pi
+        #v = rand.random() * 2 * pi
+        #c = r + (rand.random() * 2 - 1) * t
+        #a = rand.random() * t
 
-        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 500000 + rand.random() * 2000000)
-        uni.add_object(obj)
+        #obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ], mass = rand.random() * 100000000 + 1e15, radius = 500000 + rand.random() * 2000000)
+        #uni.add_object(obj)
         
     print len(uni.phys_objects)
     print len(uni.attractors)
