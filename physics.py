@@ -385,7 +385,7 @@ class Beam:
     def __init__(self, universe,
                     origin, normals,
                     direction, velocity,
-                    energy):
+                    energy, beam_type):
         self.universe = universe
         self.origin = origin if isinstance(origin, Vector3) else Vector3(origin)
         self.front_position = self.origin.clone()
@@ -397,6 +397,7 @@ class Beam:
         self.direction = direction if isinstance(direction, Vector3) else Vector3(direction)
         self.velocity = velocity if isinstance(velocity, Vector3) else Vector3(velocity)
         self.energy = energy
+        self.beam_type = beam_type
         
         self.speed = self.velocity.length()
         self.distance_travelled = 0
@@ -530,10 +531,10 @@ class Beam:
         # to some basic trig. Here, cosine is along the direction, and sine
         # is along the right vector.
 
-        sh = sin(msg.spread_h)/2
-        ch = cos(msg.spread_h)/2
-        sv = sin(msg.spread_v)/2
-        cv = cos(msg.spread_v)/2
+        sh = sin(msg.spread_h / 2)
+        ch = cos(msg.spread_h / 2)
+        sv = sin(msg.spread_v / 2)
+        cv = cos(msg.spread_v / 2)
 
         # The vertical planes (those on the right and left boundaries of the beam)
         # are obtained by combining the direction and horizontal vector.
@@ -566,4 +567,5 @@ class Beam:
 
         # Now we have enough information to build our beam object.
 
-        return Beam(universe, Vector3(msg.origin), normals, direction, Vector3(msg.velocity), msg.energy)
+        return Beam(universe, Vector3(msg.origin), normals, direction, Vector3(msg.velocity), msg.energy, msg.beam_type)
+        
