@@ -178,7 +178,7 @@ class Universe:
         self.beams.append(beam)
         self.phys_lock.release()
 
-    def destroy_object(self, obj):
+    def remove_object(self, obj):
         self.phys_lock.acquire()
         if obj.emits_gravity:
             self.attractors.remove(obj)

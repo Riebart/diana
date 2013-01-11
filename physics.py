@@ -325,6 +325,7 @@ class PhysicsObject:
 
     def resolve_phys_collision(self, energy, direction, location):
         # ### TODO ### Angular velocity
+        # ### TODO ### I think I manufacture energy 
         pass
 
     def collision(self, obj, energy, d, p):
@@ -371,7 +372,12 @@ class SmartPhysicsObject(PhysicsObject):
         if self.sim_id == None:
             return
 
-        if isinstance(msg, PhysicalPropertiesMsg):
+        if isinstance(msg, GoodbyeMsg):
+            # ### TODO ### In any real language, we'll need to figure out who
+            # still is keeping track of this object if the universe isn't...
+            self.uni.remove_object(self)
+            
+        elif isinstance(msg, PhysicalPropertiesMsg):
             if msg.object_type != None:
                 self.object_type = msg.object_type
 
@@ -471,8 +477,6 @@ class Beam:
 
     @staticmethod
     def collide(b, obj, dt):
-        # ### TODO ### Properly handle forces here for the physical object
-
         # To detect a collition, we grab the normals from the beam, and translate
         # the object's position to 'beam-space' by subtracting the beam's origin
         # from the object's position.
