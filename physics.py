@@ -55,6 +55,10 @@ class Vector3:
         m = sqrt(x * x + y * y + z * z)
         return Vector3([x / m, y / m, z / m])
 
+    def unit(self):
+        l = self.length()
+        return Vector3([self.x / l, self.y / l, self.z / l])
+
     # In this case, self is the first vector in the cross product, because order
     # matters here
     def cross(self, v):
@@ -168,7 +172,8 @@ class PhysicsObject:
                     orientation = [ 0.0, 0.0, 0.0 ],
                     mass = 10.0,
                     radius = 1.0,
-                    thrust = [0.0, 0.0, 0.0]):
+                    thrust = [0.0, 0.0, 0.0],
+                    object_type = "Unknown"):
         self.phys_id = universe.get_id()
         self.position = Vector3(position)
         self.velocity = Vector3(velocity)
@@ -176,23 +181,24 @@ class PhysicsObject:
         self.mass = mass
         self.radius = radius
         self.thrust = Vector3(thrust)
+        self.object_type = object_type
         self.art_id = None
         self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
 
     def tick(self, acc, dt):
+        # ### TODO ### Relativistic mass
+
         # Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
         self.position.x += self.velocity.x * dt + 0.5 * dt * dt * acc.x
         self.position.y += self.velocity.y * dt + 0.5 * dt * dt * acc.y
         self.position.z += self.velocity.z * dt + 0.5 * dt * dt * acc.z
-        
+
         self.velocity.x += dt * acc.x
         self.velocity.y += dt * acc.y
         self.velocity.z += dt * acc.z
 
     @staticmethod
     def collide(obj1, obj2, dt):
-        # ### TODO ### Properly handle forces here.
-
         # Currently we treat dt and forces as small enough that they can be neglected,
         # and assume that they won't change teh trajectory appreciably over the course
         # of dt
@@ -239,7 +245,7 @@ class PhysicsObject:
         ## t = ((o1.v1-o2.v1) (v2.v2)-(o1.v2-o2.v2)(v1.v2))
         ##     --------------------------------------------
         ##              ((v1.v2)^2-(v1.v1) (v2.v2))
-        
+
         ## v = (o1-o2).(c{-x z,-y z,x^2+y^2}+b{-x y,x^2+z^2,-y z}+a{y^2+z^2,-x y,-x z})
         ##     ------------------------------------------------------------------------
         ##                          (v2 x v1).(v2 x v1)
@@ -247,8 +253,7 @@ class PhysicsObject:
         ## I'm going to call the right-hand operand of the dot product in v's numerator 's'
 
         ## Some values we can precompute to make things faster (in order in the array):
-        ## v2.v2    v1.v2    v2 x v1    xx, xy, xz, yy, yz, zz
-        
+
         ## All together, they save a total of seven additions and eighteen multiplications,
 
         # So, here we go!
@@ -292,12 +297,40 @@ class PhysicsObject:
         r *= r
         
         if o1.dist2(o2) <= r:
-            return t
+            # ### TODO ### Relativistic kinetic energy
+            v = (o1.velocity - o2.velocity).length2()
+            e1 = 0.5 * o2.mass * v
+            e2 = 0.5 * o1.mass * v
+
+            d1 = o2.velocity.unit()
+            d2 = o1.velocity.unit()
+
+            p1 = o2 - o1
+            p2 = p1.clone()
+            p2.scale(-1)
+
+            return [t, [e1, e2], [d1, d2], [p1, p2]]
         else:
             return -1
 
-    def collision(self, obj, dt):
+    def resolve_damage(self, energy):
         pass
+
+    def resolve_phys_collision(self, energy, direction, location):
+        # ### TODO ### Angular velocity
+        pass
+
+    def collision(self, obj, energy, d, p):
+        if isinstance(obj, PhysicsObject):
+            self.resolve_phys_collision(energy, d, p)
+            self.resolve_damage(energy)
+        elif isinstance(obj, Beam):
+            if obj.beam_type == "WEAP":
+                self.resolve_damage(energy)
+            elif obj.beam_type == "SCAN":
+                result_beam = obj.make_return_beam(energy, p)
+                result_beam.beam_type = "SCANRESULT"
+                result_beam.scan_target = self
 
 class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client,
@@ -306,8 +339,9 @@ class SmartPhysicsObject(PhysicsObject):
                     orientation = [ 0.0, 0.0, 0.0 ],
                     mass = 10.0,
                     radius = 1.0,
-                    thrust = [0.0, 0.0, 0.0]):
-        PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust)
+                    thrust = [0.0, 0.0, 0.0],
+                    object_type = "Unknown"):
+        PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust, object_type)
         self.client = client
         self.universe = universe
         self.sim_id = None
@@ -330,6 +364,9 @@ class SmartPhysicsObject(PhysicsObject):
             return
 
         if isinstance(msg, PhysicalPropertiesMsg):
+            if msg.object_type:
+                self.object_type = msg.object_type
+
             if msg.mass:
                 self.mass = msg.mass
 
@@ -354,8 +391,6 @@ class SmartPhysicsObject(PhysicsObject):
             if diff != 0:
                 self.universe.update_attractor(self)
 
-            #PhysicalPropertiesMsg.send(f, [self.mass, self.position.x, self.position.y, self.position.z, self.velocity.x, self.velocity.y, self.velocity.z, self.orientation.x, self.orientation.y, self.orientation.z, self.thrust.x, self.thrust.y, self.thrust.z, self.radius ])
-
         elif isinstance(msg, VisualPropertiesMsg):
             if self.art_id == None:
                 self.art_id = self.universe.curator.register_art(msg.mesh, msg.texture)
@@ -379,7 +414,25 @@ class SmartPhysicsObject(PhysicsObject):
 
         elif isinstance(msg, BeamMsg):
             beam = Beam.build(msg, self.universe)
+
+            if msg.beam_type == "COMM":
+                beam.message = msg.msg
+
             self.universe.add_beam(beam)
+
+    # I was in a collision with the other object, with a certain amount of energy,
+    # the other object came from d and hit me at p
+    def collision(self, obj, energy, d, p):
+        if isinstance(obj, PhysicsObject):
+            CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
+            self.resolve_phys_collision(energy, d, p)
+        elif isinstance(obj, Beam):
+            if obj.beam_type == "SCANRESULT":
+                ScanResultMsg.send(self.client, PhysicalPropertiesMsg.make_from_object(obj.scan_target))
+            if obj.beam_type == "COMM":
+                CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
+            else:
+                CollisionMessage.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
 
 class Beam:
     def __init__(self, universe,
@@ -441,17 +494,12 @@ class Beam:
         # for these considerations. If the beam leaves before it gets in, bail.
         # No hit.
 
-        # ### TODO ### I'm not sure if this hunch is right, but I think it is a
+        # ### NOTE ### I'm not sure if this hunch is right, but I think it is a
         # close enough approximation. The magic of linear situations might actually
         # make me right...
         # If there are still candidate values of t, then just take the middle of
-        # the interval as the 'collision' time.
-
-        # Compute the shadow area by converting the collision-time object's position
-        # into beam-coordinates (dir, right, up)
-
-        # computing the amount of suface area is another topic for another day!
-        # ### TODO ### Collision surface area
+        # the interval as the 'collision' time that maximizes the energy transfer.
+        # This only might work for spheres...
 
         ps = obj.position.clone()
         ps.sub(b.origin)
@@ -499,11 +547,27 @@ class Beam:
         #
         # if ((pc + obj.radius) >= b.distance_travelled) and ((pc - obj.radius) <= (b.distance_travelled + b.speed * dt)):
         if pc >= b.distance_travelled and pc <= (b.distance_travelled + b.speed * dt):
-            return t
+            return [t, None]
         else:
             return -1
 
-    def collision(self, obj, dt):
+    def make_return_beam(self, energy, origin):
+        direction = self.direction.clone()
+        direction.scale(-1)
+
+        velocity = self.velocity.clone()
+        velocity.scale(-1)
+
+        normals = []
+        for n in self.normals:
+            tmp = n.clone()
+            tmp.scale(-1)
+            normals.append(tmp)
+
+        return Beam(self.universe, origin, normals, direction, velocity, energy, None)
+
+    def collision(self, obj, position, energy):
+        # ### TODO ### Beam occlusion
         pass
 
     def tick(self, dt):

@@ -168,7 +168,6 @@ class Universe:
             self.attractors.append(obj)
 
         if isinstance(obj, SmartPhysicsObject):
-            print "Object added at %f - %f" % (self.total_time, time.clock())
             self.smarties.append(obj)
 
         self.phys_objects.append(obj)
@@ -285,18 +284,27 @@ class Universe:
         # Collide all of the physical objects together in an N-choose-2 fashion
         for i in range(0, N):
             for j in range(i + 1, N):
+                # ret from a physical collision is
+                #     [t, [e1, e2], [d1, d2], [p1, p2]]
+                # t is in [0,1] and indicates when in the interval teh collision happened
+                # energy is obvious
+                # d1 is the direction obj2 was travelling relative to obj1 when they collided
+                # p1 is a vector from obj1's position to the collision spot
                 ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
                 
                 if ret != -1:
-                    print "Phys collision %f - %f between %d, velocity (%f,%f,%f) and %d, velocity (%f,%f,%f)" % (self.total_time, time.clock(), self.phys_objects[i].phys_id, self.phys_objects[i].velocity[0], self.phys_objects[i].velocity[1], self.phys_objects[i].velocity[2], self.phys_objects[j].phys_id, self.phys_objects[j].velocity[0], self.phys_objects[i].velocity[1], self.phys_objects[j].velocity[2])
-                    pass
+                    self.phys_objects[i].collision([self.phys_objects[j], ret[1][0], ret[2][0], ret[3][0]])
+                    self.phys_objects[j].collision([self.phys_objects[i], ret[1][1], ret[2][1], ret[3][1]])
 
             # While we're running through the physical objects, collide the beams too
+            # ret from a beam collision is
+            #     [t, occlusion information]
             for b in self.beams:
                 ret = Beam.collide(b, self.phys_objects[i], dt)
 
                 if ret != -1:
-                    pass
+                    self.phys_objects[i].collision(b, ret[1], ret[2], ret[3])
+                    b.collision(self.phys_objects[i], ret[1])
 
         for i in range(0, N):
             self.phys_objects[i].tick(self.get_accel(self.phys_objects[i]), dt)
@@ -325,11 +333,11 @@ class Universe:
         # ### PARAMETER ###  MAXIMUM FRAME TIME
         max_frametime = 0.01
         
-        self.total_time = 0;
+        total_time = 0;
         dt = 0.01
         i = 0
 
-        while self.simulating == 1 and (t == 0 or self.total_time < r * t):
+        while self.simulating == 1 and (t == 0 or total_time < r * t):
             dt = hold_up(self.tick, r * dt, min_frametime)
             self.real_frametime = dt
 
@@ -337,10 +345,10 @@ class Universe:
             # This has the effect of slowing down time, but whatever.
             dt = min(max_frametime, dt)
             self.frametime = dt
-            self.total_time += r * dt
+            total_time += r * dt
             i += 1
 
-        return [self.total_time, i]
+        return [total_time, i]
 
     def get_frametime(self):
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
@@ -358,7 +366,7 @@ if __name__ == "__main__":
     t = 100
 
     #make 1000 random physics objects
-    for i in range(0, 1000):
+    for i in range(0, 250):
         u = rand.random() * 2 * pi
         v = rand.random() * 2 * pi
         c = r + (rand.random() * 2 - 1) * t
@@ -387,10 +395,6 @@ if __name__ == "__main__":
     time.sleep(1)
     print uni.get_frametime(), "seconds per tick"
     print "Press Enter to continue..."
-    #while 1:
-        #print a.position.dist(b.position)
-        #time.sleep(1)
-        
     sys.stdout.flush()
     raw_input()
     print "Stopping simulation"
