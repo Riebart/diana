@@ -8,6 +8,7 @@ import time
 
 class SpaceObject:
     def __init__(self, osim, osid=0, uniid=0):
+        self.type = "Dummy SpaceObject (Error!)"
         self.osim = osim
         self.osid=osid      #the object sim id
         self.uniid=uniid    #the universe sim id
@@ -25,6 +26,7 @@ class SmartObject(SpaceObject, threading.Thread):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
         threading.Thread.__init__(self)
+        self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
         pass
     
