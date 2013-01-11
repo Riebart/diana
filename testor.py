@@ -95,13 +95,8 @@ def testBeam():
     print "ship2 unisim is: %d" % ship2.uniid
     sys.stdout.flush()
 
-    vel = Vector3((500.0, 0.0,0.0))
-    laser = spaceobj.WeaponBeam(osim)
-    laser.velocity=vel
-    laser.h_focus = math.pi/6
-    laser.v_focus = math.pi/6
-    laser.origin = Vector3(100.0,0.0,0.0)
-    ship1.fire_beam(laser)
+    dir = Vector3(1.0,0.0,0.0)
+    ship1.fire_laser(dir)
     
     sys.stdout.flush()
     

@@ -2,6 +2,7 @@
 
 from physics import Vector3
 from spaceobj import *
+import math
 
 class Ship(SmartObject):
     def __init__(self, osim, osid=0, uniid=0):
@@ -12,21 +13,36 @@ class Ship(SmartObject):
         self.cur_missiles = self.max_missiles
         self.radius = 20
         
-    def do_scan():
+    def do_scan(self):
         pass
     
     
-    def fire_laser():
-        #laser = WeaponBeam()
-        pass
+    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100):
+        #make sure that direction is a unit vector
+        direction = direction.ray(Vector3(0.0,0.0,0.0))
+        direction.scale(-1.0)
+        
+        laser = WeaponBeam(self.osim)
+        vel = direction.clone()
+        #beams will currently move at 50km/s
+        vel.scale(50000.0)
+        laser.velocity=vel
+        
+        laser.h_focus = h_focus
+        laser.v_focus = v_focus
+        laser.power = power
+        
+        direction.scale(self.radius*1.1)
+        laser.origin = self.location + direction
+        
+        self.fire_beam(laser)
     
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
         if (self.cur_missiles > 0):
             missile = Missile(self.osim)
-            
-            #TODO: set the initial location of the missile some small distance of the ship,
-            #to avoid collisions. Distance must be in the direction the missile wants to go
+
+            #set the initial position of the missile some small distance outside the ship
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
             tmp.scale((self.radius + missile.radius) * -1.1)
             missile.location = self.location + tmp
