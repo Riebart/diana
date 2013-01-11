@@ -298,12 +298,12 @@ class PhysicsObject:
         
         if o1.dist2(o2) <= r:
             # ### TODO ### Relativistic kinetic energy
-            v = (o1.velocity - o2.velocity).length2()
+            v = (v1 - v2).length2()
             e1 = 0.5 * o2.mass * v
             e2 = 0.5 * o1.mass * v
 
-            d1 = o2.velocity.unit()
-            d2 = o1.velocity.unit()
+            d1 = v2.unit()
+            d2 = v1.unit()
 
             p1 = o2 - o1
             p2 = p1.clone()
