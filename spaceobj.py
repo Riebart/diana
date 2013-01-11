@@ -2,6 +2,7 @@ import threading
 import message
 from physics import Vector3
 import socket
+from math import pi
 
 import time
 
@@ -15,6 +16,7 @@ class SpaceObject:
         self.velocity = Vector3((0.0,0.0,0.0))
         self.thrust = Vector3((0.0,0.0,0.0))
         self.orient = Vector3((0.0,0.0,0.0))
+        self.up = Vector3((0.0,0.0,0.0))
         self.radius = 1.0
         pass
 
@@ -26,6 +28,15 @@ class SmartObject(SpaceObject, threading.Thread):
         self.sock = socket.socket()
         pass
     
+    
+    def make_explosion(self, location, power):
+        message.Beam.send(self.sock, [location[0], location[1], location[2],
+                299792458.0, 0.0, 0.0,
+                0.0, 0.0, 0.0,
+                2*pi,
+                2*pi,
+                power,
+                "WEAP" ])  
     
     def messageHandler(self):
         
