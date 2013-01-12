@@ -155,6 +155,7 @@ class Universe:
         self.phys_objects = []
         self.beams = []
         self.smarties = dict() # all 'smart' objects that can interact with the server
+        self.expired = []
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
@@ -321,7 +322,20 @@ class Universe:
 
         for b in self.beams:
             b.tick(dt)
-                
+
+        # Handle all of the expired items. This is asteroids that got destroyed,
+        # Beams that have gone too far, and Smarties that disconnected.
+        for o in self.expired:
+            if isinstance(o, Beam):
+                self.beams.remove(o)
+            elif isinstance(o, PhysicsObject):
+                self.phys_objects.remove(o)
+                if isinstance(o, SmartPhysicsObject):
+                    print len(self.smarties)
+                    del self.smarties[o.phys_id]
+
+        self.expired = []
+            
         self.phys_lock.release()
 
     def start_sim(self):

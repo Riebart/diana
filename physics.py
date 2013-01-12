@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import socket
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import Message
@@ -188,6 +189,7 @@ class PhysicsObject:
         self.thrust = Vector3(thrust) if thrust else None
         self.object_type = object_type
         self.art_id = None
+        self.health = self.mass * 1000000 if self.mass != None else None
 
         if self.mass and self.radius:
             self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
@@ -293,7 +295,18 @@ class PhysicsObject:
             return -1
 
     def resolve_damage(self, energy):
-        pass
+        # We'll take damage if we absorb an impact whose energy is above ten percent
+        # of our current health, and only by the energy that is above that threshold
+
+        if self.health == None:
+            return
+
+        t = 0.1 * self.health
+        if energy > t:
+            self.health -= (energy - t)
+        
+        if self.health <= 0:
+            self.universe.expired.append(self)
 
     def resolve_phys_collision(self, energy, direction, location):
         # ### TODO ### Angular velocity, which reqires location.
@@ -352,7 +365,8 @@ class SmartPhysicsObject(PhysicsObject):
         if isinstance(msg, GoodbyeMsg):
             # ### TODO ### In any real language, we'll need to figure out who
             # still is keeping track of this object if the universe isn't...
-            self.universe.remove_object(self)
+            self.universe.expired.append(self)
+            self.client.shutdown(socket.SHUT_RDWR)
             self.client.close()
             
         elif isinstance(msg, PhysicalPropertiesMsg):
@@ -433,7 +447,7 @@ class SmartPhysicsObject(PhysicsObject):
                 CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
 
 class Beam:
-    solid_angle_factor = 2 / (3 * pi)
+    solid_angle_factor = 2 / pi
     
     def __init__(self, universe,
                     origin, direction,
@@ -447,12 +461,15 @@ class Beam:
         self.right = right if isinstance(right, Vector3) else Vector3(right)
         self.velocity = velocity if isinstance(velocity, Vector3) else Vector3(velocity)
         self.cosines = cosines # Horizontal, then vertical
-        self.area_factor = area_factor # Multiply by distance_travelled^3, and that is the area of the wave_front
+        self.area_factor = area_factor # Multiply by distance_travelled^2, and that is the area of the wave_front
         self.energy = energy
         self.beam_type = beam_type
 
         self.speed = self.velocity.length()
         self.distance_travelled = 0
+
+        # We'll use a threshold energy coming back as 10^-10, or a tenth of a nanoJoule
+        self.max_distance = sqrt(self.energy / (self.area_factor * 10E1))
 
     @staticmethod
     def collide(b, obj, dt):
@@ -519,7 +536,7 @@ class Beam:
         #
         # if ((collision_dist + obj.radius) >= b.distance_travelled) and ((collision_dist - obj.radius) <= (b.distance_travelled + b.speed * dt)):
         if collision_dist >= b.distance_travelled and collision_dist <= (b.distance_travelled + b.speed * dt):
-            wave_front_area = b.area_factor * collision_dist * collision_dist * collision_dist
+            wave_front_area = b.area_factor * collision_dist * collision_dist
             object_surface = pi * obj.radius * obj.radius
 
             energy_factor = 1 if (wave_front_area < object_surface) else (object_surface / wave_front_area)
@@ -530,11 +547,9 @@ class Beam:
             return -1
 
     def make_return_beam(self, energy, origin):
-        direction = self.direction.clone()
-        direction.scale(-1)
+        direction = (self.origin - origin).unit()
 
-        velocity = self.velocity.clone()
-        velocity.scale(-1)
+        velocity = Vector3.combine([[self.speed, direction]])
 
         right = self.right.clone()
         right.scale(-1)
@@ -548,6 +563,9 @@ class Beam:
     def tick(self, dt):
         self.distance_travelled += self.speed * dt
         self.front_position.add(self.velocity, dt)
+
+        if self.distance_travelled > self.max_distance:
+            self.universe.expired.append(self)
 
     @staticmethod
     def build(msg, universe):
