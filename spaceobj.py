@@ -55,6 +55,9 @@ class SmartObject(SpaceObject, threading.Thread):
         
         direction.scale(self.radius*1.1)
         beam.origin = self.location + direction
+        
+        beam.osid = self.osid
+        beam.uniid = self.uniid
 
     
     def messageHandler(self):
@@ -117,7 +120,7 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_thrust(thrust[0], thrust[1], thrust[2])
         self.thrust = Vector3(x,y,z)
-        return message.PhysicalPropertiesMsg.send(self.sock, ( 
+        return message.PhysicalPropertiesMsg.send(self.sock, self.uniid, self.osid( 
             "",
             "",
             "", "", "",
@@ -132,7 +135,7 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
         self.orient = Vector3(x,y,z)
-        return message.PhysicalPropertiesMsg.send(self.sock, ( 
+        return message.PhysicalPropertiesMsg.send(self.sock, self.uniid, self.osid, ( 
             "",
             "",
             "", "", "",
@@ -200,7 +203,7 @@ class Beam(SpaceObject):
                 
          
     def send_it(self, sock):
-        message.Beam.send(sock, self.build_common())   
+        message.Beam.send(sock, self.uniid, self.osid, self.build_common())   
         
         
 class CommBeam(Beam):
@@ -211,7 +214,7 @@ class CommBeam(Beam):
     def send_it(self, sock):
         ar = self.build_common()
         ar.append(self.message)
-        message.BeamMsg.send(sock, ar)
+        message.BeamMsg.send(sock, ar, self.uniid, self.osid, ar)
         
         
 class WeaponBeam(Beam):
@@ -222,7 +225,7 @@ class WeaponBeam(Beam):
     def send_it(self, sock):
         ar = self.build_common()
         ar.append(self.subtype)
-        message.BeamMsg.send(sock, ar)
+        message.BeamMsg.send(sock, self.uniid, self.osid, ar)
         
 class ScanBeam(Beam):
     def __init__(self, osim, osid=0, uniid=0, type="SCAN", power=0.0, velocity=None, origin=None, up=None, h_focus=0.0, v_focus=0.0):
