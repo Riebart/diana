@@ -41,6 +41,23 @@ class SmartObject(SpaceObject, threading.Thread):
                 power,
                 "WEAP" ])  
     
+    def init_beam(self, beam, power, speed, direction, h_focus = pi/6, v_focus = pi/6):
+        direction = direction.ray(Vector3(0.0,0.0,0.0))
+        direction.scale(-1.0)
+        
+        vel = direction.clone()
+        #beams will currently move at 50km/s
+        vel.scale(speed)
+        beam.velocity=vel
+        
+        beam.h_focus = h_focus
+        beam.v_focus = v_focus
+        beam.power = power
+        
+        direction.scale(self.radius*1.1)
+        beam.origin = self.location + direction
+
+    
     def messageHandler(self):
         
         try:
@@ -66,6 +83,9 @@ class SmartObject(SpaceObject, threading.Thread):
     def handle_scan(self, mess):
         pass
     
+    def handle_scanresult(self, mess):
+        pass
+    
     def handle_collision(self, collision):
         if collision.collision_type == "PHYS":
             #hit by a physical object, take damage
@@ -81,6 +101,8 @@ class SmartObject(SpaceObject, threading.Thread):
         elif collision.collision_type == "SCAN":
             #hit by a scan beam
             self.handle_scan(collision)
+        elif collision.collision_type == "SCANRESULT":
+            self.handle_scanresult(collision)
         pass
     
     def take_damage(self, amount):
@@ -95,6 +117,7 @@ class SmartObject(SpaceObject, threading.Thread):
     def set_thrust(self, x, y=None, z=None):
         if (y==None):
             return self.set_thrust(thrust[0], thrust[1], thrust[2])
+        self.thrust = Vector3(x,y,z)
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
             "",
             "",
@@ -109,6 +132,7 @@ class SmartObject(SpaceObject, threading.Thread):
     def set_orientation(self, x, y=None, z=None):
         if (y==None):
             return self.set_orientation(osid, orient[0], orient[1], orient[2])
+        self.orient = Vector3(x,y,z)
         return message.PhysicalPropertiesMsg.send(self.sock, ( 
             "",
             "",
@@ -133,14 +157,17 @@ class SmartObject(SpaceObject, threading.Thread):
             if isinstance(mess, message.CollisionMsg):
                 self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
-                print mess
+                print str(mess)
+             elif isinstance(mess, message.ScanResultMsg):
+                self.handle_scanresult(mess)
                 
             else:
-                print mess
+                print str(mess)
         
 
 
-
+    
+    
 
 
 class Beam(SpaceObject):
@@ -203,7 +230,7 @@ class ScanBeam(Beam):
         Beam.__init__(self, osim, osid, uniid, type, power, velocity, origin, up, h_focus, v_focus)
             
 
-#a missile, for example
+#a dumbfire missile, for example
 class Missile(SmartObject):
     def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=0.0):
         SmartObject.__init__(self, osim, osid, uniid)
@@ -211,15 +238,8 @@ class Missile(SmartObject):
         self.payload = payload
         self.radius = 1.0
         self.mass = 100.0
-        self.tout_val = 10
         #self.sock.settimeout(self.tout_val)
 
-    #do a scan, for targetting purposes. Scan is a bad example, as we haven't decided yet
-    #how we want to implement them
-    def do_scan(self):
-        print str(self) + " Performing scan!"
-        pass
-    
     def handle_phys(self, mess):
         self.detonate()
 
@@ -231,11 +251,47 @@ class Missile(SmartObject):
         while not self.done:
             
             val = self.messageHandler()
+
+            if isinstance(val, message.CollisionMsg):
+                self.handle_collision(val)
+
+
+class HomingMissile1(Missile):
+    def __init__(self, osim, osid=0, uniid=0, payload=0.0, direction):
+        Missile.__init__(self, osim, osid, uniid, "HomingMissile", payload)
+        self.direction = direction
+        self.tout_val = 0.5
+        self.sock.settimeout(self.tout_val)
+        self.fuse = 20.0    #distance in meters to explode from target
+
+    #so this is wrong. Only works if there is a single target 'in front of' the missile
+    def handle_scanresult(self, mess):
+        enemy_pos = Vector3(mess.position)
+        distance = self.location.distance(enemy_pos)
+        if distance < fuse:
+            self.detonate()
+        else:
+            new_dir = self.location.ray(enemy_pos)
+            new_dir.scale(self.thrust.length())
+            self.set_thrust(new_dir)
+    
+    def do_scan(self, mess):
+        scan = ScanBeam(self.osim)
+        self.init_beam(scan, 100.0, 50000.0, self.velocity)
+        scan.send_it(self.sock)
+
+    def run(self):
+        while not self.done:
+            
+            val = self.messageHandler()
             
             #nothing happened, do a scan
             if (val == None):
                 self.do_scan()
-            #time.sleep(500)
             elif isinstance(val, message.CollisionMsg):
                 self.handle_collision(val)
+            elif isinstance(val, message.ScanResultMsg):
+                self.handle_scanresult(val)
+
+
 
