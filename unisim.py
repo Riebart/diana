@@ -5,7 +5,7 @@ import time
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
-from message import Message, HelloMsg, VisualDataMsg, VisualMetaDataMsg
+from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualMetaDataMsg
 
 VERSION = 0
 
@@ -144,6 +144,10 @@ class Universe:
         #print msg
 
         # And now, we branch out according to the message.
+        if isinstance(msg, SpawnMsg):
+            newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
+                                    msg.mass, msg.radius, msg.thrust, msg.object_type)
+            self.add_object(newobj)
         if isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
             newsmarty.handle(msg)
@@ -151,6 +155,9 @@ class Universe:
             self.smarties[phys_id].handle(msg)
 
     def __init__(self):
+        # ### TODO ### Fix locking around adding objects. Technically, things are either
+        # doing weird unlocked operations, or are blocking for a physics tick, potentially
+        # stalling a TCP connection while blocked. Not cool bro.
         self.attractors = []
         self.phys_objects = []
         self.beams = []
