@@ -296,9 +296,16 @@ class PhysicsObject:
         pass
 
     def resolve_phys_collision(self, energy, direction, location):
-        # ### TODO ### Angular velocity
-        # ### TODO ### I think I manufacture energy 
-        pass
+        # ### TODO ### Angular velocity, which reqires location.
+        # ### TODO ### I think I manufacture energy
+
+        if self.mass == 0:
+            return
+
+        speed = sqrt(2 * energy / self.mass)
+        direction.scale(speed)
+
+        self.velocity.add(direction)
 
     def collision(self, obj, energy, d, p):
         if isinstance(obj, PhysicsObject):
