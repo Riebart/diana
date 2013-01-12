@@ -476,6 +476,7 @@ class ScanResultMsg(Message):
         self.orientation = Message.read_double3(s)
         self.thrust = Message.read_double3(s)
         self.radius = Message.read_double(s)
+        self.extra_parms = s
 
     @staticmethod
     def send(client, phys_id, osim_id, args):
@@ -483,9 +484,40 @@ class ScanResultMsg(Message):
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
+        
+        if (len(args) > 15):
+            msg += str(args[15])
 
         ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
+
+class ScanQueryMsg(Message):
+    def __init__(self, s):
+        self.scan_id = Message.read_int(s)
+        self.scan_str = Message.read_double(s)
+        self.scan_dir = Message.read_double3(s)
+    
+    @staticmethod
+    def send(client, phys_id, osim_id, args):
+        msg = "SCANQUERY\n%d\n" % args[0]
+        for i in range (1,5):
+            msg += Message.prep_double(args[i]) + "\n"
+            
+        ret = Message.sendall(client, phys_id, osim_id, msg)
+
+class ScanResponseMsg(Message):
+    def __init__(self, s):
+        self.scan_id = Message.read_int(s)
+        self.parms = s
+    
+    @staticmethod
+    def send(client, phys_id, osim_id, args):
+        msg = "SCANRESP\n%d\n" % args[0]
+        
+        for i in args[1:]:
+            msg += str(i)
+            
+        ret = Message.sendall(client, phys_id, osim_id, msg)
 
 class GoodbyeMsg(Message):
     def __init__(self, s):
@@ -509,4 +541,6 @@ MessageTypes = { "HELLO": HelloMsg,
                 "COLLISION": CollisionMsg,
                 "SPAWN": SpawnMsg,
                 "SCANRESULT": ScanResultMsg,
+                "SCANQUERY": ScanQueryMsg,
+                "SCANRESP": ScanResponseMsg,
                 "GOODBYE": GoodbyeMsg }
