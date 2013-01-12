@@ -16,11 +16,13 @@ class Ship(SmartObject):
     def do_scan(self):
         pass
     
-    
+    #def handle_phys(self, mess):
+        #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
+        #pass
+        
     def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100):
         #make sure that direction is a unit vector
-        direction = direction.ray(Vector3(0.0,0.0,0.0))
-        direction.scale(-1.0)
+        direction = direction.unit()
         
         laser = WeaponBeam(self.osim)
         vel = direction.clone()

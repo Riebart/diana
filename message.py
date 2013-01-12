@@ -492,8 +492,8 @@ class GoodbyeMsg(Message):
         self.endpoint_id = Message.read_int(s)
 
     @staticmethod
-    def send(client, phys_id, osim_id, args):
-        msg = "GOODBYE\n%d\n" %args
+    def send(client, phys_id, osim_id):
+        msg = "GOODBYE\n"
         
         ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret

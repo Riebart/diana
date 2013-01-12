@@ -33,7 +33,8 @@ class SmartObject(SpaceObject, threading.Thread):
     
     
     def make_explosion(self, location, power):
-        message.BeamMsg.send(self.sock, [location[0], location[1], location[2],
+        message.BeamMsg.send(self.sock, self.uniid, self.osid, [
+                location[0], location[1], location[2],
                 299792458.0, 0.0, 0.0,
                 0.0, 0.0, 0.0,
                 2*pi,
@@ -147,14 +148,14 @@ class SmartObject(SpaceObject, threading.Thread):
         pass    
     
     def die(self):
-        message.GoodbyeMsg.send(self.sock, self.uniid)
+        message.GoodbyeMsg.send(self.sock, self.uniid, self.osid)
         self.done = True
         self.sock.close()
     
     def run(self):
         #TODO: properly parse and branch wrt message recieved
         while not self.done:
-            mess = self.messageHandler()
+            mess = self.messageHandler()[0]
             
             if isinstance(mess, message.CollisionMsg):
                 self.handle_collision(mess)
@@ -252,7 +253,7 @@ class Missile(SmartObject):
     def run(self):
         while not self.done:
             
-            val = self.messageHandler()
+            val = self.messageHandler()[0]
 
             if isinstance(val, message.CollisionMsg):
                 self.handle_collision(val)
@@ -285,7 +286,7 @@ class HomingMissile1(Missile):
     def run(self):
         while not self.done:
             
-            val = self.messageHandler()
+            val = self.messageHandler()[0]
             
             #nothing happened, do a scan
             if (val == None):
