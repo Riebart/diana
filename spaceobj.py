@@ -108,6 +108,9 @@ class SmartObject(SpaceObject, threading.Thread):
             self.handle_scanresult(collision)
         pass
     
+    def handle_query(self, mess):
+        pass
+    
     def take_damage(self, amount):
         pass
     
@@ -163,6 +166,8 @@ class SmartObject(SpaceObject, threading.Thread):
                 print str(mess)
             elif isinstance(mess, message.ScanResultMsg):
                 self.handle_scanresult(mess)
+            elif isinstance(mess, message.ScanQuery):
+                self.handle_query(mess)
                 
             else:
                 print str(mess)
