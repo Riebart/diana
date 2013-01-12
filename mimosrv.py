@@ -162,6 +162,11 @@ class MIMOServer:
         print "Hanging up %d" % client.fileno()
         if client.fileno() == -1:
             # Detect an already hung-up client
+            if client in self.inputs:
+                self.inputs.remove(client)
+
+            if client in self.threadmap:
+                del self.threadmap[client]
             return
 
         self.threadmap[client].stop()

@@ -141,6 +141,8 @@ class Universe:
         # ### TODO ### Add more logic for other message types that might appear
         # in a vacuum.
 
+        print msg
+
         # And now, we branch out according to the message.
         if isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
@@ -180,7 +182,6 @@ class Universe:
 
     def add_object(self, obj):
         self.phys_lock.acquire()
-        print "adding object at %f" % time.clock()
         if obj.emits_gravity:
             self.attractors.append(obj)
         self.phys_objects.append(obj)

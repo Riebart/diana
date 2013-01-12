@@ -230,11 +230,6 @@ class PhysicsObject:
         # get around to handling force application we need to scale the acceleration
         # vector by 0.5*dt^2, and then apply a parameter of t^2 to that term.
 
-        ## FYI: Mathematica comes back with about 20,000 arithmetic operations per
-        ## parameter... I don't think I'm going to bother. If errors start to get
-        ## too high (as in, noticed in gameplay), then forcibly slow down time to
-        ## keep the physics ticks fast enough to keep collision error in check.
-
         # Parameters for force-less trajectories are found for object 1 and 2 (t)
         # thanks to some differentiation of parameterizations of the trajectories
         # using a parameter for time. Note that this will find the global minimum
@@ -250,23 +245,6 @@ class PhysicsObject:
         #      (v2-v1).(o1-o2)
         # t = -----------------
         #      (v2-v1).(v2-v1)
-
-        ## Notes on shorthand here. v1 = (x, y, z), and v2 = (a, b, c). '.' means
-        ## dot product, and 'x' means cross product.
-
-        ## t = ((o1.v1-o2.v1) (v2.v2)-(o1.v2-o2.v2)(v1.v2))
-        ##     --------------------------------------------
-        ##              ((v1.v2)^2-(v1.v1) (v2.v2))
-
-        ## v = (o1-o2).(c{-x z,-y z,x^2+y^2}+b{-x y,x^2+z^2,-y z}+a{y^2+z^2,-x y,-x z})
-        ##     ------------------------------------------------------------------------
-        ##                          (v2 x v1).(v2 x v1)
-
-        ## I'm going to call the right-hand operand of the dot product in v's numerator 's'
-
-        ## Some values we can precompute to make things faster (in order in the array):
-
-        ## All together, they save a total of seven additions and eighteen multiplications,
 
         # So, here we go!
 
@@ -285,20 +263,6 @@ class PhysicsObject:
         o2 = obj2.position.clone()
 
         t = vd.dot(o1 - o2) / vd.length2()
-
-        ##t = ((o1.dot(v1) - o2.dot(v1)) * pre[0] - (o1.dot(v2) - o2.dot(v2)) * pre[1]) / ((pre[1] * pre[1] - v1.length2()) * pre[0])
-        ##s = Vector3([
-                    ##v2.x * (v1.y * v1.y + v1.z * v1.z) - (
-                        ##v2.y * v1.x * v1.y +
-                        ##v2.z * v1.x * v1.z),
-                    ##v2.y * (v1.x * v1.x + v1.z * v1.z) - (
-                        ##v2.x * v1.x * v1.y +
-                        ##v2.z * v1.y * v1.z),
-                    ##v2.z * (v1.x * v1.x + v1.y * v1.y) - (
-                        ##v2.x * v1.x * v1.z +
-                        ##v2.y * v1.y * v1.z)
-                    ##])
-        ##v = (o1 - o2).dot(s) / pre[2]
 
         t = min(1, max(0, t))
 
@@ -381,7 +345,7 @@ class SmartPhysicsObject(PhysicsObject):
         if isinstance(msg, GoodbyeMsg):
             # ### TODO ### In any real language, we'll need to figure out who
             # still is keeping track of this object if the universe isn't...
-            self.uni.remove_object(self)
+            self.universe.remove_object(self)
             self.client.close()
             
         elif isinstance(msg, PhysicalPropertiesMsg):
@@ -462,9 +426,11 @@ class SmartPhysicsObject(PhysicsObject):
                 CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
 
 class Beam:
+    solid_angle_factor = 2 / (3 * pi)
+    
     def __init__(self, universe,
                     origin, direction,
-                    up, right, cosines, velocity,
+                    up, right, cosines, area_factor, velocity,
                     energy, beam_type):
         self.universe = universe
         self.origin = origin if isinstance(origin, Vector3) else Vector3(origin)
@@ -474,6 +440,7 @@ class Beam:
         self.right = right if isinstance(right, Vector3) else Vector3(right)
         self.velocity = velocity if isinstance(velocity, Vector3) else Vector3(velocity)
         self.cosines = cosines # Horizontal, then vertical
+        self.area_factor = area_factor # Multiply by distance_travelled^3, and that is the area of the wave_front
         self.energy = energy
         self.beam_type = beam_type
 
@@ -545,7 +512,11 @@ class Beam:
         #
         # if ((collision_dist + obj.radius) >= b.distance_travelled) and ((collision_dist - obj.radius) <= (b.distance_travelled + b.speed * dt)):
         if collision_dist >= b.distance_travelled and collision_dist <= (b.distance_travelled + b.speed * dt):
-            return [t, b.energy, b.direction, collision_point, None]
+            if Vector3.almost_zeroS(collision_dist):
+                energy = b.energy
+            else:
+                energy = b.energy * (pi * obj.radius * obj.radius) / (b.area_factor * collision_dist * collision_dist * collision_dist)
+            return [t, energy, b.direction, collision_point, None]
         else:
             return -1
 
@@ -559,7 +530,7 @@ class Beam:
         right = self.right.clone()
         right.scale(-1)
 
-        return Beam(self.universe, origin, direction, up, self.cosines, velocity, energy, None)
+        return Beam(self.universe, origin, direction, up, self.cosines, self.area_factor, velocity, energy, None)
 
     def collision(self, obj, energy, position, shadow):
         # ### TODO ### Beam occlusion
@@ -578,7 +549,9 @@ class Beam:
         up.scale(up.length())
         right = direction.cross(up)
 
+        area_factor = Beam.solid_angle_factor * (msg.spread_h * msg.spread_v)
+
         cosh = cos(msg.spread_h / 2)
         cosv = cos(msg.spread_v / 2)
 
-        return Beam(universe, Vector3(msg.origin), direction, up, right, [cosh, cosv], Vector3(msg.velocity), msg.energy, msg.beam_type)
+        return Beam(universe, Vector3(msg.origin), direction, up, right, [cosh, cosv], area_factor, Vector3(msg.velocity), msg.energy, msg.beam_type)
