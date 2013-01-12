@@ -97,6 +97,7 @@ class MIMOServer:
 
         def stop(self):
             self.running = 0
+            self.client.shutdown(socket.SHUT_RDWR)
             self.client.close()
 
     # ======================================================================
@@ -107,7 +108,6 @@ class MIMOServer:
         self.backlog = backlog
         self.callback = callback
 
-        self.contextmap = dict()
         self.threadmap = dict()
         self.inputs = []
         self.hangup_lock = threading.Lock()
@@ -167,7 +167,6 @@ class MIMOServer:
         self.threadmap[client].stop()
         self.inputs.remove(client)
         del self.threadmap[client]
-        del self.contextmap[client]
 
     def serve(self):
         while self.running:
@@ -203,9 +202,7 @@ class MIMOServer:
                 print "got connection %d from %s" % (client.fileno(), address)
                 sys.stdout.flush()
 
-                context = self.callback(client)
-                self.contextmap[client] = context
-                self.threadmap[client] = MIMOServer.ThreadSocket(client, context.handle, self.on_hangup)
+                self.threadmap[client] = MIMOServer.ThreadSocket(client, self.callback, self.on_hangup)
                 self.threadmap[client].start()
                 self.inputs.append(client)
 

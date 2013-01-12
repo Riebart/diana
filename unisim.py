@@ -5,7 +5,7 @@ import time
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
-from message import VisualDataMsg, VisualMetaDataMsg
+from message import Message, HelloMsg, VisualDataMsg, VisualMetaDataMsg
 
 VERSION = 0
 
@@ -87,10 +87,10 @@ class ArtCurator:
         if art_id == None:
             for k in self.art_assets:
                 a = self.art_assets[k]
-                VisualMetaDataMsg.send(client_obj.client, [a.art_id, a.mesh, a.texture])
+                VisualMetaDataMsg.send(client_obj.client, c.phys_id, c.osim_id, [a.art_id, a.mesh, a.texture])
         else:
             a = self.art_assets[art_id]
-            VisualMetaDataMsg.send(client_obj.client, [art_id, a.mesh, a.texture])
+            VisualMetaDataMsg.send(client_obj.client, c.phys_id, c.osim_id, [art_id, a.mesh, a.texture])
 
     def attach_art_asset(self, art_id, phys_id):
         self.art_assignment[phys_id] = art_id
@@ -132,6 +132,21 @@ class Universe:
 
     # ======================================================================
 
+    def handle_message(self, client):
+        m = Message.get_message(client)
+
+        if m == None:
+            return
+
+        # ### TODO ### Add more logic for other message types that might appear
+        # in a vacuum.
+
+        # And now, we branch out according to the message.
+        if isinstance(msg, HelloMsg):
+            newsmarty = self.register_smarty(client, osim_id)
+        elif phys_id in self.phys_objects:
+            self.phys_objects[phys_id].handle(msg)
+
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
@@ -140,7 +155,7 @@ class Universe:
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
-        self.net = MIMOServer(self.register_smarty, port = 5505)
+        self.net = MIMOServer(self.handle_message, port = 5505)
         self.sim_thread = Universe.ThreadSim(self)
         self.curator = ArtCurator(self)
         self.vis_data_clients = []
@@ -206,10 +221,9 @@ class Universe:
         self.total_objs += 1
         return self.total_objs - 1
 
-    def register_smarty(self, client):
+    def register_smarty(self, client, osim_id):
         # Now we need to talk to the client.
-        newsmarty = SmartPhysicsObject(self, client)
-        return newsmarty
+        return SmartPhysicsObject(self, client, osim_id)
 
     def register_for_vis_data(self, obj, yesno):
         self.vis_client_lock.acquire()
@@ -239,7 +253,7 @@ class Universe:
         for_removal = []
         for c in self.vis_data_clients:
             for m in msgs:
-                ret = VisualDataMsg.send(c.client, m)
+                ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
 
                 if not ret:
                     c.vis_data = 0

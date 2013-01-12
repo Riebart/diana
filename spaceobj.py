@@ -158,7 +158,7 @@ class SmartObject(SpaceObject, threading.Thread):
                 self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
                 print str(mess)
-             elif isinstance(mess, message.ScanResultMsg):
+            elif isinstance(mess, message.ScanResultMsg):
                 self.handle_scanresult(mess)
                 
             else:
@@ -257,7 +257,7 @@ class Missile(SmartObject):
 
 
 class HomingMissile1(Missile):
-    def __init__(self, osim, osid=0, uniid=0, payload=0.0, direction):
+    def __init__(self, osim, osid=0, uniid=0, payload=0.0, direction=[1,0,0]):
         Missile.__init__(self, osim, osid, uniid, "HomingMissile", payload)
         self.direction = direction
         self.tout_val = 0.5

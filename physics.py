@@ -194,6 +194,9 @@ class PhysicsObject:
         else:
             self.emits_gravity = 0
 
+    def handle(self, msg):
+        pass
+
     def tick(self, acc, dt):
         # ### TODO ### Relativistic mass
 
@@ -346,7 +349,7 @@ class PhysicsObject:
                 result_beam.scan_target = self
 
 class SmartPhysicsObject(PhysicsObject):
-    def __init__(self, universe, client,
+    def __init__(self, universe, client, osim_id,
                     position = None,
                     velocity = None,
                     orientation = None,
@@ -362,15 +365,13 @@ class SmartPhysicsObject(PhysicsObject):
         self.vis_meta_data = 0
         self.exists = 0
 
-    def handle(self, client):
-        msg = Message.get_message(client)
-
+    def handle(self, msg):
         if isinstance(msg, HelloMsg):
             if msg.endpoint_id == None:
                 return
 
             self.sim_id = msg.endpoint_id
-            HelloMsg.send(client, self.phys_id)
+            HelloMsg.send(self.client, self.phys_id, self.osim_id, self.phys_id)
 
         # If we don't have a sim_id by this point, we can't accept any of the
         # following in good conscience...
@@ -450,15 +451,15 @@ class SmartPhysicsObject(PhysicsObject):
     # the other object came from d and hit me at p
     def collision(self, obj, energy, d, p):
         if isinstance(obj, PhysicsObject):
-            CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
+            CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
             self.resolve_phys_collision(energy, d, p)
         elif isinstance(obj, Beam):
             if obj.beam_type == "SCANRESULT":
-                ScanResultMsg.send(self.client, PhysicalPropertiesMsg.make_from_object(obj.scan_target))
+                ScanResultMsg.send(self.client, self.phys_id, self.osim_id, PhysicalPropertiesMsg.make_from_object(obj.scan_target, self.position, self.velocity))
             if obj.beam_type == "COMM":
-                CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
+                CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
             else:
-                CollisionMsg.send(self.client, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
+                CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
 
 class Beam:
     def __init__(self, universe,

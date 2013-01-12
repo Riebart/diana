@@ -16,6 +16,9 @@ class Message:
                 return msg_length
             else:
                 return None
+        except ValueError:
+            print "Bad message length (not parsable) from %d" % client.fileno()
+            return None
         except socket.timeout as e:
             raise e
         except socket.error, (errno, errmsg):
@@ -99,13 +102,24 @@ class Message:
 
         msg = Message.big_read(client, msg_size).split("\n")
 
+        # Snag out the IDs
+        try:
+            phys_id = None if msg[0] == "" else int(msg[0])
+            del msg[0]
+            osim_id = None if msg[1] == "" else int(msg[1])
+            del msg[1]
+        except:
+            print "Couldn't parse the IDs from the message header from %d" % client.fileno()
+            sys.stdout.flush()
+            return None
+
         if not msg == None:
             msgtype = msg[0]
             del msg[0]
 
             if msgtype in MessageTypes:
                 m = MessageTypes[msgtype](msg)
-                return m
+                return [ m, phys_id, osim_id ]
             else:
                 print "Unknown message type: \"%s\"" % msgtype
                 sys.stdout.flush()
@@ -114,16 +128,25 @@ class Message:
             return None
 
     @staticmethod
-    def sendall(client, msg):
+    def sendall(client, phys_id, osim_id, msg):
         # Detect a hangup
         if client.fileno() == -1:
             return 0
 
-        msg_len = "%09d\n" % len(msg)
-        num_sent = Message.big_send(client, msg_len)
+        if phys_id == None:
+            id_str = "\n%d\n" % osim_id
+        elif osim_id == None:
+            id_str = "%d\n\n" % phys_id
+        else:
+            id_str = "%d\n%d\n" % (phys_id, osim_id)
+
+        msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
+        full_msg = msg_hdr + msg
+
+        Message.big_send(client, full_msg)
         if num_sent == 0:
             return 0
-        Message.big_send(client, msg)
+
         return 1
 
     @staticmethod
@@ -220,10 +243,10 @@ class HelloMsg(Message):
             self.endpoint_id = Message.read_int(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "HELLO\n%d\n" % args
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class PhysicalPropertiesMsg(Message):
@@ -238,17 +261,18 @@ class PhysicalPropertiesMsg(Message):
         self.radius = Message.read_double(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "PHYSPROPS\n%s\n" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
     @staticmethod
-    def make_from_object(obj):
+    # ### TODO ### Make the returned position and velocity relative to the parameters.
+    def make_from_object(obj, origin, velocity):
         return [ obj.object_type, obj.mass,
                     obj.position.x, obj.position.y, obj.position.z,
                     obj.velocity.x, obj.velocity.y, obj.velocity.z,
@@ -262,12 +286,12 @@ class VisualPropertiesMsg(Message):
         self.texture = Message.read_texture(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "VISPROPS\n"
         msg += Message.prep_mesh(args[0])
         msg += Message.prep_texture(args[1])
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class VisualDataEnableMsg(Message):
@@ -276,10 +300,10 @@ class VisualDataEnableMsg(Message):
         self.enabled = Message.read_int(s)
 
     @staticmethod
-    def send(client, arg):
+    def send(client, phys_id, osim_id, arg):
         msg = "VISDATAENABLE\n%d\n" % arg
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class VisualMetaDataEnableMsg(Message):
@@ -287,10 +311,10 @@ class VisualMetaDataEnableMsg(Message):
         self.enabled = Message.read_int(s)
 
     @staticmethod
-    def send(client, arg):
+    def send(client, phys_id, osim_id, arg):
         msg = "VISMETADATAENABLE\n%d\n" % arg
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 
@@ -301,7 +325,7 @@ class VisualMetaDataMsg(Message):
         self.texture = Message.read_texture(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "VISMETADATA\n"
 
         art_id = args[0]
@@ -311,7 +335,7 @@ class VisualMetaDataMsg(Message):
         msg += Message.prep_mesh(mesh) + "\n"
         msg += Message.prep_texture(texture) + "\n"
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class VisualDataMsg(Message):
@@ -327,8 +351,8 @@ class VisualDataMsg(Message):
     # every client.
     #
     # That means that the args in this case are exactly the string we want to send.
-    def send(client, args):
-        ret = Message.sendall(client, args)
+    def send(client, phys_id, osim_id, args):
+        ret = Message.sendall(client, phys_id, osim_id, args)
         return ret
 
 class BeamMsg(Message):
@@ -355,7 +379,7 @@ class BeamMsg(Message):
             
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "BEAM\n"
         for i in range(0,12):
             msg += Message.prep_double(args[i]) + "\n"
@@ -373,7 +397,7 @@ class BeamMsg(Message):
             print "Unknown beam subtype \"%s\"." % args[12]
             return 0
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class CollisionMsg(Message):
@@ -398,7 +422,7 @@ class CollisionMsg(Message):
             self.collision_type = None
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "COLLISION\n"
 
         for i in range(0,7):
@@ -419,7 +443,7 @@ class CollisionMsg(Message):
             print "Unknown beam subtype \"%s\"." % args[7]
             return 0
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class SpawnMsg(Message):
@@ -433,13 +457,13 @@ class SpawnMsg(Message):
         self.radius = Message.read_double(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "SPAWN\n%s" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class ScanResultMsg(Message):
@@ -453,13 +477,13 @@ class ScanResultMsg(Message):
         self.radius = Message.read_double(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "SCANRESULT\n%s" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
 
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class GoodbyeMsg(Message):
@@ -467,10 +491,10 @@ class GoodbyeMsg(Message):
         self.endpoint_id = Message.read_int(s)
 
     @staticmethod
-    def send(client, args):
+    def send(client, phys_id, osim_id, args):
         msg = "GOODBYE\n%d\n" %args
         
-        ret = Message.sendall(client, msg)
+        ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 MessageTypes = { "HELLO": HelloMsg,
