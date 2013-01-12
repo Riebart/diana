@@ -42,8 +42,7 @@ class SmartObject(SpaceObject, threading.Thread):
                 "WEAP" ])  
     
     def init_beam(self, beam, power, speed, direction, h_focus = pi/6, v_focus = pi/6):
-        direction = direction.ray(Vector3(0.0,0.0,0.0))
-        direction.scale(-1.0)
+        direction = direction.unit()
         
         vel = direction.clone()
         #beams will currently move at 50km/s
