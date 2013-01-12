@@ -145,6 +145,10 @@ class Universe:
 
         # And now, we branch out according to the message.
         if isinstance(msg, SpawnMsg):
+            if (msg.position == None or msg.velocity == None or msg.orientation == None or
+                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None)
+                return
+
             newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
                                     msg.mass, msg.radius, msg.thrust, msg.object_type)
             self.add_object(newobj)
