@@ -267,15 +267,15 @@ class HomingMissile1(Missile):
         self.sock.settimeout(self.tout_val)
         self.fuse = 20.0    #distance in meters to explode from target
 
-    #so this is wrong. Only works if there is a single target 'in front of' the missile
+    #so this is not great. Only works if there is a single target 'in front of' the missile
     def handle_scanresult(self, mess):
         enemy_pos = Vector3(mess.position)
         distance = self.location.distance(enemy_pos)
         if distance < fuse:
             self.detonate()
         else:
-            new_dir = self.location.ray(enemy_pos)
-            new_dir.scale(self.thrust.length())
+            enemy_pos.unit()
+            enemy_pos.scale(self.thrust.length())
             self.set_thrust(new_dir)
     
     def do_scan(self, mess):
