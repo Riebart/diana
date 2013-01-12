@@ -512,10 +512,12 @@ class Beam:
         #
         # if ((collision_dist + obj.radius) >= b.distance_travelled) and ((collision_dist - obj.radius) <= (b.distance_travelled + b.speed * dt)):
         if collision_dist >= b.distance_travelled and collision_dist <= (b.distance_travelled + b.speed * dt):
-            if Vector3.almost_zeroS(collision_dist):
-                energy = b.energy
-            else:
-                energy = b.energy * (pi * obj.radius * obj.radius) / (b.area_factor * collision_dist * collision_dist * collision_dist)
+            wave_front_area = b.area_factor * collision_dist * collision_dist * collision_dist
+            object_surface = pi * obj.radius * obj.radius
+
+            energy_factor = 1 if (wave_front_area < object_surface) else (object_surface / wave_front_area)
+            energy = b.energy * energy_factor
+            
             return [t, energy, b.direction, collision_point, None]
         else:
             return -1

@@ -141,7 +141,7 @@ class Universe:
         # ### TODO ### Add more logic for other message types that might appear
         # in a vacuum.
 
-        print msg
+        #print msg
 
         # And now, we branch out according to the message.
         if isinstance(msg, HelloMsg):
