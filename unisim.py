@@ -138,9 +138,6 @@ class Universe:
         except:
             return None
 
-        # ### TODO ### Add more logic for other message types that might appear
-        # in a vacuum.
-
         #print msg
 
         # And now, we branch out according to the message.

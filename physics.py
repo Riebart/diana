@@ -10,6 +10,8 @@ from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 from message import BeamMsg
 
 class Vector3:
+    zero = Vector3([0, 0, 0])
+
     def __init__(self, v, y = None, z = None):
         if y == None:
             self.x = v[0]
