@@ -92,11 +92,11 @@ class SmartObject(SpaceObject, threading.Thread):
     def handle_collision(self, collision):
         if collision.collision_type == "PHYS":
             #hit by a physical object, take damage
-            print "%d suffered a Physical collision!" % self.osid
+            print "%d suffered a Physical collision! %fJ!" % (self.osid, collision.energy)
             self.handle_phys(collision)
         elif collision.collision_type == "WEAP":
             #hit by a weapon, take damage
-            print "%d suffered a weapon collision!" % self.osid
+            print "%d suffered a weapon collision! %fJ!" % (self.osid, collision.energy)
             self.handle_weap(collision)
         elif collision.collision_type == "COMM":
             #hit by a comm beam, perform apropriate action
@@ -106,7 +106,6 @@ class SmartObject(SpaceObject, threading.Thread):
             self.handle_scan(collision)
         elif collision.collision_type == "SCANRESULT":
             self.handle_scanresult(collision)
-        pass
     
     def handle_query(self, mess):
         pass
@@ -194,7 +193,7 @@ class Beam(SpaceObject):
         if up != None:
             self.up = up
         else:
-            self.up = Vector3((0.0,0.0,0.0))
+            self.up = Vector3((1.0,0.0,0.0))
         self.h_focus = h_focus
         self.v_focus = v_focus
         

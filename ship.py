@@ -11,7 +11,8 @@ class Ship(SmartObject):
         self.type = "dummy-ship"
         self.max_missiles = 10
         self.cur_missiles = self.max_missiles
-        self.radius = 20
+        self.radius = 20.0 #20m?
+        self.mass = 100000.0 #100 Tonnes?
         
     def do_scan(self):
         pass
@@ -20,22 +21,11 @@ class Ship(SmartObject):
         #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
         #pass
         
-    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100):
-        #make sure that direction is a unit vector
-        direction = direction.unit()
+    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
         
         laser = WeaponBeam(self.osim)
-        vel = direction.clone()
-        #beams will currently move at 50km/s
-        vel.scale(50000.0)
-        laser.velocity=vel
         
-        laser.h_focus = h_focus
-        laser.v_focus = v_focus
-        laser.power = power
-        
-        direction.scale(self.radius*1.1)
-        laser.origin = self.location + direction
+        self.init_beam(laser, power, 50000.0, direction, h_focus, v_focus)
         
         self.fire_beam(laser)
     
