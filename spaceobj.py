@@ -274,8 +274,8 @@ class HomingMissile1(Missile):
         if distance < fuse:
             self.detonate()
         else:
-            enemy_pos.unit()
-            enemy_pos.scale(self.thrust.length())
+            new_dir = enemy_pos.unit()
+            new_dir.scale(self.thrust.length())
             self.set_thrust(new_dir)
     
     def do_scan(self, mess):
