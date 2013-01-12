@@ -4,7 +4,7 @@ import sys
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import Message
-from message import HelloMsg, PhysicalPropertiesMsg, VisualPropertiesMsg, CollisionMsg, ScanResultMsg
+from message import HelloMsg, GoodbyeMsg, PhysicalPropertiesMsg, VisualPropertiesMsg, CollisionMsg, ScanResultMsg
 from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
 from message import BeamMsg
 
@@ -66,6 +66,11 @@ class Vector3:
         ry = self.z * v.x - self.x * v.z
         rz = self.x * v.y - self.y * v.x
         return Vector3([rx, ry, rz])
+
+    # Drag self down v until they dot to zero. Assumes v is normalized.
+    def project_down_n(self, v):
+        s = self.dot(v)
+        return Vector3.combine([[1, self], [-s, v]])
 
     @staticmethod
     # Combines a linear combination of a bunch of vectors
@@ -376,6 +381,7 @@ class SmartPhysicsObject(PhysicsObject):
             # ### TODO ### In any real language, we'll need to figure out who
             # still is keeping track of this object if the universe isn't...
             self.uni.remove_object(self)
+            self.client.close()
             
         elif isinstance(msg, PhysicalPropertiesMsg):
             if msg.object_type != None:
@@ -456,68 +462,30 @@ class SmartPhysicsObject(PhysicsObject):
 
 class Beam:
     def __init__(self, universe,
-                    origin, normals,
-                    direction, velocity,
+                    origin, direction,
+                    up, right, cosines, velocity,
                     energy, beam_type):
         self.universe = universe
         self.origin = origin if isinstance(origin, Vector3) else Vector3(origin)
         self.front_position = self.origin.clone()
-
-        self.normals = []
-        for n in normals:
-            self.normals.append(n if isinstance(n, Vector3) else Vector3(n))
-            
         self.direction = direction if isinstance(direction, Vector3) else Vector3(direction)
+        self.up = up if isinstance(up, Vector3) else Vector3(up)
+        self.right = right if isinstance(right, Vector3) else Vector3(right)
         self.velocity = velocity if isinstance(velocity, Vector3) else Vector3(velocity)
+        self.cosines = cosines # Horizontal, then vertical
         self.energy = energy
         self.beam_type = beam_type
-        
+
         self.speed = self.velocity.length()
         self.distance_travelled = 0
 
     @staticmethod
     def collide(b, obj, dt):
-        # To detect a collition, we grab the normals from the beam, and translate
-        # the object's position to 'beam-space' by subtracting the beam's origin
-        # from the object's position.
+        # ### TODO ### Take radius into account
 
-        # Since the object could be positioned outside of the beam's frustrum,
-        # but still extend into the beam based on its radius, we check that each
-        # of the dot procuts is >= -obj.radius. If that is satisfied for all
-        # of the dot products, then the object extends (at least partially)
-        # into the beam.
-
-        # Now we need to check that it is actually in the portion of space that
-        # the beam will be carving out during dt. To do this we take the beam's
-        # front_position, or the centre of the wave-front at the start of the tick
-        # and verify that the object's position is between front_position and
-        # front_position + dt * beam velocity. Do this by grabbing a unit vector
-        # along velocity (direction), dotting the (object's position - front_position)
-        # with it, and then comparing the result with dt * beam's speed. The dot
-        # product should be in [-obj.radius, dt * beam_speed + obj.radius]
-        # (the closed interval)
-
-        # For each plane, find out which side the object is on, and whether it
-        # will cross the plane in this tick. If for any plane it is neither in
-        # inside of it, nor will it cross it, then bail. Take the radius into
-        # account here
-
-        # For all planes where the object crosses it, find the t value, and note
-        # whether the object is crossing in or out.
-
-        # Using the t values we found above, determine the potential values for t
-        # where the object is still (at least partially) inside the beam. Do this
-        # by finding the earliest time the beam will leave the beam, and the latest
-        # time that the object will enter the beam. Note that t must be in [0,1]
-        # for these considerations. If the beam leaves before it gets in, bail.
-        # No hit.
-
-        # ### NOTE ### I'm not sure if this hunch is right, but I think it is a
-        # close enough approximation. The magic of linear situations might actually
-        # make me right...
-        # If there are still candidate values of t, then just take the middle of
-        # the interval as the 'collision' time that maximizes the energy transfer.
-        # This only might work for spheres...
+        # Move the object position to a point relative to the beam's origin.
+        # Then scale the velocity by dt, and add it to the position to get the
+        # start, end, and difference vectors.
 
         ps = obj.position.clone()
         ps.sub(b.origin)
@@ -527,39 +495,49 @@ class Beam:
 
         pe = Vector3.combine([[1, ps], [1, v]])
 
+        # Project the position down the up vector and dot with the direction for
+        # the cosine fo the horizontal angle, and project it down the right and dot
+        # with direction to get the vertical angle.
+
+        # Note that cosine decreses from 1 to -1 as the angle goes from 0 to 180.
+        # We are inside, if we are > than the cosine of our beam.
+        
+        current = [ ps.project_down_n(b.up).dot(b.direction),
+                    ps.project_down_n(b.right).dot(b.direction) ]
+
+        future  = [ pe.project_down_n(b.up).dot(b.direction),
+                    pe.project_down_n(b.right).dot(b.direction) ]
+
+        delta = [ future[0] - current[0], future[1] - current[1] ]
+
+        current_b = [ int(current[0] > b.cosines[0]), int(current[1] > b.cosines[1]) ]
+        future_b = [ int(future[0] > b.cosines[0]), int(future[1] > b.cosines[1]) ]
+
         entering = 0.0
         leaving = 1.0
-        
-        for n in b.normals:
-            inout = n.dot(ps)
-            willbe = n.dot(pe)
 
-            if inout < -obj.radius:
-                if willbe < -obj.radius:
-                    # staying out
-                    return -1
-                else:
-                    # leaving
-                    param = n.dot(ps) / n.dot(v)
-                    leaving = min(leaving, param)
-            else:
-                if willbe < -obj.radius:
-                    # entering
-                    param = (n.dot(ps) / n.dot(v))
-                    entering = max(entering, param)
-                else:
-                    # staying in
-                    pass
+        for i in [0,1]:
+            # if we're out, and coming in
+            if current[i] == 0 and future[i] == 1:
+                entering = max(entering, (b.cosines[i] - current[i]) / delta[i])
+            elif current[i] == 1 and future[i] == 0:
+                leaving = min(leaving, (current[i] - b.cosines[i]) / delta[i])
 
         # If we have to enter some planes, and are leaving other planes, but
         # we don't enter until after we leave, we can bail.
         if entering > leaving:
             return -1
 
+        # ### NOTE ### I'm not sure if this hunch is right, but I think it is a
+        # close enough approximation. The magic of linear situations might actually
+        # make me right...
+        # If there are still candidate values of t, then just take the middle of
+        # the interval as the 'collision' time that maximizes the energy transfer.
+        # This only might work for spheres...
         t = (entering + leaving) / 2.0
 
         collision_point = Vector3.combine([[1, ps], [t, v]])
-        collision_dist = collision_point.dot(b.direction)
+        collision_dist = abs(collision_point.dot(b.direction))
 
         # If we want collisions for as long as the bounding sphere is intersecting
         # the front, use:
@@ -577,15 +555,12 @@ class Beam:
         velocity = self.velocity.clone()
         velocity.scale(-1)
 
-        normals = []
-        for n in self.normals:
-            tmp = n.clone()
-            tmp.scale(-1)
-            normals.append(tmp)
+        right = self.right.clone()
+        right.scale(-1)
 
-        return Beam(self.universe, origin, normals, direction, velocity, energy, None)
+        return Beam(self.universe, origin, direction, up, self.cosines, velocity, energy, None)
 
-    def collision(self, obj, position, energy):
+    def collision(self, obj, energy, position, shadow):
         # ### TODO ### Beam occlusion
         pass
 
@@ -596,59 +571,13 @@ class Beam:
     @staticmethod
     def build(msg, universe):
         direction = Vector3(msg.velocity)
-        direction.scale(direction.length())
+        speed = direction.length()
+        direction.scale(1/speed)
         up = Vector3(msg.up)
         up.scale(up.length())
-        normals = []
-
-        # Ok, so now we need to convert the direction, up, and spread angles
-        # into plane normals. Yay!
-
-        # First we cross the direction and up to get a vector pointing 'horizontally'.
-        # this vector points 'right', or clockwise, when looking down the up vector.
-        # The order of the cross product here doesn't really matter, but it
-        # helps to follow some reasoning.
         right = direction.cross(up)
 
-        # Once we have right, we can find vectors inside of the planes, thanks
-        # to some basic trig. Here, cosine is along the direction, and sine
-        # is along the right vector.
+        cosh = cos(msg.spread_h / 2)
+        cosv = cos(msg.spread_v / 2)
 
-        sh = sin(msg.spread_h / 2)
-        ch = cos(msg.spread_h / 2)
-        sv = sin(msg.spread_v / 2)
-        cv = cos(msg.spread_v / 2)
-
-        # The vertical planes (those on the right and left boundaries of the beam)
-        # are obtained by combining the direction and horizontal vector.
-        # That gets us a vector inside the plane
-        plane_r = Vector3.combine([[ch, direction], [sh, right]])
-        plane_l = Vector3.combine([[ch, direction], [-sh, right]])
-
-        # Similarly, the up vector gets us the top and bottom in-plane vectors
-        plane_t = Vector3.combine([[ch, direction], [sh, up]])
-        plane_b = Vector3.combine([[ch, direction], [-sh, up]])
-
-        # We can get the normal vectors through another cross product, this time
-        # between the in-plane vectors, and the right/up vectors.
-
-        # The order of vectors in the cross product is important here. Reversing the
-        # order reverses the direction of the resulting vector, pointing outside of
-        # bounded volume, instead of inside.
-
-        # Following the right-hand rule, point your index finger along the first
-        # vector, middle finger along the second, and the result is your thumb
-
-        # This means that we need the in-plane vectors first. For the left and right
-        # planes, the up vector should be in them, so we can cross them to
-        # get a normal. Similarly, the right vector is in the top and bottom planes.
-
-        normals.append(plane_r.cross(up))
-        normals.append(plane_l.cross(up))
-        normals.append(plane_b.cross(right))
-        normals.append(plane_t.cross(right))
-
-        # Now we have enough information to build our beam object.
-
-        return Beam(universe, Vector3(msg.origin), normals, direction, Vector3(msg.velocity), msg.energy, msg.beam_type)
-        
+        return Beam(universe, Vector3(msg.origin), direction, up, right, [cosh, cosv], Vector3(msg.velocity), msg.energy, msg.beam_type)

@@ -65,23 +65,3 @@ class Ship(SmartObject):
         
         return None
         
-    def fire_homing(self, direction, thrust_power):
-        missile = HomingMissile1(self.osim)
-
-        #set the initial position of the missile some small distance outside the ship
-        tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-        tmp.scale((self.radius + missile.radius) * -1.1)
-        missile.location = self.location + tmp
-        
-        #should missile have our initial velocity?
-        missile.velocity = self.velocity
-        
-        tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-        tmp.scale(thrust_power * -1)                
-        missile.thrust = tmp        
-        missile.orient = direction
-                
-        self.osim.spawn_object(missile)
-        
-        #self.cur_missiles -= 1
-    

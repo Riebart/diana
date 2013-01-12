@@ -303,7 +303,7 @@ class Universe:
 
                 if ret != -1:
                     self.phys_objects[i].collision(b, ret[1], ret[2], ret[3])
-                    b.collision(self.phys_objects[i], ret[4])
+                    b.collision(self.phys_objects[i], ret[1], ret[3], ret[4])
 
         for i in range(0, N):
             self.phys_objects[i].tick(self.get_accel(self.phys_objects[i]), dt)

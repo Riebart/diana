@@ -19,7 +19,7 @@ class Message:
         except socket.timeout as e:
             raise e
         except socket.error, (errno, errmsg):
-            if client.fileno() == -1 or errno == 10054:
+            if client.fileno() == -1 or errno == 10054 or errno == 10053:
                 return None
                 
             print "There was an error getting message size header from client %d" % client.fileno()
@@ -82,7 +82,7 @@ class Message:
             try:
                 client.sendall(msg)
             except socket.error, (errno, errmsg):
-                if client.fileno() != -1 and errno != 10054:
+                if errno != 10054 and errno != 10053:
                     print "There was an error sendall-ing message to client %d" % client.fileno()
                     print "Error:", sys.exc_info()
 
