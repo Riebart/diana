@@ -10,14 +10,15 @@ class Message:
     @staticmethod
     def get_message_size(client):
         try:
-            msg_length = int(client.recv(10).rstrip())
+            raw = client.recv(10).rstrip()
+            msg_length = int(raw)
             # We really don't want zero-length messages
             if msg_length > 0:
                 return msg_length
             else:
                 return None
         except ValueError:
-            print "Bad message length (not parsable) from %d" % client.fileno()
+            print "Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno())
             return None
         except socket.timeout as e:
             raise e
@@ -106,8 +107,8 @@ class Message:
         try:
             phys_id = None if msg[0] == "" else int(msg[0])
             del msg[0]
-            osim_id = None if msg[1] == "" else int(msg[1])
-            del msg[1]
+            osim_id = None if msg[0] == "" else int(msg[0])
+            del msg[0]
         except:
             print "Couldn't parse the IDs from the message header from %d" % client.fileno()
             sys.stdout.flush()
@@ -143,7 +144,7 @@ class Message:
         msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
         full_msg = msg_hdr + msg
 
-        Message.big_send(client, full_msg)
+        num_sent = Message.big_send(client, full_msg)
         if num_sent == 0:
             return 0
 

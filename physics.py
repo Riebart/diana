@@ -358,9 +358,9 @@ class SmartPhysicsObject(PhysicsObject):
                     thrust = None,
                     object_type = "Unknown"):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust, object_type)
-        self.client = client
         self.universe = universe
-        self.sim_id = None
+        self.client = client
+        self.osim_id = osim_id
         self.vis_data = 0
         self.vis_meta_data = 0
         self.exists = 0

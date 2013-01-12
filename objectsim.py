@@ -46,9 +46,13 @@ class ObjectSim:
         if isinstance(obj, SmartObject):
             obj.sock.connect(self.unisim)
             
-            message.HelloMsg.send(obj.sock, obj.osid)
-            
-            reply = message.Message.get_message(obj.sock)
+            message.HelloMsg.send(obj.sock, None, obj.osid, obj.osid)
+
+            try:
+                reply, uniid, osid = message.Message.get_message(obj.sock)
+            except TypeError:
+                print "Fail2!"
+                return
             
             if not isinstance(reply, message.HelloMsg):
                 #fail
@@ -56,10 +60,10 @@ class ObjectSim:
                 pass
             
             else:
-                obj.uniid = reply.endpoint_id
+                obj.uniid = uniid
                         
             #TODO: send object data to unisim
-            message.PhysicalPropertiesMsg.send(obj.sock, (
+            message.PhysicalPropertiesMsg.send(obj.sock, obj.uniid, obj.osid, (
                 obj.type,
                 obj.mass,
                 obj.location[0], obj.location[1], obj.location[2],

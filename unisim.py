@@ -133,10 +133,10 @@ class Universe:
     # ======================================================================
 
     def handle_message(self, client):
-        m = Message.get_message(client)
-
-        if m == None:
-            return
+        try:
+            msg, phys_id, osim_id = Message.get_message(client)
+        except:
+            return None
 
         # ### TODO ### Add more logic for other message types that might appear
         # in a vacuum.
@@ -144,14 +144,15 @@ class Universe:
         # And now, we branch out according to the message.
         if isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
-        elif phys_id in self.phys_objects:
-            self.phys_objects[phys_id].handle(msg)
+            newsmarty.handle(msg)
+        elif phys_id in self.smarties:
+            self.smarties[phys_id].handle(msg)
 
     def __init__(self):
         self.attractors = []
         self.phys_objects = []
         self.beams = []
-        self.smarties = [] # all 'smart' objects that can interact with the server
+        self.smarties = dict() # all 'smart' objects that can interact with the server
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
@@ -179,12 +180,9 @@ class Universe:
 
     def add_object(self, obj):
         self.phys_lock.acquire()
+        print "adding object at %f" % time.clock()
         if obj.emits_gravity:
             self.attractors.append(obj)
-
-        if isinstance(obj, SmartPhysicsObject):
-            self.smarties.append(obj)
-
         self.phys_objects.append(obj)
         self.phys_lock.release()
 
@@ -197,10 +195,6 @@ class Universe:
         self.phys_lock.acquire()
         if obj.emits_gravity:
             self.attractors.remove(obj)
-
-        if isinstance(obj, SmartPhysicsObject):
-            self.smarties.remove(obj)
-
         self.phys_objects.remove(obj)
         self.phys_lock.release()
 
@@ -223,7 +217,9 @@ class Universe:
 
     def register_smarty(self, client, osim_id):
         # Now we need to talk to the client.
-        return SmartPhysicsObject(self, client, osim_id)
+        newsmarty = SmartPhysicsObject(self, client, osim_id)
+        self.smarties[newsmarty.phys_id] = newsmarty
+        return newsmarty
 
     def register_for_vis_data(self, obj, yesno):
         self.vis_client_lock.acquire()
