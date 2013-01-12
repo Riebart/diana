@@ -138,7 +138,7 @@ class MIMOServer:
             self.serve_thread.join()
 
             stubborn = 0
-            while len(self.inputs) > 1:
+            while len(self.inputs) > 0:
                 print "Hanging up %d %sclient%s" % (len(self.inputs) - 1,
                                                     "stubborn " if stubborn == 1 else "",
                                                     "s" if len(self.inputs) > 2 else "")
