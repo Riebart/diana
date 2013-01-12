@@ -103,6 +103,8 @@ class Message:
 
         msg = Message.big_read(client, msg_size).split("\n")
 
+        #print msg
+
         # Snag out the IDs
         try:
             phys_id = None if msg[0] == "" else int(msg[0])
@@ -143,6 +145,8 @@ class Message:
 
         msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
         full_msg = msg_hdr + msg
+
+        #print full_msg
 
         num_sent = Message.big_send(client, full_msg)
         if num_sent == 0:
