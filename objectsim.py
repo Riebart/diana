@@ -5,7 +5,7 @@ import message
 import threading
 
 from mimosrv import MIMOServer
-from physics import Vector3
+from vector import Vector3
 from spaceobj import SmartObject
 
 class Client:

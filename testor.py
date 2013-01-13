@@ -5,7 +5,7 @@ import objectsim
 import unisim
 import threading
 import ship
-from physics import Vector3
+from vector import Vector3
 import random
 import time
 import spaceobj
@@ -80,14 +80,14 @@ def testShip():
 #spawns two stationary ships. The first fires a beam at the other
 def testBeam():
     
-    ship1 = ship.Ship(osim)
+    ship1 = ship.Ship(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osid
     print "ship1 unisim is: %d" % ship1.uniid
     sys.stdout.flush()
 
-    ship2 = ship.Ship(osim)
+    ship2 = ship.Ship(osim, type="Ship 2")
     ship2.location = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -96,7 +96,7 @@ def testBeam():
     sys.stdout.flush()
 
     dir = Vector3(1.0,0.0,0.0)
-    ship1.fire_laser(dir)
+    ship1.fire_laser(dir, power = 1E10)
     
     sys.stdout.flush()
     
@@ -142,8 +142,8 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
+testShip()
 #testSimpleShip()
 #stressTest()
 #test_threads()
-testBeam()
+#testBeam()

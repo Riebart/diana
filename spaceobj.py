@@ -1,6 +1,6 @@
 import threading
 import message
-from physics import Vector3
+from vector import Vector3
 import socket
 from math import pi
 
@@ -84,9 +84,13 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
     
     def handle_scan(self, mess):
-        return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, "")        
+        ## From Mike: This would be where you
+        ## alert to the fact that "I just got my skirt looked up!"
+        ##return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id ])
+        pass
     
     def handle_scanresult(self, mess):
+        print "Got a scanresult for %s" % mess.object_type
         pass
     
     def handle_collision(self, collision):
@@ -108,6 +112,8 @@ class SmartObject(SpaceObject, threading.Thread):
             self.handle_scanresult(collision)
     
     def handle_query(self, mess):
+        # This is where we respond to SCANQUERY messages.
+        return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id, "cargo = Hookers and blow" ])
         pass
     
     def take_damage(self, amount):
@@ -165,7 +171,7 @@ class SmartObject(SpaceObject, threading.Thread):
                 print str(mess)
             elif isinstance(mess, message.ScanResultMsg):
                 self.handle_scanresult(mess)
-            elif isinstance(mess, message.ScanQuery):
+            elif isinstance(mess, message.ScanQueryMsg):
                 self.handle_query(mess)
                 
             else:
@@ -190,7 +196,7 @@ class Beam(SpaceObject):
         if up != None:
             self.up = up
         else:
-            self.up = Vector3((1.0,0.0,0.0))
+            self.up = Vector3((0.0,0.0,1.0))
         self.h_focus = h_focus
         self.v_focus = v_focus
         
@@ -216,7 +222,7 @@ class CommBeam(Beam):
     def send_it(self, sock):
         ar = self.build_common()
         ar.append(self.message)
-        message.BeamMsg.send(sock, ar, self.uniid, self.osid, ar)
+        message.BeamMsg.send(sock, self.uniid, self.osid, ar)
         
         
 class WeaponBeam(Beam):
@@ -236,7 +242,7 @@ class ScanBeam(Beam):
 
 #a dumbfire missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=0.0):
+    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=100.0):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
         self.payload = payload

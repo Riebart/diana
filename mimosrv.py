@@ -102,11 +102,12 @@ class MIMOServer:
 
     # ======================================================================
 
-    def __init__(self, callback, port=5505, backlog=5):
+    def __init__(self, data_callback, hangup_callback = None, port=5505, backlog=5):
         self.running = 0
         self.port = port
         self.backlog = backlog
-        self.callback = callback
+        self.data_callback = data_callback
+        self.hangup_callback = hangup_callback
 
         self.threadmap = dict()
         self.inputs = []
@@ -169,6 +170,8 @@ class MIMOServer:
                 del self.threadmap[client]
             return
 
+        if self.hangup_callback != None:
+            self.hangup_callback(client)
         self.threadmap[client].stop()
         self.inputs.remove(client)
         del self.threadmap[client]
@@ -207,7 +210,7 @@ class MIMOServer:
                 print "got connection %d from %s" % (client.fileno(), address)
                 sys.stdout.flush()
 
-                self.threadmap[client] = MIMOServer.ThreadSocket(client, self.callback, self.on_hangup)
+                self.threadmap[client] = MIMOServer.ThreadSocket(client, self.data_callback, self.on_hangup)
                 self.threadmap[client].start()
                 self.inputs.append(client)
 

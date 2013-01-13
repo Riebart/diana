@@ -1,7 +1,8 @@
-#!/usr/bin/env pytho\n
+#!/usr/bin/env python
 
 import sys
 import socket
+from vector import Vector3, zero3d
 
 class Message:
     def __init__(self, client):
@@ -276,7 +277,7 @@ class PhysicalPropertiesMsg(Message):
         return ret
 
     @staticmethod
-    def make_from_object(obj, p = Vector3.zero, v = Vector3.zero):
+    def make_from_object(obj, p = zero3d, v = zero3d):
         return [ obj.object_type, obj.mass,
                     obj.position.x - p.x, obj.position.y - p.y, obj.position.z - p.z,
                     obj.velocity.x - v.x, obj.velocity.y - v.y, obj.velocity.z - v.z,
@@ -453,6 +454,7 @@ class CollisionMsg(Message):
 class SpawnMsg(Message):
     def __init__(self, s):
         self.object_type = s[0]
+        del s[0]
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
@@ -473,6 +475,7 @@ class SpawnMsg(Message):
 class ScanResultMsg(Message):
     def __init__(self, s):
         self.object_type = s[0]
+        del s[0]
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
@@ -483,7 +486,7 @@ class ScanResultMsg(Message):
 
     @staticmethod
     def send(client, phys_id, osim_id, args):
-        msg = "SCANRESULT\n%s" % args[0]
+        msg = "SCANRESULT\n%s\n" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"

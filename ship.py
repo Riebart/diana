@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-from physics import Vector3
+from vector import Vector3
 from spaceobj import *
 import math
 
 class Ship(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship"):
         SmartObject.__init__(self, osim, osid, uniid)
         self.name = "Unkown"
-        self.type = "dummy-ship"
+        self.type = type
         self.max_missiles = 10
         self.cur_missiles = self.max_missiles
         self.radius = 20.0 #20m?
@@ -21,7 +21,7 @@ class Ship(SmartObject):
         #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
         #pass
         
-    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
+    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=1000000.0):
         
         laser = WeaponBeam(self.osim)
         

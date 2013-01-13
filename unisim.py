@@ -5,7 +5,7 @@ import time
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
-from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualMetaDataMsg
+from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualMetaDataMsg, ScanResponseMsg
 
 VERSION = 0
 
@@ -132,6 +132,33 @@ class Universe:
 
     # ======================================================================
 
+    class MonotonicDict:
+        def __init__(self):
+            self.count = 0
+            self.base = dict()
+            self.lock = threading.Lock()
+
+        def add(self, obj):
+            self.lock.acquire()
+            self.base[self.count] = obj
+            ret = self.count
+            self.count += 1
+            self.lock.release()
+            return ret
+
+        def delete(self, index):
+            self.lock.acquire()
+            del self.base[index]
+            self.lock.release()
+
+        def get(self, index):
+            self.lock.acquire()
+            ret = self.base[index]
+            self.lock.release()
+            return ret
+
+    # ======================================================================
+
     def handle_message(self, client):
         try:
             msg, phys_id, osim_id = Message.get_message(client)
@@ -143,13 +170,23 @@ class Universe:
         # And now, we branch out according to the message.
         if isinstance(msg, SpawnMsg):
             if (msg.position == None or msg.velocity == None or msg.orientation == None or
-                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None)
+                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
                 return
 
             newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
                                     msg.mass, msg.radius, msg.thrust, msg.object_type)
             self.add_object(newobj)
-        if isinstance(msg, HelloMsg):
+
+        elif isinstance(msg, ScanResponseMsg):
+            beam, energy, obj = self.queries.get(msg.scan_id)
+            print obj.object_type
+            result_beam = beam.make_return_beam(energy, obj.position)
+            result_beam.beam_type = "SCANRESULT"
+            result_beam.scan_target = obj
+            self.queries.delete(msg.scan_id)
+            self.add_beam(result_beam)
+
+        elif isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
             newsmarty.handle(msg)
         elif phys_id in self.smarties:
@@ -164,10 +201,12 @@ class Universe:
         self.beams = []
         self.smarties = dict() # all 'smart' objects that can interact with the server
         self.expired = []
+        self.queries = Universe.MonotonicDict()
+        
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
-        self.net = MIMOServer(self.handle_message, port = 5505)
+        self.net = MIMOServer(self.handle_message, self.hangup_objects, port = 5505)
         self.sim_thread = Universe.ThreadSim(self)
         self.curator = ArtCurator(self)
         self.vis_data_clients = []
@@ -207,6 +246,12 @@ class Universe:
             self.attractors.remove(obj)
         self.phys_objects.remove(obj)
         self.phys_lock.release()
+
+    def hangup_objects(self, client):
+        for s_key in self.smarties:
+            s = self.smarties[s_key]
+            if s.client == client:
+                self.expired.append(s)
 
     def destroy_beam(self, beam):
         self.phys_lock.acquire()
@@ -339,7 +384,6 @@ class Universe:
             elif isinstance(o, PhysicsObject):
                 self.phys_objects.remove(o)
                 if isinstance(o, SmartPhysicsObject):
-                    print len(self.smarties)
                     del self.smarties[o.phys_id]
 
         self.expired = []
@@ -409,7 +453,7 @@ if __name__ == "__main__":
                             #position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
                             #mass = rand.random() * 2500 + 7500,
                             #radius = 10,
-                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid")
+                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid" + str(i))
         #uni.add_object(obj)
 
     #r = 10000000
@@ -426,7 +470,7 @@ if __name__ == "__main__":
                             #velocity = [ 0.0, 0.0, 0.0 ],
                             #mass = rand.random() * 100000000 + 1e15,
                             #radius = 500000 + rand.random() * 2000000,
-                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet")
+                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet" + str(i))
         #uni.add_object(obj)
         
     print len(uni.phys_objects)

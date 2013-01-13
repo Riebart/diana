@@ -2,161 +2,13 @@
 
 import sys
 import socket
+from vector import Vector3
 from math import sin, cos, pi, sqrt
 from mimosrv import MIMOServer
 from message import Message
 from message import HelloMsg, GoodbyeMsg, PhysicalPropertiesMsg, VisualPropertiesMsg, CollisionMsg, ScanResultMsg
-from message import VisualDataEnableMsg, VisualMetaDataEnableMsg
+from message import VisualDataEnableMsg, VisualMetaDataEnableMsg, ScanQueryMsg
 from message import BeamMsg
-
-class Vector3:
-    zero = Vector3([0, 0, 0])
-
-    def __init__(self, v, y = None, z = None):
-        if y == None:
-            self.x = v[0]
-            self.y = v[1]
-            self.z = v[2]
-        else:
-            self.x = v
-            self.y = y
-            self.z = z
-
-    def clone(self):
-        return Vector3(self.x, self.y, self.z)
-
-    #def __init__(self, x, y, z):
-        #self.x = x
-        #self.y = y
-        #self.z = z
-
-    def length(self):
-        r = self.x * self.x + self.y * self.y + self.z * self.z
-        return sqrt(r)
-
-    def length2(self):
-        r = self.x * self.x + self.y * self.y + self.z * self.z
-        return r
-
-    def dist(self, v):
-        x = v.x - self.x
-        y = v.y - self.y
-        z = v.z - self.z
-        return sqrt(x * x + y * y + z * z)
-
-    def dist2(self, v):
-        x = v.x - self.x
-        y = v.y - self.y
-        z = v.z - self.z
-        return x * x + y * y + z * z
-
-    # Returns a unit vector that originates at v and goes to this vector.
-    def ray(self, v):
-        x = v.x - self.x
-        y = v.y - self.y
-        z = v.z - self.z
-        m = sqrt(x * x + y * y + z * z)
-        return Vector3([x / m, y / m, z / m])
-
-    def unit(self):
-        l = self.length()
-        return Vector3([self.x / l, self.y / l, self.z / l])
-
-    # In this case, self is the first vector in the cross product, because order
-    # matters here
-    def cross(self, v):
-        rx = self.y * v.z - self.z * v.y
-        ry = self.z * v.x - self.x * v.z
-        rz = self.x * v.y - self.y * v.x
-        return Vector3([rx, ry, rz])
-
-    # Drag self down v until they dot to zero. Assumes v is normalized.
-    def project_down_n(self, v):
-        s = self.dot(v)
-        return Vector3.combine([[1, self], [-s, v]])
-
-    @staticmethod
-    # Combines a linear combination of a bunch of vectors
-    def combine(vecs):
-        rx = 0.0
-        ry = 0.0
-        rz = 0.0
-        
-        for v in vecs:
-            rx += v[0] * v[1].x
-            ry += v[0] * v[1].y
-            rz += v[0] * v[1].z
-
-        return Vector3([rx, ry, rz])
-
-    def normalize(self):
-        l = self.length()
-        self.x /= l
-        self.y /= l
-        self.z /= l
-
-    def scale(self, c):
-        self.x *= c
-        self.y *= c
-        self.z *= c
-
-    # Adds v to self.
-    def add(self, v, s = 1):
-        self.x += s * v.x
-        self.y += s * v.y
-        self.z += s * v.z
-
-    #override +
-    def __add__(self, other):
-        return Vector3([self.x+other.x, self.y+other.y, self.z+other.z])
-
-    def sub(self, v):
-        self.x -= v.x
-        self.y -= v.y
-        self.z -= v.z
-
-    #override -
-    def __sub__(self, other):
-        return Vector3([self.x-other.x, self.y-other.y, self.z-other.z])
-
-    def dot(self, v):
-        return self.x * v.x + self.y * v.y + self.z * v.z
-
-    @staticmethod
-    def almost_zeroS(v):
-        # Python doesn't seem to be able to distinguish exponents below -300,
-        # So we'll cut off at -150
-        if -1e-150 < v and v < 1e-150:
-            return 1
-        else:
-            return 0
-
-    def almost_zero(self):
-        if Vector3.almost_zeroS(self.x) and Vector3.almost_zeroS(self.y) and Vector3.almost_zeroS(self.z):
-            return 1
-        else:
-            return 0
-
-    #overrid []
-    def __getitem__(self, index):
-        if index == 0:
-            return self.x
-        if index == 1:
-            return self.y
-        if index == 2:
-            return self.z
-
-        raise IndexError('Vector3 has only 3 dimensions')
-
-    def __setitem__(self, index, value):
-        if index == 0:
-            self.x = value
-        elif index == 1:
-            self.y = value
-        elif index == 2:
-            self.z = value
-        else:
-            raise IndexError('Vector3 has only 3 dimensions')
 
 # ### TODO ### implement grids, this ties into physics, but the properties
 #  need to be added here.
@@ -182,6 +34,7 @@ class PhysicsObject:
                     radius = None,
                     thrust = None,
                     object_type = "Unknown"):
+        self.universe = universe
         self.phys_id = universe.get_id()
         self.position = Vector3(position) if position else None
         self.velocity = Vector3(velocity) if velocity else None
@@ -333,6 +186,7 @@ class PhysicsObject:
                 result_beam = obj.make_return_beam(energy, p)
                 result_beam.beam_type = "SCANRESULT"
                 result_beam.scan_target = self
+                self.universe.add_beam(result_beam)
 
 class SmartPhysicsObject(PhysicsObject):
     def __init__(self, universe, client, osim_id,
@@ -344,7 +198,6 @@ class SmartPhysicsObject(PhysicsObject):
                     thrust = None,
                     object_type = "Unknown"):
         PhysicsObject.__init__(self, universe, position, velocity, orientation, mass, radius, thrust, object_type)
-        self.universe = universe
         self.client = client
         self.osim_id = osim_id
         self.vis_data = 0
@@ -441,9 +294,13 @@ class SmartPhysicsObject(PhysicsObject):
             CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
             self.resolve_phys_collision(energy, d, p)
         elif isinstance(obj, Beam):
-            if obj.beam_type == "SCANRESULT":
+            if obj.beam_type == "SCAN":
+                print "IN SMARTY", self.object_type
+                query_id = self.universe.queries.add([obj, energy, self])
+                ScanQueryMsg.send(self.client, self.phys_id, self.osim_id, [ query_id, energy, d.x, d.y, d.z ])
+            elif obj.beam_type == "SCANRESULT":
                 ScanResultMsg.send(self.client, self.phys_id, self.osim_id, PhysicalPropertiesMsg.make_from_object(obj.scan_target, self.position, self.velocity))
-            if obj.beam_type == "COMM":
+            elif obj.beam_type == "COMM":
                 CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
             else:
                 CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
@@ -471,7 +328,7 @@ class Beam:
         self.distance_travelled = 0
 
         # We'll use a threshold energy coming back as 10^-10, or a tenth of a nanoJoule
-        self.max_distance = sqrt(self.energy / (self.area_factor * 10E1))
+        self.max_distance = sqrt(self.energy / (self.area_factor * Beam.solid_angle_factor * 10E1))
 
     @staticmethod
     def collide(b, obj, dt):
@@ -489,6 +346,14 @@ class Beam:
 
         pe = Vector3.combine([[1, ps], [1, v]])
 
+        proj_s = [ ps.project_down_n(b.up), ps.project_down_n(b.right) ]
+        proj_s[0].normalize()
+        proj_s[1].normalize()
+        
+        proj_e = [ pe.project_down_n(b.up), pe.project_down_n(b.right) ]
+        proj_e[0].normalize()
+        proj_e[1].normalize()
+
         # Project the position down the up vector and dot with the direction for
         # the cosine fo the horizontal angle, and project it down the right and dot
         # with direction to get the vertical angle.
@@ -496,12 +361,8 @@ class Beam:
         # Note that cosine decreses from 1 to -1 as the angle goes from 0 to 180.
         # We are inside, if we are > than the cosine of our beam.
         
-        current = [ ps.project_down_n(b.up).dot(b.direction),
-                    ps.project_down_n(b.right).dot(b.direction) ]
-
-        future  = [ pe.project_down_n(b.up).dot(b.direction),
-                    pe.project_down_n(b.right).dot(b.direction) ]
-
+        current = [ proj_s[0].dot(b.direction), proj_s[1].dot(b.direction) ]
+        future = [ proj_s[0].dot(b.direction), proj_s[1].dot(b.direction) ]
         delta = [ future[0] - current[0], future[1] - current[1] ]
 
         current_b = [ int(current[0] > b.cosines[0]), int(current[1] > b.cosines[1]) ]
@@ -511,11 +372,20 @@ class Beam:
         leaving = 1.0
 
         for i in [0,1]:
-            # if we're out, and coming in
-            if current[i] == 0 and future[i] == 1:
-                entering = max(entering, (b.cosines[i] - current[i]) / delta[i])
-            elif current[i] == 1 and future[i] == 0:
-                leaving = min(leaving, (current[i] - b.cosines[i]) / delta[i])
+            if current_b[i] == 0:
+                if future_b[i] == 1:
+                    # if we're out, and coming in
+                    entering = max(entering, (b.cosines[i] - current[i]) / delta[i])
+                else:
+                    # if we're out, and staying out
+                    return -1
+            elif current_b[i] == 1:
+                if future_b[i] == 0:
+                    # if we're in, and going out
+                    leaving = min(leaving, (current[i] - b.cosines[i]) / delta[i])
+                else:
+                    # if we're in and staying in
+                    pass
 
         # If we have to enter some planes, and are leaving other planes, but
         # we don't enter until after we leave, we can bail.
@@ -556,7 +426,7 @@ class Beam:
         right = self.right.clone()
         right.scale(-1)
 
-        return Beam(self.universe, origin, direction, up, self.cosines, self.area_factor, velocity, energy, None)
+        return Beam(self.universe, origin, direction, self.up, self.right, self.cosines, self.area_factor, velocity, energy, None)
 
     def collision(self, obj, energy, position, shadow):
         # ### TODO ### Beam occlusion
@@ -567,6 +437,7 @@ class Beam:
         self.front_position.add(self.velocity, dt)
 
         if self.distance_travelled > self.max_distance:
+            print "Expiring beam after", self.distance_travelled
             self.universe.expired.append(self)
 
     @staticmethod
