@@ -152,4 +152,7 @@ class Vector3:
         else:
             raise IndexError('Vector3 has only 3 dimensions')
 
+    def __repr__(self):
+        return "<%f, %f, %f>" % (self.x, self.y, self.z)
+
 zero3d = Vector3(0, 0, 0)

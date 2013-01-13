@@ -21,11 +21,11 @@ class Ship(SmartObject):
         #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
         #pass
         
-    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=1000000.0):
+    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
         
         laser = WeaponBeam(self.osim)
         
-        self.init_beam(laser, power, 50000.0, direction, h_focus, v_focus)
+        self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
         
         self.fire_beam(laser)
     

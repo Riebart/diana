@@ -38,7 +38,7 @@ class SmartObject(SpaceObject, threading.Thread):
                 299792458.0, 0.0, 0.0,
                 0.0, 0.0, 0.0,
                 2*pi,
-                pi,
+                2*pi,
                 power,
                 "WEAP" ])  
     
