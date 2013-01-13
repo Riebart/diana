@@ -221,8 +221,6 @@ class SmartPhysicsObject(PhysicsObject):
             # ### TODO ### In any real language, we'll need to figure out who
             # still is keeping track of this object if the universe isn't...
             self.universe.expired.append(self)
-            self.client.shutdown(socket.SHUT_RDWR)
-            self.client.close()
             
         elif isinstance(msg, PhysicalPropertiesMsg):
             if msg.object_type != None:
@@ -280,6 +278,15 @@ class SmartPhysicsObject(PhysicsObject):
                 self.universe.curator.register_client(self, self.vis_meta_data)
 
         elif isinstance(msg, BeamMsg):
+            msg.origin[0] += self.position.x
+            msg.origin[1] += self.position.y
+            msg.origin[2] += self.position.z
+
+            # ### TODO ### Relativistic velocity composition?
+            msg.velocity[0] += self.velocity.x
+            msg.velocity[0] += self.velocity.y
+            msg.velocity[0] += self.velocity.z
+            
             beam = Beam.build(msg, self.universe)
 
             if msg.beam_type == "COMM":
@@ -365,9 +372,9 @@ class Beam:
         future = [ proj_s[0].dot(b.direction), proj_s[1].dot(b.direction) ]
         delta = [ future[0] - current[0], future[1] - current[1] ]
 
-        current_b = [ int(current[0] > b.cosines[0]), int(current[1] > b.cosines[1]) ]
-        future_b = [ int(future[0] > b.cosines[0]), int(future[1] > b.cosines[1]) ]
-
+        current_b = [ int(current[0] >= b.cosines[0]), int(current[1] >= b.cosines[1]) ]
+        future_b = [ int(future[0] >= b.cosines[0]), int(future[1] >= b.cosines[1]) ]
+        
         entering = 0.0
         leaving = 1.0
 
@@ -437,7 +444,6 @@ class Beam:
         self.front_position.add(self.velocity, dt)
 
         if self.distance_travelled > self.max_distance:
-            print "Expiring beam after", self.distance_travelled
             self.universe.expired.append(self)
 
     @staticmethod
