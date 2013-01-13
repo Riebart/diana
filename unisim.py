@@ -5,7 +5,7 @@ import time
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
-from message import Message, HelloMsg, VisualDataMsg, VisualMetaDataMsg
+from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualMetaDataMsg
 
 VERSION = 0
 
@@ -138,12 +138,17 @@ class Universe:
         except:
             return None
 
-        # ### TODO ### Add more logic for other message types that might appear
-        # in a vacuum.
-
         #print msg
 
         # And now, we branch out according to the message.
+        if isinstance(msg, SpawnMsg):
+            if (msg.position == None or msg.velocity == None or msg.orientation == None or
+                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None)
+                return
+
+            newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
+                                    msg.mass, msg.radius, msg.thrust, msg.object_type)
+            self.add_object(newobj)
         if isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
             newsmarty.handle(msg)
@@ -151,10 +156,14 @@ class Universe:
             self.smarties[phys_id].handle(msg)
 
     def __init__(self):
+        # ### TODO ### Fix locking around adding objects. Technically, things are either
+        # doing weird unlocked operations, or are blocking for a physics tick, potentially
+        # stalling a TCP connection while blocked. Not cool bro.
         self.attractors = []
         self.phys_objects = []
         self.beams = []
         self.smarties = dict() # all 'smart' objects that can interact with the server
+        self.expired = []
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
         # ### PARAMETER ###  UNIVERSE TCP PORT
@@ -321,7 +330,20 @@ class Universe:
 
         for b in self.beams:
             b.tick(dt)
-                
+
+        # Handle all of the expired items. This is asteroids that got destroyed,
+        # Beams that have gone too far, and Smarties that disconnected.
+        for o in self.expired:
+            if isinstance(o, Beam):
+                self.beams.remove(o)
+            elif isinstance(o, PhysicsObject):
+                self.phys_objects.remove(o)
+                if isinstance(o, SmartPhysicsObject):
+                    print len(self.smarties)
+                    del self.smarties[o.phys_id]
+
+        self.expired = []
+            
         self.phys_lock.release()
 
     def start_sim(self):

@@ -276,11 +276,10 @@ class PhysicalPropertiesMsg(Message):
         return ret
 
     @staticmethod
-    # ### TODO ### Make the returned position and velocity relative to the parameters.
-    def make_from_object(obj, origin, velocity):
+    def make_from_object(obj, p = Vector3.zero, v = Vector3.zero):
         return [ obj.object_type, obj.mass,
-                    obj.position.x, obj.position.y, obj.position.z,
-                    obj.velocity.x, obj.velocity.y, obj.velocity.z,
+                    obj.position.x - p.x, obj.position.y - p.y, obj.position.z - p.z,
+                    obj.velocity.x - v.x, obj.velocity.y - v.y, obj.velocity.z - v.z,
                     obj.orientation.x, obj.orientation.y, obj.orientation.z,
                     obj.thrust.x, obj.thrust.y, obj.thrust.z,
                     obj.radius ]
