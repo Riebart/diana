@@ -500,7 +500,7 @@ class ScanResultMsg(Message):
 class ScanQueryMsg(Message):
     def __init__(self, s):
         self.scan_id = Message.read_int(s)
-        self.scan_str = Message.read_double(s)
+        self.scan_power = Message.read_double(s)
         self.scan_dir = Message.read_double3(s)
     
     @staticmethod
