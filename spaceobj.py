@@ -84,7 +84,7 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
     
     def handle_scan(self, mess):
-        pass
+        return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, "")        
     
     def handle_scanresult(self, mess):
         pass
@@ -172,9 +172,6 @@ class SmartObject(SpaceObject, threading.Thread):
                 print str(mess)
         
 
-
-    
-    
 
 
 class Beam(SpaceObject):
