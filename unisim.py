@@ -349,7 +349,7 @@ class Universe:
         for i in range(0, N):
             for j in range(i + 1, N):
                 # ret from a physical collision is
-                #     [t, [e1, e2], [d1, d2], [p1, p2]]
+                #     [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
                 # t is in [0,1] and indicates when in the interval teh collision happened
                 # energy is obvious
                 # d1 is the direction obj2 was travelling relative to obj1 when they collided
@@ -357,8 +357,8 @@ class Universe:
                 ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
                 
                 if ret != -1:
-                    self.phys_objects[i].collision(self.phys_objects[j], ret[1][0], ret[2][0], ret[3][0])
-                    self.phys_objects[j].collision(self.phys_objects[i], ret[1][1], ret[2][1], ret[3][1])
+                    self.phys_objects[i].collision(self.phys_objects[j], ret[1][0], ret[2])
+                    self.phys_objects[j].collision(self.phys_objects[i], ret[1][1], ret[3])
 
             # While we're running through the physical objects, collide the beams too
             # ret from a beam collision is
@@ -367,7 +367,7 @@ class Universe:
                 ret = Beam.collide(b, self.phys_objects[i], dt)
 
                 if ret != -1:
-                    self.phys_objects[i].collision(b, ret[1], ret[2], ret[3])
+                    self.phys_objects[i].collision(b, ret[1], [ ret[2], ret[3] ])
                     b.collision(self.phys_objects[i], ret[1], ret[3], ret[4])
 
         for i in range(0, N):

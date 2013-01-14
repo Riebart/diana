@@ -63,7 +63,7 @@ def testShip():
     sys.stdout.flush()
 
     ship2 = ship.Ship(osim, type="Ship 2")
-    ship2.location = Vector3( (1000.0,0.0,0.0) )
+    ship2.location = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
     print "ship2 osimid is: %d" % ship2.osid
@@ -142,8 +142,8 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
+testShip()
 #testSimpleShip()
 #stressTest()
 #test_threads()
-testBeam()
+#testBeam()

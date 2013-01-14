@@ -128,24 +128,55 @@ class PhysicsObject:
 
         r = (obj1.radius + obj2.radius)
         r *= r
-        
+
         if o1.dist2(o2) <= r:
             # ### TODO ### Relativistic kinetic energy
+            # ### TODO ### Angular velocity, which reqires location.
+
+            # collision normal
+            n = obj2.position - obj1.position
+            n.normalize()
+
+            # Collision tangential velocities. These parts don't change in the collision
+            t1 = Vector3.combine([[1, obj1.velocity], [- obj1.velocity.dot(n), n]])
+            t1.normalize()
+            t1.scale(obj1.velocity.dot(t1))
+
+            t2 = Vector3.combine([[1, obj2.velocity], [- obj2.velocity.dot(n), n]])
+            t2.normalize()
+            t2.scale(obj2.velocity.dot(t2))
+
+            # Now we need the amount of energy transferred in each direction along the normal
+            if obj1.mass == 0:
+                n1 = None
+                e1 = 0
+            else:
+                n1 = n.clone()
+                e1 = obj2.velocity.dot(n)
+                n1.scale(e1 * obj2.mass / obj1.mass)
+                e1 = e1 * e1 * 0.5 * obj2.mass
+
+            if obj2.mass == 0:
+                vn2 = None
+                vn2l = 0
+            else:
+                n2 = n.clone()
+                e2 = obj1.velocity.dot(n)
+                n2.scale(e2 * obj1.mass / obj2.mass)
+                e2 = e2 * e2 * 0.5 * obj1.mass
+
             v = obj2.velocity - obj1.velocity
-            vl = v.length2()
-
-            e1 = 0.5 * obj2.mass * vl
-            e2 = 0.5 * obj1.mass * vl
-
             d1 = v.unit()
             d2 = d1.clone()
             d2.scale(-1)
 
             p1 = o2 - o1
+            p1.normalize()
             p2 = p1.clone()
-            p2.scale(-1)
+            p1.scale(obj1.radius)
+            p2.scale(-1 * obj2.radius)
 
-            return [t, [e1, e2], [d1, d2], [p1, p2]]
+            return [t, [e1, e2], [d1, p1, t1, n1], [d2, p2, t2, n2]]
         else:
             return -1
 
@@ -163,21 +194,13 @@ class PhysicsObject:
         if self.health <= 0:
             self.universe.expired.append(self)
 
-    def resolve_phys_collision(self, energy, direction, location):
-        # ### TODO ### Angular velocity, which reqires location.
-        # ### TODO ### I think I manufacture energy
+    def resolve_phys_collision(self, energy, args):
+        self.velocity = args[2] + args[3]
+        print "Setting velocity of", self.phys_id, "to", self.velocity
 
-        if self.mass == 0:
-            return
-
-        speed = sqrt(2 * energy / self.mass)
-        direction.scale(speed)
-
-        self.velocity.add(direction)
-
-    def collision(self, obj, energy, d, p):
+    def collision(self, obj, energy, args):
         if isinstance(obj, PhysicsObject):
-            self.resolve_phys_collision(energy, d, p)
+            self.resolve_phys_collision(energy, args)
             self.resolve_damage(energy)
         elif isinstance(obj, Beam):
             if obj.beam_type == "WEAP":
@@ -296,10 +319,12 @@ class SmartPhysicsObject(PhysicsObject):
 
     # I was in a collision with the other object, with a certain amount of energy,
     # the other object came from d and hit me at p
-    def collision(self, obj, energy, d, p):
+    def collision(self, obj, energy, args):
+        d = args[0]
+        p = args[1]
         if isinstance(obj, PhysicsObject):
             CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
-            self.resolve_phys_collision(energy, d, p)
+            self.resolve_phys_collision(energy, args)
         elif isinstance(obj, Beam):
             if obj.beam_type == "SCAN":
                 print "IN SMARTY", self.object_type
