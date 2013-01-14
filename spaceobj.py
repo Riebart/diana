@@ -86,7 +86,6 @@ class SmartObject(SpaceObject, threading.Thread):
     def handle_scan(self, mess):
         ## From Mike: This would be where you
         ## alert to the fact that "I just got my skirt looked up!"
-        ##return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id ])
         pass
     
     def handle_scanresult(self, mess):
@@ -111,9 +110,13 @@ class SmartObject(SpaceObject, threading.Thread):
         elif collision.collision_type == "SCANRESULT":
             self.handle_scanresult(collision)
     
+    def make_response(self, power):
+        return self.type
+    
     def handle_query(self, mess):
         # This is where we respond to SCANQUERY messages.
-        return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id, "cargo = Hookers and blow" ])
+        # return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id, self.make_response(), mess.power ])
+        return message.ScanResponseMsg.send(self.sock, self.uniid, self.osid, [ mess.scan_id, self.make_response(mess.scan_power) ])
         pass
     
     def take_damage(self, amount):
@@ -242,7 +245,7 @@ class ScanBeam(Beam):
 
 #a dumbfire missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=100.0):
+    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=10000000.0):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
         self.payload = payload
@@ -277,7 +280,8 @@ class HomingMissile1(Missile):
     #so this is not great. Only works if there is a single target 'in front of' the missile
     def handle_scanresult(self, mess):
         enemy_pos = Vector3(mess.position)
-        distance = self.location.distance(enemy_pos)
+        #distance = self.location.distance(enemy_pos)
+        distance = enemy_pos.length()
         if distance < fuse:
             self.detonate()
         else:
