@@ -249,7 +249,7 @@ class ScanBeam(Beam):
 
 #a dumbfire missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, type="dummy", payload=10000000.0):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy", payload=1.3e21):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
         self.payload = payload
@@ -274,7 +274,7 @@ class Missile(SmartObject):
 
 
 class HomingMissile1(Missile):
-    def __init__(self, osim, osid=0, uniid=0, payload=10000000.0, direction=[1,0,0]):
+    def __init__(self, osim, osid=0, uniid=0, payload=1.3e21, direction=[1,0,0]):
         Missile.__init__(self, osim, osid, uniid, "HomingMissile", payload)
         self.direction = direction
         self.tout_val = 1
@@ -311,14 +311,15 @@ class HomingMissile1(Missile):
             new_dir.scale(self.thrust.length())
             print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
             self.set_thrust(new_dir)
+            self.orient = enemy_pos.unit()
     
     def do_scan(self):
         scan = ScanBeam(self.osim)
-        if (self.velocity.length() > 0):
-            tmp_dir = self.velocity.unit()
-        else:
-            tmp_dir = self.orient
-        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/3, v_focus=pi/3)
+        #if (self.velocity.length() > 0):
+            #tmp_dir = self.velocity.unit()
+        #else:
+        tmp_dir = self.orient
+        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/4, v_focus=pi/4)
         scan.send_it(self.sock)
 
     def run(self):
