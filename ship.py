@@ -68,12 +68,13 @@ class Ship(SmartObject):
         #should missile have our initial velocity?
         missile.velocity = self.velocity
         
-        tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-        tmp.scale(thrust_power * -1)                
+        tmp = direction.unit()
+        tmp.scale(thrust_power)                
         missile.thrust = tmp        
         missile.orient = direction
                 
         self.osim.spawn_object(missile)
         
+        return missile
         #self.cur_missiles -= 1
     

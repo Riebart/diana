@@ -73,6 +73,9 @@ class ObjectSim:
                 obj.radius
                 ) )
                 
+            if obj.tout_val > 0:
+                obj.sock.settimeout(obj.tout_val)
+                
             #object is prepped, hand over message handling to new object
             obj.start()
         

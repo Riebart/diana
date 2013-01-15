@@ -29,6 +29,7 @@ class SmartObject(SpaceObject, threading.Thread):
         self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
         self.done = False
+        self.tout_val = 0
         pass
     
     
@@ -130,9 +131,9 @@ class SmartObject(SpaceObject, threading.Thread):
     
     def set_thrust(self, x, y=None, z=None):
         if (y==None):
-            return self.set_thrust(thrust[0], thrust[1], thrust[2])
+            return self.set_thrust(x[0], x[1], x[2])
         self.thrust = Vector3(x,y,z)
-        return message.PhysicalPropertiesMsg.send(self.sock, self.uniid, self.osid( 
+        return message.PhysicalPropertiesMsg.send(self.sock, self.uniid, self.osid, ( 
             "",
             "",
             "", "", "",
@@ -214,7 +215,7 @@ class Beam(SpaceObject):
                 
          
     def send_it(self, sock):
-        message.Beam.send(sock, self.uniid, self.osid, self.build_common())   
+        message.BeamMsg.send(sock, self.uniid, self.osid, self.build_common())   
         
         
 class CommBeam(Beam):
@@ -245,7 +246,7 @@ class ScanBeam(Beam):
 
 #a dumbfire missile, for example
 class Missile(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, typ="dummy", payload=10000000.0):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy", payload=10000000.0):
         SmartObject.__init__(self, osim, osid, uniid)
         self.type = type      #annoyingly, 'type' is a python keyword
         self.payload = payload
@@ -274,38 +275,44 @@ class HomingMissile1(Missile):
         Missile.__init__(self, osim, osid, uniid, "HomingMissile", payload)
         self.direction = direction
         self.tout_val = 0.5
-        self.sock.settimeout(self.tout_val)
-        self.fuse = 20.0    #distance in meters to explode from target
+        #self.sock.settimeout(self.tout_val)
+        self.fuse = 100.0    #distance in meters to explode from target
 
     #so this is not great. Only works if there is a single target 'in front of' the missile
     def handle_scanresult(self, mess):
         enemy_pos = Vector3(mess.position)
+        enemy_vel = Vector3(mess.velocity)
         #distance = self.location.distance(enemy_pos)
         distance = enemy_pos.length()
-        if distance < fuse:
+        if distance < self.fuse+mess.radius:
             self.detonate()
         else:
             new_dir = enemy_pos.unit()
             new_dir.scale(self.thrust.length())
+            print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %f" % (distance-mess.radius))
             self.set_thrust(new_dir)
     
-    def do_scan(self, mess):
+    def do_scan(self):
         scan = ScanBeam(self.osim)
-        self.init_beam(scan, 100.0, 50000.0, self.velocity)
+        if (self.velocity.length() > 0):
+            tmp_dir = self.velocity.unit()
+        else:
+            tmp_dir = self.orient
+        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/4, v_focus=pi/4)
         scan.send_it(self.sock)
 
     def run(self):
         while not self.done:
             
-            val = self.messageHandler()[0]
+            val = self.messageHandler()
             
             #nothing happened, do a scan
             if (val == None):
                 self.do_scan()
-            elif isinstance(val, message.CollisionMsg):
-                self.handle_collision(val)
-            elif isinstance(val, message.ScanResultMsg):
-                self.handle_scanresult(val)
+            elif isinstance(val[0], message.CollisionMsg):
+                self.handle_collision(val[0])
+            elif isinstance(val[0], message.ScanResultMsg):
+                self.handle_scanresult(val[0])
 
 
 
