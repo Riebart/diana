@@ -1,8 +1,9 @@
-import threading
+#import threading
+import multiprocessing
 import message
 from vector import Vector3
 import socket
-from math import pi
+from math import pi, sqrt
 
 import time
 
@@ -22,10 +23,12 @@ class SpaceObject:
         pass
 
 
-class SmartObject(SpaceObject, threading.Thread):
+#class SmartObject(SpaceObject, threading.Thread):
+class SmartObject(SpaceObject, multiprocessing.Process):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
-        threading.Thread.__init__(self)
+        #threading.Thread.__init__(self)
+        multiprocessing.Process.__init__(self)
         self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
         self.done = False
@@ -271,25 +274,42 @@ class Missile(SmartObject):
 
 
 class HomingMissile1(Missile):
-    def __init__(self, osim, osid=0, uniid=0, payload=0.0, direction=[1,0,0]):
+    def __init__(self, osim, osid=0, uniid=0, payload=10000000.0, direction=[1,0,0]):
         Missile.__init__(self, osim, osid, uniid, "HomingMissile", payload)
         self.direction = direction
-        self.tout_val = 0.5
+        self.tout_val = 1
         #self.sock.settimeout(self.tout_val)
         self.fuse = 100.0    #distance in meters to explode from target
 
     #so this is not great. Only works if there is a single target 'in front of' the missile
+    #def handle_scanresult(self, mess):
+        #enemy_pos = Vector3(mess.position)
+        #enemy_vel = Vector3(mess.velocity)
+        ##distance = self.location.distance(enemy_pos)
+        #distance = enemy_pos.length()
+        #if distance < self.fuse+mess.radius:
+            #self.detonate()
+        #else:
+            #new_dir = enemy_pos.unit()
+            #new_dir.scale(self.thrust.length())
+            #print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
+            #self.set_thrust(new_dir)
+            
+            
     def handle_scanresult(self, mess):
         enemy_pos = Vector3(mess.position)
         enemy_vel = Vector3(mess.velocity)
-        #distance = self.location.distance(enemy_pos)
         distance = enemy_pos.length()
         if distance < self.fuse+mess.radius:
             self.detonate()
         else:
-            new_dir = enemy_pos.unit()
+            time_to_target = sqrt(2*distance/(self.thrust.length()/self.mass))
+            enemy_vel.scale(time_to_target/2) #dampen new position by 2, to prevent overshoots
+            tar_new_pos = enemy_vel+enemy_pos
+            #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
+            new_dir = tar_new_pos.unit()
             new_dir.scale(self.thrust.length())
-            print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %f" % (distance-mess.radius))
+            print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
             self.set_thrust(new_dir)
     
     def do_scan(self):
@@ -298,7 +318,7 @@ class HomingMissile1(Missile):
             tmp_dir = self.velocity.unit()
         else:
             tmp_dir = self.orient
-        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/4, v_focus=pi/4)
+        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/3, v_focus=pi/3)
         scan.send_it(self.sock)
 
     def run(self):
