@@ -9,7 +9,7 @@ import message
 import sys
 
 class Ship(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=5510):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=None):
         SmartObject.__init__(self, osim, osid, uniid)
         self.name = "Unkown"
         self.type = type
@@ -19,13 +19,14 @@ class Ship(SmartObject):
         self.mass = 100000.0 #100 Tonnes?
         self.energy = 1000
         
-        self.listen_port = port
-        self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
-        self.clients = []
-        self.vis_clients = []
-        self.vis_enabled = False
-        
-        self.client_net.start()
+        if (port != None):
+            self.listen_port = port
+            self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
+            self.clients = []
+            self.vis_clients = []
+            self.vis_enabled = False
+            
+            self.client_net.start()
         
     def do_scan(self):
         pass
