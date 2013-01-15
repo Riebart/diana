@@ -205,7 +205,7 @@ class PhysicsObject:
             if obj.beam_type == "WEAP":
                 self.resolve_damage(energy)
             elif obj.beam_type == "SCAN":
-                result_beam = obj.make_return_beam(energy, p)
+                result_beam = obj.make_return_beam(energy, args[1])
                 result_beam.beam_type = "SCANRESULT"
                 result_beam.scan_target = self
                 self.universe.add_beam(result_beam)
