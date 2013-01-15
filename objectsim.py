@@ -26,18 +26,19 @@ class ObjectSim:
         pass
 
 
+    #TODO: This code is out-of-date, and needs updating
     def register_client(self, sock):
         #append new client
         self.client_list.append(Client(sock))
         sock.send("Hi There! Thanks for connecting to the object simulator! There is nothing to do here, yet.")
 
 
-    #assume object already constructed, with appropriate vals?
+    #assume object already constructed, with appropriate vals
     def spawn_object(self, obj):        
         #give object its osid
         self.id_lock.acquire()
-        self.total_objs += 1
         obj.osid = self.total_objs
+        self.total_objs += 1
         self.id_lock.release()
         
         self.object_list[obj.osid] = obj

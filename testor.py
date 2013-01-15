@@ -130,8 +130,8 @@ def testHoming():
     sys.stdout.flush()
 
     ship2 = ship.Ship(osim, type="Ship 2")
-    ship2.location = Vector3( (10000.0,0.0,0.0) )
-    ship2.velocity = Vector3( (0, 100, 0) )
+    ship2.location = Vector3( (50000.0,0.0,0.0) )
+    ship2.velocity = Vector3( (0, 1000, 0) )
     osim.spawn_object(ship2)
 
     print "ship2 osimid is: %d" % ship2.osid
@@ -139,7 +139,7 @@ def testHoming():
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
-    miss1 = ship1.fire_homing(direction, 5000.0)
+    miss1 = ship1.fire_homing(direction, 50000.0)
 
     print "miss1 osimid is: %d" % miss1.osid
     print "miss1 unisim is: %d" % miss1.uniid

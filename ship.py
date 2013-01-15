@@ -3,9 +3,13 @@
 from vector import Vector3
 from spaceobj import *
 import math
+from mimosrv import MIMOServer
+import message
+        
+import sys
 
 class Ship(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship"):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=5510):
         SmartObject.__init__(self, osim, osid, uniid)
         self.name = "Unkown"
         self.type = type
@@ -13,10 +17,49 @@ class Ship(SmartObject):
         self.cur_missiles = self.max_missiles
         self.radius = 20.0 #20m?
         self.mass = 100000.0 #100 Tonnes?
+        self.energy = 1000
+        
+        self.listen_port = port
+        self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
+        self.clients = []
+        self.vis_clients = []
+        self.vis_enabled = False
+        
+        self.client_net.start()
         
     def do_scan(self):
         pass
     
+    def handle_visdata(self, mess):
+        for client in self.vis_clients:
+            client.send(mess)
+    
+    #might need some locking here
+    def handle_client(self, client):
+        if client not in self.clients:
+            self.clients.append(client)
+        
+        mess = message.Message.get_message(client)[0]
+
+        
+        if isinstance(mess, message.VisualDataEnableMsg):
+            if mess.enabled == 1:
+                if client not in self.vis_clients:
+                    self.vis_clients.append(client)
+                    print str(len(self.vis_clients))
+                if self.vis_enabled ==  False:
+                    self.enable_visdata()
+                    self.vis_enabled = True
+            else:
+                #delete from vis_clients
+                if client in self.vis_clients:
+                    self.vis_clients.remove(client)
+                if self.vis_enabled and len(self.vis_clients) < 1:
+                    self.disable_visdata()
+                    self.vis_enabled = False
+                    
+        sys.stdout.flush()
+        
     #def handle_phys(self, mess):
         #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
         #pass

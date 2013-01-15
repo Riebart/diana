@@ -113,6 +113,11 @@ class SmartObject(SpaceObject, multiprocessing.Process):
             self.handle_scan(collision)
         elif collision.collision_type == "SCANRESULT":
             self.handle_scanresult(collision)
+        else:
+            print "Bad collision: " + str(collision)
+            
+    def handle_visdata(self, mess):
+        print str(mess)
     
     def make_response(self, power):
         return self.type
@@ -127,10 +132,10 @@ class SmartObject(SpaceObject, multiprocessing.Process):
         pass
     
     def enable_visdata(self):
-        return message.VisualDataEnableMsg.send(self.sock, 1)
+        return message.VisualDataEnableMsg.send(self.sock, self.uniid, self.osid, 1)
 
     def disable_visdata(self):
-        return message.VisualDataEnableMsg.send(self.sock, 0)
+        return message.VisualDataEnableMsg.send(self.sock, self.uniid, self.osid, 0)
     
     def set_thrust(self, x, y=None, z=None):
         if (y==None):
@@ -175,7 +180,7 @@ class SmartObject(SpaceObject, multiprocessing.Process):
             if isinstance(mess, message.CollisionMsg):
                 self.handle_collision(mess)
             elif isinstance(mess, message.VisualDataMsg):
-                print str(mess)
+                self.handle_visdata(mess)
             elif isinstance(mess, message.ScanResultMsg):
                 self.handle_scanresult(mess)
             elif isinstance(mess, message.ScanQueryMsg):
