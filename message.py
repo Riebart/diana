@@ -137,12 +137,15 @@ class Message:
         if client.fileno() == -1:
             return 0
 
-        if phys_id == None:
-            id_str = "\n%d\n" % osim_id
-        elif osim_id == None:
-            id_str = "%d\n\n" % phys_id
+        if phys_id == None and osim_id == None:
+            id_str = "\n\n"
         else:
-            id_str = "%d\n%d\n" % (phys_id, osim_id)
+            if phys_id == None:
+                id_str = "\n%d\n" % osim_id
+            elif osim_id == None:
+                id_str = "%d\n\n" % phys_id
+            else:
+                id_str = "%d\n%d\n" % (phys_id, osim_id)
 
         msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
         full_msg = msg_hdr + msg
@@ -321,7 +324,6 @@ class VisualMetaDataEnableMsg(Message):
 
         ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
-
 
 class VisualMetaDataMsg(Message):
     def __init__(self, s):

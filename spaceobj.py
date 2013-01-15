@@ -272,7 +272,12 @@ class Missile(SmartObject):
     def run(self):
         while not self.done:
             
-            val = self.messageHandler()[0]
+            val = self.messageHandler()
+
+            if val == None:
+                return
+
+            val = val[0]
 
             if isinstance(val, message.CollisionMsg):
                 self.handle_collision(val)

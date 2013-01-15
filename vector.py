@@ -51,7 +51,10 @@ class Vector3:
 
     def unit(self):
         l = self.length()
-        return Vector3([self.x / l, self.y / l, self.z / l])
+        if Vector3.almost_zeroS(l):
+            return Vector3([0,0,0])
+        else:
+            return Vector3([self.x / l, self.y / l, self.z / l])
 
     # In this case, self is the first vector in the cross product, because order
     # matters here

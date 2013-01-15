@@ -196,7 +196,6 @@ class PhysicsObject:
 
     def resolve_phys_collision(self, energy, args):
         self.velocity = args[2] + args[3]
-        print "Setting velocity of", self.phys_id, "to", self.velocity
 
     def collision(self, obj, energy, args):
         if isinstance(obj, PhysicsObject):
@@ -253,10 +252,16 @@ class SmartPhysicsObject(PhysicsObject):
                 self.mass = msg.mass
 
             if msg.position != None:
-                self.position = Vector3(msg.position)
+                if self.position == None:
+                    self.position = Vector3(msg.position)
+                else:
+                    self.position.add(Vector3(msg.position))
 
             if msg.velocity != None:
-                self.velocity = Vector3(msg.velocity)
+                if self.velocity == None:
+                    self.velocity = Vector3(msg.velocity)
+                else:
+                    self.velocity.add(Vector3(msg.velocity))
 
             if msg.orientation != None:
                 self.orientation = Vector3(msg.orientation)

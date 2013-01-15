@@ -97,8 +97,13 @@ class MIMOServer:
 
         def stop(self):
             self.running = 0
-            self.client.shutdown(socket.SHUT_RDWR)
-            self.client.close()
+            try:
+                self.client.shutdown(socket.SHUT_RDWR)
+                self.client.close()
+            except socket.error, e:
+                if e.errno != 10053 and e.errno != 10054:
+                    print "Error hanging up %d" % self.client.fileno()
+                    print "Error:", sys.exc_info()
 
     # ======================================================================
 

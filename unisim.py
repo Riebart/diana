@@ -2,10 +2,12 @@
 
 import threading
 import time
+import socket
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
-from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualMetaDataMsg, ScanResponseMsg
+from message import Message, HelloMsg, SpawnMsg, VisualDataMsg, VisualDataEnableMsg
+from message import VisualMetaDataEnableMsg, VisualMetaDataMsg, ScanResponseMsg
 
 VERSION = 0
 
@@ -168,6 +170,8 @@ class Universe:
         #print msg
 
         # And now, we branch out according to the message.
+        if isinstance(msg, VisualDataEnableMsg):
+            self.register_for_vis_data(client, msg.enabled)
         if isinstance(msg, SpawnMsg):
             if (msg.position == None or msg.velocity == None or msg.orientation == None or
                 msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
@@ -175,6 +179,12 @@ class Universe:
 
             newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
                                     msg.mass, msg.radius, msg.thrust, msg.object_type)
+
+            if phys_id != None:
+                reference = self.smarties[phys_id]
+                newobj.position.add(reference.position)
+                newobj.velocity.add(reference.velocity)
+
             self.add_object(newobj)
 
         elif isinstance(msg, ScanResponseMsg):
@@ -225,7 +235,7 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.1)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.02)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -304,7 +314,10 @@ class Universe:
         for_removal = []
         for c in self.vis_data_clients:
             for m in msgs:
-                ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
+                if isinstance(c, socket.socket):
+                    ret = VisualDataMsg.send(c, None, None, m)
+                else:
+                    ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
 
                 if not ret:
                     c.vis_data = 0
@@ -441,37 +454,36 @@ if __name__ == "__main__":
     r = 1000
     t = 100
 
-    ##make 1000 random physics objects
-    #for i in range(0, 250):
-        #u = rand.random() * 2 * pi
-        #v = rand.random() * 2 * pi
-        #c = r + (rand.random() * 2 - 1) * t
-        #a = rand.random() * t
+    for i in range(0, 25):
+        u = rand.random() * 2 * pi
+        v = rand.random() * 2 * pi
+        c = r + (rand.random() * 2 - 1) * t
+        a = rand.random() * t
 
-        #obj = PhysicsObject(uni,
-                            #velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5],
-                            #position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
-                            #mass = rand.random() * 2500 + 7500,
-                            #radius = 10,
-                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid" + str(i))
-        #uni.add_object(obj)
+        obj = PhysicsObject(uni,
+                            velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5],
+                            position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
+                            mass = rand.random() * 2500 + 7500,
+                            radius = 10,
+                            orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid" + str(i))
+        uni.add_object(obj)
 
-    #r = 10000000
-    #t = 100000
+    r = 10000000
+    t = 100000
 
-    ##make 100 random gravitation objects
-    #for i in range(0, 25):
-        #u = rand.random() * 2 * pi
-        #v = rand.random() * 2 * pi
-        #c = r + (rand.random() * 2 - 1) * t
-        #a = rand.random() * t
+    # These are massive enough to have gravity.
+    for i in range(0, 5):
+        u = rand.random() * 2 * pi
+        v = rand.random() * 2 * pi
+        c = r + (rand.random() * 2 - 1) * t
+        a = rand.random() * t
 
-        #obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
-                            #velocity = [ 0.0, 0.0, 0.0 ],
-                            #mass = rand.random() * 100000000 + 1e15,
-                            #radius = 500000 + rand.random() * 2000000,
-                            #orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet" + str(i))
-        #uni.add_object(obj)
+        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
+                            velocity = [ 0.0, 0.0, 0.0 ],
+                            mass = rand.random() * 100000000 + 1e15,
+                            radius = 500000 + rand.random() * 2000000,
+                            orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet" + str(i))
+        uni.add_object(obj)
         
     print len(uni.phys_objects)
     print len(uni.attractors)
