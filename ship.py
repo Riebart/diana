@@ -19,14 +19,8 @@ class Ship(SmartObject):
         self.mass = 100000.0 #100 Tonnes?
         self.energy = 1000
         
-        if (port != None):
-            self.listen_port = port
-            self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
-            self.clients = []
-            self.vis_clients = []
-            self.vis_enabled = False
-            
-            self.client_net.start()
+        self.listen_port = port
+
         
     def do_scan(self):
         pass
@@ -64,6 +58,17 @@ class Ship(SmartObject):
     #def handle_phys(self, mess):
         #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
         #pass
+        
+    def run(self):
+        if (self.listen_port != None):
+            self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
+            self.clients = []
+            self.vis_clients = []
+            self.vis_enabled = False
+            
+            self.client_net.start()
+            
+        SmartObject.run(self)
         
     def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
         
