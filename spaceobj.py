@@ -307,21 +307,22 @@ class HomingMissile1(Missile):
             
             
     def handle_scanresult(self, mess):
-        enemy_pos = Vector3(mess.position)
-        enemy_vel = Vector3(mess.velocity)
-        distance = enemy_pos.length()
-        if distance < self.fuse+mess.radius:
-            self.detonate()
-        else:
-            time_to_target = sqrt(2*distance/(self.thrust.length()/self.mass))
-            enemy_vel.scale(time_to_target/2) #dampen new position by 2, to prevent overshoots
-            tar_new_pos = enemy_vel+enemy_pos
-            #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
-            new_dir = tar_new_pos.unit()
-            new_dir.scale(self.thrust.length())
-            print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
-            self.set_thrust(new_dir)
-            self.orient = enemy_pos.unit()
+        if ("ship" in mess.object_type or "Ship" in mess.object_type or "SHIP" in mess.object_type):
+            enemy_pos = Vector3(mess.position)
+            enemy_vel = Vector3(mess.velocity)
+            distance = enemy_pos.length()
+            if distance < self.fuse+mess.radius:
+                self.detonate()
+            else:
+                time_to_target = sqrt(2*distance/(self.thrust.length()/self.mass))
+                enemy_vel.scale(time_to_target/2) #dampen new position by 2, to prevent overshoots
+                tar_new_pos = enemy_vel+enemy_pos
+                #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
+                new_dir = tar_new_pos.unit()
+                new_dir.scale(self.thrust.length())
+                print ("Homing missile %d setting new thrust vector " % self.osid) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
+                self.set_thrust(new_dir)
+                self.orient = enemy_pos.unit()
     
     def do_scan(self):
         scan = ScanBeam(self.osim)
@@ -329,7 +330,7 @@ class HomingMissile1(Missile):
             #tmp_dir = self.velocity.unit()
         #else:
         tmp_dir = self.orient
-        self.init_beam(scan, 1000.0, 299792458.0, tmp_dir, h_focus=pi/4, v_focus=pi/4)
+        self.init_beam(scan, 10000.0, 299792458.0, tmp_dir, h_focus=pi/4, v_focus=pi/4)
         scan.send_it(self.sock)
 
     def run(self):
