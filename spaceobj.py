@@ -1,5 +1,5 @@
-#import threading
-import multiprocessing
+import threading
+#import multiprocessing
 import message
 from vector import Vector3
 import socket
@@ -23,12 +23,12 @@ class SpaceObject:
         pass
 
 
-#class SmartObject(SpaceObject, threading.Thread):
-class SmartObject(SpaceObject, multiprocessing.Process):
+class SmartObject(SpaceObject, threading.Thread):
+#class SmartObject(SpaceObject, multiprocessing.Process):
     def __init__(self, osim, osid=0, uniid=0):
         SpaceObject.__init__(self, osim, osid, uniid)
-        #threading.Thread.__init__(self)
-        multiprocessing.Process.__init__(self)
+        threading.Thread.__init__(self)
+        #multiprocessing.Process.__init__(self)
         self.type = "Dummy SmartObject (Error!)"
         self.sock = socket.socket()
         self.done = False

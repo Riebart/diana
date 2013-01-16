@@ -211,10 +211,13 @@ class Universe:
         self.beams = []
         self.smarties = dict() # all 'smart' objects that can interact with the server
         self.expired = []
+        self.added = []
         self.queries = Universe.MonotonicDict()
-        
+
+        self.add_expire_lock = threading.Lock()
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
+        
         # ### PARAMETER ###  UNIVERSE TCP PORT
         self.net = MIMOServer(self.handle_message, self.hangup_objects, port = 5505)
         self.sim_thread = Universe.ThreadSim(self)
@@ -235,20 +238,18 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.02)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.033)
         self.visdata_thread.start()
 
     def add_object(self, obj):
-        self.phys_lock.acquire()
-        if obj.emits_gravity:
-            self.attractors.append(obj)
-        self.phys_objects.append(obj)
-        self.phys_lock.release()
+        self.add_expire_lock.acquire()
+        self.added.append(obj)
+        self.add_expire_lock.release()
 
     def add_beam(self, beam):
-        self.phys_lock.acquire()
-        self.beams.append(beam)
-        self.phys_lock.release()
+        self.add_expire_lock.acquire()
+        self.added.append(beam)
+        self.add_expire_lock.release()
 
     def remove_object(self, obj):
         self.phys_lock.acquire()
@@ -389,18 +390,31 @@ class Universe:
         for b in self.beams:
             b.tick(dt)
 
-        # Handle all of the expired items. This is asteroids that got destroyed,
-        # Beams that have gone too far, and Smarties that disconnected.
+        # Handle all of the new and expired items. This is asteroids that got destroyed,
+        # Beams that have gone too far, and Smarties that disconnected, new beams, etc...
         for o in self.expired:
             if isinstance(o, Beam):
                 self.beams.remove(o)
             elif isinstance(o, PhysicsObject):
-                self.phys_objects.remove(o)
                 if isinstance(o, SmartPhysicsObject):
-                    del self.smarties[o.phys_id]
+                    if o.client.fileno() != -1:
+                        del self.smarties[o.phys_id]
+                        self.phys_objects.remove(o)
+                else:
+                    self.phys_objects.remove(o)
 
         self.expired = []
-            
+
+        for o in self.added:
+            if isinstance(o, Beam):
+                self.beams.append(o)
+            elif isinstance(o, PhysicsObject):
+                if obj.emits_gravity:
+                    self.attractors.append(obj)
+                self.phys_objects.append(obj)
+
+        self.added = []
+
         self.phys_lock.release()
 
     def start_sim(self):
@@ -484,16 +498,19 @@ if __name__ == "__main__":
                             radius = 500000 + rand.random() * 2000000,
                             orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet" + str(i))
         uni.add_object(obj)
-        
-    print len(uni.phys_objects)
-    print len(uni.attractors)
 
     uni.start_sim()
     time.sleep(1)
+
+    print len(uni.phys_objects)
+    print len(uni.attractors)
     print uni.get_frametime(), "seconds per tick"
+
     print "Press Enter to continue..."
     sys.stdout.flush()
+
     raw_input()
+
     print "Stopping simulation"
     uni.stop_sim()
     print "Stopping network"

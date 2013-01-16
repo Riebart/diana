@@ -211,7 +211,11 @@ class MIMOServer:
 
             if len(inputready) > 0:
                 # handle the server socket
-                client, address = self.server.accept()
+                try:
+                    client, address = self.server.accept()
+                except socket.error, e:
+                    pass
+
                 print "got connection %d from %s" % (client.fileno(), address)
                 sys.stdout.flush()
 
