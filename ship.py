@@ -26,8 +26,14 @@ class Ship(SmartObject):
         pass
     
     def handle_visdata(self, mess):
+        #as though there is no way of getting the original string...
+        new_mess = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
+            mess.phys_id,
+            mess.radius,
+            mess.position[0], mess.position[1], mess.position[2],
+            mess.orientation[0], mess.orientation[1], mess.orientation[2] )
         for client in self.vis_clients:
-            client.send(mess)
+            client.send(new_mess)
     
     #might need some locking here
     def handle_client(self, client):
