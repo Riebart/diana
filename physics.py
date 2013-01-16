@@ -138,7 +138,7 @@ class PhysicsObject:
             n.normalize()
 
             # Collision tangential velocities. These parts don't change in the collision
-            t1 = Vector3.combine([[1, obj1.velocity], [- obj1.velocity.dot(n), n]])
+            t1 = Vector3.combine([[1, obj1.velocity], [obj1.velocity.dot(n), n]])
             t1.normalize()
             t1.scale(obj1.velocity.dot(t1))
 
@@ -157,12 +157,12 @@ class PhysicsObject:
                 e1 = e1 * e1 * 0.5 * obj2.mass
 
             if obj2.mass == 0:
-                vn2 = None
-                vn2l = 0
+                n2 = None
+                e2 = 0
             else:
                 n2 = n.clone()
                 e2 = obj1.velocity.dot(n)
-                n2.scale(e2 * obj1.mass / obj2.mass)
+                n2.scale(-1 * e2 * obj1.mass / obj2.mass)
                 e2 = e2 * e2 * 0.5 * obj1.mass
 
             v = obj2.velocity - obj1.velocity
@@ -332,7 +332,6 @@ class SmartPhysicsObject(PhysicsObject):
             self.resolve_phys_collision(energy, args)
         elif isinstance(obj, Beam):
             if obj.beam_type == "SCAN":
-                print "IN SMARTY", self.object_type
                 query_id = self.universe.queries.add([obj, energy, self])
                 ScanQueryMsg.send(self.client, self.phys_id, self.osim_id, [ query_id, energy, d.x, d.y, d.z ])
             elif obj.beam_type == "SCANRESULT":

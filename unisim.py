@@ -189,7 +189,6 @@ class Universe:
 
         elif isinstance(msg, ScanResponseMsg):
             beam, energy, obj = self.queries.get(msg.scan_id)
-            print obj.object_type
             result_beam = beam.make_return_beam(energy, obj.position)
             result_beam.beam_type = "SCANRESULT"
             result_beam.scan_target = obj
@@ -409,9 +408,9 @@ class Universe:
             if isinstance(o, Beam):
                 self.beams.append(o)
             elif isinstance(o, PhysicsObject):
-                if obj.emits_gravity:
-                    self.attractors.append(obj)
-                self.phys_objects.append(obj)
+                if o.emits_gravity:
+                    self.attractors.append(o)
+                self.phys_objects.append(o)
 
         self.added = []
 
