@@ -8,22 +8,49 @@ import message
         
 import sys
 
+class Contact:
+    def __init__(self, name, location, velocity, radius, age=0.0):
+        self.name = name
+        self.age = age #should it be age (time *since* last seen), or just time last seen?
+        self.location = location
+        self.velocity = velocity
+        self.radius = radius
+        self.other_data = ""
+
 class Ship(SmartObject):
     def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=None):
         SmartObject.__init__(self, osim, osid, uniid)
-        self.name = "Unkown"
+        self.name = "Unknown"
         self.type = type
-        self.max_missiles = 10
-        self.cur_missiles = self.max_missiles
         self.radius = 20.0 #20m?
         self.mass = 100000.0 #100 Tonnes?
-        self.energy = 1000
+        
+        self.max_missiles = 10
+        self.cur_missiles = self.max_missiles
+        self.max_energy = 1000
+        self.cur_energy = self.max_energy
+        self.health = self.mass*100
+        self.num_scan_beams = 10 #might need to abstract these into separate objects
+        self.scan_beam_power = 10000.0 #10kJ?
+        self.scan_beam_recharge = 5.0 #5s?
+        
+        self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
         
         self.listen_port = port
 
         
     def do_scan(self):
         pass
+    
+    def handle_scanresult(self, mess):
+        #on reception of a scan result, check if contact is in the contact_list,
+        #and add or update it
+        if (mess.object_type in self.contact):
+            pass
+        else:
+            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity) )
+            contact.other_data = mess.extra_parms
+            self.contact_list[contact.name] = contact
     
     def handle_visdata(self, mess):
         #as though there is no way of getting the original string...
