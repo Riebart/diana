@@ -5,6 +5,7 @@ from spaceobj import *
 import math
 from mimosrv import MIMOServer
 import message
+import time
         
 import sys
 
@@ -18,12 +19,14 @@ class Contact:
         self.other_data = ""
         
 class Laser:
-    def __init__(self, bank_id, power, h_arc, v_arc, direction):
+    def __init__(self, bank_id, power, h_arc, v_arc, direction, recharge_time):
         self.bank_id = bank_id
         self.power = power
         self.h_arc = h_arc
         self.v_arc = v_arc
         self.direction = direction
+        self.recharge_time = recharge_time
+        self.time_fired = 0
 
 class Ship(SmartObject):
     def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=None):
@@ -45,10 +48,10 @@ class Ship(SmartObject):
         self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
         self.laser_list = dict()
         
-        self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0))
-        self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0))
-        self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0))
-        self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0))
+        self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
+        self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
+        self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
+        self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
         
         self.listen_port = port
 
@@ -119,20 +122,32 @@ class Ship(SmartObject):
         
     def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
         
-        laser = WeaponBeam(self.osim)
-        
+        laser = WeaponBeam(self.osim)        
         self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
         
         self.fire_beam(laser)
         
     def fire_new_laser(self, bank_id, direction, h_focus, v_focus, power=-1):
-        if bank_id not in laser_list:
+        if bank_id not in self.laser_list:
+            return None
+        
+        cur_time = time.time()
+        
+        if self.laser_list[bank_id].time_fired + self.laser_list[bank_id].recharge_time > cur_time:
             return None
             
-        if power < 0 or power > laser_list[bank_id].power:
-            power = laser_list[bank_id].power
+        if power < 0 or power > self.laser_list[bank_id].power:
+            power = self.laser_list[bank_id].power
     
         #TODO: other checks that the beam is appropriate
+        
+        self.laser_list[bank_id].time_fired = cur_time
+        
+        lsr = WeaponBeam(self.osim)        
+        self.init_beam(lsr, power, 299792458.0, direction, h_focus, v_focus)
+        
+        self.fire_beam(lsr)
+        
         pass
     
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
