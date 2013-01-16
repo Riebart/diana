@@ -16,6 +16,14 @@ class Contact:
         self.velocity = velocity
         self.radius = radius
         self.other_data = ""
+        
+class Laser:
+    def __init__(self, bank_id, power, h_arc, v_arc, direction):
+        self.bank_id = bank_id
+        self.power = power
+        self.h_arc = h_arc
+        self.v_arc = v_arc
+        self.direction = direction
 
 class Ship(SmartObject):
     def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=None):
@@ -35,6 +43,12 @@ class Ship(SmartObject):
         self.scan_beam_recharge = 5.0 #5s?
         
         self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
+        self.laser_list = dict()
+        
+        self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0))
+        self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0))
+        self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0))
+        self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0))
         
         self.listen_port = port
 
@@ -110,6 +124,16 @@ class Ship(SmartObject):
         self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
         
         self.fire_beam(laser)
+        
+    def fire_new_laser(self, bank_id, direction, h_focus, v_focus, power=-1):
+        if bank_id not in laser_list:
+            return None
+            
+        if power < 0 or power > laser_list[bank_id].power:
+            power = laser_list[bank_id].power
+    
+        #TODO: other checks that the beam is appropriate
+        pass
     
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
