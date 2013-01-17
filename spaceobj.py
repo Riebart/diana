@@ -175,7 +175,7 @@ class SmartObject(SpaceObject, threading.Thread):
     def run(self):
         #TODO: properly parse and branch wrt message recieved
         while not self.done:
-            mess = self.messageHandler()[0]
+            mess = self.messageHandler()
             
             if isinstance(mess, message.CollisionMsg):
                 self.handle_collision(mess)
@@ -277,8 +277,6 @@ class Missile(SmartObject):
             if val == None:
                 return
 
-            val = val[0]
-
             if isinstance(val, message.CollisionMsg):
                 self.handle_collision(val)
 
@@ -341,10 +339,10 @@ class HomingMissile1(Missile):
             #nothing happened, do a scan
             if (val == None):
                 self.do_scan()
-            elif isinstance(val[0], message.CollisionMsg):
-                self.handle_collision(val[0])
-            elif isinstance(val[0], message.ScanResultMsg):
-                self.handle_scanresult(val[0])
+            elif isinstance(val, message.CollisionMsg):
+                self.handle_collision(val)
+            elif isinstance(val, message.ScanResultMsg):
+                self.handle_scanresult(val)
 
 
 

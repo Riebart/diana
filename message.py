@@ -122,8 +122,8 @@ class Message:
             del msg[0]
 
             if msgtype in MessageTypes:
-                m = MessageTypes[msgtype](msg)
-                return [ m, phys_id, osim_id ]
+                m = MessageTypes[msgtype](msg, phys_id, osim_id)
+                return m
             else:
                 print "Unknown message type: \"%s\"" % msgtype
                 sys.stdout.flush()
@@ -248,18 +248,21 @@ class UnknownMsg(Message):
         self.msgtype = msgtype
 
 class HelloMsg(Message):
-    def __init__(self, s):
-            self.endpoint_id = Message.read_int(s)
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
 
     @staticmethod
-    def send(client, phys_id, osim_id, args):
-        msg = "HELLO\n%d\n" % args
+    def send(client, phys_id, osim_id):
+        msg = "HELLO\n"
 
         ret = Message.sendall(client, phys_id, osim_id, msg)
         return ret
 
 class PhysicalPropertiesMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.object_type = s[0]
         del s[0]
         self.mass = Message.read_double(s)
@@ -289,7 +292,9 @@ class PhysicalPropertiesMsg(Message):
                     obj.radius ]
 
 class VisualPropertiesMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.mesh = Message.read_mesh(s)
         self.texture = Message.read_texture(s)
 
@@ -303,7 +308,9 @@ class VisualPropertiesMsg(Message):
         return ret
 
 class VisualDataEnableMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         sys.stdout.flush()
         self.enabled = Message.read_int(s)
 
@@ -315,7 +322,9 @@ class VisualDataEnableMsg(Message):
         return ret
 
 class VisualMetaDataEnableMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.enabled = Message.read_int(s)
 
     @staticmethod
@@ -326,7 +335,9 @@ class VisualMetaDataEnableMsg(Message):
         return ret
 
 class VisualMetaDataMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.art_id = Message.read_int(s)
         self.mesh = Message.read_mesh(s)
         self.texture = Message.read_texture(s)
@@ -346,7 +357,9 @@ class VisualMetaDataMsg(Message):
         return ret
 
 class VisualDataMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.phys_id = Message.read_int(s)
         self.radius = Message.read_double(s)
         self.position = Message.read_double3(s)
@@ -363,7 +376,9 @@ class VisualDataMsg(Message):
         return ret
 
 class BeamMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.origin = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
         self.up = Message.read_double3(s)
@@ -408,7 +423,9 @@ class BeamMsg(Message):
         return ret
 
 class CollisionMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.position = Message.read_double3(s)
         self.direction = Message.read_double3(s)
         self.energy = Message.read_double(s)
@@ -454,7 +471,9 @@ class CollisionMsg(Message):
         return ret
 
 class SpawnMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.object_type = s[0]
         del s[0]
         self.mass = Message.read_double(s)
@@ -475,7 +494,9 @@ class SpawnMsg(Message):
         return ret
 
 class ScanResultMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.object_type = s[0]
         del s[0]
         self.mass = Message.read_double(s)
@@ -500,7 +521,9 @@ class ScanResultMsg(Message):
         return ret
 
 class ScanQueryMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.scan_id = Message.read_int(s)
         self.scan_power = Message.read_double(s)
         self.scan_dir = Message.read_double3(s)
@@ -514,7 +537,9 @@ class ScanQueryMsg(Message):
         ret = Message.sendall(client, phys_id, osim_id, msg)
 
 class ScanResponseMsg(Message):
-    def __init__(self, s):
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
         self.scan_id = Message.read_int(s)
         self.parms = s
     
@@ -528,8 +553,9 @@ class ScanResponseMsg(Message):
         ret = Message.sendall(client, phys_id, osim_id, msg)
 
 class GoodbyeMsg(Message):
-    def __init__(self, s):
-        self.endpoint_id = Message.read_int(s)
+    def __init__(self, s, phys_id, osim_id):
+        self.phys_id = phys_id
+        self.osim_id = osim_id
 
     @staticmethod
     def send(client, phys_id, osim_id):

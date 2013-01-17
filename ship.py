@@ -44,6 +44,7 @@ class Ship(SmartObject):
         self.num_scan_beams = 10 #might need to abstract these into separate objects
         self.scan_beam_power = 10000.0 #10kJ?
         self.scan_beam_recharge = 5.0 #5s?
+        self.contact = []
         
         self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
         self.laser_list = dict()
@@ -65,7 +66,7 @@ class Ship(SmartObject):
         if (mess.object_type in self.contact):
             pass
         else:
-            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity) )
+            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
             contact.other_data = mess.extra_parms
             self.contact_list[contact.name] = contact
     
@@ -84,7 +85,7 @@ class Ship(SmartObject):
         if client not in self.clients:
             self.clients.append(client)
         
-        mess = message.Message.get_message(client)[0]
+        mess = message.Message.get_message(client)
 
         
         if isinstance(mess, message.VisualDataEnableMsg):

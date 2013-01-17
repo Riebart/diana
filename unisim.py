@@ -163,9 +163,12 @@ class Universe:
 
     def handle_message(self, client):
         try:
-            msg, phys_id, osim_id = Message.get_message(client)
+            msg = Message.get_message(client)
         except:
             return None
+
+        phys_id = msg.phys_id
+        osim_id = msg.osim_id
 
         #print msg
 
@@ -197,7 +200,12 @@ class Universe:
 
         elif isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
+            
+            if phys_id != None:
+                newsmarty.parent_phys_id = phys_id
+                
             newsmarty.handle(msg)
+            
         elif phys_id in self.smarties:
             self.smarties[phys_id].handle(msg)
 
@@ -258,10 +266,12 @@ class Universe:
         self.phys_lock.release()
 
     def hangup_objects(self, client):
+        self.add_expire_lock.acquire()
         for s_key in self.smarties:
             s = self.smarties[s_key]
             if s.client == client:
                 self.expired.append(s)
+        self.add_expire_lock.release()
 
     def destroy_beam(self, beam):
         self.phys_lock.acquire()
@@ -389,6 +399,9 @@ class Universe:
         for b in self.beams:
             b.tick(dt)
 
+        self.phys_lock.release()
+
+        self.add_expire_lock.acquire()
         # Handle all of the new and expired items. This is asteroids that got destroyed,
         # Beams that have gone too far, and Smarties that disconnected, new beams, etc...
         for o in self.expired:
@@ -396,7 +409,7 @@ class Universe:
                 self.beams.remove(o)
             elif isinstance(o, PhysicsObject):
                 if isinstance(o, SmartPhysicsObject):
-                    if o.client.fileno() != -1:
+                    if o.phys_id in self.smarties:
                         del self.smarties[o.phys_id]
                         self.phys_objects.remove(o)
                 else:
@@ -414,7 +427,7 @@ class Universe:
 
         self.added = []
 
-        self.phys_lock.release()
+        self.add_expire_lock.release()
 
     def start_sim(self):
         if self.simulating == 0:

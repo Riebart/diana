@@ -47,13 +47,16 @@ class ObjectSim:
         if isinstance(obj, SmartObject):
             obj.sock.connect(self.unisim)
             
-            message.HelloMsg.send(obj.sock, None, obj.osid, obj.osid)
+            message.HelloMsg.send(obj.sock, None, obj.osid)
 
             try:
-                reply, uniid, osid = message.Message.get_message(obj.sock)
+                reply = message.Message.get_message(obj.sock)
             except TypeError:
                 print "Fail2!"
                 return
+
+            uniid = reply.phys_id
+            osid = reply.osim_id
             
             if not isinstance(reply, message.HelloMsg):
                 #fail

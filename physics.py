@@ -225,14 +225,15 @@ class SmartPhysicsObject(PhysicsObject):
         self.vis_data = 0
         self.vis_meta_data = 0
         self.exists = 0
+        self.parent_phys_id = None
 
     def handle(self, msg):
         if isinstance(msg, HelloMsg):
-            if msg.endpoint_id == None:
+            if msg.osim_id == None:
                 return
 
-            self.sim_id = msg.endpoint_id
-            HelloMsg.send(self.client, self.phys_id, self.osim_id, self.phys_id)
+            self.sim_id = msg.osim_id
+            HelloMsg.send(self.client, self.phys_id, self.osim_id)
 
         # If we don't have a sim_id by this point, we can't accept any of the
         # following in good conscience...
@@ -278,9 +279,16 @@ class SmartPhysicsObject(PhysicsObject):
                 if diff != 0:
                     self.universe.update_attractor(self)
 
+            # Check for when we finally have a fully defined object.
             if (self.exists == 0 and self.object_type != None and self.mass != None and
                 self.radius != None and self.position != None and 
                 self.velocity != None and self.orientation != None and self.thrust != None):
+
+                if self.parent_phys_id != None:
+                    parent = self.universe.smarties[self.parent_phys_id]
+                    self.velocity += parent.velocity
+                    self.position += parent.position
+
                 self.universe.add_object(self)
                 self.exists = 1
 
