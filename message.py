@@ -466,7 +466,7 @@ class SpawnMsg(Message):
 
     @staticmethod
     def send(client, phys_id, osim_id, args):
-        msg = "SPAWN\n%s" % args[0]
+        msg = "SPAWN\n%s\n" % args[0]
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"

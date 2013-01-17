@@ -237,7 +237,7 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.033)
+        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -456,60 +456,12 @@ class Universe:
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
 
 if __name__ == "__main__":
-    import sys
-    import random
-    from math import sin, cos, pi, sqrt
-
-    rand = random.Random()
-    rand.seed(0)
-
     uni = Universe()
-    r = 1000
-    t = 100
-
-    for i in range(0, 25):
-        u = rand.random() * 2 * pi
-        v = rand.random() * 2 * pi
-        c = r + (rand.random() * 2 - 1) * t
-        a = rand.random() * t
-
-        obj = PhysicsObject(uni,
-                            velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5],
-                            position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
-                            mass = rand.random() * 2500 + 7500,
-                            radius = 10,
-                            orientation = [0,0,0], thrust = [0,0,0], object_type = "Asteroid" + str(i))
-        uni.add_object(obj)
-
-    r = 10000000
-    t = 100000
-
-    # These are massive enough to have gravity.
-    for i in range(0, 5):
-        u = rand.random() * 2 * pi
-        v = rand.random() * 2 * pi
-        c = r + (rand.random() * 2 - 1) * t
-        a = rand.random() * t
-
-        obj = PhysicsObject(uni, position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ],
-                            velocity = [ 0.0, 0.0, 0.0 ],
-                            mass = rand.random() * 100000000 + 1e15,
-                            radius = 500000 + rand.random() * 2000000,
-                            orientation = [0,0,0], thrust = [0,0,0], object_type = "Planet" + str(i))
-        uni.add_object(obj)
-
     uni.start_sim()
     time.sleep(1)
-
-    print len(uni.phys_objects)
-    print len(uni.attractors)
     print uni.get_frametime(), "seconds per tick"
-
     print "Press Enter to continue..."
-    sys.stdout.flush()
-
     raw_input()
-
     print "Stopping simulation"
     uni.stop_sim()
     print "Stopping network"
