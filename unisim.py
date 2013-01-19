@@ -167,8 +167,8 @@ class Universe:
         except:
             return None
 
-        phys_id = msg.phys_id
-        osim_id = msg.osim_id
+        phys_id = msg.srv_id
+        osim_id = msg.cli_id
 
         #print msg
 

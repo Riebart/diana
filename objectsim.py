@@ -15,7 +15,7 @@ class Client:
 class ObjectSim:
     def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):
 
-        self.client_net = MIMOServer(self.register_client, port = listen_port)
+        self.client_net = MIMOServer(self.handler, self.hangup, port = listen_port)
 
         self.object_list = dict()       #should this be a dict? using osids?
         self.ship_list = dict()         #likewise
@@ -25,12 +25,34 @@ class ObjectSim:
         self.unisim = (unisim_addr, unisim_port)
         pass
 
+    # This is always called from a client's thread, so we don't actually need
+    # to be concerned about how long this takes necessarily, as it will only hold
+    # up one socket.
+    def handler(self, client):
+        try:
+            msg = Message.get_message(client)
+        except:
+            return None
 
-    #TODO: This code is out-of-date, and needs updating
-    def register_client(self, sock):
-        #append new client
-        self.client_list.append(Client(sock))
-        sock.send("Hi There! Thanks for connecting to the object simulator! There is nothing to do here, yet.")
+        osim_id = msg.srv_id
+        client_id = msg.cli_id
+
+        if osim_id == None:
+            if client_id == None:
+                # We have a brand new client
+                client_id = len(self.client_list)
+                c = Client(client, client_id)
+                self.client_list[client_id] = c
+                pass
+            else:
+                # We have a client that hasn't picked a ship yet
+                pass
+        else:
+            # This client has picked a ship, so just pass that message off to it.
+            pass
+
+    def hangup(self, client):
+        pass
 
 
     #assume object already constructed, with appropriate vals
@@ -55,8 +77,8 @@ class ObjectSim:
                 print "Fail2!"
                 return
 
-            uniid = reply.phys_id
-            osid = reply.osim_id
+            uniid = reply.srv_id
+            osid = reply.cli_id
             
             if not isinstance(reply, message.HelloMsg):
                 #fail

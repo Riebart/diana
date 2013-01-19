@@ -29,7 +29,7 @@ class Laser:
         self.time_fired = 0
 
 class Ship(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship", port=None):
+    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship"):
         SmartObject.__init__(self, osim, osid, uniid)
         self.name = "Unknown"
         self.type = type
@@ -53,10 +53,7 @@ class Ship(SmartObject):
         self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
-        
-        self.listen_port = port
 
-        
     def do_scan(self):
         pass
     
@@ -111,14 +108,10 @@ class Ship(SmartObject):
         #pass
         
     def run(self):
-        if (self.listen_port != None):
-            self.client_net = MIMOServer(self.handle_client, port = self.listen_port)
-            self.clients = []
-            self.vis_clients = []
-            self.vis_enabled = False
-            
-            self.client_net.start()
-            
+        self.clients = []
+        self.vis_clients = []
+        self.vis_enabled = False
+
         SmartObject.run(self)
         
     def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):

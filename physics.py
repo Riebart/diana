@@ -229,15 +229,15 @@ class SmartPhysicsObject(PhysicsObject):
 
     def handle(self, msg):
         if isinstance(msg, HelloMsg):
-            if msg.osim_id == None:
+            if msg.cli_id == None:
                 return
 
-            self.sim_id = msg.osim_id
+            self.osim_id = msg.cli_id
             HelloMsg.send(self.client, self.phys_id, self.osim_id)
 
-        # If we don't have a sim_id by this point, we can't accept any of the
+        # If we don't have a osim_id by this point, we can't accept any of the
         # following in good conscience...
-        if self.sim_id == None:
+        if self.osim_id == None:
             return
 
         if isinstance(msg, GoodbyeMsg):
