@@ -309,24 +309,22 @@ class Universe:
             return
 
         self.phys_lock.acquire()
-        num_objects = len(self.phys_objects)
-        msgs = []
-
+        positions = []
         for o in self.phys_objects:
-            msgs.append("VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
-                        o.phys_id, o.radius,
-                        o.position.x, o.position.y, o.position.z,
-                        o.orientation.x, o.orientation.y, o.orientation.z))
-
+            positions.append([o.phys_id, o.radius, o.position.clone(), o.orientation.clone()])
         self.phys_lock.release()
 
         self.vis_client_lock.acquire()
         for_removal = []
         for c in self.vis_data_clients:
-            for m in msgs:
+            for p in positions:
                 if isinstance(c, socket.socket):
+                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1], p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z)
                     ret = VisualDataMsg.send(c, None, None, m)
                 else:
+                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1],
+                        p[2].x - c.position.x, p[2].y - c.position.y, p[2].z - c.position.z,
+                        p[3].x, p[3].y, p[3].z)
                     ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
 
                 if not ret:

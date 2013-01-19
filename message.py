@@ -366,11 +366,7 @@ class VisualDataMsg(Message):
         self.orientation = Message.read_double3(s)
 
     @staticmethod
-    # This one is special, since these updates will be going to multiple clients
-    # at the same time, quite frequently, we shouldn't need to rebuild this for
-    # every client.
-    #
-    # That means that the args in this case are exactly the string we want to send.
+    # This is special in that the args are exactly the string we want to send.
     def send(client, phys_id, osim_id, args):
         ret = Message.sendall(client, phys_id, osim_id, args)
         return ret
