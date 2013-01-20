@@ -637,15 +637,16 @@ class JumpMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
-class SensorUpdateMsg(Message):
+class InfoUpdateMsg(Message):
     def __init__(self, s, srv_id, cli_id):
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.data = s
+        self.type = s[0]
+        self.data = s[1]
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
-        msg = "INFOSENSORS\n%s\n" % args[0]
+        msg = "INFO\n%s\n" % args[0]
 
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
@@ -684,5 +685,5 @@ MessageTypes = { "HELLO": HelloMsg,
                 "CMDTHRUST": ThrustMsg,
                 "CMDVELOCITY": VelocityMsg,
                 "CMDJUMP": JumpMsg,
-                "INFOSENSORS": SensorUpdateMsg,
+                "INFO": InfoUpdateMsg,
                 "REQUEST": RequestUpdateMsg}

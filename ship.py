@@ -19,17 +19,17 @@ class Sensors(observer.Observable):
         for i in xrange(0,num_beams):
             self.scanners.append(Laser(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
             
-
     def perform_scan():
         pass
     
     def send_state(self, client):
-        data = ""
+        data = "SENSORS\n"
         for contact in contacts:
-            data = data + "," + contact
+            data = data + ";" + contact
             
         #TODO: figure out how cient and server ids are relevant here
-        Message.SensorUpdateMsg.sendall(client, 0, 0, [msg])
+        #Also, should we send one update message per contact?
+        Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
         
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
@@ -43,6 +43,34 @@ class Sensors(observer.Observable):
         
         self.notify()
 
+
+class Comms(Observable):
+    def __init__(self, power=10000.0, recharge_time=2.0):
+        observer.Observable.__init__(self)
+        self.messages = []
+        self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
+        
+    def send_state(self, client):
+        f
+        pass
+        
+    def handle_message(self, mess):
+        self.messages.append(CommMessage(mess))
+        self.notify()
+    
+#basically a struct. Better than organizing it otherwise
+class CommMessage:
+    def __init__(self, mess):
+        self.energy = mess.energy
+        self.direction = mess.direction
+        self.msg = mess.msg
+        self.position = mess.position
+        self.time_seen = time.time()
+        
+    def __repr__(self):
+        return ("%f,%f,%f,%f,%f,%s" % (self.time_seen, 
+            self.direction[0], self.direction[1], self.direction[2],
+            self.energy, self.msg)
 
 class Contact:
     def __init__(self, name, position, velocity, radius, time_seen=0):
@@ -104,6 +132,7 @@ class Ship(SmartObject):
         self.scan_beam_recharge = 5.0 #5s?
 
         self.sensors = Sensors(10)
+        self.comms = Comms()
 
         self.laser_list = dict()
         self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
@@ -149,11 +178,15 @@ class Ship(SmartObject):
         elif isinstance(mess, message.RequestUpdateMsg):
             if mess.type == "SENSORS":
                 obs_type = self.sensors
+            elif mess.type == "COMMS":
+                obs_type = self.comms
                 
             if mess.continuous == 1:
                 obs_type.add_observer(client)
             else:
                 obs_type.notify_once(client)
+                
+        
 
 
     # ++++++++++++++++++++++++++++++++
@@ -172,6 +205,9 @@ class Ship(SmartObject):
         for client in self.vis_clients:
             client.send(new_mess)
     # ++++++++++++++++++++++++++++++++
+    
+    def handle_comm(self, mess):
+        self.comms.handle_message(mess)
 
     def do_scan(self):
         pass
