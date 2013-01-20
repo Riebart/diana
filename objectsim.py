@@ -76,7 +76,7 @@ class ObjectSim:
                     # They chose a class, so take the class ID and hand off.
                     newship = self.christen_ship(msg.items[0][0])
                     HelloMsg.send(client, newship.osim_id, client_id)
-                    self.client_list[newship.osim_id].append([client, client_id])
+                    self.client_list[newship.osim_id] = [[client, client_id]]
                     newship.new_client(client, client_id)
 
         elif osim_id != None and client_id != None:

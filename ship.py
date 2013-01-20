@@ -167,9 +167,9 @@ class Ship(SmartObject):
         self.vis_enabled = False
 
         SmartObject.run(self)
-        
-        def fire_new_laser(self, direction, h_focus, v_focus, power):
-        
+
+    def fire_new_laser(self, direction, h_focus, v_focus, power):
+
         laser = WeaponBeam(self.osim)
         self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
         

@@ -419,7 +419,7 @@ class Universe:
                         del self.smarties[o.phys_id]
                     if o in self.phys_objects:
                         self.phys_objects.remove(o)
-                else:
+                elif o in self.phys_objects:
                     self.phys_objects.remove(o)
 
         self.expired = []
