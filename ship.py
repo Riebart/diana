@@ -6,17 +6,61 @@ import math
 from mimosrv import MIMOServer
 import message
 import time
+import observer
 
 import sys
 
+class Sensors(observer.Observable):
+    def __init__(self, num_beams = 10, power = 10000.0, recharge_time=2.0):
+        observer.Observable.__init__(self)
+        self.contacts = []
+        self.scanners = []
+        
+        for i in xrange(0,num_beams):
+            self.scanners.append(Laser(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
+            
+
+    def perform_scan():
+        pass
+    
+    def send_state(self, client):
+        msg = "INFORMATION,CONTACTS,"
+        for contact in contacts:
+            msg = msg + "," + contact
+        
+    def handle_scanresult(self, mess):
+        #on reception of a scan result, check if contact is in the contact_list,
+        #and add or update it
+        if (mess.object_type in self.contact):
+            pass
+        else:
+            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
+            contact.other_data = mess.extra_parms
+            self.contact_list[contact.name] = contact
+        
+        self.notify()
+
+
 class Contact:
-    def __init__(self, name, position, velocity, radius, age=0.0):
+    def __init__(self, name, position, velocity, radius, time_seen=0):
         self.name = name
-        self.age = age #should it be age (time *since* last seen), or just time last seen?
+        if (time_seen == 0):
+            self.time_seen = time.time()
+        else:            
+            self.time_seen = time_seen
         self.position = position
         self.velocity = velocity
         self.radius = radius
         self.other_data = ""
+        
+    def __repr__(self):
+        return self.name + "," +
+            (time.time() - self.time_seen) + "," +
+            self.position[0] + "," + self.position[1] + "," + self.position[2] + "," +
+            self.velocity[0] + "," + self.velocity[1] + "," + self.velocity[2] + "," +
+            self.radius + "," +
+            self.other_data
+            
 
 class Laser:
     def __init__(self, bank_id, power, h_arc, v_arc, direction, recharge_time):
@@ -26,7 +70,16 @@ class Laser:
         self.v_arc = v_arc
         self.direction = direction
         self.recharge_time = recharge_time
-        self.time_fired = 0
+        self.time_fired = time.time()-recharge_time
+        
+    #check if beam is ready to fire, and update the time_fired to current time
+    def fire(self):
+        cur_time = time.time()
+        if self.time_fired+self.recharge_time < cur_time:
+            self.time_fired = cur_time
+            return True
+        else:
+            return False
 
 class Ship(SmartObject):
     name = "Default Player Ship"
@@ -47,8 +100,7 @@ class Ship(SmartObject):
         self.scan_beam_power = 10000.0 #10kJ?
         self.scan_beam_recharge = 5.0 #5s?
 
-        self.contact = []
-        self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
+        self.sensors = Sensors(10)
 
         self.laser_list = dict()
         self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
@@ -94,14 +146,7 @@ class Ship(SmartObject):
     # Now the rest of the handler functions
     # ++++++++++++++++++++++++++++++++
     def handle_scanresult(self, mess):
-        #on reception of a scan result, check if contact is in the contact_list,
-        #and add or update it
-        if (mess.object_type in self.contact):
-            pass
-        else:
-            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
-            contact.other_data = mess.extra_parms
-            self.contact_list[contact.name] = contact
+        self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         #as though there is no way of getting the original string...
