@@ -560,6 +560,28 @@ class GoodbyeMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+class DirectoryMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.item_type = s[0]
+        del s[0]
+
+        self.items = []
+        for i in range(0, len(s) - (len(s) % 2), 2):
+            self.items.append([int(s[i]), s[i+1]])
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "JOIN\n%s\n" % args[0]
+
+        del args[0]
+        for a in args:
+            msg += "%d\n%s\n" % (a[0], a[1])
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
@@ -573,4 +595,5 @@ MessageTypes = { "HELLO": HelloMsg,
                 "SCANRESULT": ScanResultMsg,
                 "SCANQUERY": ScanQueryMsg,
                 "SCANRESP": ScanResponseMsg,
-                "GOODBYE": GoodbyeMsg }
+                "GOODBYE": GoodbyeMsg,
+                "DIRECTORY": DirectoryMsg }

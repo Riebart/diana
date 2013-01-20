@@ -170,6 +170,7 @@ class SmartObject(SpaceObject, threading.Thread):
     def die(self):
         message.GoodbyeMsg.send(self.sock, self.uniid, self.osid)
         self.done = True
+        self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
     
     def run(self):
