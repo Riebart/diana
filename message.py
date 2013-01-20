@@ -168,10 +168,11 @@ class Message:
 
     @staticmethod
     def prep_double3(d1, d2, d3):
-        s = []
+        s = ""
         s.append(Message.prep_double(d1))
         s.append(Message.prep_double(d2))
         s.append(Message.prep_double(d3))
+        return s
 
     @staticmethod
     def read_double(sa):
@@ -595,6 +596,75 @@ class NameMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+
+##Here begins the client <-> ship messages
+class ThrustMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.thrust = Message.read_double3(s)
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "CMDTHRUST\n%s\n" % prep_double3(args)
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
+class VelocityMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.velocity = Message.read_double3(s)
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "CMDVELOCITY\n%s\n" % prep_double3(args)
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
+class JumpMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.new_position = Message.read_double3(s)
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "CMDJUMP\n%s\n" % prep_double3(args)
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
+class SensorUpdateMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.data = s
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "INFOSENSORS\n%s\n" % args[0]
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
+class RequestUpdateMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.continuous = Message.read_int(s)
+        self.type = s
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "REQUEST\n%d\n%s" % (args[0], args[1])
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+    
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
@@ -610,4 +680,9 @@ MessageTypes = { "HELLO": HelloMsg,
                 "SCANRESP": ScanResponseMsg,
                 "GOODBYE": GoodbyeMsg,
                 "DIRECTORY": DirectoryMsg,
-                "NAME": NameMsg }
+                "NAME": NameMsg,
+                "CMDTHRUST": ThrustMsg,
+                "CMDVELOCITY": VelocityMsg,
+                "CMDJUMP": JumpMsg,
+                "INFOSENSORS": SensorUpdateMsg,
+                "REQUEST": RequestUpdateMsg}

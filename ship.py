@@ -24,9 +24,12 @@ class Sensors(observer.Observable):
         pass
     
     def send_state(self, client):
-        msg = "INFORMATION,CONTACTS,"
+        data = ""
         for contact in contacts:
-            msg = msg + "," + contact
+            data = data + "," + contact
+            
+        #TODO: figure out how cient and server ids are relevant here
+        Message.SensorUpdateMsg.sendall(client, 0, 0, [msg])
         
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
@@ -107,6 +110,8 @@ class Ship(SmartObject):
         self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
+        
+        self.joinable = 1
 
     # ++++++++++++++++++++++++++++++++
     # These are the functions that are required by the object sim of any ships
@@ -115,7 +120,7 @@ class Ship(SmartObject):
     # Return a 1 if there is room for some other player (even as a viz client)
     # Return 0 if there is no more room.
     def is_joinable(self):
-        return 1
+        return self.joinable
 
     def new_client(self, client, client_id):
         pass
@@ -124,6 +129,7 @@ class Ship(SmartObject):
         if isinstance(msg, message.NameMsg):
             if msg.name != None:
                 self.name = msg.name
+                
         elif isinstance(mess, message.VisualDataEnableMsg):
             if msg.enabled == 1:
                 if client not in self.vis_clients:
@@ -139,8 +145,16 @@ class Ship(SmartObject):
                 if self.vis_enabled and len(self.vis_clients) < 1:
                     self.disable_visdata()
                     self.vis_enabled = False
+                    
+        elif isinstance(mess, message.RequestUpdateMsg):
+            if mess.type == "SENSORS":
+                obs_type = self.sensors
+                
+            if mess.continuous == 1:
+                obs_type.add_observer(client)
+            else:
+                obs_type.notify_once(client)
 
-        sys.stdout.flush()
 
     # ++++++++++++++++++++++++++++++++
     # Now the rest of the handler functions
