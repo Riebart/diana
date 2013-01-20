@@ -417,6 +417,7 @@ class Universe:
                 if isinstance(o, SmartPhysicsObject):
                     if o.phys_id in self.smarties:
                         del self.smarties[o.phys_id]
+                    if o in self.phys_objects:
                         self.phys_objects.remove(o)
                 else:
                     self.phys_objects.remove(o)

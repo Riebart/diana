@@ -6,18 +6,18 @@ import math
 from mimosrv import MIMOServer
 import message
 import time
-        
+
 import sys
 
 class Contact:
-    def __init__(self, name, location, velocity, radius, age=0.0):
+    def __init__(self, name, position, velocity, radius, age=0.0):
         self.name = name
         self.age = age #should it be age (time *since* last seen), or just time last seen?
-        self.location = location
+        self.position = position
         self.velocity = velocity
         self.radius = radius
         self.other_data = ""
-        
+
 class Laser:
     def __init__(self, bank_id, power, h_arc, v_arc, direction, recharge_time):
         self.bank_id = bank_id
@@ -31,27 +31,26 @@ class Laser:
 class Ship(SmartObject):
     name = "Default Player Ship"
 
-    def __init__(self, osim, osim_id=0, uniid=0, type="dummy-ship"):
-        print "BUILDING"
-        SmartObject.__init__(self, osim, osim_id, uniid)
-        self.name = "Player Ship"
-        self.type = type
-        self.radius = 20.0 #20m?
-        self.mass = 100000.0 #100 Tonnes?
-        
+    def __init__(self, osim):
+        SmartObject.__init__(self, osim)
+
+        # ### TODO ### Random ship names on instantiation?
+        self.name = None
+        self.object_type = None
+
         self.max_missiles = 10
         self.cur_missiles = self.max_missiles
         self.max_energy = 1000
         self.cur_energy = self.max_energy
-        self.health = self.mass*100
+        self.health = 0
         self.num_scan_beams = 10 #might need to abstract these into separate objects
         self.scan_beam_power = 10000.0 #10kJ?
         self.scan_beam_recharge = 5.0 #5s?
+
         self.contact = []
-        
         self.contact_list = dict() #The ship keeps a list of contacts, with ageing?
+
         self.laser_list = dict()
-        
         self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
         self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
@@ -157,7 +156,7 @@ class Ship(SmartObject):
             #set the initial position of the missile some small distance outside the ship
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
             tmp.scale((self.radius + missile.radius) * -1.1)
-            missile.location = self.location + tmp
+            missile.position = self.position + tmp
             
             #should missile have our initial velocity?
             missile.velocity = self.velocity
@@ -165,7 +164,7 @@ class Ship(SmartObject):
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
             tmp.scale(thrust_power * -1)                
             missile.thrust = tmp        
-            missile.orient = direction
+            missile.orientation = direction
                     
             self.osim.spawn_object(missile)
             
@@ -178,12 +177,12 @@ class Ship(SmartObject):
         return None
         
     def fire_homing(self, direction, thrust_power):
-        missile = HomingMissile1(self.osim)
+        missile = HomingMissile1(self.osim, direction.unit())
 
         #set the initial position of the missile some small distance outside the ship
         tmp = direction.ray(Vector3((0.0,0.0,0.0)))
         tmp.scale((self.radius + missile.radius) * -1.1)
-        missile.location = self.location + tmp
+        missile.position = self.position + tmp
         
         #should missile have our initial velocity?
         missile.velocity = self.velocity
@@ -191,7 +190,7 @@ class Ship(SmartObject):
         tmp = direction.unit()
         tmp.scale(thrust_power)                
         missile.thrust = tmp        
-        missile.orient = direction
+        missile.orientation = direction
                 
         self.osim.spawn_object(missile)
         

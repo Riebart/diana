@@ -44,6 +44,9 @@ class ObjectSim:
         except:
             return None
 
+        if msg == None:
+            return None
+
         osim_id = msg.srv_id
         client_id = msg.cli_id
 
@@ -115,58 +118,50 @@ class ObjectSim:
         return classes
 
     def christen_ship(self, class_id):
-        self.id_lock.acquire()
-
-        osim_id = self.get_id()
-        newship = self.ship_classes[class_id](self, osim_id)
-        self.ship_list[osim_id] = newship
-        self.object_list[osim_id] = newship
-        self.spawn_object(newship)
-
-        self.id_lock.release()
+        newship = self.ship_classes[class_id](self)
+        self.ship_list[newship.osim_id] = newship
+        self.object_list[newship.osim_id] = newship
 
         return newship
 
-    #assume object already constructed, with appropriate vals
-    def spawn_object(self, obj):
-        if obj.osim_id == None:
-            self.id_lock.acquire()
-            obj.osim_id = self.get_id()
-            self.id_lock.release()
+    def get_phys_id(self, sock, osim_id):
+        sock.connect(self.unisim)
+        message.HelloMsg.send(sock, None, osim_id)
 
-        #connect object to unisim
-        if isinstance(obj, SmartObject):
-            obj.sock.connect(self.unisim)
-            
-            message.HelloMsg.send(obj.sock, None, obj.osim_id)
+        try:
+            reply = message.Message.get_message(sock)
+        except TypeError:
+            print "Fail2!"
+            return None
 
-            try:
-                reply = message.Message.get_message(obj.sock)
-            except TypeError:
-                print "Fail2!"
-                return
+        if not isinstance(reply, message.HelloMsg):
+            print "Fail!"
+            return None
+        else:
+            return reply.srv_id
 
-            phys_id = reply.srv_id
-            osim_id = reply.cli_id
-            
-            if not isinstance(reply, message.HelloMsg):
-                #fail
-                print "Fail!"
-                pass
-            
-            else:
-                obj.phys_id = phys_id
-                        
-            #TODO: send object data to unisim
-            message.PhysicalPropertiesMsg.send(obj.sock, obj.phys_id, obj.osim_id, (
-                obj.type,
+    def send_physprops(self, obj):
+        if (obj.object_type == None or obj.mass == None or
+            obj.radius == None or obj.position == None or
+            obj.velocity == None or obj.orientation == None or obj.thrust == None):
+            return None
+
+        ret = message.PhysicalPropertiesMsg.send(obj.sock, obj.phys_id, obj.osim_id, (
+                obj.object_type,
                 obj.mass,
-                obj.location[0], obj.location[1], obj.location[2],
-                obj.velocity[0], obj.velocity[1], obj.velocity[2],                
-                obj.orient[0], obj.orient[1], obj.orient[2],
+                obj.position[0], obj.position[1], obj.position[2],
+                obj.velocity[0], obj.velocity[1], obj.velocity[2],
+                obj.orientation[0], obj.orientation[1], obj.orientation[2],
                 obj.thrust[0], obj.thrust[1], obj.thrust[2],
                 obj.radius
                 ) )
+
+        return ret
+
+    #assume object already constructed, with appropriate vals
+    def spawn_object(self, obj):
+        if isinstance(obj, SmartObject):
+            self.send_physprops(obj)
                 
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)
@@ -187,10 +182,10 @@ class ObjectSim:
         pass
 
 if __name__ == "__main__":
-    from ship import Ship
+    from shiptypes import Firefly
 
     osim = ObjectSim()
-    osim.register_ship_class(Ship)
+    osim.register_ship_class(Firefly)
 
     print "Press Enter to continue..."
     raw_input()

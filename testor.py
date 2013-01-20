@@ -5,6 +5,7 @@ import objectsim
 import unisim
 import threading
 import ship
+from shiptypes import Firefly
 from vector import Vector3
 import random
 import time
@@ -20,7 +21,7 @@ def testSimple():
     print "miss1 unisim is: %d" % miss1.phys_id
 
 def testSimpleShip():
-    ship1 = ship.Ship(osim)
+    ship1 = Firefly(osim)
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
@@ -34,7 +35,7 @@ def testVisData():
     osim.spawn_object(miss1)
     
     miss2 = spaceobj.Missile(osim)
-    miss2.location[0] = 100.0
+    miss2.position[0] = 100.0
     osim.spawn_object(miss2)
     
     print "miss1 osimid is: %d" % miss1.osim_id
@@ -55,15 +56,15 @@ def testVisData():
 #spawns two stationary ships. The first fires a missile at the other
 def testShip():
     
-    ship1 = ship.Ship(osim, type="Ship 1")
+    ship1 = Firefly(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = ship.Ship(osim, type="Ship 2")
-    ship2.location = Vector3( (1000.0,10.0,0.0) )
+    ship2 = Firefly(osim, type="Ship 2")
+    ship2.position = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
     print "ship2 osimid is: %d" % ship2.osim_id
@@ -80,15 +81,15 @@ def testShip():
 #spawns two stationary ships. The first fires a beam at the other
 def testBeam():
     
-    ship1 = ship.Ship(osim, type="Ship 1")
+    ship1 = Firefly(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = ship.Ship(osim, type="Ship 2")
-    ship2.location = Vector3( (1000.0,0.0,0.0) )
+    ship2 = Firefly(osim, type="Ship 2")
+    ship2.position = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
     print "ship2 osimid is: %d" % ship2.osim_id
@@ -108,8 +109,8 @@ def rand_vec(rand, rang):
 def stressTest(ships=1000, area=10000):
     
     for i in range(0,ships):
-        ship1 = ship.Ship(osim)
-        ship1.location = rand_vec(rand, area)
+        ship1 = Firefly(osim)
+        ship1.position = rand_vec(rand, area)
         osim.spawn_object(ship1)
         print "ship%d osimid is: %d" % (i, ship1.osim_id)
         print "ship%d unisim is: %d" % (i, ship1.phys_id)
@@ -122,15 +123,15 @@ def stressTest(ships=1000, area=10000):
 
 
 def testHoming():
-    ship1 = ship.Ship(osim, type="Ship 1")
+    ship1 = Firefly(osim)
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = ship.Ship(osim, type="Ship 2")
-    ship2.location = Vector3( (50000.0,0.0,0.0) )
+    ship2 = Firefly(osim)
+    ship2.position = Vector3( (50000.0,0.0,0.0) )
     ship2.velocity = Vector3( (0, 1000, 0) )
     osim.spawn_object(ship2)
 
