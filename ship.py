@@ -15,6 +15,7 @@ class Sensors(observer.Observable):
         observer.Observable.__init__(self)
         self.contacts = []
         self.scanners = []
+        self.fade_time = 5.0
         
         for i in xrange(0,num_beams):
             self.scanners.append(Laser(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
@@ -23,25 +24,34 @@ class Sensors(observer.Observable):
         pass
     
     def send_state(self, client):
-        data = "SENSORS\n"
+        cur_time = time.time()
+        
         for contact in contacts:
-            data = data + ";" + contact
-            
+            if cur_time - contact.time_seen > self.fade_time:
+                self.contacts.remove(contact)
+            else:
+                msg = "SENSORS\n"                
+                #bug here that I don't want to fix. Using ';' as delimiter, plus an extra at front
+                msg = msg + ";" + contact
+                #TODO: figure out how cient and server ids are relevant here
+                Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
+                    
+    def send_update(self, client, contact):
+        msg = "SENSORS\n%s" % str(contact)
         #TODO: figure out how cient and server ids are relevant here
-        #Also, should we send one update message per contact?
         Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
         
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
-        if (mess.object_type in self.contact):
-            pass
-        else:
-            contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
-            contact.other_data = mess.extra_parms
-            self.contact_list[contact.name] = contact
+        #if (mess.object_type in self.contact):
+            #pass
+        #else:
+        contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
+        contact.other_data = mess.extra_parms
+        self.contact_list[contact.name] = contact
         
-        self.notify()
+        self.notify(contact)
 
 
 class Comms(Observable):
@@ -49,14 +59,30 @@ class Comms(Observable):
         observer.Observable.__init__(self)
         self.messages = []
         self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
+        self.fade_time = 600.0
         
     def send_state(self, client):
-        f
-        pass
+        cur_time = time.time()
+        
+        for message in messages:
+            if cur_time - message.time_seen > self.fade_time:
+                self.contacts.remove(contact)
+            else:
+                msg = "COMMS\n"
+                #bug here that I don't want to fix. Using ';' as delimiter, plus an extra at front
+                msg = msg + ";" + message
+                #TODO: figure out how cient and server ids are relevant here
+                Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
+                    
+    
+    def send_update(self, client, message):
+        msg = "COMMS\n%s" % str(message)
+        Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
+        
         
     def handle_message(self, mess):
         self.messages.append(CommMessage(mess))
-        self.notify()
+        self.notify(self.messages[-1])
     
 #basically a struct. Better than organizing it otherwise
 class CommMessage:
