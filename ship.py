@@ -69,8 +69,11 @@ class Ship(SmartObject):
         pass
 
     def handle(self, client, msg):
-        if isinstance(mess, message.VisualDataEnableMsg):
-            if mess.enabled == 1:
+        if isinstance(msg, message.NameMsg):
+            if msg.name != None:
+                self.name = msg.name
+        elif isinstance(mess, message.VisualDataEnableMsg):
+            if msg.enabled == 1:
                 if client not in self.vis_clients:
                     self.vis_clients.append(client)
                     print str(len(self.vis_clients))
@@ -88,10 +91,8 @@ class Ship(SmartObject):
         sys.stdout.flush()
 
     # ++++++++++++++++++++++++++++++++
-
-    def do_scan(self):
-        pass
-    
+    # Now the rest of the handler functions
+    # ++++++++++++++++++++++++++++++++
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
@@ -101,7 +102,7 @@ class Ship(SmartObject):
             contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
             contact.other_data = mess.extra_parms
             self.contact_list[contact.name] = contact
-    
+
     def handle_visdata(self, mess):
         #as though there is no way of getting the original string...
         new_mess = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
@@ -111,6 +112,10 @@ class Ship(SmartObject):
             mess.orientation[0], mess.orientation[1], mess.orientation[2] )
         for client in self.vis_clients:
             client.send(new_mess)
+    # ++++++++++++++++++++++++++++++++
+
+    def do_scan(self):
+        pass
 
     def run(self):
         self.vis_clients = []
@@ -118,14 +123,14 @@ class Ship(SmartObject):
 
         SmartObject.run(self)
         
-    def fire_laser(self, direction, h_focus=math.pi/6, v_focus=math.pi/6, power=100.0):
+        def fire_new_laser(self, direction, h_focus, v_focus, power):
         
-        laser = WeaponBeam(self.osim)        
+        laser = WeaponBeam(self.osim)
         self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
         
         self.fire_beam(laser)
         
-    def fire_new_laser(self, bank_id, direction, h_focus, v_focus, power=-1):
+    def fire_laser(self, bank_id, direction, h_focus, v_focus, power = None):
         if bank_id not in self.laser_list:
             return None
         
@@ -134,7 +139,7 @@ class Ship(SmartObject):
         if self.laser_list[bank_id].time_fired + self.laser_list[bank_id].recharge_time > cur_time:
             return None
             
-        if power < 0 or power > self.laser_list[bank_id].power:
+        if power == None:
             power = self.laser_list[bank_id].power
     
         #TODO: other checks that the beam is appropriate
@@ -145,9 +150,7 @@ class Ship(SmartObject):
         self.init_beam(lsr, power, 299792458.0, direction, h_focus, v_focus)
         
         self.fire_beam(lsr)
-        
-        pass
-    
+
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
         if (self.cur_missiles > 0):

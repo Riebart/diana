@@ -8,12 +8,7 @@ from mimosrv import MIMOServer
 from vector import Vector3
 from spaceobj import SmartObject
 
-from message import Message, HelloMsg, DirectoryMsg
-
-class Client:
-    def __init__(self, sock, client_id):
-        self.sock = sock
-        self.client_id = client_id
+from message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
 
 class ObjectSim:
     def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):
@@ -23,7 +18,7 @@ class ObjectSim:
         self.object_list = dict()       #should this be a dict? using osim_ids?
         self.ship_list = dict()         #likewise
         self.ship_classes = dict()
-        self.client_list = dict()
+        self.client_list = dict() # A dict on osim_id that is a list of its known clients
         self.total_objs = 0
         self.id_lock = threading.Lock()
         self.unisim = (unisim_addr, unisim_port)
@@ -55,8 +50,6 @@ class ObjectSim:
             # Say Hello back with its client ID
             self.id_lock.acquire()
             client_id = self.get_id()
-            c = Client(client, client_id)
-            self.client_list[client_id] = c
             self.id_lock.release()
             HelloMsg.send(client, None, client_id)
 
@@ -75,6 +68,7 @@ class ObjectSim:
             elif len(msg.items) == 1:
                 if msg.item_type == "SHIP":
                     # They chose a ship, so take the ID, and hand off.
+                    self.client_list[msg.items[0][0]].append([client, client_id])
                     HelloMsg.send(client, msg.items[0][0], client_id)
                     self.ship_list[msg.items[0][0]].new_client(client, client_id)
 
@@ -82,6 +76,7 @@ class ObjectSim:
                     # They chose a class, so take the class ID and hand off.
                     newship = self.christen_ship(msg.items[0][0])
                     HelloMsg.send(client, newship.osim_id, client_id)
+                    self.client_list[newship.osim_id].append([client, client_id])
                     newship.new_client(client, client_id)
 
         elif osim_id != None and client_id != None:
@@ -173,13 +168,21 @@ class ObjectSim:
             print "Fail!"
             #do what? If there's no connection, how do I send data?
             #will non-smart objects be multiplexed over a single osim connection (probably)
-            pass
-        
 
-    #assumes object already 'destroyed', unregisters the object and removes it from unisim
     def destroy_object(self, osim_id):
+        obj = self.object_list[osim_id]
         del self.object_list[osim_id]
-        pass
+        del self.ship_list[osim_id]
+
+        obj.sock.shutdown(socket.SHUT_RDWR)
+        obj.sock.close()
+
+        for c in self.client_list[osim_id]:
+            GoodbyeMsg.send(c[0], osim_id, c[1])
+            c.shutdown(socket.SHUT_RDWR)
+            c.close()
+
+        del self.client_list[osim_id]
 
 if __name__ == "__main__":
     from shiptypes import Firefly

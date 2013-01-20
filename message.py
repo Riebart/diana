@@ -582,6 +582,19 @@ class DirectoryMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+class NameMsg(Message):
+    def __init__(self, s, srv_id, cli_id):
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.name = s[0]
+
+    @staticmethod
+    def send(client, srv_id, cli_id, args):
+        msg = "NAME\n%s\n" % args
+
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
                 "VISPROPS": VisualPropertiesMsg,
@@ -596,4 +609,5 @@ MessageTypes = { "HELLO": HelloMsg,
                 "SCANQUERY": ScanQueryMsg,
                 "SCANRESP": ScanResponseMsg,
                 "GOODBYE": GoodbyeMsg,
-                "DIRECTORY": DirectoryMsg }
+                "DIRECTORY": DirectoryMsg,
+                "NAME": NameMsg }

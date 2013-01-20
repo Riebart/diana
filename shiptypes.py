@@ -2,6 +2,7 @@
 
 from vector import Vector3
 from ship import Ship
+from 
 
 class Firefly(Ship):
     name = "Firefly class transport"

@@ -40,6 +40,72 @@ class SmartObject(SpaceObject, threading.Thread):
 
         self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
 
+    # ++++++++++++++++++++++++++++++++
+    # All of the handlers
+    # ++++++++++++++++++++++++++++++++
+    def messageHandler(self):
+        try:
+            ret = message.Message.get_message(self.sock)
+        except socket.timeout as e:
+            ret = None
+
+        return ret
+
+    def handle_client_message(self, client, msg):
+        pass
+
+    def handle_collision(self, collision):
+        if collision.collision_type == "PHYS":
+            #hit by a physical object, take damage
+            print "%d suffered a Physical collision! %fJ!" % (self.osim_id, collision.energy)
+            self.handle_phys(collision)
+        elif collision.collision_type == "WEAP":
+            #hit by a weapon, take damage
+            print "%d suffered a weapon collision! %fJ!" % (self.osim_id, collision.energy)
+            self.handle_weap(collision)
+        elif collision.collision_type == "COMM":
+            #hit by a comm beam, perform apropriate action
+            self.handle_comm(collision)
+        elif collision.collision_type == "SCAN":
+            #hit by a scan beam
+            self.handle_scan(collision)
+        elif collision.collision_type == "SCANRESULT":
+            self.handle_scanresult(collision)
+        else:
+            print "Bad collision: " + str(collision)
+
+    def handle_phys(self, mess):
+        pass
+
+    def handle_weap(self, mess):
+        pass
+
+    def handle_comm(self, mess):
+        pass
+
+    def handle_scan(self, mess):
+        ## From Mike: This would be where you
+        ## alert to the fact that "I just got my skirt looked up!"
+        pass
+
+    def handle_scanresult(self, mess):
+        print "Got a scanresult for %s" % mess.object_type
+        pass
+
+    def handle_visdata(self, mess):
+        print str(mess)
+
+    def make_response(self, power):
+        return [ self.object_type, self.name ]
+
+    def handle_query(self, mess):
+        # This is where we respond to SCANQUERY messages.
+        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(), mess.power ])
+        return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id ] + self.make_response(mess.scan_power))
+        pass
+
+    # ++++++++++++++++++++++++++++++++
+
     def make_explosion(self, position, power):
         message.BeamMsg.send(self.sock, self.phys_id, self.osim_id, [
                 position[0], position[1], position[2],
@@ -61,72 +127,10 @@ class SmartObject(SpaceObject, threading.Thread):
 
         beam = BeamClass(self.osim, self.phys_id, self.osim_id, power, velocity, origin, up, h_focus, v_focus)
         return beam
-    
-    def messageHandler(self):
-        
-        try:
-            ret = message.Message.get_message(self.sock)
-        except socket.timeout as e:
-            ret = None
-            
-        return ret
-
-    def handle_client_message(self, client, msg):
-        pass
 
     #create and launch a beam object. Assumes beam object is already populated with proper values
     def fire_beam(self, beam):
         beam.send_it(self.sock)
-        
-    def handle_phys(self, mess):
-        pass
-    
-    def handle_weap(self, mess):
-        pass
-        
-    def handle_comm(self, mess):
-        pass
-    
-    def handle_scan(self, mess):
-        ## From Mike: This would be where you
-        ## alert to the fact that "I just got my skirt looked up!"
-        pass
-    
-    def handle_scanresult(self, mess):
-        print "Got a scanresult for %s" % mess.object_type
-        pass
-    
-    def handle_collision(self, collision):
-        if collision.collision_type == "PHYS":
-            #hit by a physical object, take damage
-            print "%d suffered a Physical collision! %fJ!" % (self.osim_id, collision.energy)
-            self.handle_phys(collision)
-        elif collision.collision_type == "WEAP":
-            #hit by a weapon, take damage
-            print "%d suffered a weapon collision! %fJ!" % (self.osim_id, collision.energy)
-            self.handle_weap(collision)
-        elif collision.collision_type == "COMM":
-            #hit by a comm beam, perform apropriate action
-            self.handle_comm(collision)
-        elif collision.collision_type == "SCAN":
-            #hit by a scan beam
-            self.handle_scan(collision)
-        elif collision.collision_type == "SCANRESULT":
-            self.handle_scanresult(collision)
-        else:
-            print "Bad collision: " + str(collision)
-            
-    def handle_visdata(self, mess):
-        print str(mess)
-    
-    def make_response(self, power):
-        return self.object_type
-    
-    def handle_query(self, mess):
-        # This is where we respond to SCANQUERY messages.
-        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(), mess.power ])
-        return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(mess.scan_power) ])
-        pass
     
     def take_damage(self, amount):
         pass
@@ -190,6 +194,10 @@ class SmartObject(SpaceObject, threading.Thread):
             else:
                 print str(mess)
 
+# ==============================================================================
+# Beams
+# ==============================================================================
+
 class Beam(SpaceObject):
     speed_of_light = 299792458.0
     
@@ -241,6 +249,12 @@ class WeaponBeam(Beam):
 class ScanBeam(Beam):
     def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus):
         Beam.__init__(self, osim, phys_id, osim_id, "SCAN", power, velocity, origin, up, h_focus, v_focus)
+
+# ==============================================================================
+
+# ==============================================================================
+# Missiles
+# ==============================================================================
 
 
 #a dumbfire missile, for example
@@ -332,3 +346,5 @@ class HomingMissile1(Missile):
                 self.handle_collision(val)
             elif isinstance(val, message.ScanResultMsg):
                 self.handle_scanresult(val)
+
+# ==============================================================================
