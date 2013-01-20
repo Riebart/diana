@@ -16,15 +16,15 @@ def testSimple():
     miss1 = spaceobj.Missile(osim)
     osim.spawn_object(miss1)
 
-    print "miss1 osimid is: %d" % miss1.osid
-    print "miss1 unisim is: %d" % miss1.uniid
+    print "miss1 osimid is: %d" % miss1.osim_id
+    print "miss1 unisim is: %d" % miss1.phys_id
 
 def testSimpleShip():
     ship1 = ship.Ship(osim)
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osid
-    print "ship1 unisim is: %d" % ship1.uniid
+    print "ship1 osimid is: %d" % ship1.osim_id
+    print "ship1 unisim is: %d" % ship1.phys_id
     
 
 #test currently broken    
@@ -37,11 +37,11 @@ def testVisData():
     miss2.location[0] = 100.0
     osim.spawn_object(miss2)
     
-    print "miss1 osimid is: %d" % miss1.osid
-    print "miss1 unisim is: %d" % miss1.uniid
+    print "miss1 osimid is: %d" % miss1.osim_id
+    print "miss1 unisim is: %d" % miss1.phys_id
     
-    print "miss2 osimid is: %d" % miss2.osid
-    print "miss2 unisim is: %d" % miss2.uniid
+    print "miss2 osimid is: %d" % miss2.osim_id
+    print "miss2 unisim is: %d" % miss2.phys_id
     
     
     miss1.enable_visdata()
@@ -58,23 +58,23 @@ def testShip():
     ship1 = ship.Ship(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osid
-    print "ship1 unisim is: %d" % ship1.uniid
+    print "ship1 osimid is: %d" % ship1.osim_id
+    print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
     ship2 = ship.Ship(osim, type="Ship 2")
     ship2.location = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osid
-    print "ship2 unisim is: %d" % ship2.uniid
+    print "ship2 osimid is: %d" % ship2.osim_id
+    print "ship2 unisim is: %d" % ship2.phys_id
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_missile(direction, 50000.0)
 
-    print "miss1 osimid is: %d" % miss1.osid
-    print "miss1 unisim is: %d" % miss1.uniid
+    print "miss1 osimid is: %d" % miss1.osim_id
+    print "miss1 unisim is: %d" % miss1.phys_id
     sys.stdout.flush()
     
 #spawns two stationary ships. The first fires a beam at the other
@@ -83,16 +83,16 @@ def testBeam():
     ship1 = ship.Ship(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osid
-    print "ship1 unisim is: %d" % ship1.uniid
+    print "ship1 osimid is: %d" % ship1.osim_id
+    print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
     ship2 = ship.Ship(osim, type="Ship 2")
     ship2.location = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osid
-    print "ship2 unisim is: %d" % ship2.uniid
+    print "ship2 osimid is: %d" % ship2.osim_id
+    print "ship2 unisim is: %d" % ship2.phys_id
     sys.stdout.flush()
 
     dir = Vector3(1.0,0.0,0.0)
@@ -111,22 +111,22 @@ def stressTest(ships=1000, area=10000):
         ship1 = ship.Ship(osim)
         ship1.location = rand_vec(rand, area)
         osim.spawn_object(ship1)
-        print "ship%d osimid is: %d" % (i, ship1.osid)
-        print "ship%d unisim is: %d" % (i, ship1.uniid)
+        print "ship%d osimid is: %d" % (i, ship1.osim_id)
+        print "ship%d unisim is: %d" % (i, ship1.phys_id)
 
         direction = Vector3((1.0, 0.0,0.0))
         miss1 = ship1.fire_missile(direction, 500)
     
-        print "miss%d osimid is: %d" % (i, miss1.osid)
-        print "miss%d unisim is: %d" % (i, miss1.uniid)
+        print "miss%d osimid is: %d" % (i, miss1.osim_id)
+        print "miss%d unisim is: %d" % (i, miss1.phys_id)
 
 
 def testHoming():
     ship1 = ship.Ship(osim, type="Ship 1")
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osid
-    print "ship1 unisim is: %d" % ship1.uniid
+    print "ship1 osimid is: %d" % ship1.osim_id
+    print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
     ship2 = ship.Ship(osim, type="Ship 2")
@@ -134,15 +134,15 @@ def testHoming():
     ship2.velocity = Vector3( (0, 1000, 0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osid
-    print "ship2 unisim is: %d" % ship2.uniid
+    print "ship2 osimid is: %d" % ship2.osim_id
+    print "ship2 unisim is: %d" % ship2.phys_id
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_homing(direction, 50000.0)
 
-    print "miss1 osimid is: %d" % miss1.osid
-    print "miss1 unisim is: %d" % miss1.uniid
+    print "miss1 osimid is: %d" % miss1.osim_id
+    print "miss1 unisim is: %d" % miss1.phys_id
     sys.stdout.flush()
 
 #unism.test()

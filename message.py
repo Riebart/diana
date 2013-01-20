@@ -104,7 +104,7 @@ class Message:
 
         msg = Message.big_read(client, msg_size).split("\n")
 
-        #print msg
+        print msg
 
         # Snag out the IDs
         try:
@@ -150,7 +150,7 @@ class Message:
         msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
         full_msg = msg_hdr + msg
 
-        #print full_msg
+        print full_msg
 
         num_sent = Message.big_send(client, full_msg)
         if num_sent == 0:
@@ -573,7 +573,7 @@ class DirectoryMsg(Message):
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
-        msg = "JOIN\n%s\n" % args[0]
+        msg = "DIRECTORY\n%s\n" % args[0]
 
         del args[0]
         for a in args:

@@ -29,9 +29,12 @@ class Laser:
         self.time_fired = 0
 
 class Ship(SmartObject):
-    def __init__(self, osim, osid=0, uniid=0, type="dummy-ship"):
-        SmartObject.__init__(self, osim, osid, uniid)
-        self.name = "Unknown"
+    name = "Default Player Ship"
+
+    def __init__(self, osim, osim_id=0, uniid=0, type="dummy-ship"):
+        print "BUILDING"
+        SmartObject.__init__(self, osim, osim_id, uniid)
+        self.name = "Player Ship"
         self.type = type
         self.radius = 20.0 #20m?
         self.mass = 100000.0 #100 Tonnes?
@@ -53,6 +56,39 @@ class Ship(SmartObject):
         self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
+
+    # ++++++++++++++++++++++++++++++++
+    # These are the functions that are required by the object sim of any ships
+    # that are going to be player-controlled
+
+    # Return a 1 if there is room for some other player (even as a viz client)
+    # Return 0 if there is no more room.
+    def is_joinable(self):
+        return 1
+
+    def new_client(self, client, client_id):
+        pass
+
+    def handle(self, client, msg):
+        if isinstance(mess, message.VisualDataEnableMsg):
+            if mess.enabled == 1:
+                if client not in self.vis_clients:
+                    self.vis_clients.append(client)
+                    print str(len(self.vis_clients))
+                if self.vis_enabled ==  False:
+                    self.enable_visdata()
+                    self.vis_enabled = True
+            else:
+                #delete from vis_clients
+                if client in self.vis_clients:
+                    self.vis_clients.remove(client)
+                if self.vis_enabled and len(self.vis_clients) < 1:
+                    self.disable_visdata()
+                    self.vis_enabled = False
+
+        sys.stdout.flush()
+
+    # ++++++++++++++++++++++++++++++++
 
     def do_scan(self):
         pass
@@ -76,39 +112,8 @@ class Ship(SmartObject):
             mess.orientation[0], mess.orientation[1], mess.orientation[2] )
         for client in self.vis_clients:
             client.send(new_mess)
-    
-    #might need some locking here
-    def handle_client(self, client):
-        if client not in self.clients:
-            self.clients.append(client)
-        
-        mess = message.Message.get_message(client)
 
-        
-        if isinstance(mess, message.VisualDataEnableMsg):
-            if mess.enabled == 1:
-                if client not in self.vis_clients:
-                    self.vis_clients.append(client)
-                    print str(len(self.vis_clients))
-                if self.vis_enabled ==  False:
-                    self.enable_visdata()
-                    self.vis_enabled = True
-            else:
-                #delete from vis_clients
-                if client in self.vis_clients:
-                    self.vis_clients.remove(client)
-                if self.vis_enabled and len(self.vis_clients) < 1:
-                    self.disable_visdata()
-                    self.vis_enabled = False
-                    
-        sys.stdout.flush()
-        
-    #def handle_phys(self, mess):
-        #print "Ship collided with something! %d, %d" % (self.uniid, self.osid)
-        #pass
-        
     def run(self):
-        self.clients = []
         self.vis_clients = []
         self.vis_enabled = False
 
