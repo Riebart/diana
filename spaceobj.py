@@ -191,8 +191,8 @@ class SmartObject(SpaceObject, threading.Thread):
             elif isinstance(mess, message.ScanQueryMsg):
                 self.handle_query(mess)
                 
-            else:
-                print str(mess)
+            #else:
+                #print str(mess)
 
 # ==============================================================================
 # Beams
