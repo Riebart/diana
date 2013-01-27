@@ -203,29 +203,28 @@ class Ship(SmartObject):
             msg.cli_id = self.osim_id
             msg.sendto(self.sock)
 
-        elif isinstance(mess, message.VisualDataEnableMsg):
+        elif isinstance(msg, message.VisualDataEnableMsg):
             if msg.enabled == 1:
                 if client not in self.vis_clients:
-                    self.vis_clients.append(client)
-                    print str(len(self.vis_clients))
+                    self.vis_clients[client] = msg.cli_id
                 if self.vis_enabled ==  False:
                     self.enable_visdata()
                     self.vis_enabled = True
             else:
                 #delete from vis_clients
                 if client in self.vis_clients:
-                    self.vis_clients.remove(client)
+                    del self.vis_clients[client]
                 if self.vis_enabled and len(self.vis_clients) < 1:
                     self.disable_visdata()
                     self.vis_enabled = False
                     
-        elif isinstance(mess, message.RequestUpdateMsg):
-            if mess.type == "SENSORS":
+        elif isinstance(msg, message.RequestUpdateMsg):
+            if msg.type == "SENSORS":
                 obs_type = self.sensors
-            elif mess.type == "COMMS":
+            elif msg.type == "COMMS":
                 obs_type = self.comms
                 
-            if mess.continuous == 1:
+            if msg.continuous == 1:
                 obs_type.add_observer(client)
             else:
                 obs_type.notify_once(client)
@@ -240,14 +239,34 @@ class Ship(SmartObject):
         self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
-        #as though there is no way of getting the original string...
-        new_mess = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
-            mess.phys_id,
-            mess.radius,
-            mess.position[0], mess.position[1], mess.position[2],
-            mess.orientation[0], mess.orientation[1], mess.orientation[2] )
+        ##as though there is no way of getting the original string...
+        #new_mess = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
+            #mess.phys_id,
+            #mess.radius,
+            #mess.position[0], mess.position[1], mess.position[2],
+            #mess.orientation[0], mess.orientation[1], mess.orientation[2] )
+        for_removal = []
         for client in self.vis_clients:
-            client.send(new_mess)
+            #client.send(new_mess)
+            ret = mess.sendto(client)
+
+            if ret == 0:
+                for_removal.append(client)
+
+        for client in for_removal:
+            del self.vis_clients[client]
+
+        if len(self.vis_clients) == 0:
+            self.vis_enabled = False
+            self.disable_visdata()
+
+    def hangup(self, client):
+        if client in self.vis_clients:
+            self.vis_clients.remove(client)
+
+            if len(self.vis_clients) == 0:
+                self.disable_visdata()
+
     # ++++++++++++++++++++++++++++++++
     
     def handle_comm(self, mess):
@@ -257,7 +276,7 @@ class Ship(SmartObject):
         pass
 
     def run(self):
-        self.vis_clients = []
+        self.vis_clients = dict()
         self.vis_enabled = False
 
         SmartObject.run(self)

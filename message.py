@@ -397,9 +397,16 @@ class VisualDataMsg(Message):
         self.position = Message.read_double3(s)
         self.orientation = Message.read_double3(s)
 
-    #def sendto(self, client):
-        #VisualDataMsg.send(client, self.srv_id, self.cli_id,
-            #[self.phys_id, self.radius ] + self.position + self.orientation)
+    def sendto(self, client):
+        if self.phys_id == -1:
+            return VisualDataMsg.send(client, self.srv_id, self.cli_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+        else:
+            return VisualDataMsg.send(client, self.srv_id, self.cli_id,
+                "VISDATA\n" +
+                str(self.phys_id) + "\n" +
+                str(self.radius) + "\n" +
+                str(self.position[0]) + "\n" + str(self.position[1]) + "\n" + str(self.position[2]) + "\n" +
+                str(self.orientation[0]) + "\n" + str(self.orientation[1]) + "\n" + str(self.orientation[2]) + "\n")
 
     @staticmethod
     # This is special in that the args are exactly the string we want to send.

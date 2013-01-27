@@ -83,6 +83,12 @@ class ObjectSim:
             self.ship_list[osim_id].handle(client, msg)
 
     def hangup(self, client):
+        # ### TODO ### Really inefficient...
+        print "HANGING UP", client.getpeername()
+        for k in self.client_list:
+            for c in self.client_list[k]:
+                if c == client:
+                    self.object_list[k].hangup(c)
         pass
 
     def get_id(self):

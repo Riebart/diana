@@ -167,6 +167,9 @@ class Universe:
         except:
             return None
 
+        if msg == None:
+            return
+
         phys_id = msg.srv_id
         osim_id = msg.cli_id
 
@@ -174,7 +177,11 @@ class Universe:
 
         # And now, we branch out according to the message.
         if isinstance(msg, VisualDataEnableMsg):
-            self.register_for_vis_data(client, msg.enabled)
+            if msg.srv_id == None or msg.cli_id == None:
+                self.register_for_vis_data(client, msg.enabled)
+            else:
+                self.smarties[phys_id].handle(msg)
+
         if isinstance(msg, SpawnMsg):
             if (msg.position == None or msg.velocity == None or msg.orientation == None or
                 msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
@@ -209,7 +216,12 @@ class Universe:
         elif phys_id in self.smarties:
             self.smarties[phys_id].handle(msg)
 
-    def __init__(self):
+    def __init__(self, min_frametime, max_frametime, vis_frametime):
+
+        self.min_frametime = min_frametime
+        self.max_frametime = max_frametime
+        self.vis_frametime = vis_frametime
+
         # ### TODO ### Fix locking around adding objects. Technically, things are either
         # doing weird unlocked operations, or are blocking for a physics tick, potentially
         # stalling a TCP connection while blocked. Not cool bro.
@@ -245,7 +257,7 @@ class Universe:
     def start_net(self):
         self.net.start()
         # ### PARAMETER ### Minimum time between VISDATA updates
-        self.visdata_thread = Universe.ThreadVisData(self, 0.05)
+        self.visdata_thread = Universe.ThreadVisData(self, self.vis_frametime)
         self.visdata_thread.start()
 
     def add_object(self, obj):
@@ -300,7 +312,7 @@ class Universe:
         self.vis_client_lock.acquire()
         if yesno == 1:
             self.vis_data_clients.append(obj)
-        else:
+        elif obj in self.vis_data_clients:
             self.vis_data_clients.remove(obj)
         self.vis_client_lock.release()
 
@@ -330,18 +342,24 @@ class Universe:
                     ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
                     sent_something = 1
 
-                if not ret:
+                if ret == 0:
                     c.vis_data = 0
                     for_removal.append(c)
                     break
 
             if isinstance(c, socket.socket):
-                VisualDataMsg.send(c, None, None, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+                ret = VisualDataMsg.send(c, None, None, "VISDATA\n-1\n\n\n\n\n\n\n\n")
             else:
-                VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+                ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+
+            if ret == 0:
+                c.vis_data = 0
+                for_removal.append(c)
+                break
 
         for c in for_removal:
-            self.vis_data_clients.remove(c)
+            if c in self.vis_data_clients:
+                self.vis_data_clients.remove(c)
 
         self.vis_client_lock.release()
 
@@ -450,22 +468,22 @@ class Universe:
     # Number of real seconds and a rate of simulation together will rate-limit
     # the simulation
     def sim(self, t = 0, r = 1):
-        # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.0001
-        # ### PARAMETER ###  MAXIMUM FRAME TIME
-        max_frametime = 0.0001
+        ## ### PARAMETER ###  MINIMUM FRAME TIME
+        #min_frametime = 0.0001
+        ## ### PARAMETER ###  MAXIMUM FRAME TIME
+        #max_frametime = 0.0001
 
         total_time = 0;
         dt = 0.01
         i = 0
 
         while self.simulating == 1 and (t == 0 or total_time < r * t):
-            dt = hold_up(self.tick, r * dt, min_frametime)
+            dt = hold_up(self.tick, r * dt, self.min_frametime)
             self.real_frametime = dt
 
             # Artificially shrink the frametime if we are ticking too long.
             # This has the effect of slowing down time, but whatever.
-            dt = min(max_frametime, dt)
+            dt = min(self.max_frametime, dt)
             self.frametime = dt
             total_time += r * dt
             i += 1
@@ -476,7 +494,7 @@ class Universe:
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
 
 if __name__ == "__main__":
-    uni = Universe()
+    uni = Universe(0.0001, 0.0001, 0.01)
     uni.start_sim()
 
     while 1:

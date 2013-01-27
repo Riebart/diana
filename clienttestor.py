@@ -128,10 +128,16 @@ def basic_collision():
     SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
     SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
+    # Some different sizes
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
+
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
 
-def pool_break():
+def pool_rack():
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
 
@@ -147,10 +153,10 @@ def pool_break():
     r = 10000000
     t = 100000
 
-    ball_mass = 1000000
+    ball_mass = 100000
     ball_radius = 1
 
-    num_rows = 5
+    num_rows = 8
 
     # This loop produces a trangle of balls that points down the negative y axis.
     #
@@ -168,17 +174,18 @@ def pool_break():
 
     C = 1
     y_scale = sqrt(3) / 2
+    y_offset = 100
     for i in range(0, num_rows):
         for j in range(0, i+1):
             SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
-            ball_mass, C * (i - 2 * j) * ball_radius, C * y_scale * (1 + 2 * i) * ball_radius,
+            ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
-    # This makes us a cue ball
-    SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass, 
-    0, -25, 0,
-    0, 10, 0,
-    0, 0, 0, 0, 0, 0, ball_radius ])
+    ## This makes us a cue ball
+    #SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass, 
+    #0, -25, 0,
+    #0, 10, 0,
+    #0, 0, 0, 0, 0, 0, ball_radius ])
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
@@ -200,5 +207,5 @@ if __name__ == "__main__":
     #spawn_some_asteroids()
     #spawn_some_planets()
 
-    #collision()
-    pool_break()
+    #basic_collision()
+    pool_rack()
