@@ -13,20 +13,20 @@ VERSION = 0
 
 def hold_up(function, args, frametime):
     t1 = time.clock()
-    
+
     if args == None:
         function()
     else:
         function(args)
-        
+
     t2 = time.clock()
     dt = t2 - t1
-    
+
     while dt < frametime:
         time.sleep(frametime - dt)
         t2 = time.clock()
         dt = t2 - t1
-        
+
     return dt
 
 class ArtCurator:
@@ -200,12 +200,12 @@ class Universe:
 
         elif isinstance(msg, HelloMsg):
             newsmarty = self.register_smarty(client, osim_id)
-            
+
             if phys_id != None:
                 newsmarty.parent_phys_id = phys_id
-                
+
             newsmarty.handle(msg)
-            
+
         elif phys_id in self.smarties:
             self.smarties[phys_id].handle(msg)
 
@@ -224,7 +224,7 @@ class Universe:
         self.add_expire_lock = threading.Lock()
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
-        
+
         # ### PARAMETER ###  UNIVERSE TCP PORT
         self.net = MIMOServer(self.handle_message, self.hangup_objects, port = 5505)
         self.sim_thread = Universe.ThreadSim(self)
@@ -342,7 +342,7 @@ class Universe:
 
         for c in for_removal:
             self.vis_data_clients.remove(c)
-            
+
         self.vis_client_lock.release()
 
     @staticmethod
@@ -356,7 +356,7 @@ class Universe:
         accel = Vector3([0, 0, 0])
         if obj.mass == 0:
             return accel
-            
+
         # First get the attraction between this object, and all of the attractors.
         for a in self.attractors:
             if obj == a:
@@ -384,7 +384,7 @@ class Universe:
                 # d1 is the direction obj2 was travelling relative to obj1 when they collided
                 # p1 is a vector from obj1's position to the collision spot
                 ret = PhysicsObject.collide(self.phys_objects[i], self.phys_objects[j], dt)
-                
+
                 if ret != -1:
                     self.phys_objects[i].collision(self.phys_objects[j], ret[1][0], ret[2])
                     self.phys_objects[j].collision(self.phys_objects[i], ret[1][1], ret[3])
@@ -451,10 +451,10 @@ class Universe:
     # the simulation
     def sim(self, t = 0, r = 1):
         # ### PARAMETER ###  MINIMUM FRAME TIME
-        min_frametime = 0.001
+        min_frametime = 0.0001
         # ### PARAMETER ###  MAXIMUM FRAME TIME
-        max_frametime = 0.02
-        
+        max_frametime = 0.0001
+
         total_time = 0;
         dt = 0.01
         i = 0
@@ -478,10 +478,11 @@ class Universe:
 if __name__ == "__main__":
     uni = Universe()
     uni.start_sim()
-    time.sleep(1)
-    print uni.get_frametime(), "seconds per tick"
-    print "Press Enter to continue..."
-    raw_input()
+
+    while 1:
+        time.sleep(1)
+        print uni.get_frametime(), "seconds per tick"
+
     print "Stopping simulation"
     uni.stop_sim()
     print "Stopping network"

@@ -6,11 +6,11 @@ import math
 from mimosrv import MIMOServer
 import message
 import time
-import observer
+from observer import Observable
 
 import sys
 
-class Sensors(observer.Observable):
+class Sensors(Observable):
     def __init__(self, num_beams = 10, power = 10000.0, recharge_time=2.0):
         observer.Observable.__init__(self)
         self.contacts = []
@@ -96,7 +96,7 @@ class CommMessage:
     def __repr__(self):
         return ("%f,%f,%f,%f,%f,%s" % (self.time_seen, 
             self.direction[0], self.direction[1], self.direction[2],
-            self.energy, self.msg)
+            self.energy, self.msg))
 
 class Contact:
     def __init__(self, name, position, velocity, radius, time_seen=0):
@@ -111,12 +111,12 @@ class Contact:
         self.other_data = ""
         
     def __repr__(self):
-        return self.name + "," +
-            (time.time() - self.time_seen) + "," +
+        return (self.name + "," +
+            str(time.time() - self.time_seen) + "," +
             self.position[0] + "," + self.position[1] + "," + self.position[2] + "," +
             self.velocity[0] + "," + self.velocity[1] + "," + self.velocity[2] + "," +
             self.radius + "," +
-            self.other_data
+            self.other_data)
             
 
 class Laser:

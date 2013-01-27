@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 
+# Rigid body physics references
+# + http://www.olhovsky.com/2011/05/physics-engine/
+# + http://www.cord.edu/dept/physics/simulations/Two%20Spheres%20Colliding%20in%20Two%20Dimensions.html
+# + http://archive.ncsa.illinois.edu/Classes/MATH198/townsend/math.html
+# + http://chrishecker.com/Rigid_body_dynamics
+#
+# - http://stackoverflow.com/questions/345838/ball-to-ball-collision-detection-and-handling
+# - http://www.bulletphysics.org/Bullet/phpBB3/viewtopic.php?f=4&t=1452
+# - http://idav.ucdavis.edu/~okreylos/ResDev/Balls/MainPage.html
+# - http://introcs.cs.princeton.edu/java/assignments/collisions.html
+# - http://www.ics.uci.edu/~wayne/Gas/
+# - http://www.myphysicslab.com/collision.html
+
 import sys
 import socket
 from vector import Vector3
@@ -120,7 +133,6 @@ class PhysicsObject:
         o2 = obj2.position.clone()
 
         t = vd.dot(o1 - o2) / vd.length2()
-
         t = min(1, max(0, t))
 
         o1.add(v1, t)
@@ -133,12 +145,12 @@ class PhysicsObject:
             # ### TODO ### Relativistic kinetic energy
             # ### TODO ### Angular velocity, which reqires location.
 
-            # collision normal
+            # collision normal: points at obj1
             n = obj2.position - obj1.position
             n.normalize()
 
             # Collision tangential velocities. These parts don't change in the collision
-            t1 = Vector3.combine([[1, obj1.velocity], [obj1.velocity.dot(n), n]])
+            t1 = Vector3.combine([[1, obj1.velocity], [- obj1.velocity.dot(n), n]])
             t1.normalize()
             t1.scale(obj1.velocity.dot(t1))
 
@@ -147,25 +159,45 @@ class PhysicsObject:
             t2.scale(obj2.velocity.dot(t2))
 
             # Now we need the amount of energy transferred in each direction along the normal
+
+            # This is the amount of velocity given up by each object.
+            v = obj2.velocity - obj1.velocity
+            vdn = v.dot(n)
+
+            # vn1 and vn2 are the velcoities that the objects are giving up
+            # along the normal.
+            #
+            # Since the normal points from 1 to 2, if obj1 is moving away from 2,
+            # then it contiributes nothing to 2, and vice versa.
+
+            if obj1.velocity.dot(n) <= 0:
+                vn1 = Vector3([0,0,0])
+            else:
+                vn1 = n.clone()
+                vn1.scale(vdn)
+
+            if obj2.velocity.dot(n) >= 0:
+                vn2 = Vector3([0,0,0])
+            else:
+                vn2 = n.clone()
+                vn2.scale(vdn)
+
+            # n1 and n2 are teh changes in velocities of objects 1 and 2 along
+            # the collision normal.
             if obj1.mass == 0:
                 n1 = None
                 e1 = 0
             else:
-                n1 = n.clone()
-                e1 = obj2.velocity.dot(n)
-                n1.scale(e1 * obj2.mass / obj1.mass)
-                e1 = e1 * e1 * 0.5 * obj2.mass
+                n1 = Vector3.combine([[1, vn1], [obj2.mass / obj1.mass, vn2]])
+                e1 = n1.length2() * obj1.mass * 0.5
 
             if obj2.mass == 0:
                 n2 = None
                 e2 = 0
             else:
-                n2 = n.clone()
-                e2 = obj1.velocity.dot(n)
-                n2.scale(-1 * e2 * obj1.mass / obj2.mass)
-                e2 = e2 * e2 * 0.5 * obj1.mass
+                n2 = Vector3.combine([[-1, vn2], [-1 * obj1.mass / obj2.mass, vn1]])
+                e2 = n2.length2() * obj2.mass * 0.5
 
-            v = obj2.velocity - obj1.velocity
             d1 = v.unit()
             d2 = d1.clone()
             d2.scale(-1)
@@ -190,12 +222,13 @@ class PhysicsObject:
         t = 0.1 * self.health
         if energy > t:
             self.health -= (energy - t)
-        
+
         if self.health <= 0:
+            print "%d has been destroyed" % self.phys_id
             self.universe.expired.append(self)
 
     def resolve_phys_collision(self, energy, args):
-        self.velocity = args[2] + args[3]
+        self.velocity.add(args[3])
 
     def collision(self, obj, energy, args):
         if isinstance(obj, PhysicsObject):

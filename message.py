@@ -253,6 +253,9 @@ class HelloMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
 
+    #def send(client):
+        #HelloMsg.send(client, self.srv_id, self.cli_id)
+
     @staticmethod
     def send(client, srv_id, cli_id):
         msg = "HELLO\n"
@@ -272,6 +275,11 @@ class PhysicalPropertiesMsg(Message):
         self.orientation = Message.read_double3(s)
         self.thrust = Message.read_double3(s)
         self.radius = Message.read_double(s)
+
+    #def send(client):
+        #PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id,
+            #[ self.object_type, self.mass ] + self.position + self.velocity +
+                #self.orientation + self.thrust + [ self.radius ])
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -299,6 +307,10 @@ class VisualPropertiesMsg(Message):
         self.mesh = Message.read_mesh(s)
         self.texture = Message.read_texture(s)
 
+    #def send(client):
+        #VisualPropertiesMsg.send(client, self.srv_id, self.cli_id,
+            #[ self.mesh, self.texture ])
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "VISPROPS\n"
@@ -315,6 +327,9 @@ class VisualDataEnableMsg(Message):
         sys.stdout.flush()
         self.enabled = Message.read_int(s)
 
+    #def send(client):
+        #VisualDataEnableMsg.send(client, self.srv_id, self.cli_id, self.enabled)
+
     @staticmethod
     def send(client, srv_id, cli_id, arg):
         msg = "VISDATAENABLE\n%d\n" % arg
@@ -327,6 +342,9 @@ class VisualMetaDataEnableMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
         self.enabled = Message.read_int(s)
+
+    #def send(client):
+        #VisualMetaDataEnableMsg.send(client, self.srv_id, self.cli_id, self.enabled)
 
     @staticmethod
     def send(client, srv_id, cli_id, arg):
@@ -342,6 +360,9 @@ class VisualMetaDataMsg(Message):
         self.art_id = Message.read_int(s)
         self.mesh = Message.read_mesh(s)
         self.texture = Message.read_texture(s)
+
+    #def send(client):
+        #VisualMetaDataMsg.send(client, self.srv_id, self.cli_id, [ self.art_id, self.mesh, self.texture ])
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -365,6 +386,10 @@ class VisualDataMsg(Message):
         self.radius = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.orientation = Message.read_double3(s)
+
+    #def send(client):
+        #VisualDataMsg.send(client, self.srv_id, self.cli_id,
+            #[self.phys_id, self.radius ] + self.position + self.orientation)
 
     @staticmethod
     # This is special in that the args are exactly the string we want to send.
@@ -395,7 +420,18 @@ class BeamMsg(Message):
                 msg += line + "\n"
         else:
             self.beam_type = None
-            
+
+    #def send(client):
+        #args = self.origin + self.velocity + self.up + [ self.spread_h, self.spread_v, self.energy, self.beam_type ]
+
+        #if s[0] == "SCAN":
+            #pass
+        #elif s[0] == "WEAP":
+            #pass
+        #elif s[0] == "COMM":
+            #args += self.msg
+
+        #BeamMsg.send(client, self.srv_id, self.cli_id, args)
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -442,6 +478,18 @@ class CollisionMsg(Message):
         else:
             self.collision_type = None
 
+    #def send(client):
+        #args = self.position + self.direction + [ self.energy ]
+
+        #if s[0] == "SCAN":
+            #pass
+        #elif s[0] == "WEAP":
+            #pass
+        #elif s[0] == "COMM":
+            #args += self.msg
+
+        #CollisionMsg.send(client, self.srv_id, self.cli_id, args)
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "COLLISION\n"
@@ -480,6 +528,11 @@ class SpawnMsg(Message):
         self.thrust = Message.read_double3(s)
         self.radius = Message.read_double(s)
 
+    #def send(client):
+        #SpawnMsg.send(client, self.srv_id, self.cli_id,
+            #[ self.object_type, self.mass ] + self.position + self.velocity +
+                #self.orientation + self.thrust + [ self.radius ])
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "SPAWN\n%s\n" % args[0]
@@ -504,6 +557,11 @@ class ScanResultMsg(Message):
         self.radius = Message.read_double(s)
         self.extra_parms = s
 
+    #def send(client):
+        #ScanResultMsg.send(client, self.srv_id, self.cli_id,
+            #[ self.object_type, self.mass ] + self.position + self.velocity +
+                #self.orientation + self.thrust + [ self.radius ] + self.extra_parms)
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "SCANRESULT\n%s\n" % args[0]
@@ -524,6 +582,9 @@ class ScanQueryMsg(Message):
         self.scan_id = Message.read_int(s)
         self.scan_power = Message.read_double(s)
         self.scan_dir = Message.read_double3(s)
+
+    #def send(client):
+        #ScanQueryMsg.send(client, self.srv_id, self.cli_id, [self.scan_id, self.scan_power] + self.scan_dir)
     
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -539,6 +600,9 @@ class ScanResponseMsg(Message):
         self.cli_id = cli_id
         self.scan_id = Message.read_int(s)
         self.parms = s
+
+    #def send(client):
+        #ScanResponseMsg.send(client, self.srv_id, self.cli_id, [ self.scan_id ] + self.parms)
     
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -553,6 +617,9 @@ class GoodbyeMsg(Message):
     def __init__(self, s, srv_id, cli_id):
         self.srv_id = srv_id
         self.cli_id = cli_id
+
+    #def send(client):
+        #GoodbyeMsg.send(client, self.srv_id, self.cli_id)
 
     @staticmethod
     def send(client, srv_id, cli_id):
@@ -572,6 +639,9 @@ class DirectoryMsg(Message):
         for i in range(0, len(s) - (len(s) % 2), 2):
             self.items.append([int(s[i]), s[i+1]])
 
+    #def send(client):
+        #DirectoryMsg.send(client, self.srv_id, self.cli_id, [self.item_type] + self.items)
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "DIRECTORY\n%s\n" % args[0]
@@ -588,6 +658,9 @@ class NameMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
         self.name = s[0]
+
+    #def send(client):
+        #NameMsg.send(client, self.srv_id, self.cli_id, self.name)
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
