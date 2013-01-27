@@ -179,8 +179,8 @@ class ObjectSim:
 
         for c in self.client_list[osim_id]:
             GoodbyeMsg.send(c[0], osim_id, c[1])
-            c.shutdown(socket.SHUT_RDWR)
-            c.close()
+            c[0].shutdown(socket.SHUT_RDWR)
+            c[0].close()
 
         del self.client_list[osim_id]
 

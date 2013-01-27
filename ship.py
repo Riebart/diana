@@ -12,7 +12,7 @@ import sys
 
 class Sensors(Observable):
     def __init__(self, num_beams = 10, power = 10000.0, recharge_time=2.0):
-        observer.Observable.__init__(self)
+        Observable.__init__(self)
         self.contacts = []
         self.scanners = []
         self.fade_time = 5.0
@@ -50,15 +50,18 @@ class Sensors(Observable):
         contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
         contact.other_data = mess.extra_parms
         self.contact_list[contact.name] = contact
-        
+
         self.notify(contact)
 
 
 class Comms(Observable):
     def __init__(self, power=10000.0, recharge_time=2.0):
-        observer.Observable.__init__(self)
+        Observable.__init__(self)
         self.messages = []
-        self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
+        # What the hell was the 'i' supposed to mean? Why are there lasers in the
+        # Comm observable object? Commenting this out so that I can continue
+        # testing the new-ship code.
+        #self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
         self.fade_time = 600.0
         
     def send_state(self, client):
@@ -159,6 +162,7 @@ class Ship(SmartObject):
 
         self.sensors = Sensors(10)
         self.comms = Comms()
+        self.spawned = 0
 
         self.laser_list = dict()
         self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
@@ -184,7 +188,21 @@ class Ship(SmartObject):
         if isinstance(msg, message.NameMsg):
             if msg.name != None:
                 self.name = msg.name
-                
+
+        elif isinstance(msg, message.ReadyMsg):
+            if msg.ready == 1 and self.spawned == 0:
+                self.osim.spawn_object(self)
+                self.spawned = 1
+
+        elif isinstance(msg, message.GoodbyeMsg):
+            self.osim.destroy_object(self.osim_id)
+            self.done = True
+
+        elif isinstance(msg, message.PhysicalPropertiesMsg):
+            msg.srv_id = self.phys_id
+            msg.cli_id = self.osim_id
+            msg.sendto(self.sock)
+
         elif isinstance(mess, message.VisualDataEnableMsg):
             if msg.enabled == 1:
                 if client not in self.vis_clients:
