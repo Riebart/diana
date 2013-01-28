@@ -139,6 +139,7 @@ def basic_collision():
 
 def pool_rack():
     sock = socket.socket()
+    #sock.connect( ("localhost", 5505) )
     sock.connect( ("localhost", 5505) )
 
     import sys
@@ -153,10 +154,10 @@ def pool_rack():
     r = 10000000
     t = 100000
 
-    ball_mass = 100000
+    ball_mass = 10000
     ball_radius = 1
 
-    num_rows = 8
+    num_rows = 5
 
     # This loop produces a trangle of balls that points down the negative y axis.
     #

@@ -28,7 +28,11 @@ namespace FormsDrawing
 
             try
             {
-                numRead = s.Read(buf, 0, 10);
+                numRead = 0;
+                while (numRead < 10)
+                {
+                    numRead += s.Read(buf, numRead, 10 - numRead);
+                }
             }
             catch (System.IO.IOException)
             {
@@ -45,7 +49,11 @@ namespace FormsDrawing
             buf = new byte[numBytes];
             try
             {
-                numRead = s.Read(buf, 0, numBytes);
+                numRead = 0;
+                while (numRead < numBytes)
+                {
+                    numRead += s.Read(buf, numRead, numBytes - numRead);
+                }
             }
             catch (System.IO.IOException)
             {

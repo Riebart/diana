@@ -11,7 +11,8 @@ class Message:
     @staticmethod
     def get_message_size(client):
         try:
-            raw = client.recv(10).rstrip()
+            raw = Message.big_read(client, 10).rstrip()
+            #raw = client.recv(10).rstrip()
             msg_length = int(raw)
             # We really don't want zero-length messages
             if msg_length > 0:
@@ -43,6 +44,7 @@ class Message:
                 break
 
             cur_read = min(4096, num_bytes - num_got)
+
             try:
                 cur_msg = client.recv(cur_read)
             except:

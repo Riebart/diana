@@ -87,9 +87,6 @@ class MIMOServer:
                     sys.stdout.flush()
                     break
 
-                print "reading from %d" % self.client.fileno()
-                sys.stdout.flush()
-
                 self.handler(self.client)
 
             sys.stdout.flush()

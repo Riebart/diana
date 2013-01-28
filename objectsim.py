@@ -84,7 +84,6 @@ class ObjectSim:
 
     def hangup(self, client):
         # ### TODO ### Really inefficient...
-        print "HANGING UP", client.getpeername()
         for k in self.client_list:
             for c in self.client_list[k]:
                 if c == client:
@@ -196,7 +195,7 @@ class ObjectSim:
 if __name__ == "__main__":
     from shiptypes import Firefly
 
-    osim = ObjectSim()
+    osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
 
     print "Press Enter to continue..."

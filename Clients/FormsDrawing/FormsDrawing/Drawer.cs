@@ -43,7 +43,10 @@ namespace FormsDrawing
         public Drawer()
         {
             InitializeComponent();
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true);
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
+            this.SetStyle(ControlStyles.UserPaint, true);
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+            this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.UpdateStyles();
 
             lblNumMessages.BackColor = Color.LightGray;
@@ -91,7 +94,7 @@ namespace FormsDrawing
                 }
                 else
                 {
-                    srv = new IPEndPoint(IPAddress.Loopback, 5505);
+                    srv = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5505);
                 }
 
                 client.Connect(srv);
@@ -170,6 +173,10 @@ namespace FormsDrawing
             client.Close();
         }
 
+        protected override void OnPaint(PaintEventArgs pe)
+        {
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
         }
@@ -237,10 +244,10 @@ namespace FormsDrawing
                     double y = (1 + (focusY - v.pY) / yExtent) * canvasHeight + border - rY;
 
                     // Do some basic clipping testing.
-                    if ((x + rX < 0) || (x - rX > this.ClientSize.Width))
+                    if ((x + 2 * rX < 0) || (x - 2 * rX > this.ClientSize.Width))
                         continue;
 
-                    if ((y + rY < 0) || (y - rY > this.ClientSize.Height))
+                    if ((y + 2 * rY < 0) || (y - 2 * rY > this.ClientSize.Height))
                         continue;
 
                     g.DrawEllipse(pen, (float)x, (float)y, 2 * (float)rX, 2 * (float)rY);
