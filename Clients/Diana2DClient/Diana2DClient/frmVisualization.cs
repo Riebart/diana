@@ -12,9 +12,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-namespace FormsDrawing
+
+namespace Diana2DClient
 {
-    public partial class Drawer : Form
+    public partial class frmVisualization : Form
     {
         Graphics g;
         Pen pen;
@@ -37,11 +38,15 @@ namespace FormsDrawing
         int mouseDownY = 0;
         bool moving = false;
 
-        Smarty smarty = new Smarty();
+        Smarty smarty;
         Vector3D thrust = new Vector3D(0, 0, 0);
+        IPEndPoint srv = null;
 
-        public Drawer()
+        internal frmVisualization(IPEndPoint srv, Smarty smarty)
         {
+            this.smarty = smarty;
+            this.srv = srv;
+
             InitializeComponent();
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             this.SetStyle(ControlStyles.UserPaint, true);
@@ -56,7 +61,7 @@ namespace FormsDrawing
             g = this.CreateGraphics();
             pen = new Pen(Color.Black, 1);
 
-            StartReaderThread(null);
+            StartReaderThread(smarty);
         }
 
         void StartReaderThread(Smarty smarty)
@@ -64,7 +69,6 @@ namespace FormsDrawing
             readerThread = new Thread(new ParameterizedThreadStart(this.SocketReader));
             readerThread.Start(smarty);
             reading = true;
-            stripReconnect.Enabled = false;
         }
 
         void SocketReader(object arg)
@@ -94,7 +98,8 @@ namespace FormsDrawing
                 }
                 else
                 {
-                    srv = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5505);
+                    //srv = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5505);
+                    srv = this.srv;
                 }
 
                 client.Connect(srv);
@@ -138,7 +143,7 @@ namespace FormsDrawing
 
                 if (msg != null)
                 {
-                    if ((msg.id == -1) || ((updateList.Count > 0) && 
+                    if ((msg.id == -1) || ((updateList.Count > 0) &&
                         (msg.id < updateList[updateList.Count - 1].id)))
                     {
                         lock (bufferList)
@@ -173,26 +178,8 @@ namespace FormsDrawing
             client.Close();
         }
 
-        protected override void OnPaint(PaintEventArgs pe)
-        {
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (!smarty.Connected())
-            {
-                stripSmarty.Text = "Connect Smarty";
-            }
-
-            if ((readerThread != null) && (!readerThread.IsAlive))
-            {
-                stripReconnect.Enabled = true;
-            }
-
             if (painting)
             {
                 List<VisDataMessage> tmp;
@@ -269,13 +256,13 @@ namespace FormsDrawing
             }
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void frmVisualization_FormClosing(object sender, FormClosingEventArgs e)
         {
             reading = false;
             readerThread.Join();
         }
 
-        private void Form1_ResizeEnd(object sender, EventArgs e)
+        private void frmVisualization_ResizeEnd(object sender, EventArgs e)
         {
             g = this.CreateGraphics();
         }
@@ -288,7 +275,7 @@ namespace FormsDrawing
             {
                 // Check your window state here
                 // SC_RESTORE is 0xF120, and SC_MINIMIZE is 0XF020
-                if (((int.Parse(m.WParam.ToString()) & 0xFFF0) == 0xF120) || 
+                if (((int.Parse(m.WParam.ToString()) & 0xFFF0) == 0xF120) ||
                     ((int.Parse(m.WParam.ToString()) & 0xFFF0) == 0xF010) || // This is what is thrown if you double-click the title bar
                     ((int.Parse(m.WParam.ToString()) & 0xFFF0) == 0xF030)) // Maximize event - SC_MAXIMIZE from Winuser.h
                 {
@@ -297,21 +284,21 @@ namespace FormsDrawing
             }
         }
 
-        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        private void frmVisualization_MouseDown(object sender, MouseEventArgs e)
         {
             mouseDownX = e.X;
             mouseDownY = e.Y;
             moving = true;
         }
 
-        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        private void frmVisualization_MouseUp(object sender, MouseEventArgs e)
         {
             moving = false;
             centreX = focusX;
             centreY = focusY;
         }
 
-        private void Form1_MouseWheel(object sender, MouseEventArgs e)
+        private void frmVisualization_MouseWheel(object sender, MouseEventArgs e)
         {
             if (e.Delta < 0)
             {
@@ -319,130 +306,11 @@ namespace FormsDrawing
             }
             else if (e.Delta > 0)
             {
-                if (minExtent > 1/1000)
+                if (minExtent > 1 / 1000)
                 {
                     minExtent /= 2;
                 }
             }
-        }
-
-        private void stripReconnect_Click(object sender, EventArgs e)
-        {
-            numSwaps = 0;
-            StartReaderThread((smarty.Connected() ? smarty : null));
-        }
-
-        private void stripeSmarty_Click(object sender, EventArgs e)
-        {
-            if (stripSmarty.Text == "Connect Smarty")
-            {
-                SmartyPicker smartyPicker = new SmartyPicker(smarty, this);
-                smartyPicker.Show();
-            }
-            else
-            {
-                DialogResult res = MessageBox.Show("Do you want to remove the smarty from the universe as well as disconnect?", "Remove From universe", MessageBoxButtons.YesNoCancel);
-                if (res == System.Windows.Forms.DialogResult.Yes)
-                {
-                    smarty.Disconnect(true);
-                    stripSmarty.Text = "Connect Smarty";
-                }
-                else if (res == System.Windows.Forms.DialogResult.No)
-                {
-                    smarty.Disconnect(false);
-                    stripSmarty.Text = "Connect Smarty";
-                }
-                else
-                {
-                    return;
-                }
-
-                // Now we stop the reader thread again, and start up a global one.
-                reading = false;
-                readerThread.Join();
-                StartReaderThread(null);
-            }
-        }
-
-        internal void PickerDone()
-        {
-            stripSmarty.Text = "Disconnect Smarty";
-            lblThrust.Text = "( " + thrust.X + " , " + thrust.Y + " , " + thrust.Z + " )";
-
-            // Now we stop the current visdata thread, and spin up a new one
-
-            reading = false;
-            readerThread.Join();
-            numSwaps = 0;
-            StartReaderThread(smarty);
-        }
-
-        private void Drawer_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (!smarty.Connected())
-            {
-                return;
-            }
-
-            switch (e.KeyCode)
-            {
-                case Keys.W:
-                    thrust.Y = 100000000;
-                    break;
-
-                case Keys.A:
-                    thrust.X = 100000000;
-                    break;
-
-                case Keys.S:
-                    thrust.Y = -100000000;
-                    break;
-
-                case Keys.D:
-                    thrust.X = -100000000;
-                    break;
-
-                default:
-                    break;
-            }
-
-            lblThrust.Text = "( " + thrust.X + " , " + thrust.Y + " , " + thrust.Z + " )";
-            smarty.UpdateThrust(thrust);
-            e.Handled = true;
-        }
-
-        private void Drawer_KeyUp(object sender, KeyEventArgs e)
-        {
-            if (!smarty.Connected())
-            {
-                return;
-            }
-
-            switch (e.KeyCode)
-            {
-                case Keys.W:
-                    thrust.Y = 0;
-                    break;
-
-                case Keys.A:
-                    thrust.X = 0;
-                    break;
-
-                case Keys.S:
-                    thrust.Y = 0;
-                    break;
-
-                case Keys.D:
-                    thrust.X = 0;
-                    break;
-
-                default:
-                    break;
-            }
-
-            lblThrust.Text = "( " + thrust.X + " , " + thrust.Y + " , " + thrust.Z + " )";
-            smarty.UpdateThrust(thrust);
-            e.Handled = true;
         }
     }
 }

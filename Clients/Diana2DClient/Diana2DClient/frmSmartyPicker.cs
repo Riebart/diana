@@ -9,24 +9,26 @@ using System.Windows.Forms;
 
 using System.Net;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
-    public partial class SmartyPicker : Form
+    public partial class frmSmartyPicker : Form
     {
-        Drawer parent;
+        frmMain parent;
         Smarty smarty;
+        IPEndPoint srv;
 
-        internal SmartyPicker(Smarty smarty, Drawer parent)
+        internal frmSmartyPicker(IPEndPoint srv, frmMain parent)
         {
             InitializeComponent();
 
             this.parent = parent;
-            this.smarty = smarty;
+            this.srv = srv;
         }
 
-        private void SmartyPicker_Load(object sender, EventArgs e)
+        private void frmSmartyPicker_Load(object sender, EventArgs e)
         {
-            bool connected = smarty.Connect(new IPEndPoint(IPAddress.Loopback, 5506));
+            smarty = new Smarty();
+            bool connected = smarty.Connect(srv);
 
             if (!connected)
             {
@@ -105,7 +107,7 @@ namespace FormsDrawing
         private void cmdReady_Click(object sender, EventArgs e)
         {
             smarty.Ready();
-            parent.PickerDone();
+            parent.PickerDone(smarty);
             this.Close();
         }
     }

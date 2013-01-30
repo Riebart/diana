@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Windows.Forms;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
     class Smarty
     {
@@ -140,6 +140,29 @@ namespace FormsDrawing
             return (IPEndPoint)client.Client.RemoteEndPoint;
         }
 
+        internal int GetConnection(out TcpClient client, out Stream s)
+        {
+            client = new TcpClient();
+            client.ReceiveTimeout = 1000;
+            client.Connect((IPEndPoint)this.client.Client.RemoteEndPoint);
+            s = client.GetStream();
+
+            HelloMessage.Send(s, -1, -1);
+            Message helloback = (HelloMessage)Message.GetMessage(s);
+
+            int visClientID = helloback.client_id;
+
+            return visClientID;
+        }
+
+        internal void Disconnect(TcpClient client, Stream s, int clientID)
+        {
+            GoodbyeMessage.Send(s, osim_id, clientID);
+            s.Flush();
+            s.Close();
+            client.Close();
+        }
+
         internal int ConnectToVisData(Stream s)
         {
             HelloMessage.Send(s, -1, -1);
@@ -152,6 +175,11 @@ namespace FormsDrawing
             VisDataEnableMessage.Send(s, osim_id, visClientID, true);
 
             return visClientID;
+        }
+
+        internal int ConnectToHelm(Stream s)
+        {
+            return -1;
         }
     }
 }

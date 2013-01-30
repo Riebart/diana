@@ -1,17 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FBEC6423-11B9-4B99-8609-D8D953DE4F84}</ProjectGuid>
+    <ProjectGuid>{AE4E96E4-446C-494D-91AE-47779A27E62C}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FormsDrawing</RootNamespace>
-    <AssemblyName>FormsDrawing</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>Diana2DClient</RootNamespace>
+    <AssemblyName>Diana2DClient</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,10 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -44,26 +45,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Drawer.cs">
+    <Compile Include="frmHelm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Drawer.Designer.cs">
-      <DependentUpon>Drawer.cs</DependentUpon>
+    <Compile Include="frmHelm.Designer.cs">
+      <DependentUpon>frmHelm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmMain.Designer.cs">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmVisualization.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmVisualization.Designer.cs">
+      <DependentUpon>frmVisualization.cs</DependentUpon>
     </Compile>
     <Compile Include="MatrixD.cs" />
     <Compile Include="Messaging.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Smarty.cs" />
-    <Compile Include="SmartyPicker.cs">
+    <Compile Include="frmSmartyPicker.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SmartyPicker.Designer.cs">
-      <DependentUpon>SmartyPicker.cs</DependentUpon>
+    <Compile Include="frmSmartyPicker.Designer.cs">
+      <DependentUpon>frmSmartyPicker.cs</DependentUpon>
     </Compile>
     <Compile Include="Vector3D.cs" />
-    <EmbeddedResource Include="Drawer.resx">
-      <DependentUpon>Drawer.cs</DependentUpon>
+    <EmbeddedResource Include="frmHelm.resx">
+      <DependentUpon>frmHelm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmMain.resx">
+      <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmVisualization.resx">
+      <DependentUpon>frmVisualization.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -75,8 +94,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SmartyPicker.resx">
-      <DependentUpon>SmartyPicker.cs</DependentUpon>
+    <EmbeddedResource Include="frmSmartyPicker.resx">
+      <DependentUpon>frmSmartyPicker.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -90,6 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Compass.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

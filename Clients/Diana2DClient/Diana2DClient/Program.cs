@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Threading.Tasks;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
     static class Program
     {
@@ -16,7 +16,7 @@ namespace FormsDrawing
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Drawer());
+            Application.Run(new frmMain());
         }
     }
 }

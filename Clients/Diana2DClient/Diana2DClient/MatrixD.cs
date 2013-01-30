@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
     /// <summary>
     /// Provides a double-precision analogue of all 

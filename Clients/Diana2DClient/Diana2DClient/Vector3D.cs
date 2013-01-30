@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
     /// <summary>
     /// A double-precision and pared-down version of the DirectX Vector3 class

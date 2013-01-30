@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace FormsDrawing
+namespace Diana2DClient
 {
     class Message
     {
@@ -99,7 +99,7 @@ namespace FormsDrawing
 
         internal VisDataMessage(string[] msg)
         {
-           if (msg[3] == "-1")
+            if (msg[3] == "-1")
             {
                 Init(-1, 0.0, 0.0, 0.0, 0.0);
             }
@@ -318,7 +318,7 @@ namespace FormsDrawing
             return new PhysicalPropertiesMessage(msg);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id, string object_type, double mass, double radius, 
+        internal static bool Send(Stream s, int osim_id, int client_id, string object_type, double mass, double radius,
                                   Vector3D position, Vector3D velocity, Vector3D orientation, Vector3D thrust)
         {
             return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
