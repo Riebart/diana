@@ -183,8 +183,8 @@ class Universe:
                 self.smarties[phys_id].handle(msg)
 
         if isinstance(msg, SpawnMsg):
-            if (msg.position == None or msg.velocity == None or msg.orientation == None or
-                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
+            if (msg.position == None or msg.velocity == None or msg.mass == None or
+                msg.radius == None or msg.thrust == None or msg.object_type == None):
                 return
 
             newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
@@ -323,7 +323,7 @@ class Universe:
         self.phys_lock.acquire()
         positions = []
         for o in self.phys_objects:
-            positions.append([o.phys_id, o.radius, o.position.clone(), o.orientation.clone()])
+            positions.append([o.phys_id, o.radius, o.position.clone(), Vector3.get_orientation(o.forward, o.up, o.right)])
         self.phys_lock.release()
 
         self.vis_client_lock.acquire()

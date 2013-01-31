@@ -49,12 +49,13 @@ class PhysicsObject:
                     object_type = "Unknown"):
         self.universe = universe
         self.phys_id = universe.get_id()
-        self.position = Vector3(position) if position else None
-        self.velocity = Vector3(velocity) if velocity else None
-        self.orientation = Vector3(orientation) if orientation else None
+        self.position = Vector3(position) if position != None else None
+        self.velocity = Vector3(velocity) if velocity != None else None
+        self.from_orientation(orientation if orientation != None else [ 1.0, 0.0, 0.0 ])
+        self.ang_velocity = Vector3([ 0.0, 0.0, 0.0 ])
         self.mass = mass
         self.radius = radius
-        self.thrust = Vector3(thrust) if thrust else None
+        self.thrust = Vector3(thrust) if thrust != None else None
         self.object_type = object_type
         self.art_id = None
         self.health = self.mass * 1000000 if self.mass != None else None
@@ -63,6 +64,9 @@ class PhysicsObject:
             self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
         else:
             self.emits_gravity = 0
+
+    def from_orientation(self, o):
+        [ self.forward, self.up, self.right ] = Vector3.from_orientation(o)
 
     def handle(self, msg):
         pass
@@ -78,6 +82,8 @@ class PhysicsObject:
         self.velocity.x += dt * acc.x
         self.velocity.y += dt * acc.y
         self.velocity.z += dt * acc.z
+
+        Vector3.apply_ypr(self.forward, self.up, self.right, self.ang_velocity)
 
     @staticmethod
     def collide(obj1, obj2, dt):
@@ -298,7 +304,7 @@ class SmartPhysicsObject(PhysicsObject):
                     self.velocity.add(Vector3(msg.velocity))
 
             if msg.orientation != None:
-                self.orientation = Vector3(msg.orientation)
+                self.from_orientation(msg.orientation)
 
             if msg.thrust != None:
                 self.thrust = Vector3(msg.thrust)
@@ -315,7 +321,7 @@ class SmartPhysicsObject(PhysicsObject):
             # Check for when we finally have a fully defined object.
             if (self.exists == 0 and self.object_type != None and self.mass != None and
                 self.radius != None and self.position != None and 
-                self.velocity != None and self.orientation != None and self.thrust != None):
+                self.velocity != None and self.thrust != None):
 
                 if self.parent_phys_id != None:
                     parent = self.universe.smarties[self.parent_phys_id]

@@ -288,10 +288,6 @@ class PhysicalPropertiesMsg(Message):
         args += [ (self.radius if self.radius != None else "") ]
 
         PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, args)
-        
-        #PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id,
-            #[ self.object_type, self.mass ] + self.position + self.velocity +
-                #self.orientation + self.thrust + [ self. ])
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -303,12 +299,15 @@ class PhysicalPropertiesMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+    # ### TODO ### Make this relative to orientation?
     @staticmethod
-    def make_from_object(obj, p = zero3d, v = zero3d):
+    def make_from_object(obj, p = zero3d, v = zero3d, o = zero3d):
+        orientation = Vector3.get_orientation(obj.forward, obj.up, obj.right, o)
+
         return [ obj.object_type, obj.mass,
                     obj.position.x - p.x, obj.position.y - p.y, obj.position.z - p.z,
                     obj.velocity.x - v.x, obj.velocity.y - v.y, obj.velocity.z - v.z,
-                    obj.orientation.x, obj.orientation.y, obj.orientation.z,
+                    orientation.x, orientation.y, orientation.z,
                     obj.thrust.x, obj.thrust.y, obj.thrust.z,
                     obj.radius ]
 

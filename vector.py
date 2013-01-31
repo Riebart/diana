@@ -1,8 +1,44 @@
 #!/usr/bin/env python
 
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi, sqrt, pow
 
 class Vector3:
+    @staticmethod
+    def get_orientation(forward, up, right, rel = None):
+        return Vector3([0,0,0])
+
+    @staticmethod
+    def from_orientation(o):
+        forward = Vector3([ o[0], o[1], sqrt(1 - o[0] * o[0] - o[1] * o[1])])
+
+        right = Vector3([ -o[1], o[0], 0 ])
+        right.rotate_around(forward, o[2])
+        right.normalize()
+
+        up = Vector3([ forward.z, 0, -forward.x ])
+        up.rotate_around(forward, o[2])
+        up.normalize()
+
+        return [ forward, up, right ]
+
+    def rotate_around(self, axis, angle):
+        c = cos(angle)
+        s = sin(angle)
+        l2 = axis.length2()
+        l = sqrt(l2)
+
+        x2 = self.y*((axis.x*axis.y-c*axis.x*axis.y)/l2+(s*axis.z)/l)+(self.x*(pow(axis.x,2)+c*(pow(axis.y,2)+pow(axis.z,2))))/l2+(-((s*axis.y)/l)+(axis.x*axis.z-c*axis.x*axis.z)/l2)*self.z
+        y2 = self.x*((axis.x*axis.y-c*axis.x*axis.y)/l2-(s*axis.z)/l)+(self.y*(pow(axis.y,2)+c*(pow(axis.x,2)+pow(axis.z,2))))/l2+((s*axis.x)/l+(axis.y*axis.z-c*axis.y*axis.z)/l2)*self.z
+        z2 = self.x*((s*axis.y)/l+(axis.x*axis.z-c*axis.x*axis.z)/l2)*+self.y*(-((s*axis.x)/l)+(axis.y*axis.z-c*axis.y*axis.z)/l2)+((c*(pow(axis.x,2)+pow(axis.y,2))+pow(axis.z,2))*self.z)/l2
+
+        self.x = x2
+        self.y = y2
+        self.z = z2
+
+    @staticmethod
+    def apply_ypr(forward, up, right, angles):
+        pass
+
     def __init__(self, v, y = None, z = None):
         if y == None:
             self.x = v[0]
