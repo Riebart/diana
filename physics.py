@@ -51,7 +51,7 @@ class PhysicsObject:
         self.phys_id = universe.get_id()
         self.position = Vector3(position) if position != None else None
         self.velocity = Vector3(velocity) if velocity != None else None
-        self.from_orientation(orientation if orientation != None else [ 1.0, 0.0, 0.0 ])
+        self.from_orientation(orientation if orientation != None else [ 1.0, 0.0, 0.0, 0.0 ])
         self.ang_velocity = Vector3([ 0.0, 0.0, 0.0 ])
         self.mass = mass
         self.radius = radius

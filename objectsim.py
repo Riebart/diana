@@ -153,7 +153,7 @@ class ObjectSim:
                 obj.mass,
                 obj.position[0], obj.position[1], obj.position[2],
                 obj.velocity[0], obj.velocity[1], obj.velocity[2],
-                orientation[0], orientation[1], orientation[2],
+                orientation[0], orientation[1], orientation[2], orientation[3],
                 obj.thrust[0], obj.thrust[1], obj.thrust[2],
                 obj.radius
                 ) )

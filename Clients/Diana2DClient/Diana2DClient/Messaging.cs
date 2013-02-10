@@ -95,17 +95,17 @@ namespace Diana2DClient
     {
         static byte[] buffer = new byte[4096];
         public int id;
-        public double radius, pX, pY, pZ;
+        public double radius, pX, pY, pZ, oFX, oFY, oUX, oUY;
 
         internal VisDataMessage(string[] msg)
         {
             if (msg[3] == "-1")
             {
-                Init(-1, 0.0, 0.0, 0.0, 0.0);
+                Init(-1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
             }
             else
             {
-                Init(int.Parse(msg[3]), double.Parse(msg[4]), double.Parse(msg[5]), double.Parse(msg[6]), double.Parse(msg[7]));
+                Init(int.Parse(msg[3]), double.Parse(msg[4]), double.Parse(msg[5]), double.Parse(msg[6]), double.Parse(msg[7]), double.Parse(msg[8]), double.Parse(msg[9]), double.Parse(msg[10]), double.Parse(msg[10]));
             }
         }
 
@@ -114,13 +114,17 @@ namespace Diana2DClient
             return new VisDataMessage(msg);
         }
 
-        void Init(int id, double radius, double pX, double pY, double pZ)
+        void Init(int id, double radius, double pX, double pY, double pZ, double oFX, double oFY, double oUX, double oUY)
         {
             this.id = id;
             this.radius = radius;
             this.pX = pX;
             this.pY = pY;
             this.pZ = pZ;
+            this.oFX = oFX;
+            this.oFY = oFY;
+            this.oUX = oUX;
+            this.oUY = oUY;
         }
 
         internal static bool Send(Stream s)

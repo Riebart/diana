@@ -17,5 +17,4 @@ class Firefly(Ship):
         self.up = Vector3([0.0, 0.0, 1.0])
         self.position = Vector3([0.0, 0.0, 0.0])
         self.velocity = Vector3([0.0, 0.0, 0.0])
-        self.orientation = Vector3([1.0, 0.0, 0.0])
         self.thrust = Vector3([0.0, 0.0, 0.0])
