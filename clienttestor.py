@@ -102,8 +102,13 @@ def basic_collision():
     sock.connect( ("localhost", 5505) )
 
     import sys
+    import random
     from math import sin, cos, pi, sqrt
+    from physics import PhysicsObject
     from message import SpawnMsg
+
+    rand = random.Random()
+    #rand.seed(0)
 
     r = 10000000
     t = 100000
@@ -134,11 +139,17 @@ def basic_collision():
 
 def pool_rack():
     sock = socket.socket()
+    #sock.connect( ("localhost", 5505) )
     sock.connect( ("localhost", 5505) )
 
     import sys
+    import random
     from math import sin, cos, pi, sqrt
+    from physics import PhysicsObject
     from message import SpawnMsg
+
+    rand = random.Random()
+    #rand.seed(0)
 
     r = 10000000
     t = 100000
@@ -146,7 +157,7 @@ def pool_rack():
     ball_mass = 10000
     ball_radius = 1
 
-    num_rows = 25
+    num_rows = 5
 
     # This loop produces a trangle of balls that points down the negative y axis.
     #
@@ -168,39 +179,14 @@ def pool_rack():
     for i in range(0, num_rows):
         for j in range(0, i+1):
             SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
-            ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0,
-            0, 0, 0,
-            1, 0, 0,
-            0, 0, 0, ball_radius ])
+            ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
     ## This makes us a cue ball
     #SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass, 
     #0, -25, 0,
     #0, 10, 0,
     #0, 0, 0, 0, 0, 0, ball_radius ])
-
-    sock.shutdown(socket.SHUT_RDWR)
-    sock.close()
-
-def all_moving():
-    sock = socket.socket()
-    sock.connect( ("localhost", 5505) )
-
-    num_objs = 50
-
-    import sys
-    import random
-    from math import sin, cos, pi, sqrt
-    from physics import PhysicsObject
-    from message import SpawnMsg
-
-    for i in range(0,num_objs):
-        SpawnMsg.send(sock, None, None, [ "Object %d" % i, 1000000,
-        num_objs * cos(2 * pi * i / num_objs), num_objs * sin(2 * pi * i / num_objs), 0,
-        -0.25 * num_objs * cos(2 * pi * i / num_objs), -0.25 * num_objs * sin(2 * pi * i / num_objs), 0,
-        1, 0, 0,
-        0, 0, 0,
-        1 ])
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
@@ -223,6 +209,4 @@ if __name__ == "__main__":
     #spawn_some_planets()
 
     #basic_collision()
-    #pool_rack()
-
-    all_moving()
+    pool_rack()
