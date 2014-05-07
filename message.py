@@ -46,6 +46,8 @@ class Message:
 
             try:
                 cur_msg = client.recv(cur_read)
+            except socket.timeout as e:
+                raise e
             except:
                 if client.fileno() == -1:
                     return None
