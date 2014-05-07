@@ -185,8 +185,10 @@ class Universe:
                 self.smarties[phys_id].handle(msg)
 
         if isinstance(msg, SpawnMsg):
-            if (msg.position == None or msg.velocity == None or msg.orientation == None or
-                msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
+            if (msg.position == None or msg.velocity == None or msg.mass == None or
+                msg.radius == None or msg.thrust == None or msg.object_type == None):
+            #if (msg.position == None or msg.velocity == None or msg.orientation == None or
+                #msg.mass == None or msg.radius == None or msg.thrust == None or msg.object_type == None):
                 return
 
             newobj = PhysicsObject(self, msg.position, msg.velocity, msg.orientation,
@@ -324,7 +326,8 @@ class Universe:
         self.phys_lock.acquire()
         positions = []
         for o in self.phys_objects:
-            positions.append([o.phys_id, o.radius, o.position.clone(), o.orientation.clone()])
+            positions.append([o.phys_id, o.radius, o.position.clone(), Vector3.get_orientation(o.forward, o.up, o.right)])
+            #positions.append([o.phys_id, o.radius, o.position.clone(), o.orientation.clone()])
         self.phys_lock.release()
 
         self.vis_client_lock.acquire()
@@ -333,13 +336,16 @@ class Universe:
             sent_something = 0
             for p in positions:
                 if isinstance(c, socket.socket):
-                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1], p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z)
+                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1], p[2].x, p[2].y, p[2].z, p[3][0], p[3][1], p[3][2], p[3][3])
+                    #m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1], p[2].x, p[2].y, p[2].z, p[3].x, p[3].y, p[3].z)
                     ret = VisualDataMsg.send(c, None, None, m)
                     sent_something = 1
                 else:
-                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1],
+                    m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1],
+                    #m = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (p[0], p[1],
                         p[2].x - c.position.x, p[2].y - c.position.y, p[2].z - c.position.z,
-                        p[3].x, p[3].y, p[3].z)
+                        p[3][0], p[3][1], p[3][2], p[3][3])
+                        #p[3].x, p[3].y, p[3].z)
                     ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, m)
                     sent_something = 1
 
@@ -349,9 +355,11 @@ class Universe:
                     break
 
             if isinstance(c, socket.socket):
-                ret = VisualDataMsg.send(c, None, None, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+                ret = VisualDataMsg.send(c, None, None, "VISDATA\n-1\n\n\n\n\n\n\n\n\n")
+                #ret = VisualDataMsg.send(c, None, None, "VISDATA\n-1\n\n\n\n\n\n\n\n")
             else:
-                ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
+                ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n\n")
+                #ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
 
             if ret == 0:
                 c.vis_data = 0

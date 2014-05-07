@@ -21,8 +21,9 @@ class SpaceObject:
         self.position = None
         self.velocity = None
         self.thrust = None
-        self.orientation = None
-        self.up = None
+        self.forward = Vector3([1,0,0])
+        self.up = Vector3([0,0,1])
+        self.right = Vector3([0,1,0])
         self.radius = None
 
 class SmartObject(SpaceObject, threading.Thread):
@@ -156,27 +157,27 @@ class SmartObject(SpaceObject, threading.Thread):
             ) )
         pass
     
-    def set_orientation(self, x, y=None, z=None):
-        if (y==None):
-            return self.set_orientation(osim_id, orientation[0], orientation[1], orientation[2])
-        self.orientation = Vector3(x,y,z)
+    def set_orientation(self, fX, fY = None, uX = None, uY = None):
+        if y == None:
+            return self.set_orientation(osim_id, fX[0], fX[1], fX[2], fX[3])
+
+        [ self.forward, self.up, self.right ] = Vector3.from_orientation(Vector3([fX, fY, uX, uY]))
         return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, (
             "",
             "",
             "", "", "",
             "", "", "",
-            x, y, z,
+            fX, fY, uX, uY,
             "", "", "",
             ""
             ) )
-        pass    
-    
+
     def die(self):
         message.GoodbyeMsg.send(self.sock, self.phys_id, self.osim_id)
         self.done = True
         self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
-    
+
     def run(self):
         #TODO: properly parse and branch wrt message recieved
         while not self.done:
@@ -328,10 +329,11 @@ class HomingMissile1(Missile):
                 new_dir.scale(self.thrust.length())
                 print ("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
                 self.set_thrust(new_dir)
-                self.orientation = enemy_pos.unit()
+                epos = enemy_pos.unit()
+                [ self.forward, self.up, self.right ] = Vector3.easy_look_at(epos)
     
     def do_scan(self):
-        scan = self.init_beam(ScanBeam, 10000.0, Beam.speed_of_light, self.orientation, self.up, h_focus=pi/4, v_focus=pi/4)
+        scan = self.init_beam(ScanBeam, 10000.0, Beam.speed_of_light, self.forward, self.up, h_focus=pi/4, v_focus=pi/4)
         scan.send_it(self.sock)
 
     def run(self):

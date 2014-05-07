@@ -27,7 +27,7 @@ class Message:
         except socket.error, (errno, errmsg):
             if client.fileno() == -1 or errno == 10054 or errno == 10053:
                 return None
-                
+
             print "There was an error getting message size header from client %d" % client.fileno()
             print "Error:", sys.exc_info()
             return None
@@ -203,6 +203,17 @@ class Message:
             return None
 
     @staticmethod
+    def read_double4(sa):
+        tmp = [ Message.read_double(sa),
+                Message.read_double(sa),
+                Message.read_double(sa),
+                Message.read_double(sa) ]
+        if tmp[0] != None and tmp[1] != None and tmp[2] != None and tmp[3] != None:
+            return tmp
+        else:
+            return None
+
+    @staticmethod
     def read_int(sa):
         s = sa[0]
         del sa[0]
@@ -274,7 +285,7 @@ class PhysicalPropertiesMsg(Message):
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
-        self.orientation = Message.read_double3(s)
+        self.orientation = Message.read_double4(s)
         self.thrust = Message.read_double3(s)
         self.radius = Message.read_double(s)
 
@@ -283,34 +294,51 @@ class PhysicalPropertiesMsg(Message):
                 (self.mass if self.mass != None else "") ]
         args += (self.position if self.position != None else ["","",""])
         args += (self.velocity if self.velocity != None else ["","",""])
-        args += (self.orientation if self.orientation != None else ["","",""])
+        args += (self.orientation if self.orientation != None else ["","","",""])
         args += (self.thrust if self.thrust != None else ["","",""])
         args += [ (self.radius if self.radius != None else "") ]
 
         PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, args)
-        
-        #PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id,
-            #[ self.object_type, self.mass ] + self.position + self.velocity +
-                #self.orientation + self.thrust + [ self. ])
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "PHYSPROPS\n%s\n" % args[0]
 
-        for i in range(1,15):
+        for i in range(1,16):
             msg += Message.prep_double(args[i]) + "\n"
 
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
     @staticmethod
-    def make_from_object(obj, p = zero3d, v = zero3d):
+    def make_from_object(obj, p = zero3d, v = zero3d, o = zero3d):
+        # ### TODO ### Make this relative to orientation?
+        orientation = [ obj.forward.x, obj.forward.y, obj.up.x, obj.up.z ]
+
         return [ obj.object_type, obj.mass,
                     obj.position.x - p.x, obj.position.y - p.y, obj.position.z - p.z,
                     obj.velocity.x - v.x, obj.velocity.y - v.y, obj.velocity.z - v.z,
-                    obj.orientation.x, obj.orientation.y, obj.orientation.z,
+                    orientation[0], orientation[1], orientation[2], orientation[3],
                     obj.thrust.x, obj.thrust.y, obj.thrust.z,
                     obj.radius ]
+
+
+#class RotationMsg(Message):
+    #def __init__(self, s, srv_id, cli_id):
+        #self.srv_id = srv_id
+        #self.cli_id = cli_id
+        #self.is_velocity = Message.read_int(s)
+        #self.angles = Message.read_double3(s)
+
+    #def sendto(self, client):
+        #RotationMsg.send(client, self.srv_id, self.cli_id, [ self.is_velocity ] + self.angles)
+
+    #@staticmethod
+    #def send(client, srv_id, cli_id, args):
+        #msg = "ROTATE\n%d\n" % args[0]
+        #msg += Message.prep_double3(args[1]) + "\n"
+
+        #Message.sendall(client, srv_id, cli_id, msg)
 
 class VisualPropertiesMsg(Message):
     def __init__(self, s, srv_id, cli_id):
@@ -776,6 +804,7 @@ class RequestUpdateMsg(Message):
 
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,
+                #"ROTATE": RotationMsg,
                 "VISPROPS": VisualPropertiesMsg,
                 "VISDATAENABLE": VisualDataEnableMsg,
                 "VISMETADATAENABLE": VisualMetaDataEnableMsg,

@@ -1,8 +1,96 @@
 #!/usr/bin/env python
 
-from math import sin, cos, pi, sqrt
+from math import sin, cos, pi, sqrt, pow, atan2
 
 class Vector3:
+    @staticmethod
+    def easy_look_at(look):
+        # produce some arbitrary up and right vectors for a given look-at vector.
+        # Do this by finding a vector that dots to zero with the look vector,
+        # then just cross for the right vector.
+
+        up = Vector3([-look.z, 0, look.x])
+        right = Vector3.cross(up, look)
+
+        return [ look, up, right ]
+
+    @staticmethod
+    def easy_look_at2(forward, up, right, look):
+        diff = look - forward
+
+        if diff.almost_zero:
+            return
+
+        # Now get the new right vector by crossing the old look with the diff
+        right = Vector3.cross(diff, look)
+
+        # Up comes from crossing the new right and the look vectors
+        up = Vector3.cross(look, right)
+
+        return [ look, up, right ]
+
+    @staticmethod
+    def look_at(forward, up, right, look):
+        diff = look - forward
+
+        if diff.almost_zero:
+            return
+
+        # Now get the axis of rotation by crossing the diff and look vectors.
+        axis = Vector3.cross(diff, forward)
+
+        # Now rotate the up and right vectors
+        ### TODO ### FINISH THIS
+        pass
+
+    @staticmethod
+    def get_orientation(forward, up, right):
+        return [ forward.x, forward.y, up.x, up.y ]
+
+    @staticmethod
+    def from_orientation(o):
+        forward = Vector3([o[0], o[1], sqrt(1 - o[0] * o[0] - o[1] * o[1])])
+        up = Vector3([o[2], o[3], sqrt(1 - o[2] * o[2] - o[3] * o[3])])
+        right = Vector3.cross(up, forward)
+
+        return [ forward, up, right ]
+
+    def rotate_aroundV(self, axis, angle):
+        self.rotate_around(axis.x, axis.y, axis.z, angle)
+
+    # ### TODO ### Apply the Euler-Rodrigues forumla here instead.
+    # http://stackoverflow.com/questions/6802577/python-rotation-of-3d-vector
+    def rotate_around(self, x, y, z , angle):
+        if Vector3.almost_zeroS(angle):
+            return
+
+        c = cos(angle)
+        s = sin(angle)
+        l2 = x * x + y * y + z * z
+        l = sqrt(l2)
+
+        if Vector3.almost_zeroS(l2):
+            return
+
+        x2 = self.y*((x*y-c*x*y)/l2+(s*z)/l)+(self.x*(pow(x,2)+c*(pow(y,2)+pow(z,2))))/l2+(-((s*y)/l)+(x*z-c*x*z)/l2)*self.z
+        y2 = self.x*((x*y-c*x*y)/l2-(s*z)/l)+(self.y*(pow(y,2)+c*(pow(x,2)+pow(z,2))))/l2+((s*x)/l+(y*z-c*y*z)/l2)*self.z
+        z2 = self.x*((s*y)/l+(x*z-c*x*z)/l2)*+self.y*(-((s*x)/l)+(y*z-c*y*z)/l2)+((c*(pow(x,2)+pow(y,2))+pow(z,2))*self.z)/l2
+
+        self.x = x2
+        self.y = y2
+        self.z = z2
+
+    @staticmethod
+    def apply_ypr(forward, up, right, angles):
+        forward.rotate_aroundV(up, angles[0])
+        right.rotate_aroundV(up, angles[0])
+
+        forward.rotate_aroundV(right, angles[1])
+        up.rotate_aroundV(right, angles[1])
+
+        right.rotate_aroundV(forward, angles[2])
+        up.rotate_aroundV(forward, angles[2])
+
     def __init__(self, v, y = None, z = None):
         if y == None:
             self.x = v[0]

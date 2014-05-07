@@ -239,15 +239,11 @@ class Ship(SmartObject):
         self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
-        ##as though there is no way of getting the original string...
-        #new_mess = "VISDATA\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n" % (
-            #mess.phys_id,
-            #mess.radius,
-            #mess.position[0], mess.position[1], mess.position[2],
-            #mess.orientation[0], mess.orientation[1], mess.orientation[2] )
+        mess.srv_id = self.osim_id
         for_removal = []
+
         for client in self.vis_clients:
-            #client.send(new_mess)
+            mess.cli_id = self.vis_clients[client]
             ret = mess.sendto(client)
 
             if ret == 0:
@@ -325,7 +321,7 @@ class Ship(SmartObject):
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
             tmp.scale(thrust_power * -1)                
             missile.thrust = tmp        
-            missile.orientation = direction
+            missile.orientation = [ direction.x, direction.y, 0 ]
                     
             self.osim.spawn_object(missile)
             
@@ -351,7 +347,7 @@ class Ship(SmartObject):
         tmp = direction.unit()
         tmp.scale(thrust_power)                
         missile.thrust = tmp        
-        missile.orientation = direction
+        missile.orientation = [ direction.x, direction.y, 0 ]
                 
         self.osim.spawn_object(missile)
         
