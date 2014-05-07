@@ -14,9 +14,9 @@ def test_vis_data():
 
     sock = socket.socket()
     sock.connect( ("localhost", 5511) )
-    
+
     message.VisualDataEnableMsg.send(sock, 0, 0, 1)
-    
+
     while True:
         print sock.recv(1024)
 
@@ -173,20 +173,20 @@ def pool_rack():
         # ]][[2]][[1]];
     # Graphics[balls]
 
-    C = 1
-    y_scale = sqrt(3) / 2
-    y_offset = 100
-    for i in range(0, num_rows):
-        for j in range(0, i+1):
-            SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
-            ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    #C = 1
+    #y_scale = sqrt(3) / 2
+    #y_offset = 100
+    #for i in range(0, num_rows):
+        #for j in range(0, i+1):
+            #SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
+            #ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius,
+            #0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
-    ## This makes us a cue ball
-    #SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass, 
-    #0, -25, 0,
-    #0, 10, 0,
-    #0, 0, 0, 0, 0, 0, ball_radius ])
+    # This makes us a cue ball
+    SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass,
+    0, -25, 0,
+    0, 10, 0,
+    0, 0, 0, 0, 0, 0, ball_radius ])
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()

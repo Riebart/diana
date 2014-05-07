@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import sys
 import threading
 import time
 import socket
+import getopt
 
 from physics import Vector3, PhysicsObject, SmartPhysicsObject, Beam
 from mimosrv import MIMOServer
@@ -216,8 +218,7 @@ class Universe:
         elif phys_id in self.smarties:
             self.smarties[phys_id].handle(msg)
 
-    def __init__(self, min_frametime, max_frametime, vis_frametime):
-
+    def __init__(self, min_frametime, max_frametime, vis_frametime, port_arg = 5505):
         self.min_frametime = min_frametime
         self.max_frametime = max_frametime
         self.vis_frametime = vis_frametime
@@ -238,7 +239,7 @@ class Universe:
         self.vis_client_lock = threading.Lock()
 
         # ### PARAMETER ###  UNIVERSE TCP PORT
-        self.net = MIMOServer(self.handle_message, self.hangup_objects, port = 5505)
+        self.net = MIMOServer(self.handle_message, self.hangup_objects, port = port_arg)
         self.sim_thread = Universe.ThreadSim(self)
         self.curator = ArtCurator(self)
         self.vis_data_clients = []
@@ -493,13 +494,84 @@ class Universe:
     def get_frametime(self):
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
 
+def usage():
+    print "Usage: unisim.py [-p/--port] [-m/--min-phys-time] [-M/--max-phys-time] [-v/--vis-data-rate]"
+    print ""
+    print "-p --port    Port"
+    print "TCP port on which to listen for connections from ship sims."
+    print "    Default: 5505"
+    print ""
+    print "-m --min-phys-time    Min physics frame time"
+    print "Minimum time that a physics tick can take. If the sim runs faster, it will sleep in between ticks as appropriate."
+    print "    Default: 0.0001s"
+    print ""
+    print "-M --max-phys-time    Max physics frame time"
+    print "Maximum wall time that a physics tick can take. If this is longer than the wall clock of this time, then the game will run slower than real-time."
+    print "    Default: 0.0001s"
+    print ""
+    print "-v --vis-data-rate    Visdata update rate"
+    print "The minimum time between the sending of visualization data out to registered vis clients."
+    print "    Default: 0.0001s"
+
 if __name__ == "__main__":
-    uni = Universe(0.0001, 0.0001, 0.01)
+    port = 5505
+    min_phys_time = 0.0001
+    max_phys_time = 0.0001
+    vis_data_rate = 0.01
+
+    if len(sys.argv) == 0:
+        usage()
+        exit()
+    else:
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "hp:m:M:v:", [ "port=", "min-phys-time=", "max-phys-time=", "vis-data-rate=" ])
+        except getopt.GetoptError:
+            print "ERROR: Error parsing arguments"
+            usage()
+            exit()
+
+        for opt, arg in opts:
+            if opt == '-h':
+                usage()
+                exit()
+            elif opt in ("-p", "--port"):
+                try:
+                    port = int(arg)
+                    if port < 0 or port > 65535:
+                        usage()
+                        exit()
+                except:
+                    usage()
+                    exit()
+            elif opt in ("-m", "--min-phys-time"):
+                try:
+                    min_phys_time = float(arg)
+                except:
+                    usage()
+                    exit()
+            elif opt in ("-M", "--max-phys-time"):
+                try:
+                    max_phys_time = float(arg)
+                except:
+                    usage()
+                    exit()
+            elif opt in ("-v", "--vis-data-rate"):
+                try:
+                    vis_data_rate = float(arg)
+                except:
+                    usage()
+                    exit()
+
+    uni = Universe(min_phys_time, max_phys_time, vis_data_rate, port)
     uni.start_sim()
 
     while 1:
-        time.sleep(1)
-        print uni.get_frametime(), "seconds per tick"
+        try:
+            time.sleep(1)
+            print uni.get_frametime(), "seconds per tick"
+        except KeyboardInterrupt:
+            print "Ctrl+C received, halting simulation"
+            break
 
     print "Stopping simulation"
     uni.stop_sim()

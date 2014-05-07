@@ -82,9 +82,6 @@ namespace Diana2DClient
             needleG.ResetTransform();
             needleG.TranslateTransform(250, 250);
             needleG.RotateTransform((float)(180 + mouseAngle + angle));
-            Diana2DClient.Properties.Resources.
-            //needleG.TranslateTransform(-250, -250);
-            //needleG.DrawImage(Properties.Resources.Needle, new Rectangle(0, 0, 500, 500));
 
             picCompass.Image = needle;
         }

@@ -162,13 +162,13 @@ class ObjectSim:
     def spawn_object(self, obj):
         if isinstance(obj, SmartObject):
             self.send_physprops(obj)
-                
+
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)
-                
+
             #object is prepped, hand over message handling to new object
             obj.start()
-        
+
         else:
             print "Fail!"
             #do what? If there's no connection, how do I send data?
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
 
-    print "Press Enter to continue..."
+    print "Press Enter to close the server..."
     raw_input()
     print "Stopping network"
     osim.stop_net()
