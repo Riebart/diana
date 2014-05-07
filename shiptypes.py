@@ -6,7 +6,7 @@ from ship import Ship
 class Firefly(Ship):
     name = "Firefly class transport"
 
-    def __init__(self, osim):
+    def __init__(self, osim, name="Unnamed Firefly"):
         Ship.__init__(self, osim)
 
         self.name = "Serenity"

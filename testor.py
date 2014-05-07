@@ -56,14 +56,14 @@ def testVisData():
 #spawns two stationary ships. The first fires a missile at the other
 def testShip():
     
-    ship1 = Firefly(osim, type="Ship 1")
+    ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = Firefly(osim, type="Ship 2")
+    ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -81,14 +81,14 @@ def testShip():
 #spawns two stationary ships. The first fires a beam at the other
 def testBeam():
     
-    ship1 = Firefly(osim, type="Ship 1")
+    ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = Firefly(osim, type="Ship 2")
+    ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -168,10 +168,10 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
+testShip()
 #testSimpleShip()
 #stressTest()
 #test_threads()
 #testBeam()
-testHoming()
+#testHoming()
 #testBeam()
