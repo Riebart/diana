@@ -167,13 +167,17 @@ def test_threads():
 
         
 def test_pbs():
+    #for now, this is exampe code
+"""
     res_string = socket.doRead(size)
     msg = MessageWrapper()
     msg.ParseFromString(res_string)
-    
+    l
     if (msg.MessageType is PHYSPROPS):
-        doStuff()
-    
+        doStuff(msg.HelloMsg)
+    else if (msg.MessageType is HELLO):
+        doStuff(msg.PhysPropsMsg)
+   """ 
         
         
 osim = objectsim.ObjectSim()

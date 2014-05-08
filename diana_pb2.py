@@ -13,13 +13,13 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='diana.proto',
   package='diana',
-  serialized_pb='\n\x0b\x64iana.proto\x12\x05\x64iana\"\xbf\x01\n\x0eMessageWrapper\x12\x36\n\x0bMessageType\x18\x01 \x02(\x0e\x32!.diana.MessageWrapper.messageType\x12!\n\x08HelloMsg\x18\x02 \x01(\x0b\x32\x0f.diana.helloMsg\x12)\n\x0cPhysPropsMsg\x18\x03 \x01(\x0b\x32\x13.diana.physPropsMsg\"\'\n\x0bmessageType\x12\t\n\x05HELLO\x10\x02\x12\r\n\tPHYSPROPS\x10\x03\")\n\x06Vector\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"\x1f\n\x08helloMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05HELLO\"\xca\x01\n\x0cphysPropsMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tPHYSPROPS\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12\x1f\n\x08position\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x1f\n\x08velocity\x18\x04 \x02(\x0b\x32\r.diana.Vector\x12\"\n\x0borientation\x18\x05 \x02(\x0b\x32\r.diana.Vector\x12\x1d\n\x06thrust\x18\x06 \x02(\x0b\x32\r.diana.Vector\x12\x0e\n\x06radius\x18\x07 \x02(\x01')
+  serialized_pb='\n\x0b\x64iana.proto\x12\x05\x64iana\"\xda\x06\n\x0eMessageWrapper\x12\x36\n\x0bmessageType\x18\x01 \x02(\x0e\x32!.diana.MessageWrapper.MessageType\x12!\n\x08helloMsg\x18\x02 \x01(\x0b\x32\x0f.diana.HelloMsg\x12%\n\ngoodByeMsg\x18\x03 \x01(\x0b\x32\x11.diana.GoodbyeMsg\x12)\n\x0cphysPropsMsg\x18\x04 \x01(\x0b\x32\x13.diana.PhysPropsMsg\x12)\n\x0c\x63ollisionMsg\x18\x05 \x01(\x0b\x32\x13.diana.CollisionMsg\x12!\n\x08spawnMsg\x18\x06 \x01(\x0b\x32\x0f.diana.SpawnMsg\x12\x1f\n\x07\x62\x65\x61mMsg\x18\x07 \x01(\x0b\x32\x0e.diana.BeamMsg\x12+\n\rscanResultMsg\x18\x08 \x01(\x0b\x32\x14.diana.ScanResultMsg\x12)\n\x0cscanQueryMsg\x18\t \x01(\x0b\x32\x13.diana.ScanQueryMsg\x12\'\n\x0bscanRespMsg\x18\n \x01(\x0b\x32\x12.diana.ScanRespMsg\x12!\n\x08visProps\x18\x64 \x01(\x0b\x32\x0f.diana.VisProps\x12+\n\rvisDataEnable\x18\x65 \x01(\x0b\x32\x14.diana.VisDataEnable\x12\x33\n\x11visMetaDataEnable\x18\x66 \x01(\x0b\x32\x18.diana.VisMetaDataEnable\x12\'\n\x0bvisMetaData\x18g \x01(\x0b\x32\x12.diana.VisMetaData\x12\x1f\n\x07visData\x18h \x01(\x0b\x32\x0e.diana.VisData\"\xdb\x01\n\x0bMessageType\x12\t\n\x05HELLO\x10\x02\x12\x0b\n\x07GOODBYE\x10\x03\x12\r\n\tPHYSPROPS\x10\x04\x12\r\n\tCOLLISION\x10\x05\x12\t\n\x05SPAWN\x10\x06\x12\x08\n\x04\x42\x45\x41M\x10\x07\x12\x0e\n\nSCANRESULT\x10\x08\x12\r\n\tSCANQUERY\x10\t\x12\x0c\n\x08SCANRESP\x10\n\x12\x0c\n\x08VISPROPS\x10\x64\x12\x11\n\rVISDATAENABLE\x10\x65\x12\x15\n\x11VISMETADATAENABLE\x10\x66\x12\x0f\n\x0bVISMETADATA\x10g\x12\x0b\n\x07VISDATA\x10h\")\n\x06Vector\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"\x1f\n\x08HelloMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05HELLO\"\xca\x01\n\x0cPhysPropsMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tPHYSPROPS\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12\x1f\n\x08position\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x1f\n\x08velocity\x18\x04 \x02(\x0b\x32\r.diana.Vector\x12\"\n\x0borientation\x18\x05 \x02(\x0b\x32\r.diana.Vector\x12\x1d\n\x06thrust\x18\x06 \x02(\x0b\x32\r.diana.Vector\x12\x0e\n\x06radius\x18\x07 \x02(\x01\"#\n\nGoodbyeMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07GOODBYE\"\xa9\x02\n\x0c\x43ollisionMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tCOLLISION\x12\x1f\n\x08position\x18\x02 \x02(\x0b\x32\r.diana.Vector\x12 \n\tdirection\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x0e\n\x06\x65nergy\x18\x04 \x02(\x01\x12\x38\n\rcollisionType\x18\x05 \x02(\x0e\x32!.diana.CollisionMsg.CollisionType\x12\x12\n\ncommString\x18\x06 \x01(\t\"_\n\rCollisionType\x12\x12\n\x0ePHYS_COLLISION\x10\x01\x12\x12\n\x0eSCAN_COLLISION\x10\x02\x12\x12\n\x0eWEAP_COLLISION\x10\x03\x12\x12\n\x0e\x43OMM_COLLISION\x10\x04\"\xc2\x01\n\x08SpawnMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05SPAWN\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12\x1f\n\x08position\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x1f\n\x08velocity\x18\x04 \x02(\x0b\x32\r.diana.Vector\x12\"\n\x0borientation\x18\x05 \x02(\x0b\x32\r.diana.Vector\x12\x1d\n\x06thrust\x18\x06 \x02(\x0b\x32\r.diana.Vector\x12\x0e\n\x06radius\x18\x07 \x02(\x01\"\"\n\x08VisProps\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VISPROPS\",\n\rVisDataEnable\x12\x1b\n\x04name\x18\x01 \x01(\t:\rVISDATAENABLE\" \n\x07VisData\x12\x15\n\x04name\x18\x01 \x01(\t:\x07VISDATA\"(\n\x0bVisMetaData\x12\x19\n\x04name\x18\x01 \x01(\t:\x0bVISMETADATA\"4\n\x11VisMetaDataEnable\x12\x1f\n\x04name\x18\x01 \x01(\t:\x11VISMETADATAENABLE\"\x95\x02\n\x07\x42\x65\x61mMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04\x42\x45\x41M\x12\x1d\n\x06origin\x18\x02 \x02(\x0b\x32\r.diana.Vector\x12\x1f\n\x08velocity\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x19\n\x02up\x18\x04 \x02(\x0b\x32\r.diana.Vector\x12\x10\n\x08spread_h\x18\x05 \x02(\x01\x12\x10\n\x08spread_v\x18\x06 \x02(\x01\x12\x0e\n\x06\x65nergy\x18\x07 \x02(\x01\x12)\n\x08\x62\x65\x61mType\x18\x08 \x02(\x0e\x32\x17.diana.BeamMsg.BeamType\x12\x12\n\ncommString\x18\t \x01(\t\"(\n\x08\x42\x65\x61mType\x12\x08\n\x04SCAN\x10\x01\x12\x08\n\x04WEAP\x10\x02\x12\x08\n\x04\x43OMM\x10\x03\"\xe0\x01\n\rScanResultMsg\x12\x18\n\x04name\x18\x01 \x01(\t:\nSCANRESULT\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12\x1f\n\x08position\x18\x03 \x02(\x0b\x32\r.diana.Vector\x12\x1f\n\x08velocity\x18\x04 \x02(\x0b\x32\r.diana.Vector\x12\"\n\x0borientation\x18\x05 \x02(\x0b\x32\r.diana.Vector\x12\x1d\n\x06thrust\x18\x06 \x02(\x0b\x32\r.diana.Vector\x12\x0e\n\x06radius\x18\x07 \x02(\x01\x12\x12\n\nextraParms\x18\x08 \x01(\t\"j\n\x0cScanQueryMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tSCANQUERY\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\x11\n\tscanPower\x18\x03 \x02(\x01\x12\x1e\n\x07scanDir\x18\x04 \x02(\x0b\x32\r.diana.Vector\"D\n\x0bScanRespMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08SCANRESP\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\r\n\x05parms\x18\x03 \x02(\t')
 
 
 
 _MESSAGEWRAPPER_MESSAGETYPE = _descriptor.EnumDescriptor(
-  name='messageType',
-  full_name='diana.MessageWrapper.messageType',
+  name='MessageType',
+  full_name='diana.MessageWrapper.MessageType',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -28,14 +28,116 @@ _MESSAGEWRAPPER_MESSAGETYPE = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PHYSPROPS', index=1, number=3,
+      name='GOODBYE', index=1, number=3,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PHYSPROPS', index=2, number=4,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='COLLISION', index=3, number=5,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SPAWN', index=4, number=6,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='BEAM', index=5, number=7,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SCANRESULT', index=6, number=8,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SCANQUERY', index=7, number=9,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SCANRESP', index=8, number=10,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VISPROPS', index=9, number=100,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VISDATAENABLE', index=10, number=101,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VISMETADATAENABLE', index=11, number=102,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VISMETADATA', index=12, number=103,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='VISDATA', index=13, number=104,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=175,
-  serialized_end=214,
+  serialized_start=662,
+  serialized_end=881,
+)
+
+_COLLISIONMSG_COLLISIONTYPE = _descriptor.EnumDescriptor(
+  name='CollisionType',
+  full_name='diana.CollisionMsg.CollisionType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='PHYS_COLLISION', index=0, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='SCAN_COLLISION', index=1, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WEAP_COLLISION', index=2, number=3,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='COMM_COLLISION', index=3, number=4,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=1404,
+  serialized_end=1499,
+)
+
+_BEAMMSG_BEAMTYPE = _descriptor.EnumDescriptor(
+  name='BeamType',
+  full_name='diana.BeamMsg.BeamType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='SCAN', index=0, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WEAP', index=1, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='COMM', index=2, number=3,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=2148,
+  serialized_end=2188,
 )
 
 
@@ -47,22 +149,106 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='MessageType', full_name='diana.MessageWrapper.MessageType', index=0,
+      name='messageType', full_name='diana.MessageWrapper.messageType', index=0,
       number=1, type=14, cpp_type=8, label=2,
       has_default_value=False, default_value=2,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='HelloMsg', full_name='diana.MessageWrapper.HelloMsg', index=1,
+      name='helloMsg', full_name='diana.MessageWrapper.helloMsg', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='PhysPropsMsg', full_name='diana.MessageWrapper.PhysPropsMsg', index=2,
+      name='goodByeMsg', full_name='diana.MessageWrapper.goodByeMsg', index=2,
       number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='physPropsMsg', full_name='diana.MessageWrapper.physPropsMsg', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='collisionMsg', full_name='diana.MessageWrapper.collisionMsg', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='spawnMsg', full_name='diana.MessageWrapper.spawnMsg', index=5,
+      number=6, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='beamMsg', full_name='diana.MessageWrapper.beamMsg', index=6,
+      number=7, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanResultMsg', full_name='diana.MessageWrapper.scanResultMsg', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanQueryMsg', full_name='diana.MessageWrapper.scanQueryMsg', index=8,
+      number=9, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanRespMsg', full_name='diana.MessageWrapper.scanRespMsg', index=9,
+      number=10, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visProps', full_name='diana.MessageWrapper.visProps', index=10,
+      number=100, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visDataEnable', full_name='diana.MessageWrapper.visDataEnable', index=11,
+      number=101, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visMetaDataEnable', full_name='diana.MessageWrapper.visMetaDataEnable', index=12,
+      number=102, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visMetaData', full_name='diana.MessageWrapper.visMetaData', index=13,
+      number=103, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visData', full_name='diana.MessageWrapper.visData', index=14,
+      number=104, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -78,7 +264,7 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=23,
-  serialized_end=214,
+  serialized_end=881,
 )
 
 
@@ -119,20 +305,20 @@ _VECTOR = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=216,
-  serialized_end=257,
+  serialized_start=883,
+  serialized_end=924,
 )
 
 
 _HELLOMSG = _descriptor.Descriptor(
-  name='helloMsg',
-  full_name='diana.helloMsg',
+  name='HelloMsg',
+  full_name='diana.HelloMsg',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='diana.helloMsg.name', index=0,
+      name='name', full_name='diana.HelloMsg.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=unicode("HELLO", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -147,62 +333,62 @@ _HELLOMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=259,
-  serialized_end=290,
+  serialized_start=926,
+  serialized_end=957,
 )
 
 
 _PHYSPROPSMSG = _descriptor.Descriptor(
-  name='physPropsMsg',
-  full_name='diana.physPropsMsg',
+  name='PhysPropsMsg',
+  full_name='diana.PhysPropsMsg',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='diana.physPropsMsg.name', index=0,
+      name='name', full_name='diana.PhysPropsMsg.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=unicode("PHYSPROPS", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='mass', full_name='diana.physPropsMsg.mass', index=1,
+      name='mass', full_name='diana.PhysPropsMsg.mass', index=1,
       number=2, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='position', full_name='diana.physPropsMsg.position', index=2,
+      name='position', full_name='diana.PhysPropsMsg.position', index=2,
       number=3, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='velocity', full_name='diana.physPropsMsg.velocity', index=3,
+      name='velocity', full_name='diana.PhysPropsMsg.velocity', index=3,
       number=4, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='orientation', full_name='diana.physPropsMsg.orientation', index=4,
+      name='orientation', full_name='diana.PhysPropsMsg.orientation', index=4,
       number=5, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='thrust', full_name='diana.physPropsMsg.thrust', index=5,
+      name='thrust', full_name='diana.PhysPropsMsg.thrust', index=5,
       number=6, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='radius', full_name='diana.physPropsMsg.radius', index=6,
+      name='radius', full_name='diana.PhysPropsMsg.radius', index=6,
       number=7, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -217,22 +403,619 @@ _PHYSPROPSMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=293,
-  serialized_end=495,
+  serialized_start=960,
+  serialized_end=1162,
 )
 
-_MESSAGEWRAPPER.fields_by_name['MessageType'].enum_type = _MESSAGEWRAPPER_MESSAGETYPE
-_MESSAGEWRAPPER.fields_by_name['HelloMsg'].message_type = _HELLOMSG
-_MESSAGEWRAPPER.fields_by_name['PhysPropsMsg'].message_type = _PHYSPROPSMSG
+
+_GOODBYEMSG = _descriptor.Descriptor(
+  name='GoodbyeMsg',
+  full_name='diana.GoodbyeMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.GoodbyeMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("GOODBYE", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1164,
+  serialized_end=1199,
+)
+
+
+_COLLISIONMSG = _descriptor.Descriptor(
+  name='CollisionMsg',
+  full_name='diana.CollisionMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.CollisionMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("COLLISION", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='position', full_name='diana.CollisionMsg.position', index=1,
+      number=2, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='direction', full_name='diana.CollisionMsg.direction', index=2,
+      number=3, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='energy', full_name='diana.CollisionMsg.energy', index=3,
+      number=4, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='collisionType', full_name='diana.CollisionMsg.collisionType', index=4,
+      number=5, type=14, cpp_type=8, label=2,
+      has_default_value=False, default_value=1,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='commString', full_name='diana.CollisionMsg.commString', index=5,
+      number=6, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _COLLISIONMSG_COLLISIONTYPE,
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1202,
+  serialized_end=1499,
+)
+
+
+_SPAWNMSG = _descriptor.Descriptor(
+  name='SpawnMsg',
+  full_name='diana.SpawnMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.SpawnMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("SPAWN", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='mass', full_name='diana.SpawnMsg.mass', index=1,
+      number=2, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='position', full_name='diana.SpawnMsg.position', index=2,
+      number=3, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='velocity', full_name='diana.SpawnMsg.velocity', index=3,
+      number=4, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='orientation', full_name='diana.SpawnMsg.orientation', index=4,
+      number=5, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='thrust', full_name='diana.SpawnMsg.thrust', index=5,
+      number=6, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='radius', full_name='diana.SpawnMsg.radius', index=6,
+      number=7, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1502,
+  serialized_end=1696,
+)
+
+
+_VISPROPS = _descriptor.Descriptor(
+  name='VisProps',
+  full_name='diana.VisProps',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.VisProps.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("VISPROPS", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1698,
+  serialized_end=1732,
+)
+
+
+_VISDATAENABLE = _descriptor.Descriptor(
+  name='VisDataEnable',
+  full_name='diana.VisDataEnable',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.VisDataEnable.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("VISDATAENABLE", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1734,
+  serialized_end=1778,
+)
+
+
+_VISDATA = _descriptor.Descriptor(
+  name='VisData',
+  full_name='diana.VisData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.VisData.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("VISDATA", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1780,
+  serialized_end=1812,
+)
+
+
+_VISMETADATA = _descriptor.Descriptor(
+  name='VisMetaData',
+  full_name='diana.VisMetaData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.VisMetaData.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("VISMETADATA", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1814,
+  serialized_end=1854,
+)
+
+
+_VISMETADATAENABLE = _descriptor.Descriptor(
+  name='VisMetaDataEnable',
+  full_name='diana.VisMetaDataEnable',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.VisMetaDataEnable.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("VISMETADATAENABLE", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1856,
+  serialized_end=1908,
+)
+
+
+_BEAMMSG = _descriptor.Descriptor(
+  name='BeamMsg',
+  full_name='diana.BeamMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.BeamMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("BEAM", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='origin', full_name='diana.BeamMsg.origin', index=1,
+      number=2, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='velocity', full_name='diana.BeamMsg.velocity', index=2,
+      number=3, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='up', full_name='diana.BeamMsg.up', index=3,
+      number=4, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='spread_h', full_name='diana.BeamMsg.spread_h', index=4,
+      number=5, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='spread_v', full_name='diana.BeamMsg.spread_v', index=5,
+      number=6, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='energy', full_name='diana.BeamMsg.energy', index=6,
+      number=7, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='beamType', full_name='diana.BeamMsg.beamType', index=7,
+      number=8, type=14, cpp_type=8, label=2,
+      has_default_value=False, default_value=1,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='commString', full_name='diana.BeamMsg.commString', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _BEAMMSG_BEAMTYPE,
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1911,
+  serialized_end=2188,
+)
+
+
+_SCANRESULTMSG = _descriptor.Descriptor(
+  name='ScanResultMsg',
+  full_name='diana.ScanResultMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.ScanResultMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("SCANRESULT", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='mass', full_name='diana.ScanResultMsg.mass', index=1,
+      number=2, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='position', full_name='diana.ScanResultMsg.position', index=2,
+      number=3, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='velocity', full_name='diana.ScanResultMsg.velocity', index=3,
+      number=4, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='orientation', full_name='diana.ScanResultMsg.orientation', index=4,
+      number=5, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='thrust', full_name='diana.ScanResultMsg.thrust', index=5,
+      number=6, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='radius', full_name='diana.ScanResultMsg.radius', index=6,
+      number=7, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='extraParms', full_name='diana.ScanResultMsg.extraParms', index=7,
+      number=8, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=2191,
+  serialized_end=2415,
+)
+
+
+_SCANQUERYMSG = _descriptor.Descriptor(
+  name='ScanQueryMsg',
+  full_name='diana.ScanQueryMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.ScanQueryMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("SCANQUERY", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanID', full_name='diana.ScanQueryMsg.scanID', index=1,
+      number=2, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanPower', full_name='diana.ScanQueryMsg.scanPower', index=2,
+      number=3, type=1, cpp_type=5, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanDir', full_name='diana.ScanQueryMsg.scanDir', index=3,
+      number=4, type=11, cpp_type=10, label=2,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=2417,
+  serialized_end=2523,
+)
+
+
+_SCANRESPMSG = _descriptor.Descriptor(
+  name='ScanRespMsg',
+  full_name='diana.ScanRespMsg',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='diana.ScanRespMsg.name', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("SCANRESP", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanID', full_name='diana.ScanRespMsg.scanID', index=1,
+      number=2, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='parms', full_name='diana.ScanRespMsg.parms', index=2,
+      number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=2525,
+  serialized_end=2593,
+)
+
+_MESSAGEWRAPPER.fields_by_name['messageType'].enum_type = _MESSAGEWRAPPER_MESSAGETYPE
+_MESSAGEWRAPPER.fields_by_name['helloMsg'].message_type = _HELLOMSG
+_MESSAGEWRAPPER.fields_by_name['goodByeMsg'].message_type = _GOODBYEMSG
+_MESSAGEWRAPPER.fields_by_name['physPropsMsg'].message_type = _PHYSPROPSMSG
+_MESSAGEWRAPPER.fields_by_name['collisionMsg'].message_type = _COLLISIONMSG
+_MESSAGEWRAPPER.fields_by_name['spawnMsg'].message_type = _SPAWNMSG
+_MESSAGEWRAPPER.fields_by_name['beamMsg'].message_type = _BEAMMSG
+_MESSAGEWRAPPER.fields_by_name['scanResultMsg'].message_type = _SCANRESULTMSG
+_MESSAGEWRAPPER.fields_by_name['scanQueryMsg'].message_type = _SCANQUERYMSG
+_MESSAGEWRAPPER.fields_by_name['scanRespMsg'].message_type = _SCANRESPMSG
+_MESSAGEWRAPPER.fields_by_name['visProps'].message_type = _VISPROPS
+_MESSAGEWRAPPER.fields_by_name['visDataEnable'].message_type = _VISDATAENABLE
+_MESSAGEWRAPPER.fields_by_name['visMetaDataEnable'].message_type = _VISMETADATAENABLE
+_MESSAGEWRAPPER.fields_by_name['visMetaData'].message_type = _VISMETADATA
+_MESSAGEWRAPPER.fields_by_name['visData'].message_type = _VISDATA
 _MESSAGEWRAPPER_MESSAGETYPE.containing_type = _MESSAGEWRAPPER;
 _PHYSPROPSMSG.fields_by_name['position'].message_type = _VECTOR
 _PHYSPROPSMSG.fields_by_name['velocity'].message_type = _VECTOR
 _PHYSPROPSMSG.fields_by_name['orientation'].message_type = _VECTOR
 _PHYSPROPSMSG.fields_by_name['thrust'].message_type = _VECTOR
+_COLLISIONMSG.fields_by_name['position'].message_type = _VECTOR
+_COLLISIONMSG.fields_by_name['direction'].message_type = _VECTOR
+_COLLISIONMSG.fields_by_name['collisionType'].enum_type = _COLLISIONMSG_COLLISIONTYPE
+_COLLISIONMSG_COLLISIONTYPE.containing_type = _COLLISIONMSG;
+_SPAWNMSG.fields_by_name['position'].message_type = _VECTOR
+_SPAWNMSG.fields_by_name['velocity'].message_type = _VECTOR
+_SPAWNMSG.fields_by_name['orientation'].message_type = _VECTOR
+_SPAWNMSG.fields_by_name['thrust'].message_type = _VECTOR
+_BEAMMSG.fields_by_name['origin'].message_type = _VECTOR
+_BEAMMSG.fields_by_name['velocity'].message_type = _VECTOR
+_BEAMMSG.fields_by_name['up'].message_type = _VECTOR
+_BEAMMSG.fields_by_name['beamType'].enum_type = _BEAMMSG_BEAMTYPE
+_BEAMMSG_BEAMTYPE.containing_type = _BEAMMSG;
+_SCANRESULTMSG.fields_by_name['position'].message_type = _VECTOR
+_SCANRESULTMSG.fields_by_name['velocity'].message_type = _VECTOR
+_SCANRESULTMSG.fields_by_name['orientation'].message_type = _VECTOR
+_SCANRESULTMSG.fields_by_name['thrust'].message_type = _VECTOR
+_SCANQUERYMSG.fields_by_name['scanDir'].message_type = _VECTOR
 DESCRIPTOR.message_types_by_name['MessageWrapper'] = _MESSAGEWRAPPER
 DESCRIPTOR.message_types_by_name['Vector'] = _VECTOR
-DESCRIPTOR.message_types_by_name['helloMsg'] = _HELLOMSG
-DESCRIPTOR.message_types_by_name['physPropsMsg'] = _PHYSPROPSMSG
+DESCRIPTOR.message_types_by_name['HelloMsg'] = _HELLOMSG
+DESCRIPTOR.message_types_by_name['PhysPropsMsg'] = _PHYSPROPSMSG
+DESCRIPTOR.message_types_by_name['GoodbyeMsg'] = _GOODBYEMSG
+DESCRIPTOR.message_types_by_name['CollisionMsg'] = _COLLISIONMSG
+DESCRIPTOR.message_types_by_name['SpawnMsg'] = _SPAWNMSG
+DESCRIPTOR.message_types_by_name['VisProps'] = _VISPROPS
+DESCRIPTOR.message_types_by_name['VisDataEnable'] = _VISDATAENABLE
+DESCRIPTOR.message_types_by_name['VisData'] = _VISDATA
+DESCRIPTOR.message_types_by_name['VisMetaData'] = _VISMETADATA
+DESCRIPTOR.message_types_by_name['VisMetaDataEnable'] = _VISMETADATAENABLE
+DESCRIPTOR.message_types_by_name['BeamMsg'] = _BEAMMSG
+DESCRIPTOR.message_types_by_name['ScanResultMsg'] = _SCANRESULTMSG
+DESCRIPTOR.message_types_by_name['ScanQueryMsg'] = _SCANQUERYMSG
+DESCRIPTOR.message_types_by_name['ScanRespMsg'] = _SCANRESPMSG
 
 class MessageWrapper(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
@@ -246,17 +1029,89 @@ class Vector(_message.Message):
 
   # @@protoc_insertion_point(class_scope:diana.Vector)
 
-class helloMsg(_message.Message):
+class HelloMsg(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _HELLOMSG
 
-  # @@protoc_insertion_point(class_scope:diana.helloMsg)
+  # @@protoc_insertion_point(class_scope:diana.HelloMsg)
 
-class physPropsMsg(_message.Message):
+class PhysPropsMsg(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _PHYSPROPSMSG
 
-  # @@protoc_insertion_point(class_scope:diana.physPropsMsg)
+  # @@protoc_insertion_point(class_scope:diana.PhysPropsMsg)
+
+class GoodbyeMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _GOODBYEMSG
+
+  # @@protoc_insertion_point(class_scope:diana.GoodbyeMsg)
+
+class CollisionMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _COLLISIONMSG
+
+  # @@protoc_insertion_point(class_scope:diana.CollisionMsg)
+
+class SpawnMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SPAWNMSG
+
+  # @@protoc_insertion_point(class_scope:diana.SpawnMsg)
+
+class VisProps(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _VISPROPS
+
+  # @@protoc_insertion_point(class_scope:diana.VisProps)
+
+class VisDataEnable(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _VISDATAENABLE
+
+  # @@protoc_insertion_point(class_scope:diana.VisDataEnable)
+
+class VisData(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _VISDATA
+
+  # @@protoc_insertion_point(class_scope:diana.VisData)
+
+class VisMetaData(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _VISMETADATA
+
+  # @@protoc_insertion_point(class_scope:diana.VisMetaData)
+
+class VisMetaDataEnable(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _VISMETADATAENABLE
+
+  # @@protoc_insertion_point(class_scope:diana.VisMetaDataEnable)
+
+class BeamMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _BEAMMSG
+
+  # @@protoc_insertion_point(class_scope:diana.BeamMsg)
+
+class ScanResultMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SCANRESULTMSG
+
+  # @@protoc_insertion_point(class_scope:diana.ScanResultMsg)
+
+class ScanQueryMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SCANQUERYMSG
+
+  # @@protoc_insertion_point(class_scope:diana.ScanQueryMsg)
+
+class ScanRespMsg(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _SCANRESPMSG
+
+  # @@protoc_insertion_point(class_scope:diana.ScanRespMsg)
 
 
 # @@protoc_insertion_point(module_scope)

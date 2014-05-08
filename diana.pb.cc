@@ -23,16 +23,54 @@ namespace {
 const ::google::protobuf::Descriptor* MessageWrapper_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   MessageWrapper_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* MessageWrapper_messageType_descriptor_ = NULL;
+const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* Vector_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Vector_reflection_ = NULL;
-const ::google::protobuf::Descriptor* helloMsg_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* HelloMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  helloMsg_reflection_ = NULL;
-const ::google::protobuf::Descriptor* physPropsMsg_descriptor_ = NULL;
+  HelloMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* PhysPropsMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  physPropsMsg_reflection_ = NULL;
+  PhysPropsMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* GoodbyeMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  GoodbyeMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* CollisionMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  CollisionMsg_reflection_ = NULL;
+const ::google::protobuf::EnumDescriptor* CollisionMsg_CollisionType_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* SpawnMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  SpawnMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* VisProps_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  VisProps_reflection_ = NULL;
+const ::google::protobuf::Descriptor* VisDataEnable_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  VisDataEnable_reflection_ = NULL;
+const ::google::protobuf::Descriptor* VisData_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  VisData_reflection_ = NULL;
+const ::google::protobuf::Descriptor* VisMetaData_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  VisMetaData_reflection_ = NULL;
+const ::google::protobuf::Descriptor* VisMetaDataEnable_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  VisMetaDataEnable_reflection_ = NULL;
+const ::google::protobuf::Descriptor* BeamMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  BeamMsg_reflection_ = NULL;
+const ::google::protobuf::EnumDescriptor* BeamMsg_BeamType_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* ScanResultMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ScanResultMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ScanQueryMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ScanQueryMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ScanRespMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ScanRespMsg_reflection_ = NULL;
 
 }  // namespace
 
@@ -44,10 +82,22 @@ void protobuf_AssignDesc_diana_2eproto() {
       "diana.proto");
   GOOGLE_CHECK(file != NULL);
   MessageWrapper_descriptor_ = file->message_type(0);
-  static const int MessageWrapper_offsets_[3] = {
+  static const int MessageWrapper_offsets_[15] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, messagetype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, hellomsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, goodbyemsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, physpropsmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, collisionmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, spawnmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, beammsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanresultmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanquerymsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanrespmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, visprops_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, visdataenable_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, vismetadataenable_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, vismetadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, visdata_),
   };
   MessageWrapper_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
@@ -60,7 +110,7 @@ void protobuf_AssignDesc_diana_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MessageWrapper));
-  MessageWrapper_messageType_descriptor_ = MessageWrapper_descriptor_->enum_type(0);
+  MessageWrapper_MessageType_descriptor_ = MessageWrapper_descriptor_->enum_type(0);
   Vector_descriptor_ = file->message_type(1);
   static const int Vector_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, x_),
@@ -78,42 +128,255 @@ void protobuf_AssignDesc_diana_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(Vector));
-  helloMsg_descriptor_ = file->message_type(2);
-  static const int helloMsg_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(helloMsg, name_),
+  HelloMsg_descriptor_ = file->message_type(2);
+  static const int HelloMsg_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HelloMsg, name_),
   };
-  helloMsg_reflection_ =
+  HelloMsg_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
-      helloMsg_descriptor_,
-      helloMsg::default_instance_,
-      helloMsg_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(helloMsg, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(helloMsg, _unknown_fields_),
+      HelloMsg_descriptor_,
+      HelloMsg::default_instance_,
+      HelloMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HelloMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HelloMsg, _unknown_fields_),
       -1,
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(helloMsg));
-  physPropsMsg_descriptor_ = file->message_type(3);
-  static const int physPropsMsg_offsets_[7] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, mass_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, position_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, velocity_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, orientation_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, thrust_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, radius_),
+      sizeof(HelloMsg));
+  PhysPropsMsg_descriptor_ = file->message_type(3);
+  static const int PhysPropsMsg_offsets_[7] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, mass_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, position_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, velocity_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, orientation_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, thrust_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, radius_),
   };
-  physPropsMsg_reflection_ =
+  PhysPropsMsg_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
-      physPropsMsg_descriptor_,
-      physPropsMsg::default_instance_,
-      physPropsMsg_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(physPropsMsg, _unknown_fields_),
+      PhysPropsMsg_descriptor_,
+      PhysPropsMsg::default_instance_,
+      PhysPropsMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PhysPropsMsg, _unknown_fields_),
       -1,
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(physPropsMsg));
+      sizeof(PhysPropsMsg));
+  GoodbyeMsg_descriptor_ = file->message_type(4);
+  static const int GoodbyeMsg_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoodbyeMsg, name_),
+  };
+  GoodbyeMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      GoodbyeMsg_descriptor_,
+      GoodbyeMsg::default_instance_,
+      GoodbyeMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoodbyeMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoodbyeMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(GoodbyeMsg));
+  CollisionMsg_descriptor_ = file->message_type(5);
+  static const int CollisionMsg_offsets_[6] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, position_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, direction_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, energy_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, collisiontype_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, commstring_),
+  };
+  CollisionMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      CollisionMsg_descriptor_,
+      CollisionMsg::default_instance_,
+      CollisionMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CollisionMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(CollisionMsg));
+  CollisionMsg_CollisionType_descriptor_ = CollisionMsg_descriptor_->enum_type(0);
+  SpawnMsg_descriptor_ = file->message_type(6);
+  static const int SpawnMsg_offsets_[7] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, mass_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, position_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, velocity_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, orientation_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, thrust_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, radius_),
+  };
+  SpawnMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      SpawnMsg_descriptor_,
+      SpawnMsg::default_instance_,
+      SpawnMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpawnMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(SpawnMsg));
+  VisProps_descriptor_ = file->message_type(7);
+  static const int VisProps_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisProps, name_),
+  };
+  VisProps_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      VisProps_descriptor_,
+      VisProps::default_instance_,
+      VisProps_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisProps, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisProps, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(VisProps));
+  VisDataEnable_descriptor_ = file->message_type(8);
+  static const int VisDataEnable_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisDataEnable, name_),
+  };
+  VisDataEnable_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      VisDataEnable_descriptor_,
+      VisDataEnable::default_instance_,
+      VisDataEnable_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisDataEnable, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisDataEnable, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(VisDataEnable));
+  VisData_descriptor_ = file->message_type(9);
+  static const int VisData_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisData, name_),
+  };
+  VisData_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      VisData_descriptor_,
+      VisData::default_instance_,
+      VisData_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisData, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisData, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(VisData));
+  VisMetaData_descriptor_ = file->message_type(10);
+  static const int VisMetaData_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaData, name_),
+  };
+  VisMetaData_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      VisMetaData_descriptor_,
+      VisMetaData::default_instance_,
+      VisMetaData_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaData, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaData, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(VisMetaData));
+  VisMetaDataEnable_descriptor_ = file->message_type(11);
+  static const int VisMetaDataEnable_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaDataEnable, name_),
+  };
+  VisMetaDataEnable_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      VisMetaDataEnable_descriptor_,
+      VisMetaDataEnable::default_instance_,
+      VisMetaDataEnable_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaDataEnable, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VisMetaDataEnable, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(VisMetaDataEnable));
+  BeamMsg_descriptor_ = file->message_type(12);
+  static const int BeamMsg_offsets_[9] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, origin_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, velocity_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, up_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, spread_h_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, spread_v_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, energy_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, beamtype_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, commstring_),
+  };
+  BeamMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      BeamMsg_descriptor_,
+      BeamMsg::default_instance_,
+      BeamMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BeamMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(BeamMsg));
+  BeamMsg_BeamType_descriptor_ = BeamMsg_descriptor_->enum_type(0);
+  ScanResultMsg_descriptor_ = file->message_type(13);
+  static const int ScanResultMsg_offsets_[8] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, mass_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, position_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, velocity_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, orientation_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, thrust_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, radius_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, extraparms_),
+  };
+  ScanResultMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ScanResultMsg_descriptor_,
+      ScanResultMsg::default_instance_,
+      ScanResultMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanResultMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ScanResultMsg));
+  ScanQueryMsg_descriptor_ = file->message_type(14);
+  static const int ScanQueryMsg_offsets_[4] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, scanid_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, scanpower_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, scandir_),
+  };
+  ScanQueryMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ScanQueryMsg_descriptor_,
+      ScanQueryMsg::default_instance_,
+      ScanQueryMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanQueryMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ScanQueryMsg));
+  ScanRespMsg_descriptor_ = file->message_type(15);
+  static const int ScanRespMsg_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanRespMsg, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanRespMsg, scanid_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanRespMsg, parms_),
+  };
+  ScanRespMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      ScanRespMsg_descriptor_,
+      ScanRespMsg::default_instance_,
+      ScanRespMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanRespMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ScanRespMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(ScanRespMsg));
 }
 
 namespace {
@@ -131,9 +394,33 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     Vector_descriptor_, &Vector::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    helloMsg_descriptor_, &helloMsg::default_instance());
+    HelloMsg_descriptor_, &HelloMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    physPropsMsg_descriptor_, &physPropsMsg::default_instance());
+    PhysPropsMsg_descriptor_, &PhysPropsMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    GoodbyeMsg_descriptor_, &GoodbyeMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    CollisionMsg_descriptor_, &CollisionMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    SpawnMsg_descriptor_, &SpawnMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    VisProps_descriptor_, &VisProps::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    VisDataEnable_descriptor_, &VisDataEnable::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    VisData_descriptor_, &VisData::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    VisMetaData_descriptor_, &VisMetaData::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    VisMetaDataEnable_descriptor_, &VisMetaDataEnable::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    BeamMsg_descriptor_, &BeamMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ScanResultMsg_descriptor_, &ScanResultMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ScanQueryMsg_descriptor_, &ScanQueryMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    ScanRespMsg_descriptor_, &ScanRespMsg::default_instance());
 }
 
 }  // namespace
@@ -143,12 +430,48 @@ void protobuf_ShutdownFile_diana_2eproto() {
   delete MessageWrapper_reflection_;
   delete Vector::default_instance_;
   delete Vector_reflection_;
-  delete helloMsg::default_instance_;
-  delete helloMsg_reflection_;
-  delete helloMsg::_default_name_;
-  delete physPropsMsg::default_instance_;
-  delete physPropsMsg_reflection_;
-  delete physPropsMsg::_default_name_;
+  delete HelloMsg::default_instance_;
+  delete HelloMsg_reflection_;
+  delete HelloMsg::_default_name_;
+  delete PhysPropsMsg::default_instance_;
+  delete PhysPropsMsg_reflection_;
+  delete PhysPropsMsg::_default_name_;
+  delete GoodbyeMsg::default_instance_;
+  delete GoodbyeMsg_reflection_;
+  delete GoodbyeMsg::_default_name_;
+  delete CollisionMsg::default_instance_;
+  delete CollisionMsg_reflection_;
+  delete CollisionMsg::_default_name_;
+  delete SpawnMsg::default_instance_;
+  delete SpawnMsg_reflection_;
+  delete SpawnMsg::_default_name_;
+  delete VisProps::default_instance_;
+  delete VisProps_reflection_;
+  delete VisProps::_default_name_;
+  delete VisDataEnable::default_instance_;
+  delete VisDataEnable_reflection_;
+  delete VisDataEnable::_default_name_;
+  delete VisData::default_instance_;
+  delete VisData_reflection_;
+  delete VisData::_default_name_;
+  delete VisMetaData::default_instance_;
+  delete VisMetaData_reflection_;
+  delete VisMetaData::_default_name_;
+  delete VisMetaDataEnable::default_instance_;
+  delete VisMetaDataEnable_reflection_;
+  delete VisMetaDataEnable::_default_name_;
+  delete BeamMsg::default_instance_;
+  delete BeamMsg_reflection_;
+  delete BeamMsg::_default_name_;
+  delete ScanResultMsg::default_instance_;
+  delete ScanResultMsg_reflection_;
+  delete ScanResultMsg::_default_name_;
+  delete ScanQueryMsg::default_instance_;
+  delete ScanQueryMsg_reflection_;
+  delete ScanQueryMsg::_default_name_;
+  delete ScanRespMsg::default_instance_;
+  delete ScanRespMsg_reflection_;
+  delete ScanRespMsg::_default_name_;
 }
 
 void protobuf_AddDesc_diana_2eproto() {
@@ -158,33 +481,133 @@ void protobuf_AddDesc_diana_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\013diana.proto\022\005diana\"\277\001\n\016MessageWrapper\022"
-    "6\n\013MessageType\030\001 \002(\0162!.diana.MessageWrap"
-    "per.messageType\022!\n\010HelloMsg\030\002 \001(\0132\017.dian"
-    "a.helloMsg\022)\n\014PhysPropsMsg\030\003 \001(\0132\023.diana"
-    ".physPropsMsg\"\'\n\013messageType\022\t\n\005HELLO\020\002\022"
-    "\r\n\tPHYSPROPS\020\003\")\n\006Vector\022\t\n\001x\030\001 \002(\001\022\t\n\001y"
-    "\030\002 \002(\001\022\t\n\001z\030\003 \002(\001\"\037\n\010helloMsg\022\023\n\004name\030\001 "
-    "\001(\t:\005HELLO\"\312\001\n\014physPropsMsg\022\027\n\004name\030\001 \001("
-    "\t:\tPHYSPROPS\022\014\n\004mass\030\002 \002(\001\022\037\n\010position\030\003"
-    " \002(\0132\r.diana.Vector\022\037\n\010velocity\030\004 \002(\0132\r."
-    "diana.Vector\022\"\n\013orientation\030\005 \002(\0132\r.dian"
-    "a.Vector\022\035\n\006thrust\030\006 \002(\0132\r.diana.Vector\022"
-    "\016\n\006radius\030\007 \002(\001", 495);
+    "\n\013diana.proto\022\005diana\"\332\006\n\016MessageWrapper\022"
+    "6\n\013messageType\030\001 \002(\0162!.diana.MessageWrap"
+    "per.MessageType\022!\n\010helloMsg\030\002 \001(\0132\017.dian"
+    "a.HelloMsg\022%\n\ngoodByeMsg\030\003 \001(\0132\021.diana.G"
+    "oodbyeMsg\022)\n\014physPropsMsg\030\004 \001(\0132\023.diana."
+    "PhysPropsMsg\022)\n\014collisionMsg\030\005 \001(\0132\023.dia"
+    "na.CollisionMsg\022!\n\010spawnMsg\030\006 \001(\0132\017.dian"
+    "a.SpawnMsg\022\037\n\007beamMsg\030\007 \001(\0132\016.diana.Beam"
+    "Msg\022+\n\rscanResultMsg\030\010 \001(\0132\024.diana.ScanR"
+    "esultMsg\022)\n\014scanQueryMsg\030\t \001(\0132\023.diana.S"
+    "canQueryMsg\022\'\n\013scanRespMsg\030\n \001(\0132\022.diana"
+    ".ScanRespMsg\022!\n\010visProps\030d \001(\0132\017.diana.V"
+    "isProps\022+\n\rvisDataEnable\030e \001(\0132\024.diana.V"
+    "isDataEnable\0223\n\021visMetaDataEnable\030f \001(\0132"
+    "\030.diana.VisMetaDataEnable\022\'\n\013visMetaData"
+    "\030g \001(\0132\022.diana.VisMetaData\022\037\n\007visData\030h "
+    "\001(\0132\016.diana.VisData\"\333\001\n\013MessageType\022\t\n\005H"
+    "ELLO\020\002\022\013\n\007GOODBYE\020\003\022\r\n\tPHYSPROPS\020\004\022\r\n\tCO"
+    "LLISION\020\005\022\t\n\005SPAWN\020\006\022\010\n\004BEAM\020\007\022\016\n\nSCANRE"
+    "SULT\020\010\022\r\n\tSCANQUERY\020\t\022\014\n\010SCANRESP\020\n\022\014\n\010V"
+    "ISPROPS\020d\022\021\n\rVISDATAENABLE\020e\022\025\n\021VISMETAD"
+    "ATAENABLE\020f\022\017\n\013VISMETADATA\020g\022\013\n\007VISDATA\020"
+    "h\")\n\006Vector\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z\030\003"
+    " \002(\001\"\037\n\010HelloMsg\022\023\n\004name\030\001 \001(\t:\005HELLO\"\312\001"
+    "\n\014PhysPropsMsg\022\027\n\004name\030\001 \001(\t:\tPHYSPROPS\022"
+    "\014\n\004mass\030\002 \002(\001\022\037\n\010position\030\003 \002(\0132\r.diana."
+    "Vector\022\037\n\010velocity\030\004 \002(\0132\r.diana.Vector\022"
+    "\"\n\013orientation\030\005 \002(\0132\r.diana.Vector\022\035\n\006t"
+    "hrust\030\006 \002(\0132\r.diana.Vector\022\016\n\006radius\030\007 \002"
+    "(\001\"#\n\nGoodbyeMsg\022\025\n\004name\030\001 \001(\t:\007GOODBYE\""
+    "\251\002\n\014CollisionMsg\022\027\n\004name\030\001 \001(\t:\tCOLLISIO"
+    "N\022\037\n\010position\030\002 \002(\0132\r.diana.Vector\022 \n\tdi"
+    "rection\030\003 \002(\0132\r.diana.Vector\022\016\n\006energy\030\004"
+    " \002(\001\0228\n\rcollisionType\030\005 \002(\0162!.diana.Coll"
+    "isionMsg.CollisionType\022\022\n\ncommString\030\006 \001"
+    "(\t\"_\n\rCollisionType\022\022\n\016PHYS_COLLISION\020\001\022"
+    "\022\n\016SCAN_COLLISION\020\002\022\022\n\016WEAP_COLLISION\020\003\022"
+    "\022\n\016COMM_COLLISION\020\004\"\302\001\n\010SpawnMsg\022\023\n\004name"
+    "\030\001 \001(\t:\005SPAWN\022\014\n\004mass\030\002 \002(\001\022\037\n\010position\030"
+    "\003 \002(\0132\r.diana.Vector\022\037\n\010velocity\030\004 \002(\0132\r"
+    ".diana.Vector\022\"\n\013orientation\030\005 \002(\0132\r.dia"
+    "na.Vector\022\035\n\006thrust\030\006 \002(\0132\r.diana.Vector"
+    "\022\016\n\006radius\030\007 \002(\001\"\"\n\010VisProps\022\026\n\004name\030\001 \001"
+    "(\t:\010VISPROPS\",\n\rVisDataEnable\022\033\n\004name\030\001 "
+    "\001(\t:\rVISDATAENABLE\" \n\007VisData\022\025\n\004name\030\001 "
+    "\001(\t:\007VISDATA\"(\n\013VisMetaData\022\031\n\004name\030\001 \001("
+    "\t:\013VISMETADATA\"4\n\021VisMetaDataEnable\022\037\n\004n"
+    "ame\030\001 \001(\t:\021VISMETADATAENABLE\"\225\002\n\007BeamMsg"
+    "\022\022\n\004name\030\001 \001(\t:\004BEAM\022\035\n\006origin\030\002 \002(\0132\r.d"
+    "iana.Vector\022\037\n\010velocity\030\003 \002(\0132\r.diana.Ve"
+    "ctor\022\031\n\002up\030\004 \002(\0132\r.diana.Vector\022\020\n\010sprea"
+    "d_h\030\005 \002(\001\022\020\n\010spread_v\030\006 \002(\001\022\016\n\006energy\030\007 "
+    "\002(\001\022)\n\010beamType\030\010 \002(\0162\027.diana.BeamMsg.Be"
+    "amType\022\022\n\ncommString\030\t \001(\t\"(\n\010BeamType\022\010"
+    "\n\004SCAN\020\001\022\010\n\004WEAP\020\002\022\010\n\004COMM\020\003\"\340\001\n\rScanRes"
+    "ultMsg\022\030\n\004name\030\001 \001(\t:\nSCANRESULT\022\014\n\004mass"
+    "\030\002 \002(\001\022\037\n\010position\030\003 \002(\0132\r.diana.Vector\022"
+    "\037\n\010velocity\030\004 \002(\0132\r.diana.Vector\022\"\n\013orie"
+    "ntation\030\005 \002(\0132\r.diana.Vector\022\035\n\006thrust\030\006"
+    " \002(\0132\r.diana.Vector\022\016\n\006radius\030\007 \002(\001\022\022\n\ne"
+    "xtraParms\030\010 \001(\t\"j\n\014ScanQueryMsg\022\027\n\004name\030"
+    "\001 \001(\t:\tSCANQUERY\022\016\n\006scanID\030\002 \002(\005\022\021\n\tscan"
+    "Power\030\003 \002(\001\022\036\n\007scanDir\030\004 \002(\0132\r.diana.Vec"
+    "tor\"D\n\013ScanRespMsg\022\026\n\004name\030\001 \001(\t:\010SCANRE"
+    "SP\022\016\n\006scanID\030\002 \002(\005\022\r\n\005parms\030\003 \002(\t", 2593);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "diana.proto", &protobuf_RegisterTypes);
   MessageWrapper::default_instance_ = new MessageWrapper();
   Vector::default_instance_ = new Vector();
-  helloMsg::_default_name_ =
+  HelloMsg::_default_name_ =
       new ::std::string("HELLO", 5);
-  helloMsg::default_instance_ = new helloMsg();
-  physPropsMsg::_default_name_ =
+  HelloMsg::default_instance_ = new HelloMsg();
+  PhysPropsMsg::_default_name_ =
       new ::std::string("PHYSPROPS", 9);
-  physPropsMsg::default_instance_ = new physPropsMsg();
+  PhysPropsMsg::default_instance_ = new PhysPropsMsg();
+  GoodbyeMsg::_default_name_ =
+      new ::std::string("GOODBYE", 7);
+  GoodbyeMsg::default_instance_ = new GoodbyeMsg();
+  CollisionMsg::_default_name_ =
+      new ::std::string("COLLISION", 9);
+  CollisionMsg::default_instance_ = new CollisionMsg();
+  SpawnMsg::_default_name_ =
+      new ::std::string("SPAWN", 5);
+  SpawnMsg::default_instance_ = new SpawnMsg();
+  VisProps::_default_name_ =
+      new ::std::string("VISPROPS", 8);
+  VisProps::default_instance_ = new VisProps();
+  VisDataEnable::_default_name_ =
+      new ::std::string("VISDATAENABLE", 13);
+  VisDataEnable::default_instance_ = new VisDataEnable();
+  VisData::_default_name_ =
+      new ::std::string("VISDATA", 7);
+  VisData::default_instance_ = new VisData();
+  VisMetaData::_default_name_ =
+      new ::std::string("VISMETADATA", 11);
+  VisMetaData::default_instance_ = new VisMetaData();
+  VisMetaDataEnable::_default_name_ =
+      new ::std::string("VISMETADATAENABLE", 17);
+  VisMetaDataEnable::default_instance_ = new VisMetaDataEnable();
+  BeamMsg::_default_name_ =
+      new ::std::string("BEAM", 4);
+  BeamMsg::default_instance_ = new BeamMsg();
+  ScanResultMsg::_default_name_ =
+      new ::std::string("SCANRESULT", 10);
+  ScanResultMsg::default_instance_ = new ScanResultMsg();
+  ScanQueryMsg::_default_name_ =
+      new ::std::string("SCANQUERY", 9);
+  ScanQueryMsg::default_instance_ = new ScanQueryMsg();
+  ScanRespMsg::_default_name_ =
+      new ::std::string("SCANRESP", 8);
+  ScanRespMsg::default_instance_ = new ScanRespMsg();
   MessageWrapper::default_instance_->InitAsDefaultInstance();
   Vector::default_instance_->InitAsDefaultInstance();
-  helloMsg::default_instance_->InitAsDefaultInstance();
-  physPropsMsg::default_instance_->InitAsDefaultInstance();
+  HelloMsg::default_instance_->InitAsDefaultInstance();
+  PhysPropsMsg::default_instance_->InitAsDefaultInstance();
+  GoodbyeMsg::default_instance_->InitAsDefaultInstance();
+  CollisionMsg::default_instance_->InitAsDefaultInstance();
+  SpawnMsg::default_instance_->InitAsDefaultInstance();
+  VisProps::default_instance_->InitAsDefaultInstance();
+  VisDataEnable::default_instance_->InitAsDefaultInstance();
+  VisData::default_instance_->InitAsDefaultInstance();
+  VisMetaData::default_instance_->InitAsDefaultInstance();
+  VisMetaDataEnable::default_instance_->InitAsDefaultInstance();
+  BeamMsg::default_instance_->InitAsDefaultInstance();
+  ScanResultMsg::default_instance_->InitAsDefaultInstance();
+  ScanQueryMsg::default_instance_->InitAsDefaultInstance();
+  ScanRespMsg::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_diana_2eproto);
 }
 
@@ -197,14 +620,26 @@ struct StaticDescriptorInitializer_diana_2eproto {
 
 // ===================================================================
 
-const ::google::protobuf::EnumDescriptor* MessageWrapper_messageType_descriptor() {
+const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return MessageWrapper_messageType_descriptor_;
+  return MessageWrapper_MessageType_descriptor_;
 }
-bool MessageWrapper_messageType_IsValid(int value) {
+bool MessageWrapper_MessageType_IsValid(int value) {
   switch(value) {
     case 2:
     case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 100:
+    case 101:
+    case 102:
+    case 103:
+    case 104:
       return true;
     default:
       return false;
@@ -212,16 +647,40 @@ bool MessageWrapper_messageType_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
-const MessageWrapper_messageType MessageWrapper::HELLO;
-const MessageWrapper_messageType MessageWrapper::PHYSPROPS;
-const MessageWrapper_messageType MessageWrapper::messageType_MIN;
-const MessageWrapper_messageType MessageWrapper::messageType_MAX;
-const int MessageWrapper::messageType_ARRAYSIZE;
+const MessageWrapper_MessageType MessageWrapper::HELLO;
+const MessageWrapper_MessageType MessageWrapper::GOODBYE;
+const MessageWrapper_MessageType MessageWrapper::PHYSPROPS;
+const MessageWrapper_MessageType MessageWrapper::COLLISION;
+const MessageWrapper_MessageType MessageWrapper::SPAWN;
+const MessageWrapper_MessageType MessageWrapper::BEAM;
+const MessageWrapper_MessageType MessageWrapper::SCANRESULT;
+const MessageWrapper_MessageType MessageWrapper::SCANQUERY;
+const MessageWrapper_MessageType MessageWrapper::SCANRESP;
+const MessageWrapper_MessageType MessageWrapper::VISPROPS;
+const MessageWrapper_MessageType MessageWrapper::VISDATAENABLE;
+const MessageWrapper_MessageType MessageWrapper::VISMETADATAENABLE;
+const MessageWrapper_MessageType MessageWrapper::VISMETADATA;
+const MessageWrapper_MessageType MessageWrapper::VISDATA;
+const MessageWrapper_MessageType MessageWrapper::MessageType_MIN;
+const MessageWrapper_MessageType MessageWrapper::MessageType_MAX;
+const int MessageWrapper::MessageType_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
 const int MessageWrapper::kMessageTypeFieldNumber;
 const int MessageWrapper::kHelloMsgFieldNumber;
+const int MessageWrapper::kGoodByeMsgFieldNumber;
 const int MessageWrapper::kPhysPropsMsgFieldNumber;
+const int MessageWrapper::kCollisionMsgFieldNumber;
+const int MessageWrapper::kSpawnMsgFieldNumber;
+const int MessageWrapper::kBeamMsgFieldNumber;
+const int MessageWrapper::kScanResultMsgFieldNumber;
+const int MessageWrapper::kScanQueryMsgFieldNumber;
+const int MessageWrapper::kScanRespMsgFieldNumber;
+const int MessageWrapper::kVisPropsFieldNumber;
+const int MessageWrapper::kVisDataEnableFieldNumber;
+const int MessageWrapper::kVisMetaDataEnableFieldNumber;
+const int MessageWrapper::kVisMetaDataFieldNumber;
+const int MessageWrapper::kVisDataFieldNumber;
 #endif  // !_MSC_VER
 
 MessageWrapper::MessageWrapper()
@@ -230,8 +689,20 @@ MessageWrapper::MessageWrapper()
 }
 
 void MessageWrapper::InitAsDefaultInstance() {
-  hellomsg_ = const_cast< ::diana::helloMsg*>(&::diana::helloMsg::default_instance());
-  physpropsmsg_ = const_cast< ::diana::physPropsMsg*>(&::diana::physPropsMsg::default_instance());
+  hellomsg_ = const_cast< ::diana::HelloMsg*>(&::diana::HelloMsg::default_instance());
+  goodbyemsg_ = const_cast< ::diana::GoodbyeMsg*>(&::diana::GoodbyeMsg::default_instance());
+  physpropsmsg_ = const_cast< ::diana::PhysPropsMsg*>(&::diana::PhysPropsMsg::default_instance());
+  collisionmsg_ = const_cast< ::diana::CollisionMsg*>(&::diana::CollisionMsg::default_instance());
+  spawnmsg_ = const_cast< ::diana::SpawnMsg*>(&::diana::SpawnMsg::default_instance());
+  beammsg_ = const_cast< ::diana::BeamMsg*>(&::diana::BeamMsg::default_instance());
+  scanresultmsg_ = const_cast< ::diana::ScanResultMsg*>(&::diana::ScanResultMsg::default_instance());
+  scanquerymsg_ = const_cast< ::diana::ScanQueryMsg*>(&::diana::ScanQueryMsg::default_instance());
+  scanrespmsg_ = const_cast< ::diana::ScanRespMsg*>(&::diana::ScanRespMsg::default_instance());
+  visprops_ = const_cast< ::diana::VisProps*>(&::diana::VisProps::default_instance());
+  visdataenable_ = const_cast< ::diana::VisDataEnable*>(&::diana::VisDataEnable::default_instance());
+  vismetadataenable_ = const_cast< ::diana::VisMetaDataEnable*>(&::diana::VisMetaDataEnable::default_instance());
+  vismetadata_ = const_cast< ::diana::VisMetaData*>(&::diana::VisMetaData::default_instance());
+  visdata_ = const_cast< ::diana::VisData*>(&::diana::VisData::default_instance());
 }
 
 MessageWrapper::MessageWrapper(const MessageWrapper& from)
@@ -244,7 +715,19 @@ void MessageWrapper::SharedCtor() {
   _cached_size_ = 0;
   messagetype_ = 2;
   hellomsg_ = NULL;
+  goodbyemsg_ = NULL;
   physpropsmsg_ = NULL;
+  collisionmsg_ = NULL;
+  spawnmsg_ = NULL;
+  beammsg_ = NULL;
+  scanresultmsg_ = NULL;
+  scanquerymsg_ = NULL;
+  scanrespmsg_ = NULL;
+  visprops_ = NULL;
+  visdataenable_ = NULL;
+  vismetadataenable_ = NULL;
+  vismetadata_ = NULL;
+  visdata_ = NULL;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -255,7 +738,19 @@ MessageWrapper::~MessageWrapper() {
 void MessageWrapper::SharedDtor() {
   if (this != default_instance_) {
     delete hellomsg_;
+    delete goodbyemsg_;
     delete physpropsmsg_;
+    delete collisionmsg_;
+    delete spawnmsg_;
+    delete beammsg_;
+    delete scanresultmsg_;
+    delete scanquerymsg_;
+    delete scanrespmsg_;
+    delete visprops_;
+    delete visdataenable_;
+    delete vismetadataenable_;
+    delete vismetadata_;
+    delete visdata_;
   }
 }
 
@@ -284,10 +779,48 @@ void MessageWrapper::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     messagetype_ = 2;
     if (has_hellomsg()) {
-      if (hellomsg_ != NULL) hellomsg_->::diana::helloMsg::Clear();
+      if (hellomsg_ != NULL) hellomsg_->::diana::HelloMsg::Clear();
+    }
+    if (has_goodbyemsg()) {
+      if (goodbyemsg_ != NULL) goodbyemsg_->::diana::GoodbyeMsg::Clear();
     }
     if (has_physpropsmsg()) {
-      if (physpropsmsg_ != NULL) physpropsmsg_->::diana::physPropsMsg::Clear();
+      if (physpropsmsg_ != NULL) physpropsmsg_->::diana::PhysPropsMsg::Clear();
+    }
+    if (has_collisionmsg()) {
+      if (collisionmsg_ != NULL) collisionmsg_->::diana::CollisionMsg::Clear();
+    }
+    if (has_spawnmsg()) {
+      if (spawnmsg_ != NULL) spawnmsg_->::diana::SpawnMsg::Clear();
+    }
+    if (has_beammsg()) {
+      if (beammsg_ != NULL) beammsg_->::diana::BeamMsg::Clear();
+    }
+    if (has_scanresultmsg()) {
+      if (scanresultmsg_ != NULL) scanresultmsg_->::diana::ScanResultMsg::Clear();
+    }
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (has_scanquerymsg()) {
+      if (scanquerymsg_ != NULL) scanquerymsg_->::diana::ScanQueryMsg::Clear();
+    }
+    if (has_scanrespmsg()) {
+      if (scanrespmsg_ != NULL) scanrespmsg_->::diana::ScanRespMsg::Clear();
+    }
+    if (has_visprops()) {
+      if (visprops_ != NULL) visprops_->::diana::VisProps::Clear();
+    }
+    if (has_visdataenable()) {
+      if (visdataenable_ != NULL) visdataenable_->::diana::VisDataEnable::Clear();
+    }
+    if (has_vismetadataenable()) {
+      if (vismetadataenable_ != NULL) vismetadataenable_->::diana::VisMetaDataEnable::Clear();
+    }
+    if (has_vismetadata()) {
+      if (vismetadata_ != NULL) vismetadata_->::diana::VisMetaData::Clear();
+    }
+    if (has_visdata()) {
+      if (visdata_ != NULL) visdata_->::diana::VisData::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -300,7 +833,7 @@ bool MessageWrapper::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required .diana.MessageWrapper.messageType MessageType = 1;
+      // required .diana.MessageWrapper.MessageType messageType = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
@@ -308,39 +841,207 @@ bool MessageWrapper::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
                  input, &value)));
-          if (::diana::MessageWrapper_messageType_IsValid(value)) {
-            set_messagetype(static_cast< ::diana::MessageWrapper_messageType >(value));
+          if (::diana::MessageWrapper_MessageType_IsValid(value)) {
+            set_messagetype(static_cast< ::diana::MessageWrapper_MessageType >(value));
           } else {
             mutable_unknown_fields()->AddVarint(1, value);
           }
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_HelloMsg;
+        if (input->ExpectTag(18)) goto parse_helloMsg;
         break;
       }
 
-      // optional .diana.helloMsg HelloMsg = 2;
+      // optional .diana.HelloMsg helloMsg = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_HelloMsg:
+         parse_helloMsg:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_hellomsg()));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_PhysPropsMsg;
+        if (input->ExpectTag(26)) goto parse_goodByeMsg;
         break;
       }
 
-      // optional .diana.physPropsMsg PhysPropsMsg = 3;
+      // optional .diana.GoodbyeMsg goodByeMsg = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-         parse_PhysPropsMsg:
+         parse_goodByeMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_goodbyemsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_physPropsMsg;
+        break;
+      }
+
+      // optional .diana.PhysPropsMsg physPropsMsg = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_physPropsMsg:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_physpropsmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_collisionMsg;
+        break;
+      }
+
+      // optional .diana.CollisionMsg collisionMsg = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_collisionMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_collisionmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_spawnMsg;
+        break;
+      }
+
+      // optional .diana.SpawnMsg spawnMsg = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_spawnMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_spawnmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(58)) goto parse_beamMsg;
+        break;
+      }
+
+      // optional .diana.BeamMsg beamMsg = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_beamMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_beammsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_scanResultMsg;
+        break;
+      }
+
+      // optional .diana.ScanResultMsg scanResultMsg = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_scanResultMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_scanresultmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(74)) goto parse_scanQueryMsg;
+        break;
+      }
+
+      // optional .diana.ScanQueryMsg scanQueryMsg = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_scanQueryMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_scanquerymsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(82)) goto parse_scanRespMsg;
+        break;
+      }
+
+      // optional .diana.ScanRespMsg scanRespMsg = 10;
+      case 10: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_scanRespMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_scanrespmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(802)) goto parse_visProps;
+        break;
+      }
+
+      // optional .diana.VisProps visProps = 100;
+      case 100: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_visProps:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_visprops()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(810)) goto parse_visDataEnable;
+        break;
+      }
+
+      // optional .diana.VisDataEnable visDataEnable = 101;
+      case 101: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_visDataEnable:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_visdataenable()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(818)) goto parse_visMetaDataEnable;
+        break;
+      }
+
+      // optional .diana.VisMetaDataEnable visMetaDataEnable = 102;
+      case 102: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_visMetaDataEnable:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_vismetadataenable()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(826)) goto parse_visMetaData;
+        break;
+      }
+
+      // optional .diana.VisMetaData visMetaData = 103;
+      case 103: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_visMetaData:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_vismetadata()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(834)) goto parse_visData;
+        break;
+      }
+
+      // optional .diana.VisData visData = 104;
+      case 104: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_visData:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_visdata()));
         } else {
           goto handle_uninterpreted;
         }
@@ -366,22 +1067,94 @@ bool MessageWrapper::MergePartialFromCodedStream(
 
 void MessageWrapper::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required .diana.MessageWrapper.messageType MessageType = 1;
+  // required .diana.MessageWrapper.MessageType messageType = 1;
   if (has_messagetype()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       1, this->messagetype(), output);
   }
 
-  // optional .diana.helloMsg HelloMsg = 2;
+  // optional .diana.HelloMsg helloMsg = 2;
   if (has_hellomsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->hellomsg(), output);
   }
 
-  // optional .diana.physPropsMsg PhysPropsMsg = 3;
+  // optional .diana.GoodbyeMsg goodByeMsg = 3;
+  if (has_goodbyemsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->goodbyemsg(), output);
+  }
+
+  // optional .diana.PhysPropsMsg physPropsMsg = 4;
   if (has_physpropsmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->physpropsmsg(), output);
+      4, this->physpropsmsg(), output);
+  }
+
+  // optional .diana.CollisionMsg collisionMsg = 5;
+  if (has_collisionmsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->collisionmsg(), output);
+  }
+
+  // optional .diana.SpawnMsg spawnMsg = 6;
+  if (has_spawnmsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6, this->spawnmsg(), output);
+  }
+
+  // optional .diana.BeamMsg beamMsg = 7;
+  if (has_beammsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      7, this->beammsg(), output);
+  }
+
+  // optional .diana.ScanResultMsg scanResultMsg = 8;
+  if (has_scanresultmsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      8, this->scanresultmsg(), output);
+  }
+
+  // optional .diana.ScanQueryMsg scanQueryMsg = 9;
+  if (has_scanquerymsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      9, this->scanquerymsg(), output);
+  }
+
+  // optional .diana.ScanRespMsg scanRespMsg = 10;
+  if (has_scanrespmsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      10, this->scanrespmsg(), output);
+  }
+
+  // optional .diana.VisProps visProps = 100;
+  if (has_visprops()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      100, this->visprops(), output);
+  }
+
+  // optional .diana.VisDataEnable visDataEnable = 101;
+  if (has_visdataenable()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      101, this->visdataenable(), output);
+  }
+
+  // optional .diana.VisMetaDataEnable visMetaDataEnable = 102;
+  if (has_vismetadataenable()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      102, this->vismetadataenable(), output);
+  }
+
+  // optional .diana.VisMetaData visMetaData = 103;
+  if (has_vismetadata()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      103, this->vismetadata(), output);
+  }
+
+  // optional .diana.VisData visData = 104;
+  if (has_visdata()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      104, this->visdata(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -392,24 +1165,108 @@ void MessageWrapper::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* MessageWrapper::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required .diana.MessageWrapper.messageType MessageType = 1;
+  // required .diana.MessageWrapper.MessageType messageType = 1;
   if (has_messagetype()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       1, this->messagetype(), target);
   }
 
-  // optional .diana.helloMsg HelloMsg = 2;
+  // optional .diana.HelloMsg helloMsg = 2;
   if (has_hellomsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         2, this->hellomsg(), target);
   }
 
-  // optional .diana.physPropsMsg PhysPropsMsg = 3;
+  // optional .diana.GoodbyeMsg goodByeMsg = 3;
+  if (has_goodbyemsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->goodbyemsg(), target);
+  }
+
+  // optional .diana.PhysPropsMsg physPropsMsg = 4;
   if (has_physpropsmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        3, this->physpropsmsg(), target);
+        4, this->physpropsmsg(), target);
+  }
+
+  // optional .diana.CollisionMsg collisionMsg = 5;
+  if (has_collisionmsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        5, this->collisionmsg(), target);
+  }
+
+  // optional .diana.SpawnMsg spawnMsg = 6;
+  if (has_spawnmsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        6, this->spawnmsg(), target);
+  }
+
+  // optional .diana.BeamMsg beamMsg = 7;
+  if (has_beammsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        7, this->beammsg(), target);
+  }
+
+  // optional .diana.ScanResultMsg scanResultMsg = 8;
+  if (has_scanresultmsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        8, this->scanresultmsg(), target);
+  }
+
+  // optional .diana.ScanQueryMsg scanQueryMsg = 9;
+  if (has_scanquerymsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        9, this->scanquerymsg(), target);
+  }
+
+  // optional .diana.ScanRespMsg scanRespMsg = 10;
+  if (has_scanrespmsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        10, this->scanrespmsg(), target);
+  }
+
+  // optional .diana.VisProps visProps = 100;
+  if (has_visprops()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        100, this->visprops(), target);
+  }
+
+  // optional .diana.VisDataEnable visDataEnable = 101;
+  if (has_visdataenable()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        101, this->visdataenable(), target);
+  }
+
+  // optional .diana.VisMetaDataEnable visMetaDataEnable = 102;
+  if (has_vismetadataenable()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        102, this->vismetadataenable(), target);
+  }
+
+  // optional .diana.VisMetaData visMetaData = 103;
+  if (has_vismetadata()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        103, this->vismetadata(), target);
+  }
+
+  // optional .diana.VisData visData = 104;
+  if (has_visdata()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        104, this->visdata(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -423,24 +1280,110 @@ int MessageWrapper::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required .diana.MessageWrapper.messageType MessageType = 1;
+    // required .diana.MessageWrapper.MessageType messageType = 1;
     if (has_messagetype()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->messagetype());
     }
 
-    // optional .diana.helloMsg HelloMsg = 2;
+    // optional .diana.HelloMsg helloMsg = 2;
     if (has_hellomsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->hellomsg());
     }
 
-    // optional .diana.physPropsMsg PhysPropsMsg = 3;
+    // optional .diana.GoodbyeMsg goodByeMsg = 3;
+    if (has_goodbyemsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->goodbyemsg());
+    }
+
+    // optional .diana.PhysPropsMsg physPropsMsg = 4;
     if (has_physpropsmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->physpropsmsg());
+    }
+
+    // optional .diana.CollisionMsg collisionMsg = 5;
+    if (has_collisionmsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->collisionmsg());
+    }
+
+    // optional .diana.SpawnMsg spawnMsg = 6;
+    if (has_spawnmsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->spawnmsg());
+    }
+
+    // optional .diana.BeamMsg beamMsg = 7;
+    if (has_beammsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->beammsg());
+    }
+
+    // optional .diana.ScanResultMsg scanResultMsg = 8;
+    if (has_scanresultmsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->scanresultmsg());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional .diana.ScanQueryMsg scanQueryMsg = 9;
+    if (has_scanquerymsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->scanquerymsg());
+    }
+
+    // optional .diana.ScanRespMsg scanRespMsg = 10;
+    if (has_scanrespmsg()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->scanrespmsg());
+    }
+
+    // optional .diana.VisProps visProps = 100;
+    if (has_visprops()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->visprops());
+    }
+
+    // optional .diana.VisDataEnable visDataEnable = 101;
+    if (has_visdataenable()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->visdataenable());
+    }
+
+    // optional .diana.VisMetaDataEnable visMetaDataEnable = 102;
+    if (has_vismetadataenable()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->vismetadataenable());
+    }
+
+    // optional .diana.VisMetaData visMetaData = 103;
+    if (has_vismetadata()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->vismetadata());
+    }
+
+    // optional .diana.VisData visData = 104;
+    if (has_visdata()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->visdata());
     }
 
   }
@@ -474,10 +1417,48 @@ void MessageWrapper::MergeFrom(const MessageWrapper& from) {
       set_messagetype(from.messagetype());
     }
     if (from.has_hellomsg()) {
-      mutable_hellomsg()->::diana::helloMsg::MergeFrom(from.hellomsg());
+      mutable_hellomsg()->::diana::HelloMsg::MergeFrom(from.hellomsg());
+    }
+    if (from.has_goodbyemsg()) {
+      mutable_goodbyemsg()->::diana::GoodbyeMsg::MergeFrom(from.goodbyemsg());
     }
     if (from.has_physpropsmsg()) {
-      mutable_physpropsmsg()->::diana::physPropsMsg::MergeFrom(from.physpropsmsg());
+      mutable_physpropsmsg()->::diana::PhysPropsMsg::MergeFrom(from.physpropsmsg());
+    }
+    if (from.has_collisionmsg()) {
+      mutable_collisionmsg()->::diana::CollisionMsg::MergeFrom(from.collisionmsg());
+    }
+    if (from.has_spawnmsg()) {
+      mutable_spawnmsg()->::diana::SpawnMsg::MergeFrom(from.spawnmsg());
+    }
+    if (from.has_beammsg()) {
+      mutable_beammsg()->::diana::BeamMsg::MergeFrom(from.beammsg());
+    }
+    if (from.has_scanresultmsg()) {
+      mutable_scanresultmsg()->::diana::ScanResultMsg::MergeFrom(from.scanresultmsg());
+    }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_scanquerymsg()) {
+      mutable_scanquerymsg()->::diana::ScanQueryMsg::MergeFrom(from.scanquerymsg());
+    }
+    if (from.has_scanrespmsg()) {
+      mutable_scanrespmsg()->::diana::ScanRespMsg::MergeFrom(from.scanrespmsg());
+    }
+    if (from.has_visprops()) {
+      mutable_visprops()->::diana::VisProps::MergeFrom(from.visprops());
+    }
+    if (from.has_visdataenable()) {
+      mutable_visdataenable()->::diana::VisDataEnable::MergeFrom(from.visdataenable());
+    }
+    if (from.has_vismetadataenable()) {
+      mutable_vismetadataenable()->::diana::VisMetaDataEnable::MergeFrom(from.vismetadataenable());
+    }
+    if (from.has_vismetadata()) {
+      mutable_vismetadata()->::diana::VisMetaData::MergeFrom(from.vismetadata());
+    }
+    if (from.has_visdata()) {
+      mutable_visdata()->::diana::VisData::MergeFrom(from.visdata());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -501,6 +1482,24 @@ bool MessageWrapper::IsInitialized() const {
   if (has_physpropsmsg()) {
     if (!this->physpropsmsg().IsInitialized()) return false;
   }
+  if (has_collisionmsg()) {
+    if (!this->collisionmsg().IsInitialized()) return false;
+  }
+  if (has_spawnmsg()) {
+    if (!this->spawnmsg().IsInitialized()) return false;
+  }
+  if (has_beammsg()) {
+    if (!this->beammsg().IsInitialized()) return false;
+  }
+  if (has_scanresultmsg()) {
+    if (!this->scanresultmsg().IsInitialized()) return false;
+  }
+  if (has_scanquerymsg()) {
+    if (!this->scanquerymsg().IsInitialized()) return false;
+  }
+  if (has_scanrespmsg()) {
+    if (!this->scanrespmsg().IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -508,7 +1507,19 @@ void MessageWrapper::Swap(MessageWrapper* other) {
   if (other != this) {
     std::swap(messagetype_, other->messagetype_);
     std::swap(hellomsg_, other->hellomsg_);
+    std::swap(goodbyemsg_, other->goodbyemsg_);
     std::swap(physpropsmsg_, other->physpropsmsg_);
+    std::swap(collisionmsg_, other->collisionmsg_);
+    std::swap(spawnmsg_, other->spawnmsg_);
+    std::swap(beammsg_, other->beammsg_);
+    std::swap(scanresultmsg_, other->scanresultmsg_);
+    std::swap(scanquerymsg_, other->scanquerymsg_);
+    std::swap(scanrespmsg_, other->scanrespmsg_);
+    std::swap(visprops_, other->visprops_);
+    std::swap(visdataenable_, other->visdataenable_);
+    std::swap(vismetadataenable_, other->vismetadataenable_);
+    std::swap(vismetadata_, other->vismetadata_);
+    std::swap(visdata_, other->visdata_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
@@ -809,36 +1820,36 @@ void Vector::Swap(Vector* other) {
 
 // ===================================================================
 
-::std::string* helloMsg::_default_name_ = NULL;
+::std::string* HelloMsg::_default_name_ = NULL;
 #ifndef _MSC_VER
-const int helloMsg::kNameFieldNumber;
+const int HelloMsg::kNameFieldNumber;
 #endif  // !_MSC_VER
 
-helloMsg::helloMsg()
+HelloMsg::HelloMsg()
   : ::google::protobuf::Message() {
   SharedCtor();
 }
 
-void helloMsg::InitAsDefaultInstance() {
+void HelloMsg::InitAsDefaultInstance() {
 }
 
-helloMsg::helloMsg(const helloMsg& from)
+HelloMsg::HelloMsg(const HelloMsg& from)
   : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
-void helloMsg::SharedCtor() {
+void HelloMsg::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(_default_name_);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-helloMsg::~helloMsg() {
+HelloMsg::~HelloMsg() {
   SharedDtor();
 }
 
-void helloMsg::SharedDtor() {
+void HelloMsg::SharedDtor() {
   if (name_ != _default_name_) {
     delete name_;
   }
@@ -846,28 +1857,28 @@ void helloMsg::SharedDtor() {
   }
 }
 
-void helloMsg::SetCachedSize(int size) const {
+void HelloMsg::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* helloMsg::descriptor() {
+const ::google::protobuf::Descriptor* HelloMsg::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return helloMsg_descriptor_;
+  return HelloMsg_descriptor_;
 }
 
-const helloMsg& helloMsg::default_instance() {
+const HelloMsg& HelloMsg::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
   return *default_instance_;
 }
 
-helloMsg* helloMsg::default_instance_ = NULL;
+HelloMsg* HelloMsg::default_instance_ = NULL;
 
-helloMsg* helloMsg::New() const {
-  return new helloMsg;
+HelloMsg* HelloMsg::New() const {
+  return new HelloMsg;
 }
 
-void helloMsg::Clear() {
+void HelloMsg::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
       if (name_ != _default_name_) {
@@ -879,7 +1890,7 @@ void helloMsg::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool helloMsg::MergePartialFromCodedStream(
+bool HelloMsg::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
@@ -917,7 +1928,7 @@ bool helloMsg::MergePartialFromCodedStream(
 #undef DO_
 }
 
-void helloMsg::SerializeWithCachedSizes(
+void HelloMsg::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // optional string name = 1 [default = "HELLO"];
   if (has_name()) {
@@ -934,7 +1945,7 @@ void helloMsg::SerializeWithCachedSizes(
   }
 }
 
-::google::protobuf::uint8* helloMsg::SerializeWithCachedSizesToArray(
+::google::protobuf::uint8* HelloMsg::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional string name = 1 [default = "HELLO"];
   if (has_name()) {
@@ -953,7 +1964,7 @@ void helloMsg::SerializeWithCachedSizes(
   return target;
 }
 
-int helloMsg::ByteSize() const {
+int HelloMsg::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
@@ -976,10 +1987,10 @@ int helloMsg::ByteSize() const {
   return total_size;
 }
 
-void helloMsg::MergeFrom(const ::google::protobuf::Message& from) {
+void HelloMsg::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const helloMsg* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const helloMsg*>(
+  const HelloMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const HelloMsg*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
@@ -988,7 +1999,7 @@ void helloMsg::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void helloMsg::MergeFrom(const helloMsg& from) {
+void HelloMsg::MergeFrom(const HelloMsg& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_name()) {
@@ -998,24 +2009,24 @@ void helloMsg::MergeFrom(const helloMsg& from) {
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void helloMsg::CopyFrom(const ::google::protobuf::Message& from) {
+void HelloMsg::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void helloMsg::CopyFrom(const helloMsg& from) {
+void HelloMsg::CopyFrom(const HelloMsg& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool helloMsg::IsInitialized() const {
+bool HelloMsg::IsInitialized() const {
 
   return true;
 }
 
-void helloMsg::Swap(helloMsg* other) {
+void HelloMsg::Swap(HelloMsg* other) {
   if (other != this) {
     std::swap(name_, other->name_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -1024,47 +2035,47 @@ void helloMsg::Swap(helloMsg* other) {
   }
 }
 
-::google::protobuf::Metadata helloMsg::GetMetadata() const {
+::google::protobuf::Metadata HelloMsg::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = helloMsg_descriptor_;
-  metadata.reflection = helloMsg_reflection_;
+  metadata.descriptor = HelloMsg_descriptor_;
+  metadata.reflection = HelloMsg_reflection_;
   return metadata;
 }
 
 
 // ===================================================================
 
-::std::string* physPropsMsg::_default_name_ = NULL;
+::std::string* PhysPropsMsg::_default_name_ = NULL;
 #ifndef _MSC_VER
-const int physPropsMsg::kNameFieldNumber;
-const int physPropsMsg::kMassFieldNumber;
-const int physPropsMsg::kPositionFieldNumber;
-const int physPropsMsg::kVelocityFieldNumber;
-const int physPropsMsg::kOrientationFieldNumber;
-const int physPropsMsg::kThrustFieldNumber;
-const int physPropsMsg::kRadiusFieldNumber;
+const int PhysPropsMsg::kNameFieldNumber;
+const int PhysPropsMsg::kMassFieldNumber;
+const int PhysPropsMsg::kPositionFieldNumber;
+const int PhysPropsMsg::kVelocityFieldNumber;
+const int PhysPropsMsg::kOrientationFieldNumber;
+const int PhysPropsMsg::kThrustFieldNumber;
+const int PhysPropsMsg::kRadiusFieldNumber;
 #endif  // !_MSC_VER
 
-physPropsMsg::physPropsMsg()
+PhysPropsMsg::PhysPropsMsg()
   : ::google::protobuf::Message() {
   SharedCtor();
 }
 
-void physPropsMsg::InitAsDefaultInstance() {
+void PhysPropsMsg::InitAsDefaultInstance() {
   position_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
   velocity_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
   orientation_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
   thrust_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
 }
 
-physPropsMsg::physPropsMsg(const physPropsMsg& from)
+PhysPropsMsg::PhysPropsMsg(const PhysPropsMsg& from)
   : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
-void physPropsMsg::SharedCtor() {
+void PhysPropsMsg::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(_default_name_);
   mass_ = 0;
@@ -1076,11 +2087,11 @@ void physPropsMsg::SharedCtor() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-physPropsMsg::~physPropsMsg() {
+PhysPropsMsg::~PhysPropsMsg() {
   SharedDtor();
 }
 
-void physPropsMsg::SharedDtor() {
+void PhysPropsMsg::SharedDtor() {
   if (name_ != _default_name_) {
     delete name_;
   }
@@ -1092,28 +2103,28 @@ void physPropsMsg::SharedDtor() {
   }
 }
 
-void physPropsMsg::SetCachedSize(int size) const {
+void PhysPropsMsg::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* physPropsMsg::descriptor() {
+const ::google::protobuf::Descriptor* PhysPropsMsg::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return physPropsMsg_descriptor_;
+  return PhysPropsMsg_descriptor_;
 }
 
-const physPropsMsg& physPropsMsg::default_instance() {
+const PhysPropsMsg& PhysPropsMsg::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
   return *default_instance_;
 }
 
-physPropsMsg* physPropsMsg::default_instance_ = NULL;
+PhysPropsMsg* PhysPropsMsg::default_instance_ = NULL;
 
-physPropsMsg* physPropsMsg::New() const {
-  return new physPropsMsg;
+PhysPropsMsg* PhysPropsMsg::New() const {
+  return new PhysPropsMsg;
 }
 
-void physPropsMsg::Clear() {
+void PhysPropsMsg::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (has_name()) {
       if (name_ != _default_name_) {
@@ -1139,7 +2150,7 @@ void physPropsMsg::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool physPropsMsg::MergePartialFromCodedStream(
+bool PhysPropsMsg::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
@@ -1265,7 +2276,7 @@ bool physPropsMsg::MergePartialFromCodedStream(
 #undef DO_
 }
 
-void physPropsMsg::SerializeWithCachedSizes(
+void PhysPropsMsg::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // optional string name = 1 [default = "PHYSPROPS"];
   if (has_name()) {
@@ -1316,7 +2327,7 @@ void physPropsMsg::SerializeWithCachedSizes(
   }
 }
 
-::google::protobuf::uint8* physPropsMsg::SerializeWithCachedSizesToArray(
+::google::protobuf::uint8* PhysPropsMsg::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional string name = 1 [default = "PHYSPROPS"];
   if (has_name()) {
@@ -1373,7 +2384,7 @@ void physPropsMsg::SerializeWithCachedSizes(
   return target;
 }
 
-int physPropsMsg::ByteSize() const {
+int PhysPropsMsg::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
@@ -1434,10 +2445,10 @@ int physPropsMsg::ByteSize() const {
   return total_size;
 }
 
-void physPropsMsg::MergeFrom(const ::google::protobuf::Message& from) {
+void PhysPropsMsg::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const physPropsMsg* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const physPropsMsg*>(
+  const PhysPropsMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const PhysPropsMsg*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
@@ -1446,7 +2457,7 @@ void physPropsMsg::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void physPropsMsg::MergeFrom(const physPropsMsg& from) {
+void PhysPropsMsg::MergeFrom(const PhysPropsMsg& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_name()) {
@@ -1474,19 +2485,19 @@ void physPropsMsg::MergeFrom(const physPropsMsg& from) {
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void physPropsMsg::CopyFrom(const ::google::protobuf::Message& from) {
+void PhysPropsMsg::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void physPropsMsg::CopyFrom(const physPropsMsg& from) {
+void PhysPropsMsg::CopyFrom(const PhysPropsMsg& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool physPropsMsg::IsInitialized() const {
+bool PhysPropsMsg::IsInitialized() const {
   if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
 
   if (has_position()) {
@@ -1504,7 +2515,7 @@ bool physPropsMsg::IsInitialized() const {
   return true;
 }
 
-void physPropsMsg::Swap(physPropsMsg* other) {
+void PhysPropsMsg::Swap(PhysPropsMsg* other) {
   if (other != this) {
     std::swap(name_, other->name_);
     std::swap(mass_, other->mass_);
@@ -1519,11 +2530,4197 @@ void physPropsMsg::Swap(physPropsMsg* other) {
   }
 }
 
-::google::protobuf::Metadata physPropsMsg::GetMetadata() const {
+::google::protobuf::Metadata PhysPropsMsg::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = physPropsMsg_descriptor_;
-  metadata.reflection = physPropsMsg_reflection_;
+  metadata.descriptor = PhysPropsMsg_descriptor_;
+  metadata.reflection = PhysPropsMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* GoodbyeMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int GoodbyeMsg::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+GoodbyeMsg::GoodbyeMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void GoodbyeMsg::InitAsDefaultInstance() {
+}
+
+GoodbyeMsg::GoodbyeMsg(const GoodbyeMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void GoodbyeMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+GoodbyeMsg::~GoodbyeMsg() {
+  SharedDtor();
+}
+
+void GoodbyeMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void GoodbyeMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* GoodbyeMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return GoodbyeMsg_descriptor_;
+}
+
+const GoodbyeMsg& GoodbyeMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+GoodbyeMsg* GoodbyeMsg::default_instance_ = NULL;
+
+GoodbyeMsg* GoodbyeMsg::New() const {
+  return new GoodbyeMsg;
+}
+
+void GoodbyeMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool GoodbyeMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "GOODBYE"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void GoodbyeMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "GOODBYE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* GoodbyeMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "GOODBYE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int GoodbyeMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "GOODBYE"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void GoodbyeMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const GoodbyeMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const GoodbyeMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void GoodbyeMsg::MergeFrom(const GoodbyeMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void GoodbyeMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void GoodbyeMsg::CopyFrom(const GoodbyeMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GoodbyeMsg::IsInitialized() const {
+
+  return true;
+}
+
+void GoodbyeMsg::Swap(GoodbyeMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata GoodbyeMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = GoodbyeMsg_descriptor_;
+  metadata.reflection = GoodbyeMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+const ::google::protobuf::EnumDescriptor* CollisionMsg_CollisionType_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return CollisionMsg_CollisionType_descriptor_;
+}
+bool CollisionMsg_CollisionType_IsValid(int value) {
+  switch(value) {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const CollisionMsg_CollisionType CollisionMsg::PHYS_COLLISION;
+const CollisionMsg_CollisionType CollisionMsg::SCAN_COLLISION;
+const CollisionMsg_CollisionType CollisionMsg::WEAP_COLLISION;
+const CollisionMsg_CollisionType CollisionMsg::COMM_COLLISION;
+const CollisionMsg_CollisionType CollisionMsg::CollisionType_MIN;
+const CollisionMsg_CollisionType CollisionMsg::CollisionType_MAX;
+const int CollisionMsg::CollisionType_ARRAYSIZE;
+#endif  // _MSC_VER
+::std::string* CollisionMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int CollisionMsg::kNameFieldNumber;
+const int CollisionMsg::kPositionFieldNumber;
+const int CollisionMsg::kDirectionFieldNumber;
+const int CollisionMsg::kEnergyFieldNumber;
+const int CollisionMsg::kCollisionTypeFieldNumber;
+const int CollisionMsg::kCommStringFieldNumber;
+#endif  // !_MSC_VER
+
+CollisionMsg::CollisionMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void CollisionMsg::InitAsDefaultInstance() {
+  position_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  direction_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+}
+
+CollisionMsg::CollisionMsg(const CollisionMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void CollisionMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  position_ = NULL;
+  direction_ = NULL;
+  energy_ = 0;
+  collisiontype_ = 1;
+  commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+CollisionMsg::~CollisionMsg() {
+  SharedDtor();
+}
+
+void CollisionMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+    delete commstring_;
+  }
+  if (this != default_instance_) {
+    delete position_;
+    delete direction_;
+  }
+}
+
+void CollisionMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* CollisionMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return CollisionMsg_descriptor_;
+}
+
+const CollisionMsg& CollisionMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+CollisionMsg* CollisionMsg::default_instance_ = NULL;
+
+CollisionMsg* CollisionMsg::New() const {
+  return new CollisionMsg;
+}
+
+void CollisionMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    if (has_position()) {
+      if (position_ != NULL) position_->::diana::Vector::Clear();
+    }
+    if (has_direction()) {
+      if (direction_ != NULL) direction_->::diana::Vector::Clear();
+    }
+    energy_ = 0;
+    collisiontype_ = 1;
+    if (has_commstring()) {
+      if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+        commstring_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool CollisionMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "COLLISION"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_position;
+        break;
+      }
+
+      // required .diana.Vector position = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_position:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_position()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_direction;
+        break;
+      }
+
+      // required .diana.Vector direction = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_direction:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_direction()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(33)) goto parse_energy;
+        break;
+      }
+
+      // required double energy = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_energy:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &energy_)));
+          set_has_energy();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(40)) goto parse_collisionType;
+        break;
+      }
+
+      // required .diana.CollisionMsg.CollisionType collisionType = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_collisionType:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::diana::CollisionMsg_CollisionType_IsValid(value)) {
+            set_collisiontype(static_cast< ::diana::CollisionMsg_CollisionType >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(5, value);
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_commString;
+        break;
+      }
+
+      // optional string commString = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_commString:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_commstring()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->commstring().data(), this->commstring().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void CollisionMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "COLLISION"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required .diana.Vector position = 2;
+  if (has_position()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, this->position(), output);
+  }
+
+  // required .diana.Vector direction = 3;
+  if (has_direction()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->direction(), output);
+  }
+
+  // required double energy = 4;
+  if (has_energy()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(4, this->energy(), output);
+  }
+
+  // required .diana.CollisionMsg.CollisionType collisionType = 5;
+  if (has_collisiontype()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      5, this->collisiontype(), output);
+  }
+
+  // optional string commString = 6;
+  if (has_commstring()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->commstring().data(), this->commstring().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      6, this->commstring(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* CollisionMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "COLLISION"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required .diana.Vector position = 2;
+  if (has_position()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        2, this->position(), target);
+  }
+
+  // required .diana.Vector direction = 3;
+  if (has_direction()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->direction(), target);
+  }
+
+  // required double energy = 4;
+  if (has_energy()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->energy(), target);
+  }
+
+  // required .diana.CollisionMsg.CollisionType collisionType = 5;
+  if (has_collisiontype()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      5, this->collisiontype(), target);
+  }
+
+  // optional string commString = 6;
+  if (has_commstring()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->commstring().data(), this->commstring().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        6, this->commstring(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int CollisionMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "COLLISION"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required .diana.Vector position = 2;
+    if (has_position()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->position());
+    }
+
+    // required .diana.Vector direction = 3;
+    if (has_direction()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->direction());
+    }
+
+    // required double energy = 4;
+    if (has_energy()) {
+      total_size += 1 + 8;
+    }
+
+    // required .diana.CollisionMsg.CollisionType collisionType = 5;
+    if (has_collisiontype()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->collisiontype());
+    }
+
+    // optional string commString = 6;
+    if (has_commstring()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->commstring());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void CollisionMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const CollisionMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const CollisionMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void CollisionMsg::MergeFrom(const CollisionMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_position()) {
+      mutable_position()->::diana::Vector::MergeFrom(from.position());
+    }
+    if (from.has_direction()) {
+      mutable_direction()->::diana::Vector::MergeFrom(from.direction());
+    }
+    if (from.has_energy()) {
+      set_energy(from.energy());
+    }
+    if (from.has_collisiontype()) {
+      set_collisiontype(from.collisiontype());
+    }
+    if (from.has_commstring()) {
+      set_commstring(from.commstring());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void CollisionMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CollisionMsg::CopyFrom(const CollisionMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CollisionMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000001e) != 0x0000001e) return false;
+
+  if (has_position()) {
+    if (!this->position().IsInitialized()) return false;
+  }
+  if (has_direction()) {
+    if (!this->direction().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void CollisionMsg::Swap(CollisionMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(position_, other->position_);
+    std::swap(direction_, other->direction_);
+    std::swap(energy_, other->energy_);
+    std::swap(collisiontype_, other->collisiontype_);
+    std::swap(commstring_, other->commstring_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata CollisionMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = CollisionMsg_descriptor_;
+  metadata.reflection = CollisionMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* SpawnMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int SpawnMsg::kNameFieldNumber;
+const int SpawnMsg::kMassFieldNumber;
+const int SpawnMsg::kPositionFieldNumber;
+const int SpawnMsg::kVelocityFieldNumber;
+const int SpawnMsg::kOrientationFieldNumber;
+const int SpawnMsg::kThrustFieldNumber;
+const int SpawnMsg::kRadiusFieldNumber;
+#endif  // !_MSC_VER
+
+SpawnMsg::SpawnMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void SpawnMsg::InitAsDefaultInstance() {
+  position_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  velocity_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  orientation_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  thrust_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+}
+
+SpawnMsg::SpawnMsg(const SpawnMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void SpawnMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  mass_ = 0;
+  position_ = NULL;
+  velocity_ = NULL;
+  orientation_ = NULL;
+  thrust_ = NULL;
+  radius_ = 0;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+SpawnMsg::~SpawnMsg() {
+  SharedDtor();
+}
+
+void SpawnMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+    delete position_;
+    delete velocity_;
+    delete orientation_;
+    delete thrust_;
+  }
+}
+
+void SpawnMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* SpawnMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return SpawnMsg_descriptor_;
+}
+
+const SpawnMsg& SpawnMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+SpawnMsg* SpawnMsg::default_instance_ = NULL;
+
+SpawnMsg* SpawnMsg::New() const {
+  return new SpawnMsg;
+}
+
+void SpawnMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    mass_ = 0;
+    if (has_position()) {
+      if (position_ != NULL) position_->::diana::Vector::Clear();
+    }
+    if (has_velocity()) {
+      if (velocity_ != NULL) velocity_->::diana::Vector::Clear();
+    }
+    if (has_orientation()) {
+      if (orientation_ != NULL) orientation_->::diana::Vector::Clear();
+    }
+    if (has_thrust()) {
+      if (thrust_ != NULL) thrust_->::diana::Vector::Clear();
+    }
+    radius_ = 0;
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool SpawnMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "SPAWN"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(17)) goto parse_mass;
+        break;
+      }
+
+      // required double mass = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_mass:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &mass_)));
+          set_has_mass();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_position;
+        break;
+      }
+
+      // required .diana.Vector position = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_position:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_position()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_velocity;
+        break;
+      }
+
+      // required .diana.Vector velocity = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_velocity:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_velocity()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_orientation;
+        break;
+      }
+
+      // required .diana.Vector orientation = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_orientation:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_orientation()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_thrust;
+        break;
+      }
+
+      // required .diana.Vector thrust = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_thrust:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_thrust()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(57)) goto parse_radius;
+        break;
+      }
+
+      // required double radius = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_radius:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &radius_)));
+          set_has_radius();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void SpawnMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "SPAWN"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required double mass = 2;
+  if (has_mass()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
+  }
+
+  // required .diana.Vector position = 3;
+  if (has_position()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->position(), output);
+  }
+
+  // required .diana.Vector velocity = 4;
+  if (has_velocity()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->velocity(), output);
+  }
+
+  // required .diana.Vector orientation = 5;
+  if (has_orientation()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->orientation(), output);
+  }
+
+  // required .diana.Vector thrust = 6;
+  if (has_thrust()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6, this->thrust(), output);
+  }
+
+  // required double radius = 7;
+  if (has_radius()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->radius(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* SpawnMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "SPAWN"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required double mass = 2;
+  if (has_mass()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->mass(), target);
+  }
+
+  // required .diana.Vector position = 3;
+  if (has_position()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->position(), target);
+  }
+
+  // required .diana.Vector velocity = 4;
+  if (has_velocity()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        4, this->velocity(), target);
+  }
+
+  // required .diana.Vector orientation = 5;
+  if (has_orientation()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        5, this->orientation(), target);
+  }
+
+  // required .diana.Vector thrust = 6;
+  if (has_thrust()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        6, this->thrust(), target);
+  }
+
+  // required double radius = 7;
+  if (has_radius()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->radius(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int SpawnMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "SPAWN"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required double mass = 2;
+    if (has_mass()) {
+      total_size += 1 + 8;
+    }
+
+    // required .diana.Vector position = 3;
+    if (has_position()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->position());
+    }
+
+    // required .diana.Vector velocity = 4;
+    if (has_velocity()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->velocity());
+    }
+
+    // required .diana.Vector orientation = 5;
+    if (has_orientation()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->orientation());
+    }
+
+    // required .diana.Vector thrust = 6;
+    if (has_thrust()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->thrust());
+    }
+
+    // required double radius = 7;
+    if (has_radius()) {
+      total_size += 1 + 8;
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void SpawnMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const SpawnMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const SpawnMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void SpawnMsg::MergeFrom(const SpawnMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_mass()) {
+      set_mass(from.mass());
+    }
+    if (from.has_position()) {
+      mutable_position()->::diana::Vector::MergeFrom(from.position());
+    }
+    if (from.has_velocity()) {
+      mutable_velocity()->::diana::Vector::MergeFrom(from.velocity());
+    }
+    if (from.has_orientation()) {
+      mutable_orientation()->::diana::Vector::MergeFrom(from.orientation());
+    }
+    if (from.has_thrust()) {
+      mutable_thrust()->::diana::Vector::MergeFrom(from.thrust());
+    }
+    if (from.has_radius()) {
+      set_radius(from.radius());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void SpawnMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SpawnMsg::CopyFrom(const SpawnMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SpawnMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
+
+  if (has_position()) {
+    if (!this->position().IsInitialized()) return false;
+  }
+  if (has_velocity()) {
+    if (!this->velocity().IsInitialized()) return false;
+  }
+  if (has_orientation()) {
+    if (!this->orientation().IsInitialized()) return false;
+  }
+  if (has_thrust()) {
+    if (!this->thrust().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void SpawnMsg::Swap(SpawnMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(mass_, other->mass_);
+    std::swap(position_, other->position_);
+    std::swap(velocity_, other->velocity_);
+    std::swap(orientation_, other->orientation_);
+    std::swap(thrust_, other->thrust_);
+    std::swap(radius_, other->radius_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata SpawnMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = SpawnMsg_descriptor_;
+  metadata.reflection = SpawnMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* VisProps::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int VisProps::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+VisProps::VisProps()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void VisProps::InitAsDefaultInstance() {
+}
+
+VisProps::VisProps(const VisProps& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void VisProps::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+VisProps::~VisProps() {
+  SharedDtor();
+}
+
+void VisProps::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void VisProps::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* VisProps::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return VisProps_descriptor_;
+}
+
+const VisProps& VisProps::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+VisProps* VisProps::default_instance_ = NULL;
+
+VisProps* VisProps::New() const {
+  return new VisProps;
+}
+
+void VisProps::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool VisProps::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "VISPROPS"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void VisProps::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "VISPROPS"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* VisProps::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "VISPROPS"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int VisProps::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "VISPROPS"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void VisProps::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const VisProps* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VisProps*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void VisProps::MergeFrom(const VisProps& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void VisProps::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void VisProps::CopyFrom(const VisProps& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool VisProps::IsInitialized() const {
+
+  return true;
+}
+
+void VisProps::Swap(VisProps* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata VisProps::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = VisProps_descriptor_;
+  metadata.reflection = VisProps_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* VisDataEnable::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int VisDataEnable::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+VisDataEnable::VisDataEnable()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void VisDataEnable::InitAsDefaultInstance() {
+}
+
+VisDataEnable::VisDataEnable(const VisDataEnable& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void VisDataEnable::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+VisDataEnable::~VisDataEnable() {
+  SharedDtor();
+}
+
+void VisDataEnable::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void VisDataEnable::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* VisDataEnable::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return VisDataEnable_descriptor_;
+}
+
+const VisDataEnable& VisDataEnable::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+VisDataEnable* VisDataEnable::default_instance_ = NULL;
+
+VisDataEnable* VisDataEnable::New() const {
+  return new VisDataEnable;
+}
+
+void VisDataEnable::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool VisDataEnable::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "VISDATAENABLE"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void VisDataEnable::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "VISDATAENABLE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* VisDataEnable::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "VISDATAENABLE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int VisDataEnable::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "VISDATAENABLE"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void VisDataEnable::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const VisDataEnable* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VisDataEnable*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void VisDataEnable::MergeFrom(const VisDataEnable& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void VisDataEnable::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void VisDataEnable::CopyFrom(const VisDataEnable& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool VisDataEnable::IsInitialized() const {
+
+  return true;
+}
+
+void VisDataEnable::Swap(VisDataEnable* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata VisDataEnable::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = VisDataEnable_descriptor_;
+  metadata.reflection = VisDataEnable_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* VisData::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int VisData::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+VisData::VisData()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void VisData::InitAsDefaultInstance() {
+}
+
+VisData::VisData(const VisData& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void VisData::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+VisData::~VisData() {
+  SharedDtor();
+}
+
+void VisData::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void VisData::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* VisData::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return VisData_descriptor_;
+}
+
+const VisData& VisData::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+VisData* VisData::default_instance_ = NULL;
+
+VisData* VisData::New() const {
+  return new VisData;
+}
+
+void VisData::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool VisData::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "VISDATA"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void VisData::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "VISDATA"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* VisData::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "VISDATA"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int VisData::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "VISDATA"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void VisData::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const VisData* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VisData*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void VisData::MergeFrom(const VisData& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void VisData::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void VisData::CopyFrom(const VisData& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool VisData::IsInitialized() const {
+
+  return true;
+}
+
+void VisData::Swap(VisData* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata VisData::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = VisData_descriptor_;
+  metadata.reflection = VisData_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* VisMetaData::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int VisMetaData::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+VisMetaData::VisMetaData()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void VisMetaData::InitAsDefaultInstance() {
+}
+
+VisMetaData::VisMetaData(const VisMetaData& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void VisMetaData::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+VisMetaData::~VisMetaData() {
+  SharedDtor();
+}
+
+void VisMetaData::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void VisMetaData::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* VisMetaData::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return VisMetaData_descriptor_;
+}
+
+const VisMetaData& VisMetaData::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+VisMetaData* VisMetaData::default_instance_ = NULL;
+
+VisMetaData* VisMetaData::New() const {
+  return new VisMetaData;
+}
+
+void VisMetaData::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool VisMetaData::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "VISMETADATA"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void VisMetaData::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "VISMETADATA"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* VisMetaData::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "VISMETADATA"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int VisMetaData::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "VISMETADATA"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void VisMetaData::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const VisMetaData* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VisMetaData*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void VisMetaData::MergeFrom(const VisMetaData& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void VisMetaData::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void VisMetaData::CopyFrom(const VisMetaData& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool VisMetaData::IsInitialized() const {
+
+  return true;
+}
+
+void VisMetaData::Swap(VisMetaData* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata VisMetaData::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = VisMetaData_descriptor_;
+  metadata.reflection = VisMetaData_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* VisMetaDataEnable::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int VisMetaDataEnable::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+VisMetaDataEnable::VisMetaDataEnable()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void VisMetaDataEnable::InitAsDefaultInstance() {
+}
+
+VisMetaDataEnable::VisMetaDataEnable(const VisMetaDataEnable& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void VisMetaDataEnable::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+VisMetaDataEnable::~VisMetaDataEnable() {
+  SharedDtor();
+}
+
+void VisMetaDataEnable::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void VisMetaDataEnable::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* VisMetaDataEnable::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return VisMetaDataEnable_descriptor_;
+}
+
+const VisMetaDataEnable& VisMetaDataEnable::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+VisMetaDataEnable* VisMetaDataEnable::default_instance_ = NULL;
+
+VisMetaDataEnable* VisMetaDataEnable::New() const {
+  return new VisMetaDataEnable;
+}
+
+void VisMetaDataEnable::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool VisMetaDataEnable::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "VISMETADATAENABLE"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void VisMetaDataEnable::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "VISMETADATAENABLE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* VisMetaDataEnable::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "VISMETADATAENABLE"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int VisMetaDataEnable::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "VISMETADATAENABLE"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void VisMetaDataEnable::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const VisMetaDataEnable* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VisMetaDataEnable*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void VisMetaDataEnable::MergeFrom(const VisMetaDataEnable& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void VisMetaDataEnable::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void VisMetaDataEnable::CopyFrom(const VisMetaDataEnable& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool VisMetaDataEnable::IsInitialized() const {
+
+  return true;
+}
+
+void VisMetaDataEnable::Swap(VisMetaDataEnable* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata VisMetaDataEnable::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = VisMetaDataEnable_descriptor_;
+  metadata.reflection = VisMetaDataEnable_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+const ::google::protobuf::EnumDescriptor* BeamMsg_BeamType_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return BeamMsg_BeamType_descriptor_;
+}
+bool BeamMsg_BeamType_IsValid(int value) {
+  switch(value) {
+    case 1:
+    case 2:
+    case 3:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const BeamMsg_BeamType BeamMsg::SCAN;
+const BeamMsg_BeamType BeamMsg::WEAP;
+const BeamMsg_BeamType BeamMsg::COMM;
+const BeamMsg_BeamType BeamMsg::BeamType_MIN;
+const BeamMsg_BeamType BeamMsg::BeamType_MAX;
+const int BeamMsg::BeamType_ARRAYSIZE;
+#endif  // _MSC_VER
+::std::string* BeamMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int BeamMsg::kNameFieldNumber;
+const int BeamMsg::kOriginFieldNumber;
+const int BeamMsg::kVelocityFieldNumber;
+const int BeamMsg::kUpFieldNumber;
+const int BeamMsg::kSpreadHFieldNumber;
+const int BeamMsg::kSpreadVFieldNumber;
+const int BeamMsg::kEnergyFieldNumber;
+const int BeamMsg::kBeamTypeFieldNumber;
+const int BeamMsg::kCommStringFieldNumber;
+#endif  // !_MSC_VER
+
+BeamMsg::BeamMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void BeamMsg::InitAsDefaultInstance() {
+  origin_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  velocity_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  up_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+}
+
+BeamMsg::BeamMsg(const BeamMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void BeamMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  origin_ = NULL;
+  velocity_ = NULL;
+  up_ = NULL;
+  spread_h_ = 0;
+  spread_v_ = 0;
+  energy_ = 0;
+  beamtype_ = 1;
+  commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+BeamMsg::~BeamMsg() {
+  SharedDtor();
+}
+
+void BeamMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+    delete commstring_;
+  }
+  if (this != default_instance_) {
+    delete origin_;
+    delete velocity_;
+    delete up_;
+  }
+}
+
+void BeamMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* BeamMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return BeamMsg_descriptor_;
+}
+
+const BeamMsg& BeamMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+BeamMsg* BeamMsg::default_instance_ = NULL;
+
+BeamMsg* BeamMsg::New() const {
+  return new BeamMsg;
+}
+
+void BeamMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    if (has_origin()) {
+      if (origin_ != NULL) origin_->::diana::Vector::Clear();
+    }
+    if (has_velocity()) {
+      if (velocity_ != NULL) velocity_->::diana::Vector::Clear();
+    }
+    if (has_up()) {
+      if (up_ != NULL) up_->::diana::Vector::Clear();
+    }
+    spread_h_ = 0;
+    spread_v_ = 0;
+    energy_ = 0;
+    beamtype_ = 1;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (has_commstring()) {
+      if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+        commstring_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool BeamMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "BEAM"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(18)) goto parse_origin;
+        break;
+      }
+
+      // required .diana.Vector origin = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_origin:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_origin()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_velocity;
+        break;
+      }
+
+      // required .diana.Vector velocity = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_velocity:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_velocity()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_up;
+        break;
+      }
+
+      // required .diana.Vector up = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_up:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_up()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(41)) goto parse_spread_h;
+        break;
+      }
+
+      // required double spread_h = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_spread_h:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &spread_h_)));
+          set_has_spread_h();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(49)) goto parse_spread_v;
+        break;
+      }
+
+      // required double spread_v = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_spread_v:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &spread_v_)));
+          set_has_spread_v();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(57)) goto parse_energy;
+        break;
+      }
+
+      // required double energy = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_energy:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &energy_)));
+          set_has_energy();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(64)) goto parse_beamType;
+        break;
+      }
+
+      // required .diana.BeamMsg.BeamType beamType = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_beamType:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::diana::BeamMsg_BeamType_IsValid(value)) {
+            set_beamtype(static_cast< ::diana::BeamMsg_BeamType >(value));
+          } else {
+            mutable_unknown_fields()->AddVarint(8, value);
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(74)) goto parse_commString;
+        break;
+      }
+
+      // optional string commString = 9;
+      case 9: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_commString:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_commstring()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->commstring().data(), this->commstring().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void BeamMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "BEAM"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required .diana.Vector origin = 2;
+  if (has_origin()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, this->origin(), output);
+  }
+
+  // required .diana.Vector velocity = 3;
+  if (has_velocity()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->velocity(), output);
+  }
+
+  // required .diana.Vector up = 4;
+  if (has_up()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->up(), output);
+  }
+
+  // required double spread_h = 5;
+  if (has_spread_h()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(5, this->spread_h(), output);
+  }
+
+  // required double spread_v = 6;
+  if (has_spread_v()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->spread_v(), output);
+  }
+
+  // required double energy = 7;
+  if (has_energy()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->energy(), output);
+  }
+
+  // required .diana.BeamMsg.BeamType beamType = 8;
+  if (has_beamtype()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      8, this->beamtype(), output);
+  }
+
+  // optional string commString = 9;
+  if (has_commstring()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->commstring().data(), this->commstring().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      9, this->commstring(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* BeamMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "BEAM"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required .diana.Vector origin = 2;
+  if (has_origin()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        2, this->origin(), target);
+  }
+
+  // required .diana.Vector velocity = 3;
+  if (has_velocity()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->velocity(), target);
+  }
+
+  // required .diana.Vector up = 4;
+  if (has_up()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        4, this->up(), target);
+  }
+
+  // required double spread_h = 5;
+  if (has_spread_h()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->spread_h(), target);
+  }
+
+  // required double spread_v = 6;
+  if (has_spread_v()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->spread_v(), target);
+  }
+
+  // required double energy = 7;
+  if (has_energy()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->energy(), target);
+  }
+
+  // required .diana.BeamMsg.BeamType beamType = 8;
+  if (has_beamtype()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      8, this->beamtype(), target);
+  }
+
+  // optional string commString = 9;
+  if (has_commstring()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->commstring().data(), this->commstring().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        9, this->commstring(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int BeamMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "BEAM"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required .diana.Vector origin = 2;
+    if (has_origin()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->origin());
+    }
+
+    // required .diana.Vector velocity = 3;
+    if (has_velocity()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->velocity());
+    }
+
+    // required .diana.Vector up = 4;
+    if (has_up()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->up());
+    }
+
+    // required double spread_h = 5;
+    if (has_spread_h()) {
+      total_size += 1 + 8;
+    }
+
+    // required double spread_v = 6;
+    if (has_spread_v()) {
+      total_size += 1 + 8;
+    }
+
+    // required double energy = 7;
+    if (has_energy()) {
+      total_size += 1 + 8;
+    }
+
+    // required .diana.BeamMsg.BeamType beamType = 8;
+    if (has_beamtype()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->beamtype());
+    }
+
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional string commString = 9;
+    if (has_commstring()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->commstring());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void BeamMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const BeamMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const BeamMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void BeamMsg::MergeFrom(const BeamMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_origin()) {
+      mutable_origin()->::diana::Vector::MergeFrom(from.origin());
+    }
+    if (from.has_velocity()) {
+      mutable_velocity()->::diana::Vector::MergeFrom(from.velocity());
+    }
+    if (from.has_up()) {
+      mutable_up()->::diana::Vector::MergeFrom(from.up());
+    }
+    if (from.has_spread_h()) {
+      set_spread_h(from.spread_h());
+    }
+    if (from.has_spread_v()) {
+      set_spread_v(from.spread_v());
+    }
+    if (from.has_energy()) {
+      set_energy(from.energy());
+    }
+    if (from.has_beamtype()) {
+      set_beamtype(from.beamtype());
+    }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    if (from.has_commstring()) {
+      set_commstring(from.commstring());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void BeamMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void BeamMsg::CopyFrom(const BeamMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool BeamMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x000000fe) != 0x000000fe) return false;
+
+  if (has_origin()) {
+    if (!this->origin().IsInitialized()) return false;
+  }
+  if (has_velocity()) {
+    if (!this->velocity().IsInitialized()) return false;
+  }
+  if (has_up()) {
+    if (!this->up().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void BeamMsg::Swap(BeamMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(origin_, other->origin_);
+    std::swap(velocity_, other->velocity_);
+    std::swap(up_, other->up_);
+    std::swap(spread_h_, other->spread_h_);
+    std::swap(spread_v_, other->spread_v_);
+    std::swap(energy_, other->energy_);
+    std::swap(beamtype_, other->beamtype_);
+    std::swap(commstring_, other->commstring_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata BeamMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = BeamMsg_descriptor_;
+  metadata.reflection = BeamMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* ScanResultMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int ScanResultMsg::kNameFieldNumber;
+const int ScanResultMsg::kMassFieldNumber;
+const int ScanResultMsg::kPositionFieldNumber;
+const int ScanResultMsg::kVelocityFieldNumber;
+const int ScanResultMsg::kOrientationFieldNumber;
+const int ScanResultMsg::kThrustFieldNumber;
+const int ScanResultMsg::kRadiusFieldNumber;
+const int ScanResultMsg::kExtraParmsFieldNumber;
+#endif  // !_MSC_VER
+
+ScanResultMsg::ScanResultMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ScanResultMsg::InitAsDefaultInstance() {
+  position_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  velocity_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  orientation_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+  thrust_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+}
+
+ScanResultMsg::ScanResultMsg(const ScanResultMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ScanResultMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  mass_ = 0;
+  position_ = NULL;
+  velocity_ = NULL;
+  orientation_ = NULL;
+  thrust_ = NULL;
+  radius_ = 0;
+  extraparms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ScanResultMsg::~ScanResultMsg() {
+  SharedDtor();
+}
+
+void ScanResultMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
+    delete extraparms_;
+  }
+  if (this != default_instance_) {
+    delete position_;
+    delete velocity_;
+    delete orientation_;
+    delete thrust_;
+  }
+}
+
+void ScanResultMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ScanResultMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ScanResultMsg_descriptor_;
+}
+
+const ScanResultMsg& ScanResultMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+ScanResultMsg* ScanResultMsg::default_instance_ = NULL;
+
+ScanResultMsg* ScanResultMsg::New() const {
+  return new ScanResultMsg;
+}
+
+void ScanResultMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    mass_ = 0;
+    if (has_position()) {
+      if (position_ != NULL) position_->::diana::Vector::Clear();
+    }
+    if (has_velocity()) {
+      if (velocity_ != NULL) velocity_->::diana::Vector::Clear();
+    }
+    if (has_orientation()) {
+      if (orientation_ != NULL) orientation_->::diana::Vector::Clear();
+    }
+    if (has_thrust()) {
+      if (thrust_ != NULL) thrust_->::diana::Vector::Clear();
+    }
+    radius_ = 0;
+    if (has_extraparms()) {
+      if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
+        extraparms_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ScanResultMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "SCANRESULT"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(17)) goto parse_mass;
+        break;
+      }
+
+      // required double mass = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_mass:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &mass_)));
+          set_has_mass();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_position;
+        break;
+      }
+
+      // required .diana.Vector position = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_position:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_position()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_velocity;
+        break;
+      }
+
+      // required .diana.Vector velocity = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_velocity:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_velocity()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(42)) goto parse_orientation;
+        break;
+      }
+
+      // required .diana.Vector orientation = 5;
+      case 5: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_orientation:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_orientation()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(50)) goto parse_thrust;
+        break;
+      }
+
+      // required .diana.Vector thrust = 6;
+      case 6: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_thrust:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_thrust()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(57)) goto parse_radius;
+        break;
+      }
+
+      // required double radius = 7;
+      case 7: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_radius:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &radius_)));
+          set_has_radius();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(66)) goto parse_extraParms;
+        break;
+      }
+
+      // optional string extraParms = 8;
+      case 8: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_extraParms:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_extraparms()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->extraparms().data(), this->extraparms().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ScanResultMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "SCANRESULT"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required double mass = 2;
+  if (has_mass()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
+  }
+
+  // required .diana.Vector position = 3;
+  if (has_position()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->position(), output);
+  }
+
+  // required .diana.Vector velocity = 4;
+  if (has_velocity()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->velocity(), output);
+  }
+
+  // required .diana.Vector orientation = 5;
+  if (has_orientation()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->orientation(), output);
+  }
+
+  // required .diana.Vector thrust = 6;
+  if (has_thrust()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      6, this->thrust(), output);
+  }
+
+  // required double radius = 7;
+  if (has_radius()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->radius(), output);
+  }
+
+  // optional string extraParms = 8;
+  if (has_extraparms()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->extraparms().data(), this->extraparms().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      8, this->extraparms(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ScanResultMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "SCANRESULT"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required double mass = 2;
+  if (has_mass()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->mass(), target);
+  }
+
+  // required .diana.Vector position = 3;
+  if (has_position()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        3, this->position(), target);
+  }
+
+  // required .diana.Vector velocity = 4;
+  if (has_velocity()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        4, this->velocity(), target);
+  }
+
+  // required .diana.Vector orientation = 5;
+  if (has_orientation()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        5, this->orientation(), target);
+  }
+
+  // required .diana.Vector thrust = 6;
+  if (has_thrust()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        6, this->thrust(), target);
+  }
+
+  // required double radius = 7;
+  if (has_radius()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->radius(), target);
+  }
+
+  // optional string extraParms = 8;
+  if (has_extraparms()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->extraparms().data(), this->extraparms().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        8, this->extraparms(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ScanResultMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "SCANRESULT"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required double mass = 2;
+    if (has_mass()) {
+      total_size += 1 + 8;
+    }
+
+    // required .diana.Vector position = 3;
+    if (has_position()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->position());
+    }
+
+    // required .diana.Vector velocity = 4;
+    if (has_velocity()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->velocity());
+    }
+
+    // required .diana.Vector orientation = 5;
+    if (has_orientation()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->orientation());
+    }
+
+    // required .diana.Vector thrust = 6;
+    if (has_thrust()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->thrust());
+    }
+
+    // required double radius = 7;
+    if (has_radius()) {
+      total_size += 1 + 8;
+    }
+
+    // optional string extraParms = 8;
+    if (has_extraparms()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->extraparms());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ScanResultMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ScanResultMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ScanResultMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ScanResultMsg::MergeFrom(const ScanResultMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_mass()) {
+      set_mass(from.mass());
+    }
+    if (from.has_position()) {
+      mutable_position()->::diana::Vector::MergeFrom(from.position());
+    }
+    if (from.has_velocity()) {
+      mutable_velocity()->::diana::Vector::MergeFrom(from.velocity());
+    }
+    if (from.has_orientation()) {
+      mutable_orientation()->::diana::Vector::MergeFrom(from.orientation());
+    }
+    if (from.has_thrust()) {
+      mutable_thrust()->::diana::Vector::MergeFrom(from.thrust());
+    }
+    if (from.has_radius()) {
+      set_radius(from.radius());
+    }
+    if (from.has_extraparms()) {
+      set_extraparms(from.extraparms());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ScanResultMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ScanResultMsg::CopyFrom(const ScanResultMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ScanResultMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
+
+  if (has_position()) {
+    if (!this->position().IsInitialized()) return false;
+  }
+  if (has_velocity()) {
+    if (!this->velocity().IsInitialized()) return false;
+  }
+  if (has_orientation()) {
+    if (!this->orientation().IsInitialized()) return false;
+  }
+  if (has_thrust()) {
+    if (!this->thrust().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void ScanResultMsg::Swap(ScanResultMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(mass_, other->mass_);
+    std::swap(position_, other->position_);
+    std::swap(velocity_, other->velocity_);
+    std::swap(orientation_, other->orientation_);
+    std::swap(thrust_, other->thrust_);
+    std::swap(radius_, other->radius_);
+    std::swap(extraparms_, other->extraparms_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ScanResultMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ScanResultMsg_descriptor_;
+  metadata.reflection = ScanResultMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* ScanQueryMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int ScanQueryMsg::kNameFieldNumber;
+const int ScanQueryMsg::kScanIDFieldNumber;
+const int ScanQueryMsg::kScanPowerFieldNumber;
+const int ScanQueryMsg::kScanDirFieldNumber;
+#endif  // !_MSC_VER
+
+ScanQueryMsg::ScanQueryMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ScanQueryMsg::InitAsDefaultInstance() {
+  scandir_ = const_cast< ::diana::Vector*>(&::diana::Vector::default_instance());
+}
+
+ScanQueryMsg::ScanQueryMsg(const ScanQueryMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ScanQueryMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  scanid_ = 0;
+  scanpower_ = 0;
+  scandir_ = NULL;
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ScanQueryMsg::~ScanQueryMsg() {
+  SharedDtor();
+}
+
+void ScanQueryMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+    delete scandir_;
+  }
+}
+
+void ScanQueryMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ScanQueryMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ScanQueryMsg_descriptor_;
+}
+
+const ScanQueryMsg& ScanQueryMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+ScanQueryMsg* ScanQueryMsg::default_instance_ = NULL;
+
+ScanQueryMsg* ScanQueryMsg::New() const {
+  return new ScanQueryMsg;
+}
+
+void ScanQueryMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    scanid_ = 0;
+    scanpower_ = 0;
+    if (has_scandir()) {
+      if (scandir_ != NULL) scandir_->::diana::Vector::Clear();
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ScanQueryMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "SCANQUERY"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(16)) goto parse_scanID;
+        break;
+      }
+
+      // required int32 scanID = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_scanID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &scanid_)));
+          set_has_scanid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(25)) goto parse_scanPower;
+        break;
+      }
+
+      // required double scanPower = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+         parse_scanPower:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 input, &scanpower_)));
+          set_has_scanpower();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_scanDir;
+        break;
+      }
+
+      // required .diana.Vector scanDir = 4;
+      case 4: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_scanDir:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_scandir()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ScanQueryMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "SCANQUERY"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required int32 scanID = 2;
+  if (has_scanid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->scanid(), output);
+  }
+
+  // required double scanPower = 3;
+  if (has_scanpower()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->scanpower(), output);
+  }
+
+  // required .diana.Vector scanDir = 4;
+  if (has_scandir()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->scandir(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ScanQueryMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "SCANQUERY"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required int32 scanID = 2;
+  if (has_scanid()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->scanid(), target);
+  }
+
+  // required double scanPower = 3;
+  if (has_scanpower()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->scanpower(), target);
+  }
+
+  // required .diana.Vector scanDir = 4;
+  if (has_scandir()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        4, this->scandir(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ScanQueryMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "SCANQUERY"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required int32 scanID = 2;
+    if (has_scanid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->scanid());
+    }
+
+    // required double scanPower = 3;
+    if (has_scanpower()) {
+      total_size += 1 + 8;
+    }
+
+    // required .diana.Vector scanDir = 4;
+    if (has_scandir()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->scandir());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ScanQueryMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ScanQueryMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ScanQueryMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ScanQueryMsg::MergeFrom(const ScanQueryMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_scanid()) {
+      set_scanid(from.scanid());
+    }
+    if (from.has_scanpower()) {
+      set_scanpower(from.scanpower());
+    }
+    if (from.has_scandir()) {
+      mutable_scandir()->::diana::Vector::MergeFrom(from.scandir());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ScanQueryMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ScanQueryMsg::CopyFrom(const ScanQueryMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ScanQueryMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x0000000e) != 0x0000000e) return false;
+
+  if (has_scandir()) {
+    if (!this->scandir().IsInitialized()) return false;
+  }
+  return true;
+}
+
+void ScanQueryMsg::Swap(ScanQueryMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(scanid_, other->scanid_);
+    std::swap(scanpower_, other->scanpower_);
+    std::swap(scandir_, other->scandir_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ScanQueryMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ScanQueryMsg_descriptor_;
+  metadata.reflection = ScanQueryMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* ScanRespMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int ScanRespMsg::kNameFieldNumber;
+const int ScanRespMsg::kScanIDFieldNumber;
+const int ScanRespMsg::kParmsFieldNumber;
+#endif  // !_MSC_VER
+
+ScanRespMsg::ScanRespMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void ScanRespMsg::InitAsDefaultInstance() {
+}
+
+ScanRespMsg::ScanRespMsg(const ScanRespMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void ScanRespMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  scanid_ = 0;
+  parms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+ScanRespMsg::~ScanRespMsg() {
+  SharedDtor();
+}
+
+void ScanRespMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (parms_ != &::google::protobuf::internal::kEmptyString) {
+    delete parms_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void ScanRespMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ScanRespMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ScanRespMsg_descriptor_;
+}
+
+const ScanRespMsg& ScanRespMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_diana_2eproto();
+  return *default_instance_;
+}
+
+ScanRespMsg* ScanRespMsg::default_instance_ = NULL;
+
+ScanRespMsg* ScanRespMsg::New() const {
+  return new ScanRespMsg;
+}
+
+void ScanRespMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+    scanid_ = 0;
+    if (has_parms()) {
+      if (parms_ != &::google::protobuf::internal::kEmptyString) {
+        parms_->clear();
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool ScanRespMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "SCANRESP"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(16)) goto parse_scanID;
+        break;
+      }
+
+      // required int32 scanID = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_scanID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &scanid_)));
+          set_has_scanid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_parms;
+        break;
+      }
+
+      // required string parms = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_parms:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_parms()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->parms().data(), this->parms().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void ScanRespMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "SCANRESP"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  // required int32 scanID = 2;
+  if (has_scanid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->scanid(), output);
+  }
+
+  // required string parms = 3;
+  if (has_parms()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->parms().data(), this->parms().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->parms(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* ScanRespMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "SCANRESP"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // required int32 scanID = 2;
+  if (has_scanid()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->scanid(), target);
+  }
+
+  // required string parms = 3;
+  if (has_parms()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->parms().data(), this->parms().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->parms(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int ScanRespMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "SCANRESP"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+    // required int32 scanID = 2;
+    if (has_scanid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->scanid());
+    }
+
+    // required string parms = 3;
+    if (has_parms()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->parms());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ScanRespMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const ScanRespMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const ScanRespMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void ScanRespMsg::MergeFrom(const ScanRespMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+    if (from.has_scanid()) {
+      set_scanid(from.scanid());
+    }
+    if (from.has_parms()) {
+      set_parms(from.parms());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void ScanRespMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ScanRespMsg::CopyFrom(const ScanRespMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ScanRespMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000006) != 0x00000006) return false;
+
+  return true;
+}
+
+void ScanRespMsg::Swap(ScanRespMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(scanid_, other->scanid_);
+    std::swap(parms_, other->parms_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata ScanRespMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ScanRespMsg_descriptor_;
+  metadata.reflection = ScanRespMsg_reflection_;
   return metadata;
 }
 

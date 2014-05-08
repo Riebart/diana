@@ -2,16 +2,45 @@ package diana;
 
 message MessageWrapper
 {
-    enum messageType
+    enum MessageType
     {
         HELLO = 2;
-        PHYSPROPS = 3;
+        GOODBYE = 3;
+        
+        PHYSPROPS = 4;
+        COLLISION = 5;
+        SPAWN = 6;
+        BEAM = 7;
+        SCANRESULT = 8;
+        SCANQUERY = 9;
+        SCANRESP = 10;
+        
+        VISPROPS = 100;
+        VISDATAENABLE = 101;
+        VISMETADATAENABLE = 102;
+        VISMETADATA = 103;
+        VISDATA = 104;
     }
     
-    required messageType MessageType = 1;
+    required MessageType messageType = 1;
     
-    optional helloMsg HelloMsg = 2;
-    optional physPropsMsg PhysPropsMsg = 3;
+    optional HelloMsg helloMsg = 2;
+    optional GoodbyeMsg goodByeMsg = 3;
+    
+    optional PhysPropsMsg physPropsMsg = 4;
+    optional CollisionMsg collisionMsg = 5;
+    optional SpawnMsg spawnMsg = 6;
+    optional BeamMsg beamMsg = 7;
+    optional ScanResultMsg scanResultMsg = 8;
+    optional ScanQueryMsg scanQueryMsg = 9;
+    optional ScanRespMsg scanRespMsg =10;
+    
+    optional VisProps visProps =100;
+    optional VisDataEnable visDataEnable =101;
+    optional VisMetaDataEnable visMetaDataEnable =102;
+    optional VisMetaData visMetaData =103;
+    optional VisData visData =104;
+    
 }
 
 message Vector
@@ -21,12 +50,12 @@ message Vector
     required double z=3;
 }
 
-message helloMsg
+message HelloMsg
 {
     optional string name =1 [default = "HELLO"];
 }
 
-message physPropsMsg
+message PhysPropsMsg
 {
     optional string name =1 [default = "PHYSPROPS"];
     
@@ -37,4 +66,120 @@ message physPropsMsg
     required Vector thrust =6;
     required double radius =7;
 }
+
+message GoodbyeMsg
+{
+    optional string name =1 [default = "GOODBYE"];
+}
+
+message CollisionMsg
+{
+    optional string name =1 [default = "COLLISION"];
     
+    required Vector position =2;
+    required Vector direction =3;
+    required double energy =4;
+
+    enum CollisionType
+    {
+        PHYS_COLLISION =1;
+        SCAN_COLLISION =2;
+        WEAP_COLLISION =3;
+        COMM_COLLISION =4;
+    }
+    
+    required CollisionType collisionType =5;
+    
+    optional string commString =6;
+}
+
+message SpawnMsg
+{
+    optional string name=1 [default = "SPAWN"];
+    
+    required double mass =2;
+    required Vector position =3;
+    required Vector velocity =4;
+    required Vector orientation =5;
+    required Vector thrust =6;
+    required double radius =7;
+}
+
+message VisProps
+{
+    optional string name=1 [default = "VISPROPS"];
+}
+
+message VisDataEnable
+{
+    optional string name=1 [default = "VISDATAENABLE"];
+}
+
+message VisData
+{
+    optional string name=1 [default = "VISDATA"];
+}
+
+message VisMetaData
+{
+    optional string name=1 [default = "VISMETADATA"];
+}
+
+message VisMetaDataEnable
+{
+    optional string name=1 [default = "VISMETADATAENABLE"];
+}
+
+message BeamMsg
+{
+    optional string name=1 [default = "BEAM"];
+    
+    required Vector origin =2;
+    required Vector velocity =3;
+    required Vector up =4;
+    required double spread_h =5;
+    required double spread_v =6;
+    required double energy =7;
+    
+    enum BeamType
+    {
+        SCAN = 1;
+        WEAP = 2;
+        COMM = 3;
+    }
+    
+    required BeamType beamType =8;
+    
+    optional string commString =9;
+}
+    
+message ScanResultMsg
+{
+    optional string name=1 [default = "SCANRESULT"];
+    
+    required double mass =2;
+    required Vector position =3;
+    required Vector velocity =4;
+    required Vector orientation =5;
+    required Vector thrust =6;
+    required double radius =7;
+    
+    optional string extraParms =8;
+}
+
+message ScanQueryMsg
+{
+    optional string name=1 [default = "SCANQUERY"];
+    
+    required int32 scanID =2;
+    required double scanPower =3;
+    required Vector scanDir =4;
+}
+
+message ScanRespMsg
+{
+   optional string name=1 [default = "SCANRESP"];
+   
+   required int32 scanID =2;
+   required string parms =3;
+}
