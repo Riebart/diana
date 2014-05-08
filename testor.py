@@ -12,6 +12,8 @@ import time
 import spaceobj
 import sys
 import math
+import diana_pb2.py
+
 
 def testSimple():
     miss1 = spaceobj.Missile(osim)
@@ -163,6 +165,17 @@ def test_threads():
         t.start()
         print "Started thread %d" % i
 
+        
+def test_pbs():
+    res_string = socket.doRead(size)
+    msg = MessageWrapper()
+    msg.ParseFromString(res_string)
+    
+    if (msg.MessageType is PHYSPROPS):
+        doStuff()
+    
+        
+        
 osim = objectsim.ObjectSim()
 rand = random.Random()
 rand.seed(0)
