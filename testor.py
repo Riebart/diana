@@ -12,7 +12,7 @@ import time
 import spaceobj
 import sys
 import math
-import diana_pb2.py
+import protocols.diana_pb2
 
 
 def testSimple():
@@ -167,6 +167,7 @@ def test_threads():
 
         
 def test_pbs():
+    pass
     #for now, this is exampe code
 """
     res_string = socket.doRead(size)
@@ -177,7 +178,7 @@ def test_pbs():
         doStuff(msg.HelloMsg)
     else if (msg.MessageType is HELLO):
         doStuff(msg.PhysPropsMsg)
-   """ 
+""" 
         
         
 osim = objectsim.ObjectSim()
