@@ -14,9 +14,15 @@ class Firefly(Ship):
 
         self.mass = 1841590.0
         self.radius = 37.5
+        
+        
+        #This information should all be handled server-side,
+        #and so is omitted
+        
         self.up = Vector3([0.0, 0.0, 1.0])
         self.position = Vector3([0.0, 0.0, 0.0])
         self.velocity = Vector3([0.0, 0.0, 0.0])
         self.orientation = Vector3([0.0, 0.0, 0.0])
         self.thrust = Vector3([0.0, 0.0, 0.0])
         self.orientation = Vector3([0.0, 0.0, 0.0])
+        

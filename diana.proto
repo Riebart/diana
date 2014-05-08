@@ -1,0 +1,40 @@
+package diana;
+
+message MessageWrapper
+{
+    enum messageType
+    {
+        HELLO = 2;
+        PHYSPROPS = 3;
+    }
+    
+    required messageType MessageType = 1;
+    
+    optional helloMsg HelloMsg = 2;
+    optional physPropsMsg PhysPropsMsg = 3;
+}
+
+message Vector
+{
+    required double x=1;
+    required double y=2;
+    required double z=3;
+}
+
+message helloMsg
+{
+    optional string name =1 [default = "HELLO"];
+}
+
+message physPropsMsg
+{
+    optional string name =1 [default = "PHYSPROPS"];
+    
+    required double mass =2;
+    required Vector position =3;
+    required Vector velocity =4;
+    required Vector orientation =5;
+    required Vector thrust =6;
+    required double radius =7;
+}
+    
