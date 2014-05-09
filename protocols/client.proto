@@ -1,0 +1,66 @@
+package client;
+
+message MessageWrapper
+{
+    enum MessageType
+    {
+        THRUST  =1;
+        VELOCITY =2;
+        JUMP    =3;
+        INFO    =4;
+        REQUEST =5;
+    }
+
+    required MessageType messageType =1;
+    
+    optional ThrustMsg thrustMsg =2;
+    optional VelocityMsg velocityMsg =3;
+    optional JumpMsg jumpMsg =4;
+    optional InfoMsg infoMsg =5;
+    optional RequestMsg requestMsg =6;
+
+}
+
+message Vector
+{
+    required double x =1;
+    required double y =2;
+    required double z =3;
+}
+
+message ThrustMsg
+{
+    optional string name =1 [default="THRUST"];
+
+    required Vector thrust =2;
+}
+
+message VelocityMsg
+{
+    optional string name =1 [default="VELOCITY"];
+    
+    required Vector velocity =2;
+}
+
+message JumpMsg
+{
+    optional string name =1 [default="JUMP"];
+    
+    required Vector new_position =2;
+}
+
+message InfoMsg
+{
+    optional string name =1 [default="INFO"];
+    
+    required string infoType =2;
+    required string data =3;
+}
+
+message RequestMsg
+{
+    optional string name =1 [default="REQUEST"];
+    
+    required int32 continuous =2;
+    required string requestType =3;
+}
