@@ -1,4 +1,4 @@
-package diana;
+package universe;
 
 message MessageWrapper
 {

@@ -12,7 +12,7 @@ import time
 import spaceobj
 import sys
 import math
-import protocols.diana_pb2
+import protocols.universe_pb2
 
 
 def testSimple():
