@@ -38,7 +38,7 @@ struct PhysicsObject
 		radius,
 		health;
 	Universe* universe;
-	char* obj_type;
+	char* obj_desc;
 	int32_t art_id;
 	bool emits_gravity;
 };
@@ -72,8 +72,6 @@ struct Beam
 		right;
 	double cosines[2];
 	double speed,
-		//cosh,
-		//cosv,
 		area_factor,
 		energy,
 		distance_travelled,
@@ -121,7 +119,7 @@ struct BeamCollisionResult
 	void* occlusion;
 };
 
-void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_type);
+void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
 
 void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
@@ -129,7 +127,7 @@ void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* o
 void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
 void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, struct PhysCollisionEffect* pce);
 
-void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_type);
+void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type);
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type);

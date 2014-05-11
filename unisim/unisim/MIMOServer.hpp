@@ -6,6 +6,7 @@
 #include <thread>
 #include <mutex>
 
+
 class SocketThread;
 
 class MIMOServer
@@ -37,8 +38,8 @@ private:
 	void (*hangup_callback)(int32_t);
 	void (*hangup_callback2)(int32_t, void*);
 	void* hangup_context;
-	std::vector<int> inputs;
-	std::vector<int> hangups;
+	std::vector<int32_t> inputs;
+	std::vector<int32_t> hangups;
 	std::thread server_thread;
 	// Map client FDs to their asynchronous reader threads.
 	/// @todo Is this even necessary? Network input is serial anyway...

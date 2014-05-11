@@ -1,6 +1,5 @@
 #include "MIMOServer.hpp"
 
-#include <stdint.h>
 #include <stdio.h>
 
 // We can actually use Berkeley style sockets everywhere, just need to include the right stuff

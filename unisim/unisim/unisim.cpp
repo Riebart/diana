@@ -1,10 +1,27 @@
 #include <iostream>
-#include <WinSock2.h>
 #include <stdlib.h>
 #include <assert.h>
 
+#include <signal.h>
+
+#ifdef WIN32
+#include <WinSock2.h>
+#else
+#include <sys/socket.h>
+#endif
+
 #include "universe.hpp"
 #include "MIMOServer.hpp"
+
+bool running = true;
+Universe* u;
+
+void sighandler(int32_t sig)
+{
+	running = false;
+	u->stop_net();
+	u->stop_sim();
+}
 
 int32_t compare(const void* aV, const void* bV)
 {
@@ -36,17 +53,32 @@ void hc(int32_t c)
 
 void main(int32_t argc, char** argv)
 {
+	signal(SIGABRT, &sighandler);
+	signal(SIGTERM, &sighandler);
+	signal(SIGINT,  &sighandler);
+
+	u = new Universe(0.0, 0.001, 0.01, 5505, 1);
+
 	try
 	{
-		Universe u(0.001, 0.001, 0.01, 5505, 2);
-		u.start_net();
-		u.start_sim();
-		char input[128];
-		std::cin >> input;
-		u.stop_net();
-		u.stop_sim();
+		u->start_net();
+		u->start_sim();
+
+		double frametimes[3];
+		std::chrono::seconds dura(1);
+
+		while (running)
+		{
+			u->get_frametime(frametimes);
+			fprintf(stderr, "%g, %g %g\n", frametimes[0], frametimes[1], frametimes[2]);
+			std::this_thread::sleep_for(dura);
+		}
+
+		u->stop_net();
+		u->stop_sim();
+		delete u;
 	}
-	catch (char* e)
+	catch(char* e)
 	{
 		fprintf(stderr, "Caught error: %s\n", e);
 	}

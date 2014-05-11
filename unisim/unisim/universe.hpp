@@ -10,11 +10,10 @@
 //#include <thread>
 //#include <mutex> 
 
+#include "vector.hpp"
 #include "physics.hpp"
 #include "MIMOServer.hpp"
 
-struct PhysicsObject;
-struct Beam;
 
 /// Contains the code that handles physics simulation and communicating via smart objects
 ///
@@ -68,6 +67,7 @@ class Universe
 	friend void sim(Universe* u);
 	friend void Universe_hangup_objects(int32_t c, void* arg);
 	friend void Universe_handle_message(int32_t c, void* arg);
+	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
 public:
 	Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0);
@@ -91,12 +91,6 @@ public:
 	/// @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
 	void add_object(struct PhysicsObject* obj);
 
-	/// Add a beam to the universe. It will appear on the next physics tick.
-	/// This function is used when the universe has never seen the object before.
-	/// Objects have their phys_id property set, and are queued to be added
-	/// at the end of the current physics tick.
-	//void add_beam(struct Beam* b);
-
 	/// Queue an object for expiry in the next physics tick.
 	void expire(uint64_t phys_id);
 
@@ -105,9 +99,6 @@ public:
 
 	/// Update whether or not an object emits gravity.
 	void update_attractor(struct PhysicsObject* obj);
-
-	/// Associate 'smart' properties with an exiting dumb object.
-	//struct SmartPhysicsObject* register_smarty(int32_t c, uint64_t osim_id, uint64_t phys_id);
 
 	void register_for_vis_data(uint64_t phys_id, bool enable);
 
@@ -135,7 +126,7 @@ private:
 	/// collision information is retrieved, the SCANRESULT beam is built and
 	/// added to the universe.
 	std::map<uint64_t, uint64_t> queries;
-	std::vector<int> vis_clients;
+	std::vector<int32_t> vis_clients;
 
 	std::thread sim_thread;
 	std::thread vis_thread;

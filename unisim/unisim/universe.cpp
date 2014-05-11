@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <chrono>
 
+#define ABSOLUTE_MIN_FRAMETIME 0.000001
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -13,48 +14,6 @@ typedef struct PhysicsObject PO;
 typedef struct SmartPhysicsObject SPO;
 typedef struct Vector3 V3;
 
-//class VisDataThread
-//{
-//public:
-//	VisDataThread(Universe* universe, double update_rate);
-//	~VisDataThread();
-//
-//private:
-//	void start();
-//	void stop();
-//
-//	Universe* universe;
-//	double update_rate;
-//	double frametime;
-//	bool running;
-//	std::thread t;
-//};
-//
-//void run_VisDataThrea()
-//{
-//}
-//
-//VisDataThread::VisDataThread(Universe* universe, double update_rate)
-//{
-//	this->universe = universe;
-//	this->update_rate = update_rate;
-//	frametime = update_rate;
-//	running = false;
-//}
-//
-//VisDataThread::~VisDataThread()
-//{
-//}
-//
-//VisDataThread::start()
-//{
-//	if (running == false)
-//	{
-//		fprintf(stderr, "Starting visdata thread\n");
-//		
-//	}
-//}
-
 void gravity(V3* out, PO* big, PO* small)
 {
 	double m = 6.67384e-11 * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
@@ -62,26 +21,16 @@ void gravity(V3* out, PO* big, PO* small)
 	Vector3_scale(out, m);
 }
 
-void Universe::get_grav_pull(V3* g, PO* obj)
-{
-	V3 cg;
-	for (int32_t i = 0 ; i < attractors.size() ; i++)
-	{
-		gravity(&cg, attractors[i], obj);
-		Vector3_add(g, &cg);
-	}
-}
-
 void sim(Universe* u)
 {
-	double dt = 0.01;
+	double dt = u->min_frametime;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	std::chrono::duration<double> elapsed;
 
 	while (u->running)
 	{
 		// If we're paused, then just sleep. We're not picky on how long we sleep for.
-		// Sleep for dt time so that 
+		// Sleep for dt time so that we're responsive to unpausing.
 		if (u->paused)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * dt)));
@@ -99,12 +48,13 @@ void sim(Universe* u)
 		{
 			// C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requestion.
 			// As opposed to usleep which may wake up early.
-			std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (dt - elapsed.count()))));
+			std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (dt - e))));
 			end = std::chrono::high_resolution_clock::now();
 			elapsed = end - start;
 			e = elapsed.count();
 		}
 
+		u->wall_frametime = dt;
 		dt = MIN(u->max_frametime, e);
 		u->frametime = dt;
 		u->total_time += u->rate * dt;
@@ -128,15 +78,18 @@ Universe::Universe(double min_frametime, double max_frametime, double vis_framet
 {
 	this->rate = rate;
 
-	if (min_frametime < 0.001)
+	if (min_frametime < ABSOLUTE_MIN_FRAMETIME)
 	{
-		fprintf(stderr, "WARNING: min_framtime set below one millisecond. Raising it to 1ms.\n");
-		min_frametime = 0.001;
-		max_frametime = MAX(max_frametime, 0.001);
+		fprintf(stderr, "WARNING: min_framtime set below absolute minimum. Raising it to %g s.\n", ABSOLUTE_MIN_FRAMETIME);
+		min_frametime = ABSOLUTE_MIN_FRAMETIME;
+		max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
 	}
 	this->min_frametime = min_frametime;
 	this->max_frametime = max_frametime;
 	this->vis_frametime = vis_frametime;
+
+	frametime = 0.0;
+	vis_frametime = 0.0;
 
 	total_time = 0.0;
 	num_ticks = 0;
@@ -185,6 +138,13 @@ void Universe::stop_sim()
 	}
 }
 
+void Universe::get_frametime(double* out)
+{
+	out[0] = frametime;
+	out[1] = wall_frametime;
+	out[2] = vis_frametime;
+}
+
 uint64_t Universe::get_id()
 {
 	uint64_t r = total_objs.fetch_add(1);
@@ -225,6 +185,17 @@ void Universe::handle_message(int32_t c)
 {
 	throw "Universe::handle_message";
 }
+
+void Universe::get_grav_pull(V3* g, PO* obj)
+{
+	V3 cg;
+	for (int32_t i = 0 ; i < attractors.size() ; i++)
+	{
+		gravity(&cg, attractors[i], obj);
+		Vector3_add(g, &cg);
+	}
+}
+
 
 void Universe::tick(double dt)
 {

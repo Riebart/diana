@@ -20,18 +20,17 @@ typedef struct PhysicsObject PO;
 typedef struct SmartPhysicsObject SPO;
 typedef struct Vector3 V3;
 
-/// @todo implement grids, this ties into physics, but the properties
-///  need to be added here.
+/// @todo implement grids, this ties into physics, but the properties need to be added here.
 
 bool is_big_enough(double m, double r)
 {
 	return ((6.67384e-11 * m / r) >= GRAVITY_CUTOFF);
 }
 
-void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_desc)
 {
 	obj->type = PHYSOBJECT;
-	obj->phys_id = 0;
+	obj->phys_id = universe->get_id();
 	obj->art_id = -1;
 
 	obj->universe = universe;
@@ -41,7 +40,7 @@ void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity,
 	obj->thrust = *thrust;
 	obj->mass = mass;
 	obj->radius = radius;
-	obj->obj_type = obj_type;
+	obj->obj_desc = obj_desc;
 
 	obj->health = mass * 1000000;
 	obj->emits_gravity = is_big_enough(mass, radius);
@@ -290,9 +289,9 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, struct PhysCol
 	}
 }
 
-void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_desc)
 {
-	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type);
+	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_desc);
 	obj->pobj.type = PHYSOBJECT_SMART;
 
 	obj->client = client;

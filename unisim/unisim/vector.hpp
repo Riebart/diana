@@ -8,7 +8,8 @@ struct Vector3
 	double x, y, z;
 };
 
-struct Vector3* Vector3_alloc(int32_t n = 1);
+// @todo Make sure that the cpp signatures match the hpp signatures in variable names.
+struct Vector3* Vector3_alloc(int32_t n  = 1);
 struct Vector3* Vector3_clone(struct Vector3* v);
 
 void Vector3_init(struct Vector3* v, double x, double y, double z);
@@ -17,18 +18,18 @@ void Vector3_init(struct Vector3* v1, struct Vector3* v2);
 bool Vector3_almost_zeroS(double v);
 bool Vector3_almost_zero(struct Vector3* v);
 
-void Vector3_add(struct Vector3* r, struct Vector3* v1, struct Vector3* v2);
+void Vector3_add(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
 void Vector3_add(struct Vector3* v1, struct Vector3* v2);
-void Vector3_subtract(struct Vector3* r, struct Vector3* v1, struct Vector3* v2);
+void Vector3_subtract(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
 void Vector3_subtract(struct Vector3* v1, struct Vector3* v2);
 void Vector3_scale(struct Vector3* out, struct Vector3* v, double s);
 void Vector3_scale(struct Vector3* v, double s);
 void Vector3_normalize(struct Vector3* out, struct Vector3* v);
 void Vector3_normalize(struct Vector3* v);
 
-void Vector3_cross(struct Vector3* r, struct Vector3* v1, struct Vector3* v2);
-void Vector3_project_onto(struct Vector3* r, struct Vector3* v, struct Vector3* a);
-void Vector3_project_down(struct Vector3* r, struct Vector3* v, struct Vector3* a);
+void Vector3_cross(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
+void Vector3_project_onto(struct Vector3* out, struct Vector3* v, struct Vector3* a);
+void Vector3_project_down(struct Vector3* out, struct Vector3* v, struct Vector3* a);
 
 double Vector3_dot(struct Vector3* v1, struct Vector3* v2);
 double Vector3_length2(struct Vector3* v);
@@ -36,7 +37,7 @@ double Vector3_length(struct Vector3* v);
 double Vector3_distance2(struct Vector3* v1, struct Vector3* v2);
 double Vector3_distance(struct Vector3* v1, struct Vector3* v2);
 
-void Vector3_ray(struct Vector3* r, struct Vector3* v1, struct Vector3* v2);
+void Vector3_ray(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
 void Vector3_fmad(struct Vector3* v, double s, struct Vector3* u);
 
 struct Vector3* Vector3_easy_look_at(struct Vector3* look);
