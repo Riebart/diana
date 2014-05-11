@@ -5,7 +5,7 @@
 
 struct Vector3
 {
-	double x, y, z;
+    double x, y, z;
 };
 
 // @todo Make sure that the cpp signatures match the hpp signatures in variable names.

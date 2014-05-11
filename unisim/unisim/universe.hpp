@@ -64,91 +64,91 @@
 /// a reference needs to be made.
 class Universe
 {
-	friend void sim(Universe* u);
-	friend void Universe_hangup_objects(int32_t c, void* arg);
-	friend void Universe_handle_message(int32_t c, void* arg);
-	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    friend void sim(Universe* u);
+    friend void Universe_hangup_objects(int32_t c, void* arg);
+    friend void Universe_handle_message(int32_t c, void* arg);
+    friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
 public:
-	Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0);
-	~Universe();
-	void start_net();
-	void stop_net();
-	void start_sim();
-	void pause_sim();
-	void stop_sim();
+    Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0);
+    ~Universe();
+    void start_net();
+    void stop_net();
+    void start_sim();
+    void pause_sim();
+    void stop_sim();
 
-	/// The parameter should have space for three doubles:
-	/// The time elapsed in game on the last physics tick.
-	/// The wall clock time elapsed on the last physics tick.
-	/// The wall clock duration of the last visdata blast.
-	void get_frametime(double* out);
+    /// The parameter should have space for three doubles:
+    /// The time elapsed in game on the last physics tick.
+    /// The wall clock time elapsed on the last physics tick.
+    /// The wall clock duration of the last visdata blast.
+    void get_frametime(double* out);
 
-	/// Add an object to the universe. It will appear on the next physics tick.
-	/// This function is used when the universe has never seen the object before.
-	/// Objects have their phys_id property set, and are queued to be added
-	/// at the end of the current physics tick.
-	/// @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
-	void add_object(struct PhysicsObject* obj);
+    /// Add an object to the universe. It will appear on the next physics tick.
+    /// This function is used when the universe has never seen the object before.
+    /// Objects have their phys_id property set, and are queued to be added
+    /// at the end of the current physics tick.
+    /// @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
+    void add_object(struct PhysicsObject* obj);
 
-	/// Queue an object for expiry in the next physics tick.
-	void expire(uint64_t phys_id);
+    /// Queue an object for expiry in the next physics tick.
+    void expire(uint64_t phys_id);
 
-	/// Expire all objects in the universe associated with the given client.
-	void hangup_objects(int32_t c);
+    /// Expire all objects in the universe associated with the given client.
+    void hangup_objects(int32_t c);
 
-	/// Update whether or not an object emits gravity.
-	void update_attractor(struct PhysicsObject* obj);
+    /// Update whether or not an object emits gravity.
+    void update_attractor(struct PhysicsObject* obj);
 
-	void register_for_vis_data(uint64_t phys_id, bool enable);
+    void register_for_vis_data(uint64_t phys_id, bool enable);
 
 private:
-	uint64_t get_id();
-	void broadcast_vis_data();
-	void tick(double dt);
-	void handle_message(int32_t c);
-	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+    uint64_t get_id();
+    void broadcast_vis_data();
+    void tick(double dt);
+    void handle_message(int32_t c);
+    void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
-	MIMOServer* net;
-	//ArtCurator* curator;
+    MIMOServer* net;
+    //ArtCurator* curator;
 
-	std::map<uint64_t, struct SmartPhysicsObject*> smarties;
-	std::vector<struct PhysicsObject*> attractors;
-	std::vector<struct PhysicsObject*> phys_objects;
-	std::vector<struct Beam*> beams;
-	std::vector<uint64_t> expired;
-	std::vector<struct PhysicsObject*> added;
-	/// Keeps track of the queries from SCAN beam collisions that are in progress.
-	/// When a scan beam collides with a smart objects, certain information can
-	/// be reported, but that requires a query to the OSim. These queries are
-	/// sent over the network, with a unique ID, and the query ID is logged in
-	/// this structure. When the query result message comes back, the original
-	/// collision information is retrieved, the SCANRESULT beam is built and
-	/// added to the universe.
-	std::map<uint64_t, uint64_t> queries;
-	std::vector<int32_t> vis_clients;
+    std::map<uint64_t, struct SmartPhysicsObject*> smarties;
+    std::vector<struct PhysicsObject*> attractors;
+    std::vector<struct PhysicsObject*> phys_objects;
+    std::vector<struct Beam*> beams;
+    std::vector<uint64_t> expired;
+    std::vector<struct PhysicsObject*> added;
+    /// Keeps track of the queries from SCAN beam collisions that are in progress.
+    /// When a scan beam collides with a smart objects, certain information can
+    /// be reported, but that requires a query to the OSim. These queries are
+    /// sent over the network, with a unique ID, and the query ID is logged in
+    /// this structure. When the query result message comes back, the original
+    /// collision information is retrieved, the SCANRESULT beam is built and
+    /// added to the universe.
+    std::map<uint64_t, uint64_t> queries;
+    std::vector<int32_t> vis_clients;
 
-	std::thread sim_thread;
-	std::thread vis_thread;
-	std::mutex add_lock;
-	std::mutex expire_lock;
-	std::mutex phys_lock;
-	std::mutex vis_lock;
+    std::thread sim_thread;
+    std::thread vis_thread;
+    std::mutex add_lock;
+    std::mutex expire_lock;
+    std::mutex phys_lock;
+    std::mutex vis_lock;
 
-	double rate;
-	double total_time;
-	double min_frametime;
-	double max_frametime;
-	double vis_frametime;
-	double frametime;
-	double wall_frametime;
-	uint64_t num_ticks;
+    double rate;
+    double total_time;
+    double min_frametime;
+    double max_frametime;
+    double vis_frametime;
+    double frametime;
+    double wall_frametime;
+    uint64_t num_ticks;
 
-	int32_t num_threads;
-	bool paused;
-	bool running;
+    int32_t num_threads;
+    bool paused;
+    bool running;
 
-	std::atomic_uint64_t total_objs;
+    std::atomic_uint64_t total_objs;
 };
 
 #endif
