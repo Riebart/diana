@@ -144,15 +144,19 @@ class ObjectSim:
     def send_physprops(self, obj):
         if (obj.object_type == None or obj.mass == None or
             obj.radius == None or obj.position == None or
-            obj.velocity == None or obj.orientation == None or obj.thrust == None):
+            obj.velocity == None or obj.thrust == None):
+            #obj.velocity == None or obj.orientation == None or obj.thrust == None):
             return None
+
+        orientation = Vector3.get_orientation(obj.up, obj.up, obj.right)
 
         ret = message.PhysicalPropertiesMsg.send(obj.sock, obj.phys_id, obj.osim_id, (
                 obj.object_type,
                 obj.mass,
                 obj.position[0], obj.position[1], obj.position[2],
                 obj.velocity[0], obj.velocity[1], obj.velocity[2],
-                obj.orientation[0], obj.orientation[1], obj.orientation[2],
+                orientation[0], orientation[1], orientation[2], orientation[3],
+                #obj.orientation[0], obj.orientation[1], obj.orientation[2],
                 obj.thrust[0], obj.thrust[1], obj.thrust[2],
                 obj.radius
                 ) )

@@ -49,12 +49,13 @@ class PhysicsObject:
                     object_type = "Unknown"):
         self.universe = universe
         self.phys_id = universe.get_id()
-        self.position = Vector3(position) if position else None
-        self.velocity = Vector3(velocity) if velocity else None
-        self.orientation = Vector3(orientation) if orientation else None
+        self.position = Vector3(position) if position != None else None
+        self.velocity = Vector3(velocity) if velocity != None else None
+        self.from_orientation(orientation if orientation != None else [ 1.0, 0.0, 0.0, 0.0 ])
+        self.ang_velocity = Vector3([ 0.0, 0.0, 0.0 ])
         self.mass = mass
         self.radius = radius
-        self.thrust = Vector3(thrust) if thrust else None
+        self.thrust = Vector3(thrust) if thrust != None else None
         self.object_type = object_type
         self.art_id = None
         self.health = self.mass * 1000000 if self.mass != None else None
@@ -63,6 +64,9 @@ class PhysicsObject:
             self.emits_gravity = PhysicsObject.is_big_enough(self.mass, self.radius)
         else:
             self.emits_gravity = 0
+
+    def from_orientation(self, o):
+        [ self.forward, self.up, self.right ] = Vector3.from_orientation(o)
 
     def handle(self, msg):
         pass
@@ -78,6 +82,8 @@ class PhysicsObject:
         self.velocity.x += dt * acc.x
         self.velocity.y += dt * acc.y
         self.velocity.z += dt * acc.z
+
+        Vector3.apply_ypr(self.forward, self.up, self.right, self.ang_velocity)
 
     @staticmethod
     def collide(obj1, obj2, dt):
@@ -277,7 +283,7 @@ class SmartPhysicsObject(PhysicsObject):
             # ### TODO ### In any real language, we'll need to figure out who
             # still is keeping track of this object if the universe isn't...
             self.universe.expired.append(self)
-            
+
         elif isinstance(msg, PhysicalPropertiesMsg):
             if msg.object_type != None:
                 self.object_type = msg.object_type
@@ -298,7 +304,7 @@ class SmartPhysicsObject(PhysicsObject):
                     self.velocity.add(Vector3(msg.velocity))
 
             if msg.orientation != None:
-                self.orientation = Vector3(msg.orientation)
+                self.from_orientation(msg.orientation)
 
             if msg.thrust != None:
                 self.thrust = Vector3(msg.thrust)
@@ -314,8 +320,8 @@ class SmartPhysicsObject(PhysicsObject):
 
             # Check for when we finally have a fully defined object.
             if (self.exists == 0 and self.object_type != None and self.mass != None and
-                self.radius != None and self.position != None and 
-                self.velocity != None and self.orientation != None and self.thrust != None):
+                self.radius != None and self.position != None and
+                self.velocity != None and self.thrust != None):
 
                 if self.parent_phys_id != None:
                     parent = self.universe.smarties[self.parent_phys_id]
@@ -355,7 +361,7 @@ class SmartPhysicsObject(PhysicsObject):
             msg.velocity[0] += self.velocity.x
             msg.velocity[0] += self.velocity.y
             msg.velocity[0] += self.velocity.z
-            
+
             beam = Beam.build(msg, self.universe)
 
             if msg.beam_type == "COMM":
@@ -384,7 +390,7 @@ class SmartPhysicsObject(PhysicsObject):
 
 class Beam:
     solid_angle_factor = 2 / pi
-    
+
     def __init__(self, universe,
                     origin, direction,
                     up, right, cosines, area_factor, velocity,
@@ -426,7 +432,7 @@ class Beam:
         proj_s = [ ps.project_down_n(b.up), ps.project_down_n(b.right) ]
         proj_s[0].normalize()
         proj_s[1].normalize()
-        
+
         proj_e = [ pe.project_down_n(b.up), pe.project_down_n(b.right) ]
         proj_e[0].normalize()
         proj_e[1].normalize()
@@ -437,14 +443,14 @@ class Beam:
 
         # Note that cosine decreses from 1 to -1 as the angle goes from 0 to 180.
         # We are inside, if we are > than the cosine of our beam.
-        
+
         current = [ proj_s[0].dot(b.direction), proj_s[1].dot(b.direction) ]
-        future = [ proj_s[0].dot(b.direction), proj_s[1].dot(b.direction) ]
+        future =  [ proj_e[0].dot(b.direction), proj_e[1].dot(b.direction) ]
         delta = [ future[0] - current[0], future[1] - current[1] ]
 
         current_b = [ int(current[0] >= b.cosines[0]), int(current[1] >= b.cosines[1]) ]
-        future_b = [ int(future[0] >= b.cosines[0]), int(future[1] >= b.cosines[1]) ]
-        
+        future_b =  [ int(future[0] >= b.cosines[0]), int(future[1] >= b.cosines[1]) ]
+
         entering = 0.0
         leaving = 1.0
 
@@ -490,7 +496,7 @@ class Beam:
 
             energy_factor = 1 if (wave_front_area < object_surface) else (object_surface / wave_front_area)
             energy = b.energy * energy_factor
-            
+
             return [t, energy, b.direction, collision_point, None]
         else:
             return -1

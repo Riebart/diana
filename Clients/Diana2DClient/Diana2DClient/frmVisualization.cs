@@ -67,8 +67,8 @@ namespace Diana2DClient
         void StartReaderThread(Smarty smarty)
         {
             readerThread = new Thread(new ParameterizedThreadStart(this.SocketReader));
-            readerThread.Start(smarty);
             reading = true;
+            readerThread.Start(smarty);
         }
 
         void SocketReader(object arg)
