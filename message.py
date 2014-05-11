@@ -47,10 +47,12 @@ class Message:
 
             try:
                 cur_msg = client.recv(cur_read)
+            except socket.timeout as e:
+                raise e
             except:
                 if client.fileno() == -1:
                     return None
-                    
+
                 print "There was an error getting message from client %d" % client.fileno()
                 print "Error:", sys.exc_info()
                 return None
@@ -217,7 +219,7 @@ class Message:
     def read_int(sa):
         s = sa[0]
         del sa[0]
-        
+
         if s != "":
             try:
                 f = int(s)
@@ -237,7 +239,7 @@ class Message:
     def read_mesh(sa):
         m = sa[0]
         del sa[0]
-        
+
         if m != "":
             return m
         else:
@@ -251,7 +253,7 @@ class Message:
     def read_texture(sa):
         t = sa[0]
         del sa[0]
-        
+
         if t != "":
             return t
         else:
@@ -571,7 +573,7 @@ class SpawnMsg(Message):
         self.mass = Message.read_double(s)
         self.position = Message.read_double3(s)
         self.velocity = Message.read_double3(s)
-        self.orientation = Message.read_double3(s)
+        self.orientation = Message.read_double4(s)
         self.thrust = Message.read_double3(s)
         self.radius = Message.read_double(s)
 
@@ -584,7 +586,7 @@ class SpawnMsg(Message):
     def send(client, srv_id, cli_id, args):
         msg = "SPAWN\n%s\n" % args[0]
 
-        for i in range(1,15):
+        for i in range(1,16):
             msg += Message.prep_double(args[i]) + "\n"
 
         ret = Message.sendall(client, srv_id, cli_id, msg)
@@ -615,7 +617,7 @@ class ScanResultMsg(Message):
 
         for i in range(1,15):
             msg += Message.prep_double(args[i]) + "\n"
-        
+
         if (len(args) > 15):
             msg += str(args[15])
 
@@ -632,13 +634,13 @@ class ScanQueryMsg(Message):
 
     #def sendto(self, client):
         #ScanQueryMsg.send(client, self.srv_id, self.cli_id, [self.scan_id, self.scan_power] + self.scan_dir)
-    
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "SCANQUERY\n%d\n" % args[0]
         for i in range (1,5):
             msg += Message.prep_double(args[i]) + "\n"
-            
+
         ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class ScanResponseMsg(Message):
@@ -650,14 +652,14 @@ class ScanResponseMsg(Message):
 
     #def sendto(self, client):
         #ScanResponseMsg.send(client, self.srv_id, self.cli_id, [ self.scan_id ] + self.parms)
-    
+
     @staticmethod
     def send(client, srv_id, cli_id, args):
         msg = "SCANRESP\n%d\n" % args[0]
-        
+
         for i in args[1:]:
             msg += str(i)
-            
+
         ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class GoodbyeMsg(Message):
@@ -671,7 +673,7 @@ class GoodbyeMsg(Message):
     @staticmethod
     def send(client, srv_id, cli_id):
         msg = "GOODBYE\n"
-        
+
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
@@ -800,7 +802,7 @@ class RequestUpdateMsg(Message):
 
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
-    
+
 
 MessageTypes = { "HELLO": HelloMsg,
                 "PHYSPROPS": PhysicalPropertiesMsg,

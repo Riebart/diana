@@ -16,6 +16,10 @@ class Vector3:
 
     @staticmethod
     def easy_look_at2(forward, up, right, look):
+        # Produce a new set of forward, up, right vectors build from an existing
+        # set, and a new look direction. Do this by taking the cross-product of
+        # of the difference between forward, and the new look, then crossing again
+        # to get the up.
         diff = look - forward
 
         if diff.almost_zero:
@@ -31,6 +35,10 @@ class Vector3:
 
     @staticmethod
     def look_at(forward, up, right, look):
+        # Rotate an existing frame of reference to point along a new direction.
+        # Do this by finding the axis of most efficient rotation that would
+        # produce the new look vector, then rotate the up and right vectors
+        # around that axis, by the same amount.
         diff = look - forward
 
         if diff.almost_zero:
@@ -45,10 +53,14 @@ class Vector3:
 
     @staticmethod
     def get_orientation(forward, up, right):
+        # Turn the three vectors in a four-tuple that uniquely defines then
+        # orientation basis vectors, assuming they are unit vectors.
         return [ forward.x, forward.y, up.x, up.y ]
 
     @staticmethod
     def from_orientation(o):
+        # Build the three orientation basis vectors from the orientation
+        # 4-tuple
         forward = Vector3([o[0], o[1], sqrt(1 - o[0] * o[0] - o[1] * o[1])])
         up = Vector3([o[2], o[3], sqrt(1 - o[2] * o[2] - o[3] * o[3])])
         right = Vector3.cross(up, forward)
@@ -56,6 +68,7 @@ class Vector3:
         return [ forward, up, right ]
 
     def rotate_aroundV(self, axis, angle):
+        # Rotate a vector around an axis, by an angle in radians.
         self.rotate_around(axis.x, axis.y, axis.z, angle)
 
     # ### TODO ### Apply the Euler-Rodrigues forumla here instead.
@@ -82,6 +95,8 @@ class Vector3:
 
     @staticmethod
     def apply_ypr(forward, up, right, angles):
+        # Apply yaw, pitch, and roll.
+        # Order matters here, and changing the order changes the result.
         forward.rotate_aroundV(up, angles[0])
         right.rotate_aroundV(up, angles[0])
 

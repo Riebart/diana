@@ -47,7 +47,7 @@ def spawn_some_asteroids(n = 25):
         position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), 0 * a * sin(v) ]
         mass = rand.random() * 2500 + 7500
         radius = 10 + rand.random() * 20
-        orientation = [0,0,0]
+        orientation = [0,0,0,0]
         thrust = [0,0,0]
         object_type = "Asteroid " + str(i)
 
@@ -86,7 +86,7 @@ def spawn_some_planets(n = 5):
         position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ]
         mass = rand.random() * 100000000 + 1e15,
         radius = 500000 + rand.random() * 2000000,
-        orientation = [0,0,0]
+        orientation = [0,0,0,0]
         thrust = [0,0,0]
         object_type = "Planet " + str(i)
 
@@ -112,22 +112,22 @@ def basic_collision():
     ball_radius = 1
 
     # Collinear collisions
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
     # Slightly skewed
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
 
     # Some different sizes
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
+    SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
@@ -170,14 +170,15 @@ def pool_rack():
             SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
             ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0,
             0, 0, 0,
-            1, 0, 0,
+            0, 0, 0, 0,
             0, 0, 0, ball_radius ])
 
     # This makes us a cue ball
     SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass,
     0, -25, 0,
     0, 10, 0,
-    0, 0, 0, 0, 0, 0, ball_radius ])
+    0, 0, 0, 0,
+    0, 0, 0, ball_radius ])
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()

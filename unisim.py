@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 
+## Source file for the universe
+#
+# Includes art curation and physical computation, and its main method starts
+# the universe server. Under normal circumstances, nothing should ever be interfacing
+# directly with either of these, as art is only to clients via object-sim, and
+# physics objects are only perceived via scanning/visualization.
+#
+# The one exception is a global visualization, which is technically an out-of-band
+# interaction, and is not part of the 'normal' flow.
+#
+# The main method, when this script is called, starts the server and begins performing
+# physics simulations. A universe is instantiated, its simulation started, and
+# the necessary TCP listener is bound.
+# @file unisim.py
+
 import sys
 import threading
 import time
@@ -13,6 +28,14 @@ from message import VisualMetaDataEnableMsg, VisualMetaDataMsg, ScanResponseMsg
 
 VERSION = 0
 
+## Hold up using sleep for a length of time.
+#
+# Since sleep may return early, this ensures that we sleep for at least as
+# long as our intended duration.
+# @param function The function to call before waiting.
+# @param args Arguments to pass to the function call.
+# @param frametime The minimum time to hold up execution.
+# @return The total amount of time execution was held up by.
 def hold_up(function, args, frametime):
     t1 = time.clock()
 
@@ -31,13 +54,22 @@ def hold_up(function, args, frametime):
 
     return dt
 
+## Curator of art assets including meshes, textures, and other information.
 class ArtCurator:
+    ## Defines an art asset which is a mesh and a texture.
+    # @param art_id A unique art ID in this universe. Set sequentially by the curator.
+    # @param mesh Mesh, if it applies.
+    # @param texture Texture, if it applies.
     class ArtAsset:
         def __init__(self, art_id, mesh, texture):
             self.art_id = art_id
             self.mesh = mesh
             self.texture = texture
 
+    ## Constructor for the art curator.
+    #
+    # Associates itself with a universe, and allows art objects to be registered.
+    # @param universe Universe to associate with. Not currently used.
     def __init__(self, universe):
         self.universe = universe
         self.art_assets = dict()
@@ -46,6 +78,11 @@ class ArtCurator:
         self.clients = []
         self.total_art = 0
 
+    ## Registers clients to receive art updates.
+    #
+    # When a new art asset is added, registered clients are sent the asset.
+    # @param client Client to (un)register for art updates.
+    # @param yesno Whether to register, or degregister, the client.
     def register_client(self, client, yesno):
         if yesno == 0:
             self.clients.remove(client)
@@ -240,7 +277,6 @@ class Universe:
         self.phys_lock = threading.Lock()
         self.vis_client_lock = threading.Lock()
 
-        # ### PARAMETER ###  UNIVERSE TCP PORT
         self.net = MIMOServer(self.handle_message, self.hangup_objects, port = port_arg)
         self.sim_thread = Universe.ThreadSim(self)
         self.curator = ArtCurator(self)
@@ -259,7 +295,6 @@ class Universe:
 
     def start_net(self):
         self.net.start()
-        # ### PARAMETER ### Minimum time between VISDATA updates
         self.visdata_thread = Universe.ThreadVisData(self, self.vis_frametime)
         self.visdata_thread.start()
 
@@ -350,7 +385,6 @@ class Universe:
                     sent_something = 1
 
                 if ret == 0:
-                    c.vis_data = 0
                     for_removal.append(c)
                     break
 
@@ -362,9 +396,7 @@ class Universe:
                 #ret = VisualDataMsg.send(c.client, c.phys_id, c.osim_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
 
             if ret == 0:
-                c.vis_data = 0
                 for_removal.append(c)
-                break
 
         for c in for_removal:
             if c in self.vis_data_clients:
@@ -477,11 +509,6 @@ class Universe:
     # Number of real seconds and a rate of simulation together will rate-limit
     # the simulation
     def sim(self, t = 0, r = 1):
-        ## ### PARAMETER ###  MINIMUM FRAME TIME
-        #min_frametime = 0.0001
-        ## ### PARAMETER ###  MAXIMUM FRAME TIME
-        #max_frametime = 0.0001
-
         total_time = 0;
         dt = 0.01
         i = 0
@@ -502,6 +529,7 @@ class Universe:
     def get_frametime(self):
         return [[self.frametime, self.real_frametime], self.visdata_thread.frametime]
 
+## Defines the usage when calling
 def usage():
     print "Usage: unisim.py [-p/--port] [-m/--min-phys-time] [-M/--max-phys-time] [-v/--vis-data-rate]"
     print ""
@@ -521,7 +549,7 @@ def usage():
     print "The minimum time between the sending of visualization data out to registered vis clients."
     print "    Default: 0.0001s"
 
-if __name__ == "__main__":
+def main():
     port = 5505
     min_phys_time = 0.0001
     max_phys_time = 0.0001
@@ -586,3 +614,6 @@ if __name__ == "__main__":
     print "Stopping network"
     uni.stop_net()
     print "Stopped"
+
+if __name__ == "__main__":
+    main()
