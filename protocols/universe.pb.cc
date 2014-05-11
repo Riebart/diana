@@ -85,8 +85,9 @@ void protobuf_AssignDesc_universe_2eproto() {
       "universe.proto");
   GOOGLE_CHECK(file != NULL);
   MessageWrapper_descriptor_ = file->message_type(0);
-  static const int MessageWrapper_offsets_[15] = {
+  static const int MessageWrapper_offsets_[17] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, messagetype_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, objectid_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, hellomsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, goodbyemsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, physpropsmsg_),
@@ -96,6 +97,7 @@ void protobuf_AssignDesc_universe_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanresultmsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanquerymsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, scanrespmsg_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, directorymsg_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, visprops_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, visdataenable_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageWrapper, vismetadataenable_),
@@ -504,77 +506,79 @@ void protobuf_AddDesc_universe_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\016universe.proto\022\010universe\"\226\007\n\016MessageWr"
+    "\n\016universe.proto\022\010universe\"\326\007\n\016MessageWr"
     "apper\0229\n\013messageType\030\001 \002(\0162$.universe.Me"
-    "ssageWrapper.MessageType\022$\n\010helloMsg\030\002 \001"
-    "(\0132\022.universe.HelloMsg\022(\n\ngoodByeMsg\030\003 \001"
-    "(\0132\024.universe.GoodbyeMsg\022,\n\014physPropsMsg"
-    "\030\004 \001(\0132\026.universe.PhysPropsMsg\022,\n\014collis"
-    "ionMsg\030\005 \001(\0132\026.universe.CollisionMsg\022$\n\010"
-    "spawnMsg\030\006 \001(\0132\022.universe.SpawnMsg\022\"\n\007be"
-    "amMsg\030\007 \001(\0132\021.universe.BeamMsg\022.\n\rscanRe"
-    "sultMsg\030\010 \001(\0132\027.universe.ScanResultMsg\022,"
-    "\n\014scanQueryMsg\030\t \001(\0132\026.universe.ScanQuer"
-    "yMsg\022*\n\013scanRespMsg\030\n \001(\0132\025.universe.Sca"
-    "nRespMsg\022$\n\010visProps\030d \001(\0132\022.universe.Vi"
-    "sProps\022.\n\rvisDataEnable\030e \001(\0132\027.universe"
-    ".VisDataEnable\0226\n\021visMetaDataEnable\030f \001("
-    "\0132\033.universe.VisMetaDataEnable\022*\n\013visMet"
-    "aData\030g \001(\0132\025.universe.VisMetaData\022\"\n\007vi"
-    "sData\030h \001(\0132\021.universe.VisData\"\352\001\n\013Messa"
-    "geType\022\t\n\005HELLO\020\002\022\013\n\007GOODBYE\020\003\022\r\n\tPHYSPR"
-    "OPS\020\004\022\r\n\tCOLLISION\020\005\022\t\n\005SPAWN\020\006\022\010\n\004BEAM\020"
-    "\007\022\016\n\nSCANRESULT\020\010\022\r\n\tSCANQUERY\020\t\022\014\n\010SCAN"
-    "RESP\020\n\022\r\n\tDIRECTORY\020\013\022\014\n\010VISPROPS\020d\022\021\n\rV"
-    "ISDATAENABLE\020e\022\025\n\021VISMETADATAENABLE\020f\022\017\n"
-    "\013VISMETADATA\020g\022\013\n\007VISDATA\020h\",\n\tVectorMsg"
-    "\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z\030\003 \002(\001\"\037\n\010Hel"
-    "loMsg\022\023\n\004name\030\001 \001(\t:\005HELLO\"\342\001\n\014PhysProps"
-    "Msg\022\027\n\004name\030\001 \001(\t:\tPHYSPROPS\022\014\n\004mass\030\002 \001"
-    "(\001\022%\n\010position\030\003 \001(\0132\023.universe.VectorMs"
-    "g\022%\n\010velocity\030\004 \001(\0132\023.universe.VectorMsg"
-    "\022(\n\013orientation\030\005 \001(\0132\023.universe.VectorM"
-    "sg\022#\n\006thrust\030\006 \001(\0132\023.universe.VectorMsg\022"
-    "\016\n\006radius\030\007 \001(\001\"#\n\nGoodbyeMsg\022\025\n\004name\030\001 "
-    "\001(\t:\007GOODBYE\"\270\002\n\014CollisionMsg\022\027\n\004name\030\001 "
-    "\001(\t:\tCOLLISION\022%\n\010position\030\002 \002(\0132\023.unive"
-    "rse.VectorMsg\022&\n\tdirection\030\003 \002(\0132\023.unive"
-    "rse.VectorMsg\022\016\n\006energy\030\004 \002(\001\022;\n\rcollisi"
-    "onType\030\005 \002(\0162$.universe.CollisionMsg.Col"
-    "lisionType\022\022\n\ncommString\030\006 \001(\t\"_\n\rCollis"
-    "ionType\022\022\n\016PHYS_COLLISION\020\001\022\022\n\016SCAN_COLL"
-    "ISION\020\002\022\022\n\016WEAP_COLLISION\020\003\022\022\n\016COMM_COLL"
-    "ISION\020\004\"\332\001\n\010SpawnMsg\022\023\n\004name\030\001 \001(\t:\005SPAW"
-    "N\022\014\n\004mass\030\002 \002(\001\022%\n\010position\030\003 \002(\0132\023.univ"
-    "erse.VectorMsg\022%\n\010velocity\030\004 \002(\0132\023.unive"
-    "rse.VectorMsg\022(\n\013orientation\030\005 \002(\0132\023.uni"
-    "verse.VectorMsg\022#\n\006thrust\030\006 \002(\0132\023.univer"
-    "se.VectorMsg\022\016\n\006radius\030\007 \002(\001\"\"\n\010VisProps"
-    "\022\026\n\004name\030\001 \001(\t:\010VISPROPS\",\n\rVisDataEnabl"
-    "e\022\033\n\004name\030\001 \001(\t:\rVISDATAENABLE\" \n\007VisDat"
-    "a\022\025\n\004name\030\001 \001(\t:\007VISDATA\"(\n\013VisMetaData\022"
-    "\031\n\004name\030\001 \001(\t:\013VISMETADATA\"4\n\021VisMetaDat"
-    "aEnable\022\037\n\004name\030\001 \001(\t:\021VISMETADATAENABLE"
-    "\"\252\002\n\007BeamMsg\022\022\n\004name\030\001 \001(\t:\004BEAM\022#\n\006orig"
-    "in\030\002 \002(\0132\023.universe.VectorMsg\022%\n\010velocit"
-    "y\030\003 \002(\0132\023.universe.VectorMsg\022\037\n\002up\030\004 \002(\013"
-    "2\023.universe.VectorMsg\022\020\n\010spread_h\030\005 \002(\001\022"
-    "\020\n\010spread_v\030\006 \002(\001\022\016\n\006energy\030\007 \002(\001\022,\n\010bea"
-    "mType\030\010 \002(\0162\032.universe.BeamMsg.BeamType\022"
-    "\022\n\ncommString\030\t \001(\t\"(\n\010BeamType\022\010\n\004SCAN\020"
-    "\001\022\010\n\004WEAP\020\002\022\010\n\004COMM\020\003\"\370\001\n\rScanResultMsg\022"
-    "\030\n\004name\030\001 \001(\t:\nSCANRESULT\022\014\n\004mass\030\002 \002(\001\022"
+    "ssageWrapper.MessageType\022\020\n\010objectID\030\002 \001"
+    "(\004\022$\n\010helloMsg\030\003 \001(\0132\022.universe.HelloMsg"
+    "\022(\n\ngoodByeMsg\030\004 \001(\0132\024.universe.GoodbyeM"
+    "sg\022,\n\014physPropsMsg\030\n \001(\0132\026.universe.Phys"
+    "PropsMsg\022,\n\014collisionMsg\030\013 \001(\0132\026.univers"
+    "e.CollisionMsg\022$\n\010spawnMsg\030\014 \001(\0132\022.unive"
+    "rse.SpawnMsg\022\"\n\007beamMsg\030\r \001(\0132\021.universe"
+    ".BeamMsg\022.\n\rscanResultMsg\030\016 \001(\0132\027.univer"
+    "se.ScanResultMsg\022,\n\014scanQueryMsg\030\017 \001(\0132\026"
+    ".universe.ScanQueryMsg\022*\n\013scanRespMsg\030\020 "
+    "\001(\0132\025.universe.ScanRespMsg\022,\n\014directoryM"
+    "sg\030\021 \001(\0132\026.universe.DirectoryMsg\022$\n\010visP"
+    "rops\030d \001(\0132\022.universe.VisProps\022.\n\rvisDat"
+    "aEnable\030e \001(\0132\027.universe.VisDataEnable\0226"
+    "\n\021visMetaDataEnable\030f \001(\0132\033.universe.Vis"
+    "MetaDataEnable\022*\n\013visMetaData\030g \001(\0132\025.un"
+    "iverse.VisMetaData\022\"\n\007visData\030h \001(\0132\021.un"
+    "iverse.VisData\"\352\001\n\013MessageType\022\t\n\005HELLO\020"
+    "\003\022\013\n\007GOODBYE\020\004\022\r\n\tPHYSPROPS\020\n\022\r\n\tCOLLISI"
+    "ON\020\013\022\t\n\005SPAWN\020\014\022\010\n\004BEAM\020\r\022\016\n\nSCANRESULT\020"
+    "\016\022\r\n\tSCANQUERY\020\017\022\014\n\010SCANRESP\020\020\022\r\n\tDIRECT"
+    "ORY\020\021\022\014\n\010VISPROPS\020d\022\021\n\rVISDATAENABLE\020e\022\025"
+    "\n\021VISMETADATAENABLE\020f\022\017\n\013VISMETADATA\020g\022\013"
+    "\n\007VISDATA\020h\",\n\tVectorMsg\022\t\n\001x\030\001 \002(\001\022\t\n\001y"
+    "\030\002 \002(\001\022\t\n\001z\030\003 \002(\001\"\037\n\010HelloMsg\022\023\n\004name\030\001 "
+    "\001(\t:\005HELLO\"\342\001\n\014PhysPropsMsg\022\027\n\004name\030\001 \001("
+    "\t:\tPHYSPROPS\022\014\n\004mass\030\002 \001(\001\022%\n\010position\030\003"
+    " \001(\0132\023.universe.VectorMsg\022%\n\010velocity\030\004 "
+    "\001(\0132\023.universe.VectorMsg\022(\n\013orientation\030"
+    "\005 \001(\0132\023.universe.VectorMsg\022#\n\006thrust\030\006 \001"
+    "(\0132\023.universe.VectorMsg\022\016\n\006radius\030\007 \001(\001\""
+    "#\n\nGoodbyeMsg\022\025\n\004name\030\001 \001(\t:\007GOODBYE\"\270\002\n"
+    "\014CollisionMsg\022\027\n\004name\030\001 \001(\t:\tCOLLISION\022%"
+    "\n\010position\030\002 \002(\0132\023.universe.VectorMsg\022&\n"
+    "\tdirection\030\003 \002(\0132\023.universe.VectorMsg\022\016\n"
+    "\006energy\030\004 \002(\001\022;\n\rcollisionType\030\005 \002(\0162$.u"
+    "niverse.CollisionMsg.CollisionType\022\022\n\nco"
+    "mmString\030\006 \001(\t\"_\n\rCollisionType\022\022\n\016PHYS_"
+    "COLLISION\020\001\022\022\n\016SCAN_COLLISION\020\002\022\022\n\016WEAP_"
+    "COLLISION\020\003\022\022\n\016COMM_COLLISION\020\004\"\332\001\n\010Spaw"
+    "nMsg\022\023\n\004name\030\001 \001(\t:\005SPAWN\022\014\n\004mass\030\002 \002(\001\022"
     "%\n\010position\030\003 \002(\0132\023.universe.VectorMsg\022%"
     "\n\010velocity\030\004 \002(\0132\023.universe.VectorMsg\022(\n"
     "\013orientation\030\005 \002(\0132\023.universe.VectorMsg\022"
     "#\n\006thrust\030\006 \002(\0132\023.universe.VectorMsg\022\016\n\006"
-    "radius\030\007 \002(\001\022\022\n\nextraParms\030\010 \001(\t\"p\n\014Scan"
-    "QueryMsg\022\027\n\004name\030\001 \001(\t:\tSCANQUERY\022\016\n\006sca"
-    "nID\030\002 \002(\005\022\021\n\tscanPower\030\003 \002(\001\022$\n\007scanDir\030"
-    "\004 \002(\0132\023.universe.VectorMsg\"D\n\013ScanRespMs"
-    "g\022\026\n\004name\030\001 \001(\t:\010SCANRESP\022\016\n\006scanID\030\002 \002("
-    "\005\022\r\n\005parms\030\003 \002(\t\"\'\n\014DirectoryMsg\022\027\n\004name"
-    "\030\001 \001(\t:\tDIRECTORY", 2817);
+    "radius\030\007 \002(\001\"\"\n\010VisProps\022\026\n\004name\030\001 \001(\t:\010"
+    "VISPROPS\",\n\rVisDataEnable\022\033\n\004name\030\001 \001(\t:"
+    "\rVISDATAENABLE\" \n\007VisData\022\025\n\004name\030\001 \001(\t:"
+    "\007VISDATA\"(\n\013VisMetaData\022\031\n\004name\030\001 \001(\t:\013V"
+    "ISMETADATA\"4\n\021VisMetaDataEnable\022\037\n\004name\030"
+    "\001 \001(\t:\021VISMETADATAENABLE\"\252\002\n\007BeamMsg\022\022\n\004"
+    "name\030\001 \001(\t:\004BEAM\022#\n\006origin\030\002 \002(\0132\023.unive"
+    "rse.VectorMsg\022%\n\010velocity\030\003 \002(\0132\023.univer"
+    "se.VectorMsg\022\037\n\002up\030\004 \002(\0132\023.universe.Vect"
+    "orMsg\022\020\n\010spread_h\030\005 \002(\001\022\020\n\010spread_v\030\006 \002("
+    "\001\022\016\n\006energy\030\007 \002(\001\022,\n\010beamType\030\010 \002(\0162\032.un"
+    "iverse.BeamMsg.BeamType\022\022\n\ncommString\030\t "
+    "\001(\t\"(\n\010BeamType\022\010\n\004SCAN\020\001\022\010\n\004WEAP\020\002\022\010\n\004C"
+    "OMM\020\003\"\370\001\n\rScanResultMsg\022\030\n\004name\030\001 \001(\t:\nS"
+    "CANRESULT\022\014\n\004mass\030\002 \002(\001\022%\n\010position\030\003 \002("
+    "\0132\023.universe.VectorMsg\022%\n\010velocity\030\004 \002(\013"
+    "2\023.universe.VectorMsg\022(\n\013orientation\030\005 \002"
+    "(\0132\023.universe.VectorMsg\022#\n\006thrust\030\006 \002(\0132"
+    "\023.universe.VectorMsg\022\016\n\006radius\030\007 \002(\001\022\022\n\n"
+    "extraParms\030\010 \001(\t\"p\n\014ScanQueryMsg\022\027\n\004name"
+    "\030\001 \001(\t:\tSCANQUERY\022\016\n\006scanID\030\002 \002(\005\022\021\n\tsca"
+    "nPower\030\003 \002(\001\022$\n\007scanDir\030\004 \002(\0132\023.universe"
+    ".VectorMsg\"D\n\013ScanRespMsg\022\026\n\004name\030\001 \001(\t:"
+    "\010SCANRESP\022\016\n\006scanID\030\002 \002(\005\022\r\n\005parms\030\003 \002(\t"
+    "\"\'\n\014DirectoryMsg\022\027\n\004name\030\001 \001(\t:\tDIRECTOR"
+    "Y", 2881);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "universe.proto", &protobuf_RegisterTypes);
   MessageWrapper::default_instance_ = new MessageWrapper();
@@ -659,16 +663,16 @@ const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor(
 }
 bool MessageWrapper_MessageType_IsValid(int value) {
   switch(value) {
-    case 2:
     case 3:
     case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
     case 10:
     case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
     case 100:
     case 101:
     case 102:
@@ -702,6 +706,7 @@ const int MessageWrapper::MessageType_ARRAYSIZE;
 #endif  // _MSC_VER
 #ifndef _MSC_VER
 const int MessageWrapper::kMessageTypeFieldNumber;
+const int MessageWrapper::kObjectIDFieldNumber;
 const int MessageWrapper::kHelloMsgFieldNumber;
 const int MessageWrapper::kGoodByeMsgFieldNumber;
 const int MessageWrapper::kPhysPropsMsgFieldNumber;
@@ -711,6 +716,7 @@ const int MessageWrapper::kBeamMsgFieldNumber;
 const int MessageWrapper::kScanResultMsgFieldNumber;
 const int MessageWrapper::kScanQueryMsgFieldNumber;
 const int MessageWrapper::kScanRespMsgFieldNumber;
+const int MessageWrapper::kDirectoryMsgFieldNumber;
 const int MessageWrapper::kVisPropsFieldNumber;
 const int MessageWrapper::kVisDataEnableFieldNumber;
 const int MessageWrapper::kVisMetaDataEnableFieldNumber;
@@ -733,6 +739,7 @@ void MessageWrapper::InitAsDefaultInstance() {
   scanresultmsg_ = const_cast< ::universe::ScanResultMsg*>(&::universe::ScanResultMsg::default_instance());
   scanquerymsg_ = const_cast< ::universe::ScanQueryMsg*>(&::universe::ScanQueryMsg::default_instance());
   scanrespmsg_ = const_cast< ::universe::ScanRespMsg*>(&::universe::ScanRespMsg::default_instance());
+  directorymsg_ = const_cast< ::universe::DirectoryMsg*>(&::universe::DirectoryMsg::default_instance());
   visprops_ = const_cast< ::universe::VisProps*>(&::universe::VisProps::default_instance());
   visdataenable_ = const_cast< ::universe::VisDataEnable*>(&::universe::VisDataEnable::default_instance());
   vismetadataenable_ = const_cast< ::universe::VisMetaDataEnable*>(&::universe::VisMetaDataEnable::default_instance());
@@ -748,7 +755,8 @@ MessageWrapper::MessageWrapper(const MessageWrapper& from)
 
 void MessageWrapper::SharedCtor() {
   _cached_size_ = 0;
-  messagetype_ = 2;
+  messagetype_ = 3;
+  objectid_ = GOOGLE_ULONGLONG(0);
   hellomsg_ = NULL;
   goodbyemsg_ = NULL;
   physpropsmsg_ = NULL;
@@ -758,6 +766,7 @@ void MessageWrapper::SharedCtor() {
   scanresultmsg_ = NULL;
   scanquerymsg_ = NULL;
   scanrespmsg_ = NULL;
+  directorymsg_ = NULL;
   visprops_ = NULL;
   visdataenable_ = NULL;
   vismetadataenable_ = NULL;
@@ -781,6 +790,7 @@ void MessageWrapper::SharedDtor() {
     delete scanresultmsg_;
     delete scanquerymsg_;
     delete scanrespmsg_;
+    delete directorymsg_;
     delete visprops_;
     delete visdataenable_;
     delete vismetadataenable_;
@@ -812,7 +822,8 @@ MessageWrapper* MessageWrapper::New() const {
 
 void MessageWrapper::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    messagetype_ = 2;
+    messagetype_ = 3;
+    objectid_ = GOOGLE_ULONGLONG(0);
     if (has_hellomsg()) {
       if (hellomsg_ != NULL) hellomsg_->::universe::HelloMsg::Clear();
     }
@@ -831,16 +842,19 @@ void MessageWrapper::Clear() {
     if (has_beammsg()) {
       if (beammsg_ != NULL) beammsg_->::universe::BeamMsg::Clear();
     }
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (has_scanresultmsg()) {
       if (scanresultmsg_ != NULL) scanresultmsg_->::universe::ScanResultMsg::Clear();
     }
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (has_scanquerymsg()) {
       if (scanquerymsg_ != NULL) scanquerymsg_->::universe::ScanQueryMsg::Clear();
     }
     if (has_scanrespmsg()) {
       if (scanrespmsg_ != NULL) scanrespmsg_->::universe::ScanRespMsg::Clear();
+    }
+    if (has_directorymsg()) {
+      if (directorymsg_ != NULL) directorymsg_->::universe::DirectoryMsg::Clear();
     }
     if (has_visprops()) {
       if (visprops_ != NULL) visprops_->::universe::VisProps::Clear();
@@ -854,6 +868,8 @@ void MessageWrapper::Clear() {
     if (has_vismetadata()) {
       if (vismetadata_ != NULL) vismetadata_->::universe::VisMetaData::Clear();
     }
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     if (has_visdata()) {
       if (visdata_ != NULL) visdata_->::universe::VisData::Clear();
     }
@@ -884,12 +900,28 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_helloMsg;
+        if (input->ExpectTag(16)) goto parse_objectID;
         break;
       }
 
-      // optional .universe.HelloMsg helloMsg = 2;
+      // optional uint64 objectID = 2;
       case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_objectID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &objectid_)));
+          set_has_objectid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_helloMsg;
+        break;
+      }
+
+      // optional .universe.HelloMsg helloMsg = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_helloMsg:
@@ -898,12 +930,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_goodByeMsg;
+        if (input->ExpectTag(34)) goto parse_goodByeMsg;
         break;
       }
 
-      // optional .universe.GoodbyeMsg goodByeMsg = 3;
-      case 3: {
+      // optional .universe.GoodbyeMsg goodByeMsg = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_goodByeMsg:
@@ -912,12 +944,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_physPropsMsg;
+        if (input->ExpectTag(82)) goto parse_physPropsMsg;
         break;
       }
 
-      // optional .universe.PhysPropsMsg physPropsMsg = 4;
-      case 4: {
+      // optional .universe.PhysPropsMsg physPropsMsg = 10;
+      case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_physPropsMsg:
@@ -926,12 +958,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(42)) goto parse_collisionMsg;
+        if (input->ExpectTag(90)) goto parse_collisionMsg;
         break;
       }
 
-      // optional .universe.CollisionMsg collisionMsg = 5;
-      case 5: {
+      // optional .universe.CollisionMsg collisionMsg = 11;
+      case 11: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_collisionMsg:
@@ -940,12 +972,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_spawnMsg;
+        if (input->ExpectTag(98)) goto parse_spawnMsg;
         break;
       }
 
-      // optional .universe.SpawnMsg spawnMsg = 6;
-      case 6: {
+      // optional .universe.SpawnMsg spawnMsg = 12;
+      case 12: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_spawnMsg:
@@ -954,12 +986,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(58)) goto parse_beamMsg;
+        if (input->ExpectTag(106)) goto parse_beamMsg;
         break;
       }
 
-      // optional .universe.BeamMsg beamMsg = 7;
-      case 7: {
+      // optional .universe.BeamMsg beamMsg = 13;
+      case 13: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_beamMsg:
@@ -968,12 +1000,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(66)) goto parse_scanResultMsg;
+        if (input->ExpectTag(114)) goto parse_scanResultMsg;
         break;
       }
 
-      // optional .universe.ScanResultMsg scanResultMsg = 8;
-      case 8: {
+      // optional .universe.ScanResultMsg scanResultMsg = 14;
+      case 14: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_scanResultMsg:
@@ -982,12 +1014,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(74)) goto parse_scanQueryMsg;
+        if (input->ExpectTag(122)) goto parse_scanQueryMsg;
         break;
       }
 
-      // optional .universe.ScanQueryMsg scanQueryMsg = 9;
-      case 9: {
+      // optional .universe.ScanQueryMsg scanQueryMsg = 15;
+      case 15: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_scanQueryMsg:
@@ -996,17 +1028,31 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(82)) goto parse_scanRespMsg;
+        if (input->ExpectTag(130)) goto parse_scanRespMsg;
         break;
       }
 
-      // optional .universe.ScanRespMsg scanRespMsg = 10;
-      case 10: {
+      // optional .universe.ScanRespMsg scanRespMsg = 16;
+      case 16: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_scanRespMsg:
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_scanrespmsg()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(138)) goto parse_directoryMsg;
+        break;
+      }
+
+      // optional .universe.DirectoryMsg directoryMsg = 17;
+      case 17: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+         parse_directoryMsg:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_directorymsg()));
         } else {
           goto handle_uninterpreted;
         }
@@ -1108,58 +1154,69 @@ void MessageWrapper::SerializeWithCachedSizes(
       1, this->messagetype(), output);
   }
 
-  // optional .universe.HelloMsg helloMsg = 2;
+  // optional uint64 objectID = 2;
+  if (has_objectid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->objectid(), output);
+  }
+
+  // optional .universe.HelloMsg helloMsg = 3;
   if (has_hellomsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->hellomsg(), output);
+      3, this->hellomsg(), output);
   }
 
-  // optional .universe.GoodbyeMsg goodByeMsg = 3;
+  // optional .universe.GoodbyeMsg goodByeMsg = 4;
   if (has_goodbyemsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->goodbyemsg(), output);
+      4, this->goodbyemsg(), output);
   }
 
-  // optional .universe.PhysPropsMsg physPropsMsg = 4;
+  // optional .universe.PhysPropsMsg physPropsMsg = 10;
   if (has_physpropsmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->physpropsmsg(), output);
+      10, this->physpropsmsg(), output);
   }
 
-  // optional .universe.CollisionMsg collisionMsg = 5;
+  // optional .universe.CollisionMsg collisionMsg = 11;
   if (has_collisionmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      5, this->collisionmsg(), output);
+      11, this->collisionmsg(), output);
   }
 
-  // optional .universe.SpawnMsg spawnMsg = 6;
+  // optional .universe.SpawnMsg spawnMsg = 12;
   if (has_spawnmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->spawnmsg(), output);
+      12, this->spawnmsg(), output);
   }
 
-  // optional .universe.BeamMsg beamMsg = 7;
+  // optional .universe.BeamMsg beamMsg = 13;
   if (has_beammsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      7, this->beammsg(), output);
+      13, this->beammsg(), output);
   }
 
-  // optional .universe.ScanResultMsg scanResultMsg = 8;
+  // optional .universe.ScanResultMsg scanResultMsg = 14;
   if (has_scanresultmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      8, this->scanresultmsg(), output);
+      14, this->scanresultmsg(), output);
   }
 
-  // optional .universe.ScanQueryMsg scanQueryMsg = 9;
+  // optional .universe.ScanQueryMsg scanQueryMsg = 15;
   if (has_scanquerymsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      9, this->scanquerymsg(), output);
+      15, this->scanquerymsg(), output);
   }
 
-  // optional .universe.ScanRespMsg scanRespMsg = 10;
+  // optional .universe.ScanRespMsg scanRespMsg = 16;
   if (has_scanrespmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      10, this->scanrespmsg(), output);
+      16, this->scanrespmsg(), output);
+  }
+
+  // optional .universe.DirectoryMsg directoryMsg = 17;
+  if (has_directorymsg()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      17, this->directorymsg(), output);
   }
 
   // optional .universe.VisProps visProps = 100;
@@ -1206,67 +1263,79 @@ void MessageWrapper::SerializeWithCachedSizes(
       1, this->messagetype(), target);
   }
 
-  // optional .universe.HelloMsg helloMsg = 2;
+  // optional uint64 objectID = 2;
+  if (has_objectid()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(2, this->objectid(), target);
+  }
+
+  // optional .universe.HelloMsg helloMsg = 3;
   if (has_hellomsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        2, this->hellomsg(), target);
+        3, this->hellomsg(), target);
   }
 
-  // optional .universe.GoodbyeMsg goodByeMsg = 3;
+  // optional .universe.GoodbyeMsg goodByeMsg = 4;
   if (has_goodbyemsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        3, this->goodbyemsg(), target);
+        4, this->goodbyemsg(), target);
   }
 
-  // optional .universe.PhysPropsMsg physPropsMsg = 4;
+  // optional .universe.PhysPropsMsg physPropsMsg = 10;
   if (has_physpropsmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        4, this->physpropsmsg(), target);
+        10, this->physpropsmsg(), target);
   }
 
-  // optional .universe.CollisionMsg collisionMsg = 5;
+  // optional .universe.CollisionMsg collisionMsg = 11;
   if (has_collisionmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        5, this->collisionmsg(), target);
+        11, this->collisionmsg(), target);
   }
 
-  // optional .universe.SpawnMsg spawnMsg = 6;
+  // optional .universe.SpawnMsg spawnMsg = 12;
   if (has_spawnmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        6, this->spawnmsg(), target);
+        12, this->spawnmsg(), target);
   }
 
-  // optional .universe.BeamMsg beamMsg = 7;
+  // optional .universe.BeamMsg beamMsg = 13;
   if (has_beammsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        7, this->beammsg(), target);
+        13, this->beammsg(), target);
   }
 
-  // optional .universe.ScanResultMsg scanResultMsg = 8;
+  // optional .universe.ScanResultMsg scanResultMsg = 14;
   if (has_scanresultmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        8, this->scanresultmsg(), target);
+        14, this->scanresultmsg(), target);
   }
 
-  // optional .universe.ScanQueryMsg scanQueryMsg = 9;
+  // optional .universe.ScanQueryMsg scanQueryMsg = 15;
   if (has_scanquerymsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        9, this->scanquerymsg(), target);
+        15, this->scanquerymsg(), target);
   }
 
-  // optional .universe.ScanRespMsg scanRespMsg = 10;
+  // optional .universe.ScanRespMsg scanRespMsg = 16;
   if (has_scanrespmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        10, this->scanrespmsg(), target);
+        16, this->scanrespmsg(), target);
+  }
+
+  // optional .universe.DirectoryMsg directoryMsg = 17;
+  if (has_directorymsg()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        17, this->directorymsg(), target);
   }
 
   // optional .universe.VisProps visProps = 100;
@@ -1321,69 +1390,83 @@ int MessageWrapper::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->messagetype());
     }
 
-    // optional .universe.HelloMsg helloMsg = 2;
+    // optional uint64 objectID = 2;
+    if (has_objectid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->objectid());
+    }
+
+    // optional .universe.HelloMsg helloMsg = 3;
     if (has_hellomsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->hellomsg());
     }
 
-    // optional .universe.GoodbyeMsg goodByeMsg = 3;
+    // optional .universe.GoodbyeMsg goodByeMsg = 4;
     if (has_goodbyemsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->goodbyemsg());
     }
 
-    // optional .universe.PhysPropsMsg physPropsMsg = 4;
+    // optional .universe.PhysPropsMsg physPropsMsg = 10;
     if (has_physpropsmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->physpropsmsg());
     }
 
-    // optional .universe.CollisionMsg collisionMsg = 5;
+    // optional .universe.CollisionMsg collisionMsg = 11;
     if (has_collisionmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->collisionmsg());
     }
 
-    // optional .universe.SpawnMsg spawnMsg = 6;
+    // optional .universe.SpawnMsg spawnMsg = 12;
     if (has_spawnmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->spawnmsg());
     }
 
-    // optional .universe.BeamMsg beamMsg = 7;
+    // optional .universe.BeamMsg beamMsg = 13;
     if (has_beammsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->beammsg());
     }
 
-    // optional .universe.ScanResultMsg scanResultMsg = 8;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // optional .universe.ScanResultMsg scanResultMsg = 14;
     if (has_scanresultmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->scanresultmsg());
     }
 
-  }
-  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
-    // optional .universe.ScanQueryMsg scanQueryMsg = 9;
+    // optional .universe.ScanQueryMsg scanQueryMsg = 15;
     if (has_scanquerymsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->scanquerymsg());
     }
 
-    // optional .universe.ScanRespMsg scanRespMsg = 10;
+    // optional .universe.ScanRespMsg scanRespMsg = 16;
     if (has_scanrespmsg()) {
-      total_size += 1 +
+      total_size += 2 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->scanrespmsg());
+    }
+
+    // optional .universe.DirectoryMsg directoryMsg = 17;
+    if (has_directorymsg()) {
+      total_size += 2 +
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->directorymsg());
     }
 
     // optional .universe.VisProps visProps = 100;
@@ -1414,6 +1497,8 @@ int MessageWrapper::ByteSize() const {
           this->vismetadata());
     }
 
+  }
+  if (_has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     // optional .universe.VisData visData = 104;
     if (has_visdata()) {
       total_size += 2 +
@@ -1451,6 +1536,9 @@ void MessageWrapper::MergeFrom(const MessageWrapper& from) {
     if (from.has_messagetype()) {
       set_messagetype(from.messagetype());
     }
+    if (from.has_objectid()) {
+      set_objectid(from.objectid());
+    }
     if (from.has_hellomsg()) {
       mutable_hellomsg()->::universe::HelloMsg::MergeFrom(from.hellomsg());
     }
@@ -1469,16 +1557,19 @@ void MessageWrapper::MergeFrom(const MessageWrapper& from) {
     if (from.has_beammsg()) {
       mutable_beammsg()->::universe::BeamMsg::MergeFrom(from.beammsg());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_scanresultmsg()) {
       mutable_scanresultmsg()->::universe::ScanResultMsg::MergeFrom(from.scanresultmsg());
     }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_scanquerymsg()) {
       mutable_scanquerymsg()->::universe::ScanQueryMsg::MergeFrom(from.scanquerymsg());
     }
     if (from.has_scanrespmsg()) {
       mutable_scanrespmsg()->::universe::ScanRespMsg::MergeFrom(from.scanrespmsg());
+    }
+    if (from.has_directorymsg()) {
+      mutable_directorymsg()->::universe::DirectoryMsg::MergeFrom(from.directorymsg());
     }
     if (from.has_visprops()) {
       mutable_visprops()->::universe::VisProps::MergeFrom(from.visprops());
@@ -1492,6 +1583,8 @@ void MessageWrapper::MergeFrom(const MessageWrapper& from) {
     if (from.has_vismetadata()) {
       mutable_vismetadata()->::universe::VisMetaData::MergeFrom(from.vismetadata());
     }
+  }
+  if (from._has_bits_[16 / 32] & (0xffu << (16 % 32))) {
     if (from.has_visdata()) {
       mutable_visdata()->::universe::VisData::MergeFrom(from.visdata());
     }
@@ -1541,6 +1634,7 @@ bool MessageWrapper::IsInitialized() const {
 void MessageWrapper::Swap(MessageWrapper* other) {
   if (other != this) {
     std::swap(messagetype_, other->messagetype_);
+    std::swap(objectid_, other->objectid_);
     std::swap(hellomsg_, other->hellomsg_);
     std::swap(goodbyemsg_, other->goodbyemsg_);
     std::swap(physpropsmsg_, other->physpropsmsg_);
@@ -1550,6 +1644,7 @@ void MessageWrapper::Swap(MessageWrapper* other) {
     std::swap(scanresultmsg_, other->scanresultmsg_);
     std::swap(scanquerymsg_, other->scanquerymsg_);
     std::swap(scanrespmsg_, other->scanrespmsg_);
+    std::swap(directorymsg_, other->directorymsg_);
     std::swap(visprops_, other->visprops_);
     std::swap(visdataenable_, other->visdataenable_);
     std::swap(vismetadataenable_, other->vismetadataenable_);

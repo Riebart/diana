@@ -43,11 +43,11 @@ class InfoMsg;
 class RequestMsg;
 
 enum MessageWrapper_MessageType {
-  MessageWrapper_MessageType_THRUST = 1,
-  MessageWrapper_MessageType_VELOCITY = 2,
-  MessageWrapper_MessageType_JUMP = 3,
-  MessageWrapper_MessageType_INFO = 4,
-  MessageWrapper_MessageType_REQUEST = 5
+  MessageWrapper_MessageType_THRUST = 10,
+  MessageWrapper_MessageType_VELOCITY = 11,
+  MessageWrapper_MessageType_JUMP = 12,
+  MessageWrapper_MessageType_INFO = 13,
+  MessageWrapper_MessageType_REQUEST = 14
 };
 bool MessageWrapper_MessageType_IsValid(int value);
 const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MIN = MessageWrapper_MessageType_THRUST;
@@ -154,46 +154,46 @@ class MessageWrapper : public ::google::protobuf::Message {
   inline ::client::MessageWrapper_MessageType messagetype() const;
   inline void set_messagetype(::client::MessageWrapper_MessageType value);
 
-  // optional .client.ThrustMsg thrustMsg = 2;
+  // optional .client.ThrustMsg thrustMsg = 10;
   inline bool has_thrustmsg() const;
   inline void clear_thrustmsg();
-  static const int kThrustMsgFieldNumber = 2;
+  static const int kThrustMsgFieldNumber = 10;
   inline const ::client::ThrustMsg& thrustmsg() const;
   inline ::client::ThrustMsg* mutable_thrustmsg();
   inline ::client::ThrustMsg* release_thrustmsg();
   inline void set_allocated_thrustmsg(::client::ThrustMsg* thrustmsg);
 
-  // optional .client.VelocityMsg velocityMsg = 3;
+  // optional .client.VelocityMsg velocityMsg = 11;
   inline bool has_velocitymsg() const;
   inline void clear_velocitymsg();
-  static const int kVelocityMsgFieldNumber = 3;
+  static const int kVelocityMsgFieldNumber = 11;
   inline const ::client::VelocityMsg& velocitymsg() const;
   inline ::client::VelocityMsg* mutable_velocitymsg();
   inline ::client::VelocityMsg* release_velocitymsg();
   inline void set_allocated_velocitymsg(::client::VelocityMsg* velocitymsg);
 
-  // optional .client.JumpMsg jumpMsg = 4;
+  // optional .client.JumpMsg jumpMsg = 12;
   inline bool has_jumpmsg() const;
   inline void clear_jumpmsg();
-  static const int kJumpMsgFieldNumber = 4;
+  static const int kJumpMsgFieldNumber = 12;
   inline const ::client::JumpMsg& jumpmsg() const;
   inline ::client::JumpMsg* mutable_jumpmsg();
   inline ::client::JumpMsg* release_jumpmsg();
   inline void set_allocated_jumpmsg(::client::JumpMsg* jumpmsg);
 
-  // optional .client.InfoMsg infoMsg = 5;
+  // optional .client.InfoMsg infoMsg = 13;
   inline bool has_infomsg() const;
   inline void clear_infomsg();
-  static const int kInfoMsgFieldNumber = 5;
+  static const int kInfoMsgFieldNumber = 13;
   inline const ::client::InfoMsg& infomsg() const;
   inline ::client::InfoMsg* mutable_infomsg();
   inline ::client::InfoMsg* release_infomsg();
   inline void set_allocated_infomsg(::client::InfoMsg* infomsg);
 
-  // optional .client.RequestMsg requestMsg = 6;
+  // optional .client.RequestMsg requestMsg = 14;
   inline bool has_requestmsg() const;
   inline void clear_requestmsg();
-  static const int kRequestMsgFieldNumber = 6;
+  static const int kRequestMsgFieldNumber = 14;
   inline const ::client::RequestMsg& requestmsg() const;
   inline ::client::RequestMsg* mutable_requestmsg();
   inline ::client::RequestMsg* release_requestmsg();
@@ -884,7 +884,7 @@ inline void MessageWrapper::clear_has_messagetype() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void MessageWrapper::clear_messagetype() {
-  messagetype_ = 1;
+  messagetype_ = 10;
   clear_has_messagetype();
 }
 inline ::client::MessageWrapper_MessageType MessageWrapper::messagetype() const {
@@ -896,7 +896,7 @@ inline void MessageWrapper::set_messagetype(::client::MessageWrapper_MessageType
   messagetype_ = value;
 }
 
-// optional .client.ThrustMsg thrustMsg = 2;
+// optional .client.ThrustMsg thrustMsg = 10;
 inline bool MessageWrapper::has_thrustmsg() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -934,7 +934,7 @@ inline void MessageWrapper::set_allocated_thrustmsg(::client::ThrustMsg* thrustm
   }
 }
 
-// optional .client.VelocityMsg velocityMsg = 3;
+// optional .client.VelocityMsg velocityMsg = 11;
 inline bool MessageWrapper::has_velocitymsg() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -972,7 +972,7 @@ inline void MessageWrapper::set_allocated_velocitymsg(::client::VelocityMsg* vel
   }
 }
 
-// optional .client.JumpMsg jumpMsg = 4;
+// optional .client.JumpMsg jumpMsg = 12;
 inline bool MessageWrapper::has_jumpmsg() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -1010,7 +1010,7 @@ inline void MessageWrapper::set_allocated_jumpmsg(::client::JumpMsg* jumpmsg) {
   }
 }
 
-// optional .client.InfoMsg infoMsg = 5;
+// optional .client.InfoMsg infoMsg = 13;
 inline bool MessageWrapper::has_infomsg() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -1048,7 +1048,7 @@ inline void MessageWrapper::set_allocated_infomsg(::client::InfoMsg* infomsg) {
   }
 }
 
-// optional .client.RequestMsg requestMsg = 6;
+// optional .client.RequestMsg requestMsg = 14;
 inline bool MessageWrapper::has_requestmsg() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }

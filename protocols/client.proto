@@ -4,20 +4,20 @@ message MessageWrapper
 {
     enum MessageType
     {
-        THRUST  =1;
-        VELOCITY =2;
-        JUMP    =3;
-        INFO    =4;
-        REQUEST =5;
+        THRUST  =10;
+        VELOCITY =11;
+        JUMP    =12;
+        INFO    =13;
+        REQUEST =14;
     }
 
     required MessageType messageType =1;
     
-    optional ThrustMsg thrustMsg =2;
-    optional VelocityMsg velocityMsg =3;
-    optional JumpMsg jumpMsg =4;
-    optional InfoMsg infoMsg =5;
-    optional RequestMsg requestMsg =6;
+    optional ThrustMsg thrustMsg =10;
+    optional VelocityMsg velocityMsg =11;
+    optional JumpMsg jumpMsg =12;
+    optional InfoMsg infoMsg =13;
+    optional RequestMsg requestMsg =14;
 
 }
 

@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='client.proto',
   package='client',
-  serialized_pb='\n\x0c\x63lient.proto\x12\x06\x63lient\"\xcf\x02\n\x0eMessageWrapper\x12\x37\n\x0bmessageType\x18\x01 \x02(\x0e\x32\".client.MessageWrapper.MessageType\x12$\n\tthrustMsg\x18\x02 \x01(\x0b\x32\x11.client.ThrustMsg\x12(\n\x0bvelocityMsg\x18\x03 \x01(\x0b\x32\x13.client.VelocityMsg\x12 \n\x07jumpMsg\x18\x04 \x01(\x0b\x32\x0f.client.JumpMsg\x12 \n\x07infoMsg\x18\x05 \x01(\x0b\x32\x0f.client.InfoMsg\x12&\n\nrequestMsg\x18\x06 \x01(\x0b\x32\x12.client.RequestMsg\"H\n\x0bMessageType\x12\n\n\x06THRUST\x10\x01\x12\x0c\n\x08VELOCITY\x10\x02\x12\x08\n\x04JUMP\x10\x03\x12\x08\n\x04INFO\x10\x04\x12\x0b\n\x07REQUEST\x10\x05\",\n\tVectorMsg\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"D\n\tThrustMsg\x12\x14\n\x04name\x18\x01 \x01(\t:\x06THRUST\x12!\n\x06thrust\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"J\n\x0bVelocityMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VELOCITY\x12#\n\x08velocity\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"F\n\x07JumpMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04JUMP\x12\'\n\x0cnew_position\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"=\n\x07InfoMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04INFO\x12\x10\n\x08infoType\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x02(\t\"L\n\nRequestMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07REQUEST\x12\x12\n\ncontinuous\x18\x02 \x02(\x05\x12\x13\n\x0brequestType\x18\x03 \x02(\t')
+  serialized_pb='\n\x0c\x63lient.proto\x12\x06\x63lient\"\xcf\x02\n\x0eMessageWrapper\x12\x37\n\x0bmessageType\x18\x01 \x02(\x0e\x32\".client.MessageWrapper.MessageType\x12$\n\tthrustMsg\x18\n \x01(\x0b\x32\x11.client.ThrustMsg\x12(\n\x0bvelocityMsg\x18\x0b \x01(\x0b\x32\x13.client.VelocityMsg\x12 \n\x07jumpMsg\x18\x0c \x01(\x0b\x32\x0f.client.JumpMsg\x12 \n\x07infoMsg\x18\r \x01(\x0b\x32\x0f.client.InfoMsg\x12&\n\nrequestMsg\x18\x0e \x01(\x0b\x32\x12.client.RequestMsg\"H\n\x0bMessageType\x12\n\n\x06THRUST\x10\n\x12\x0c\n\x08VELOCITY\x10\x0b\x12\x08\n\x04JUMP\x10\x0c\x12\x08\n\x04INFO\x10\r\x12\x0b\n\x07REQUEST\x10\x0e\",\n\tVectorMsg\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"D\n\tThrustMsg\x12\x14\n\x04name\x18\x01 \x01(\t:\x06THRUST\x12!\n\x06thrust\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"J\n\x0bVelocityMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VELOCITY\x12#\n\x08velocity\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"F\n\x07JumpMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04JUMP\x12\'\n\x0cnew_position\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"=\n\x07InfoMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04INFO\x12\x10\n\x08infoType\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x02(\t\"L\n\nRequestMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07REQUEST\x12\x12\n\ncontinuous\x18\x02 \x02(\x05\x12\x13\n\x0brequestType\x18\x03 \x02(\t')
 
 
 
@@ -24,23 +24,23 @@ _MESSAGEWRAPPER_MESSAGETYPE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='THRUST', index=0, number=1,
+      name='THRUST', index=0, number=10,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VELOCITY', index=1, number=2,
+      name='VELOCITY', index=1, number=11,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='JUMP', index=2, number=3,
+      name='JUMP', index=2, number=12,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='INFO', index=3, number=4,
+      name='INFO', index=3, number=13,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='REQUEST', index=4, number=5,
+      name='REQUEST', index=4, number=14,
       options=None,
       type=None),
   ],
@@ -61,41 +61,41 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='messageType', full_name='client.MessageWrapper.messageType', index=0,
       number=1, type=14, cpp_type=8, label=2,
-      has_default_value=False, default_value=1,
+      has_default_value=False, default_value=10,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='thrustMsg', full_name='client.MessageWrapper.thrustMsg', index=1,
-      number=2, type=11, cpp_type=10, label=1,
+      number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='velocityMsg', full_name='client.MessageWrapper.velocityMsg', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='jumpMsg', full_name='client.MessageWrapper.jumpMsg', index=3,
-      number=4, type=11, cpp_type=10, label=1,
+      number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='infoMsg', full_name='client.MessageWrapper.infoMsg', index=4,
-      number=5, type=11, cpp_type=10, label=1,
+      number=13, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
       name='requestMsg', full_name='client.MessageWrapper.requestMsg', index=5,
-      number=6, type=11, cpp_type=10, label=1,
+      number=14, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,

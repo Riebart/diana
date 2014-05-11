@@ -4,17 +4,17 @@ message MessageWrapper
 {
     enum MessageType
     {
-        HELLO = 2;
-        GOODBYE = 3;
+        HELLO = 3;
+        GOODBYE = 4;
         
-        PHYSPROPS = 4;
-        COLLISION = 5;
-        SPAWN = 6;
-        BEAM = 7;
-        SCANRESULT = 8;
-        SCANQUERY = 9;
-        SCANRESP = 10;
-        DIRECTORY = 11;
+        PHYSPROPS = 10;
+        COLLISION = 11;
+        SPAWN = 12;
+        BEAM = 13;
+        SCANRESULT = 14;
+        SCANQUERY = 15;
+        SCANRESP = 16;
+        DIRECTORY = 17;
         
         VISPROPS = 100;
         VISDATAENABLE = 101;
@@ -24,17 +24,19 @@ message MessageWrapper
     }
     
     required MessageType messageType = 1;
+    optional uint64 objectID = 2;
     
-    optional HelloMsg helloMsg = 2;
-    optional GoodbyeMsg goodByeMsg = 3;
+    optional HelloMsg helloMsg = 3;
+    optional GoodbyeMsg goodByeMsg = 4;
     
-    optional PhysPropsMsg physPropsMsg = 4;
-    optional CollisionMsg collisionMsg = 5;
-    optional SpawnMsg spawnMsg = 6;
-    optional BeamMsg beamMsg = 7;
-    optional ScanResultMsg scanResultMsg = 8;
-    optional ScanQueryMsg scanQueryMsg = 9;
-    optional ScanRespMsg scanRespMsg =10;
+    optional PhysPropsMsg physPropsMsg = 10;
+    optional CollisionMsg collisionMsg = 11;
+    optional SpawnMsg spawnMsg = 12;
+    optional BeamMsg beamMsg = 13;
+    optional ScanResultMsg scanResultMsg = 14;
+    optional ScanQueryMsg scanQueryMsg = 15;
+    optional ScanRespMsg scanRespMsg =16;
+    optional DirectoryMsg directoryMsg =17;
     
     optional VisProps visProps =100;
     optional VisDataEnable visDataEnable =101;

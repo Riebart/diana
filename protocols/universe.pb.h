@@ -53,16 +53,16 @@ class ScanRespMsg;
 class DirectoryMsg;
 
 enum MessageWrapper_MessageType {
-  MessageWrapper_MessageType_HELLO = 2,
-  MessageWrapper_MessageType_GOODBYE = 3,
-  MessageWrapper_MessageType_PHYSPROPS = 4,
-  MessageWrapper_MessageType_COLLISION = 5,
-  MessageWrapper_MessageType_SPAWN = 6,
-  MessageWrapper_MessageType_BEAM = 7,
-  MessageWrapper_MessageType_SCANRESULT = 8,
-  MessageWrapper_MessageType_SCANQUERY = 9,
-  MessageWrapper_MessageType_SCANRESP = 10,
-  MessageWrapper_MessageType_DIRECTORY = 11,
+  MessageWrapper_MessageType_HELLO = 3,
+  MessageWrapper_MessageType_GOODBYE = 4,
+  MessageWrapper_MessageType_PHYSPROPS = 10,
+  MessageWrapper_MessageType_COLLISION = 11,
+  MessageWrapper_MessageType_SPAWN = 12,
+  MessageWrapper_MessageType_BEAM = 13,
+  MessageWrapper_MessageType_SCANRESULT = 14,
+  MessageWrapper_MessageType_SCANQUERY = 15,
+  MessageWrapper_MessageType_SCANRESP = 16,
+  MessageWrapper_MessageType_DIRECTORY = 17,
   MessageWrapper_MessageType_VISPROPS = 100,
   MessageWrapper_MessageType_VISDATAENABLE = 101,
   MessageWrapper_MessageType_VISMETADATAENABLE = 102,
@@ -225,86 +225,102 @@ class MessageWrapper : public ::google::protobuf::Message {
   inline ::universe::MessageWrapper_MessageType messagetype() const;
   inline void set_messagetype(::universe::MessageWrapper_MessageType value);
 
-  // optional .universe.HelloMsg helloMsg = 2;
+  // optional uint64 objectID = 2;
+  inline bool has_objectid() const;
+  inline void clear_objectid();
+  static const int kObjectIDFieldNumber = 2;
+  inline ::google::protobuf::uint64 objectid() const;
+  inline void set_objectid(::google::protobuf::uint64 value);
+
+  // optional .universe.HelloMsg helloMsg = 3;
   inline bool has_hellomsg() const;
   inline void clear_hellomsg();
-  static const int kHelloMsgFieldNumber = 2;
+  static const int kHelloMsgFieldNumber = 3;
   inline const ::universe::HelloMsg& hellomsg() const;
   inline ::universe::HelloMsg* mutable_hellomsg();
   inline ::universe::HelloMsg* release_hellomsg();
   inline void set_allocated_hellomsg(::universe::HelloMsg* hellomsg);
 
-  // optional .universe.GoodbyeMsg goodByeMsg = 3;
+  // optional .universe.GoodbyeMsg goodByeMsg = 4;
   inline bool has_goodbyemsg() const;
   inline void clear_goodbyemsg();
-  static const int kGoodByeMsgFieldNumber = 3;
+  static const int kGoodByeMsgFieldNumber = 4;
   inline const ::universe::GoodbyeMsg& goodbyemsg() const;
   inline ::universe::GoodbyeMsg* mutable_goodbyemsg();
   inline ::universe::GoodbyeMsg* release_goodbyemsg();
   inline void set_allocated_goodbyemsg(::universe::GoodbyeMsg* goodbyemsg);
 
-  // optional .universe.PhysPropsMsg physPropsMsg = 4;
+  // optional .universe.PhysPropsMsg physPropsMsg = 10;
   inline bool has_physpropsmsg() const;
   inline void clear_physpropsmsg();
-  static const int kPhysPropsMsgFieldNumber = 4;
+  static const int kPhysPropsMsgFieldNumber = 10;
   inline const ::universe::PhysPropsMsg& physpropsmsg() const;
   inline ::universe::PhysPropsMsg* mutable_physpropsmsg();
   inline ::universe::PhysPropsMsg* release_physpropsmsg();
   inline void set_allocated_physpropsmsg(::universe::PhysPropsMsg* physpropsmsg);
 
-  // optional .universe.CollisionMsg collisionMsg = 5;
+  // optional .universe.CollisionMsg collisionMsg = 11;
   inline bool has_collisionmsg() const;
   inline void clear_collisionmsg();
-  static const int kCollisionMsgFieldNumber = 5;
+  static const int kCollisionMsgFieldNumber = 11;
   inline const ::universe::CollisionMsg& collisionmsg() const;
   inline ::universe::CollisionMsg* mutable_collisionmsg();
   inline ::universe::CollisionMsg* release_collisionmsg();
   inline void set_allocated_collisionmsg(::universe::CollisionMsg* collisionmsg);
 
-  // optional .universe.SpawnMsg spawnMsg = 6;
+  // optional .universe.SpawnMsg spawnMsg = 12;
   inline bool has_spawnmsg() const;
   inline void clear_spawnmsg();
-  static const int kSpawnMsgFieldNumber = 6;
+  static const int kSpawnMsgFieldNumber = 12;
   inline const ::universe::SpawnMsg& spawnmsg() const;
   inline ::universe::SpawnMsg* mutable_spawnmsg();
   inline ::universe::SpawnMsg* release_spawnmsg();
   inline void set_allocated_spawnmsg(::universe::SpawnMsg* spawnmsg);
 
-  // optional .universe.BeamMsg beamMsg = 7;
+  // optional .universe.BeamMsg beamMsg = 13;
   inline bool has_beammsg() const;
   inline void clear_beammsg();
-  static const int kBeamMsgFieldNumber = 7;
+  static const int kBeamMsgFieldNumber = 13;
   inline const ::universe::BeamMsg& beammsg() const;
   inline ::universe::BeamMsg* mutable_beammsg();
   inline ::universe::BeamMsg* release_beammsg();
   inline void set_allocated_beammsg(::universe::BeamMsg* beammsg);
 
-  // optional .universe.ScanResultMsg scanResultMsg = 8;
+  // optional .universe.ScanResultMsg scanResultMsg = 14;
   inline bool has_scanresultmsg() const;
   inline void clear_scanresultmsg();
-  static const int kScanResultMsgFieldNumber = 8;
+  static const int kScanResultMsgFieldNumber = 14;
   inline const ::universe::ScanResultMsg& scanresultmsg() const;
   inline ::universe::ScanResultMsg* mutable_scanresultmsg();
   inline ::universe::ScanResultMsg* release_scanresultmsg();
   inline void set_allocated_scanresultmsg(::universe::ScanResultMsg* scanresultmsg);
 
-  // optional .universe.ScanQueryMsg scanQueryMsg = 9;
+  // optional .universe.ScanQueryMsg scanQueryMsg = 15;
   inline bool has_scanquerymsg() const;
   inline void clear_scanquerymsg();
-  static const int kScanQueryMsgFieldNumber = 9;
+  static const int kScanQueryMsgFieldNumber = 15;
   inline const ::universe::ScanQueryMsg& scanquerymsg() const;
   inline ::universe::ScanQueryMsg* mutable_scanquerymsg();
   inline ::universe::ScanQueryMsg* release_scanquerymsg();
   inline void set_allocated_scanquerymsg(::universe::ScanQueryMsg* scanquerymsg);
 
-  // optional .universe.ScanRespMsg scanRespMsg = 10;
+  // optional .universe.ScanRespMsg scanRespMsg = 16;
   inline bool has_scanrespmsg() const;
   inline void clear_scanrespmsg();
-  static const int kScanRespMsgFieldNumber = 10;
+  static const int kScanRespMsgFieldNumber = 16;
   inline const ::universe::ScanRespMsg& scanrespmsg() const;
   inline ::universe::ScanRespMsg* mutable_scanrespmsg();
   inline ::universe::ScanRespMsg* release_scanrespmsg();
   inline void set_allocated_scanrespmsg(::universe::ScanRespMsg* scanrespmsg);
+
+  // optional .universe.DirectoryMsg directoryMsg = 17;
+  inline bool has_directorymsg() const;
+  inline void clear_directorymsg();
+  static const int kDirectoryMsgFieldNumber = 17;
+  inline const ::universe::DirectoryMsg& directorymsg() const;
+  inline ::universe::DirectoryMsg* mutable_directorymsg();
+  inline ::universe::DirectoryMsg* release_directorymsg();
+  inline void set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg);
 
   // optional .universe.VisProps visProps = 100;
   inline bool has_visprops() const;
@@ -355,6 +371,8 @@ class MessageWrapper : public ::google::protobuf::Message {
  private:
   inline void set_has_messagetype();
   inline void clear_has_messagetype();
+  inline void set_has_objectid();
+  inline void clear_has_objectid();
   inline void set_has_hellomsg();
   inline void clear_has_hellomsg();
   inline void set_has_goodbyemsg();
@@ -373,6 +391,8 @@ class MessageWrapper : public ::google::protobuf::Message {
   inline void clear_has_scanquerymsg();
   inline void set_has_scanrespmsg();
   inline void clear_has_scanrespmsg();
+  inline void set_has_directorymsg();
+  inline void clear_has_directorymsg();
   inline void set_has_visprops();
   inline void clear_has_visprops();
   inline void set_has_visdataenable();
@@ -386,6 +406,7 @@ class MessageWrapper : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
+  ::google::protobuf::uint64 objectid_;
   ::universe::HelloMsg* hellomsg_;
   ::universe::GoodbyeMsg* goodbyemsg_;
   ::universe::PhysPropsMsg* physpropsmsg_;
@@ -395,6 +416,7 @@ class MessageWrapper : public ::google::protobuf::Message {
   ::universe::ScanResultMsg* scanresultmsg_;
   ::universe::ScanQueryMsg* scanquerymsg_;
   ::universe::ScanRespMsg* scanrespmsg_;
+  ::universe::DirectoryMsg* directorymsg_;
   ::universe::VisProps* visprops_;
   ::universe::VisDataEnable* visdataenable_;
   ::universe::VisMetaDataEnable* vismetadataenable_;
@@ -403,7 +425,7 @@ class MessageWrapper : public ::google::protobuf::Message {
   int messagetype_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(15 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
   friend void  protobuf_AddDesc_universe_2eproto();
   friend void protobuf_AssignDesc_universe_2eproto();
@@ -2329,7 +2351,7 @@ inline void MessageWrapper::clear_has_messagetype() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void MessageWrapper::clear_messagetype() {
-  messagetype_ = 2;
+  messagetype_ = 3;
   clear_has_messagetype();
 }
 inline ::universe::MessageWrapper_MessageType MessageWrapper::messagetype() const {
@@ -2341,15 +2363,37 @@ inline void MessageWrapper::set_messagetype(::universe::MessageWrapper_MessageTy
   messagetype_ = value;
 }
 
-// optional .universe.HelloMsg helloMsg = 2;
-inline bool MessageWrapper::has_hellomsg() const {
+// optional uint64 objectID = 2;
+inline bool MessageWrapper::has_objectid() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void MessageWrapper::set_has_hellomsg() {
+inline void MessageWrapper::set_has_objectid() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void MessageWrapper::clear_has_hellomsg() {
+inline void MessageWrapper::clear_has_objectid() {
   _has_bits_[0] &= ~0x00000002u;
+}
+inline void MessageWrapper::clear_objectid() {
+  objectid_ = GOOGLE_ULONGLONG(0);
+  clear_has_objectid();
+}
+inline ::google::protobuf::uint64 MessageWrapper::objectid() const {
+  return objectid_;
+}
+inline void MessageWrapper::set_objectid(::google::protobuf::uint64 value) {
+  set_has_objectid();
+  objectid_ = value;
+}
+
+// optional .universe.HelloMsg helloMsg = 3;
+inline bool MessageWrapper::has_hellomsg() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void MessageWrapper::set_has_hellomsg() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void MessageWrapper::clear_has_hellomsg() {
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void MessageWrapper::clear_hellomsg() {
   if (hellomsg_ != NULL) hellomsg_->::universe::HelloMsg::Clear();
@@ -2379,15 +2423,15 @@ inline void MessageWrapper::set_allocated_hellomsg(::universe::HelloMsg* helloms
   }
 }
 
-// optional .universe.GoodbyeMsg goodByeMsg = 3;
+// optional .universe.GoodbyeMsg goodByeMsg = 4;
 inline bool MessageWrapper::has_goodbyemsg() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void MessageWrapper::set_has_goodbyemsg() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void MessageWrapper::clear_has_goodbyemsg() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void MessageWrapper::clear_goodbyemsg() {
   if (goodbyemsg_ != NULL) goodbyemsg_->::universe::GoodbyeMsg::Clear();
@@ -2417,15 +2461,15 @@ inline void MessageWrapper::set_allocated_goodbyemsg(::universe::GoodbyeMsg* goo
   }
 }
 
-// optional .universe.PhysPropsMsg physPropsMsg = 4;
+// optional .universe.PhysPropsMsg physPropsMsg = 10;
 inline bool MessageWrapper::has_physpropsmsg() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void MessageWrapper::set_has_physpropsmsg() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void MessageWrapper::clear_has_physpropsmsg() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void MessageWrapper::clear_physpropsmsg() {
   if (physpropsmsg_ != NULL) physpropsmsg_->::universe::PhysPropsMsg::Clear();
@@ -2455,15 +2499,15 @@ inline void MessageWrapper::set_allocated_physpropsmsg(::universe::PhysPropsMsg*
   }
 }
 
-// optional .universe.CollisionMsg collisionMsg = 5;
+// optional .universe.CollisionMsg collisionMsg = 11;
 inline bool MessageWrapper::has_collisionmsg() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void MessageWrapper::set_has_collisionmsg() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void MessageWrapper::clear_has_collisionmsg() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void MessageWrapper::clear_collisionmsg() {
   if (collisionmsg_ != NULL) collisionmsg_->::universe::CollisionMsg::Clear();
@@ -2493,15 +2537,15 @@ inline void MessageWrapper::set_allocated_collisionmsg(::universe::CollisionMsg*
   }
 }
 
-// optional .universe.SpawnMsg spawnMsg = 6;
+// optional .universe.SpawnMsg spawnMsg = 12;
 inline bool MessageWrapper::has_spawnmsg() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void MessageWrapper::set_has_spawnmsg() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void MessageWrapper::clear_has_spawnmsg() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void MessageWrapper::clear_spawnmsg() {
   if (spawnmsg_ != NULL) spawnmsg_->::universe::SpawnMsg::Clear();
@@ -2531,15 +2575,15 @@ inline void MessageWrapper::set_allocated_spawnmsg(::universe::SpawnMsg* spawnms
   }
 }
 
-// optional .universe.BeamMsg beamMsg = 7;
+// optional .universe.BeamMsg beamMsg = 13;
 inline bool MessageWrapper::has_beammsg() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void MessageWrapper::set_has_beammsg() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void MessageWrapper::clear_has_beammsg() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void MessageWrapper::clear_beammsg() {
   if (beammsg_ != NULL) beammsg_->::universe::BeamMsg::Clear();
@@ -2569,15 +2613,15 @@ inline void MessageWrapper::set_allocated_beammsg(::universe::BeamMsg* beammsg) 
   }
 }
 
-// optional .universe.ScanResultMsg scanResultMsg = 8;
+// optional .universe.ScanResultMsg scanResultMsg = 14;
 inline bool MessageWrapper::has_scanresultmsg() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void MessageWrapper::set_has_scanresultmsg() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void MessageWrapper::clear_has_scanresultmsg() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void MessageWrapper::clear_scanresultmsg() {
   if (scanresultmsg_ != NULL) scanresultmsg_->::universe::ScanResultMsg::Clear();
@@ -2607,15 +2651,15 @@ inline void MessageWrapper::set_allocated_scanresultmsg(::universe::ScanResultMs
   }
 }
 
-// optional .universe.ScanQueryMsg scanQueryMsg = 9;
+// optional .universe.ScanQueryMsg scanQueryMsg = 15;
 inline bool MessageWrapper::has_scanquerymsg() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void MessageWrapper::set_has_scanquerymsg() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void MessageWrapper::clear_has_scanquerymsg() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void MessageWrapper::clear_scanquerymsg() {
   if (scanquerymsg_ != NULL) scanquerymsg_->::universe::ScanQueryMsg::Clear();
@@ -2645,15 +2689,15 @@ inline void MessageWrapper::set_allocated_scanquerymsg(::universe::ScanQueryMsg*
   }
 }
 
-// optional .universe.ScanRespMsg scanRespMsg = 10;
+// optional .universe.ScanRespMsg scanRespMsg = 16;
 inline bool MessageWrapper::has_scanrespmsg() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void MessageWrapper::set_has_scanrespmsg() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void MessageWrapper::clear_has_scanrespmsg() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void MessageWrapper::clear_scanrespmsg() {
   if (scanrespmsg_ != NULL) scanrespmsg_->::universe::ScanRespMsg::Clear();
@@ -2683,15 +2727,53 @@ inline void MessageWrapper::set_allocated_scanrespmsg(::universe::ScanRespMsg* s
   }
 }
 
+// optional .universe.DirectoryMsg directoryMsg = 17;
+inline bool MessageWrapper::has_directorymsg() const {
+  return (_has_bits_[0] & 0x00000800u) != 0;
+}
+inline void MessageWrapper::set_has_directorymsg() {
+  _has_bits_[0] |= 0x00000800u;
+}
+inline void MessageWrapper::clear_has_directorymsg() {
+  _has_bits_[0] &= ~0x00000800u;
+}
+inline void MessageWrapper::clear_directorymsg() {
+  if (directorymsg_ != NULL) directorymsg_->::universe::DirectoryMsg::Clear();
+  clear_has_directorymsg();
+}
+inline const ::universe::DirectoryMsg& MessageWrapper::directorymsg() const {
+  return directorymsg_ != NULL ? *directorymsg_ : *default_instance_->directorymsg_;
+}
+inline ::universe::DirectoryMsg* MessageWrapper::mutable_directorymsg() {
+  set_has_directorymsg();
+  if (directorymsg_ == NULL) directorymsg_ = new ::universe::DirectoryMsg;
+  return directorymsg_;
+}
+inline ::universe::DirectoryMsg* MessageWrapper::release_directorymsg() {
+  clear_has_directorymsg();
+  ::universe::DirectoryMsg* temp = directorymsg_;
+  directorymsg_ = NULL;
+  return temp;
+}
+inline void MessageWrapper::set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg) {
+  delete directorymsg_;
+  directorymsg_ = directorymsg;
+  if (directorymsg) {
+    set_has_directorymsg();
+  } else {
+    clear_has_directorymsg();
+  }
+}
+
 // optional .universe.VisProps visProps = 100;
 inline bool MessageWrapper::has_visprops() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void MessageWrapper::set_has_visprops() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void MessageWrapper::clear_has_visprops() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void MessageWrapper::clear_visprops() {
   if (visprops_ != NULL) visprops_->::universe::VisProps::Clear();
@@ -2723,13 +2805,13 @@ inline void MessageWrapper::set_allocated_visprops(::universe::VisProps* visprop
 
 // optional .universe.VisDataEnable visDataEnable = 101;
 inline bool MessageWrapper::has_visdataenable() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void MessageWrapper::set_has_visdataenable() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void MessageWrapper::clear_has_visdataenable() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void MessageWrapper::clear_visdataenable() {
   if (visdataenable_ != NULL) visdataenable_->::universe::VisDataEnable::Clear();
@@ -2761,13 +2843,13 @@ inline void MessageWrapper::set_allocated_visdataenable(::universe::VisDataEnabl
 
 // optional .universe.VisMetaDataEnable visMetaDataEnable = 102;
 inline bool MessageWrapper::has_vismetadataenable() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void MessageWrapper::set_has_vismetadataenable() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void MessageWrapper::clear_has_vismetadataenable() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void MessageWrapper::clear_vismetadataenable() {
   if (vismetadataenable_ != NULL) vismetadataenable_->::universe::VisMetaDataEnable::Clear();
@@ -2799,13 +2881,13 @@ inline void MessageWrapper::set_allocated_vismetadataenable(::universe::VisMetaD
 
 // optional .universe.VisMetaData visMetaData = 103;
 inline bool MessageWrapper::has_vismetadata() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void MessageWrapper::set_has_vismetadata() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void MessageWrapper::clear_has_vismetadata() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void MessageWrapper::clear_vismetadata() {
   if (vismetadata_ != NULL) vismetadata_->::universe::VisMetaData::Clear();
@@ -2837,13 +2919,13 @@ inline void MessageWrapper::set_allocated_vismetadata(::universe::VisMetaData* v
 
 // optional .universe.VisData visData = 104;
 inline bool MessageWrapper::has_visdata() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void MessageWrapper::set_has_visdata() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void MessageWrapper::clear_has_visdata() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void MessageWrapper::clear_visdata() {
   if (visdata_ != NULL) visdata_->::universe::VisData::Clear();

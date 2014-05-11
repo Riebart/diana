@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='universe.proto',
   package='universe',
-  serialized_pb='\n\x0euniverse.proto\x12\x08universe\"\x96\x07\n\x0eMessageWrapper\x12\x39\n\x0bmessageType\x18\x01 \x02(\x0e\x32$.universe.MessageWrapper.MessageType\x12$\n\x08helloMsg\x18\x02 \x01(\x0b\x32\x12.universe.HelloMsg\x12(\n\ngoodByeMsg\x18\x03 \x01(\x0b\x32\x14.universe.GoodbyeMsg\x12,\n\x0cphysPropsMsg\x18\x04 \x01(\x0b\x32\x16.universe.PhysPropsMsg\x12,\n\x0c\x63ollisionMsg\x18\x05 \x01(\x0b\x32\x16.universe.CollisionMsg\x12$\n\x08spawnMsg\x18\x06 \x01(\x0b\x32\x12.universe.SpawnMsg\x12\"\n\x07\x62\x65\x61mMsg\x18\x07 \x01(\x0b\x32\x11.universe.BeamMsg\x12.\n\rscanResultMsg\x18\x08 \x01(\x0b\x32\x17.universe.ScanResultMsg\x12,\n\x0cscanQueryMsg\x18\t \x01(\x0b\x32\x16.universe.ScanQueryMsg\x12*\n\x0bscanRespMsg\x18\n \x01(\x0b\x32\x15.universe.ScanRespMsg\x12$\n\x08visProps\x18\x64 \x01(\x0b\x32\x12.universe.VisProps\x12.\n\rvisDataEnable\x18\x65 \x01(\x0b\x32\x17.universe.VisDataEnable\x12\x36\n\x11visMetaDataEnable\x18\x66 \x01(\x0b\x32\x1b.universe.VisMetaDataEnable\x12*\n\x0bvisMetaData\x18g \x01(\x0b\x32\x15.universe.VisMetaData\x12\"\n\x07visData\x18h \x01(\x0b\x32\x11.universe.VisData\"\xea\x01\n\x0bMessageType\x12\t\n\x05HELLO\x10\x02\x12\x0b\n\x07GOODBYE\x10\x03\x12\r\n\tPHYSPROPS\x10\x04\x12\r\n\tCOLLISION\x10\x05\x12\t\n\x05SPAWN\x10\x06\x12\x08\n\x04\x42\x45\x41M\x10\x07\x12\x0e\n\nSCANRESULT\x10\x08\x12\r\n\tSCANQUERY\x10\t\x12\x0c\n\x08SCANRESP\x10\n\x12\r\n\tDIRECTORY\x10\x0b\x12\x0c\n\x08VISPROPS\x10\x64\x12\x11\n\rVISDATAENABLE\x10\x65\x12\x15\n\x11VISMETADATAENABLE\x10\x66\x12\x0f\n\x0bVISMETADATA\x10g\x12\x0b\n\x07VISDATA\x10h\",\n\tVectorMsg\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"\x1f\n\x08HelloMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05HELLO\"\xe2\x01\n\x0cPhysPropsMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tPHYSPROPS\x12\x0c\n\x04mass\x18\x02 \x01(\x01\x12%\n\x08position\x18\x03 \x01(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x01(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x01(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x01(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x01(\x01\"#\n\nGoodbyeMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07GOODBYE\"\xb8\x02\n\x0c\x43ollisionMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tCOLLISION\x12%\n\x08position\x18\x02 \x02(\x0b\x32\x13.universe.VectorMsg\x12&\n\tdirection\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06\x65nergy\x18\x04 \x02(\x01\x12;\n\rcollisionType\x18\x05 \x02(\x0e\x32$.universe.CollisionMsg.CollisionType\x12\x12\n\ncommString\x18\x06 \x01(\t\"_\n\rCollisionType\x12\x12\n\x0ePHYS_COLLISION\x10\x01\x12\x12\n\x0eSCAN_COLLISION\x10\x02\x12\x12\n\x0eWEAP_COLLISION\x10\x03\x12\x12\n\x0e\x43OMM_COLLISION\x10\x04\"\xda\x01\n\x08SpawnMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05SPAWN\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12%\n\x08position\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x02(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x02(\x01\"\"\n\x08VisProps\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VISPROPS\",\n\rVisDataEnable\x12\x1b\n\x04name\x18\x01 \x01(\t:\rVISDATAENABLE\" \n\x07VisData\x12\x15\n\x04name\x18\x01 \x01(\t:\x07VISDATA\"(\n\x0bVisMetaData\x12\x19\n\x04name\x18\x01 \x01(\t:\x0bVISMETADATA\"4\n\x11VisMetaDataEnable\x12\x1f\n\x04name\x18\x01 \x01(\t:\x11VISMETADATAENABLE\"\xaa\x02\n\x07\x42\x65\x61mMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04\x42\x45\x41M\x12#\n\x06origin\x18\x02 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x1f\n\x02up\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x10\n\x08spread_h\x18\x05 \x02(\x01\x12\x10\n\x08spread_v\x18\x06 \x02(\x01\x12\x0e\n\x06\x65nergy\x18\x07 \x02(\x01\x12,\n\x08\x62\x65\x61mType\x18\x08 \x02(\x0e\x32\x1a.universe.BeamMsg.BeamType\x12\x12\n\ncommString\x18\t \x01(\t\"(\n\x08\x42\x65\x61mType\x12\x08\n\x04SCAN\x10\x01\x12\x08\n\x04WEAP\x10\x02\x12\x08\n\x04\x43OMM\x10\x03\"\xf8\x01\n\rScanResultMsg\x12\x18\n\x04name\x18\x01 \x01(\t:\nSCANRESULT\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12%\n\x08position\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x02(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x02(\x01\x12\x12\n\nextraParms\x18\x08 \x01(\t\"p\n\x0cScanQueryMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tSCANQUERY\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\x11\n\tscanPower\x18\x03 \x02(\x01\x12$\n\x07scanDir\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\"D\n\x0bScanRespMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08SCANRESP\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\r\n\x05parms\x18\x03 \x02(\t\"\'\n\x0c\x44irectoryMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tDIRECTORY')
+  serialized_pb='\n\x0euniverse.proto\x12\x08universe\"\xd6\x07\n\x0eMessageWrapper\x12\x39\n\x0bmessageType\x18\x01 \x02(\x0e\x32$.universe.MessageWrapper.MessageType\x12\x10\n\x08objectID\x18\x02 \x01(\x04\x12$\n\x08helloMsg\x18\x03 \x01(\x0b\x32\x12.universe.HelloMsg\x12(\n\ngoodByeMsg\x18\x04 \x01(\x0b\x32\x14.universe.GoodbyeMsg\x12,\n\x0cphysPropsMsg\x18\n \x01(\x0b\x32\x16.universe.PhysPropsMsg\x12,\n\x0c\x63ollisionMsg\x18\x0b \x01(\x0b\x32\x16.universe.CollisionMsg\x12$\n\x08spawnMsg\x18\x0c \x01(\x0b\x32\x12.universe.SpawnMsg\x12\"\n\x07\x62\x65\x61mMsg\x18\r \x01(\x0b\x32\x11.universe.BeamMsg\x12.\n\rscanResultMsg\x18\x0e \x01(\x0b\x32\x17.universe.ScanResultMsg\x12,\n\x0cscanQueryMsg\x18\x0f \x01(\x0b\x32\x16.universe.ScanQueryMsg\x12*\n\x0bscanRespMsg\x18\x10 \x01(\x0b\x32\x15.universe.ScanRespMsg\x12,\n\x0c\x64irectoryMsg\x18\x11 \x01(\x0b\x32\x16.universe.DirectoryMsg\x12$\n\x08visProps\x18\x64 \x01(\x0b\x32\x12.universe.VisProps\x12.\n\rvisDataEnable\x18\x65 \x01(\x0b\x32\x17.universe.VisDataEnable\x12\x36\n\x11visMetaDataEnable\x18\x66 \x01(\x0b\x32\x1b.universe.VisMetaDataEnable\x12*\n\x0bvisMetaData\x18g \x01(\x0b\x32\x15.universe.VisMetaData\x12\"\n\x07visData\x18h \x01(\x0b\x32\x11.universe.VisData\"\xea\x01\n\x0bMessageType\x12\t\n\x05HELLO\x10\x03\x12\x0b\n\x07GOODBYE\x10\x04\x12\r\n\tPHYSPROPS\x10\n\x12\r\n\tCOLLISION\x10\x0b\x12\t\n\x05SPAWN\x10\x0c\x12\x08\n\x04\x42\x45\x41M\x10\r\x12\x0e\n\nSCANRESULT\x10\x0e\x12\r\n\tSCANQUERY\x10\x0f\x12\x0c\n\x08SCANRESP\x10\x10\x12\r\n\tDIRECTORY\x10\x11\x12\x0c\n\x08VISPROPS\x10\x64\x12\x11\n\rVISDATAENABLE\x10\x65\x12\x15\n\x11VISMETADATAENABLE\x10\x66\x12\x0f\n\x0bVISMETADATA\x10g\x12\x0b\n\x07VISDATA\x10h\",\n\tVectorMsg\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"\x1f\n\x08HelloMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05HELLO\"\xe2\x01\n\x0cPhysPropsMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tPHYSPROPS\x12\x0c\n\x04mass\x18\x02 \x01(\x01\x12%\n\x08position\x18\x03 \x01(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x01(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x01(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x01(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x01(\x01\"#\n\nGoodbyeMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07GOODBYE\"\xb8\x02\n\x0c\x43ollisionMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tCOLLISION\x12%\n\x08position\x18\x02 \x02(\x0b\x32\x13.universe.VectorMsg\x12&\n\tdirection\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06\x65nergy\x18\x04 \x02(\x01\x12;\n\rcollisionType\x18\x05 \x02(\x0e\x32$.universe.CollisionMsg.CollisionType\x12\x12\n\ncommString\x18\x06 \x01(\t\"_\n\rCollisionType\x12\x12\n\x0ePHYS_COLLISION\x10\x01\x12\x12\n\x0eSCAN_COLLISION\x10\x02\x12\x12\n\x0eWEAP_COLLISION\x10\x03\x12\x12\n\x0e\x43OMM_COLLISION\x10\x04\"\xda\x01\n\x08SpawnMsg\x12\x13\n\x04name\x18\x01 \x01(\t:\x05SPAWN\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12%\n\x08position\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x02(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x02(\x01\"\"\n\x08VisProps\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VISPROPS\",\n\rVisDataEnable\x12\x1b\n\x04name\x18\x01 \x01(\t:\rVISDATAENABLE\" \n\x07VisData\x12\x15\n\x04name\x18\x01 \x01(\t:\x07VISDATA\"(\n\x0bVisMetaData\x12\x19\n\x04name\x18\x01 \x01(\t:\x0bVISMETADATA\"4\n\x11VisMetaDataEnable\x12\x1f\n\x04name\x18\x01 \x01(\t:\x11VISMETADATAENABLE\"\xaa\x02\n\x07\x42\x65\x61mMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04\x42\x45\x41M\x12#\n\x06origin\x18\x02 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x1f\n\x02up\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x10\n\x08spread_h\x18\x05 \x02(\x01\x12\x10\n\x08spread_v\x18\x06 \x02(\x01\x12\x0e\n\x06\x65nergy\x18\x07 \x02(\x01\x12,\n\x08\x62\x65\x61mType\x18\x08 \x02(\x0e\x32\x1a.universe.BeamMsg.BeamType\x12\x12\n\ncommString\x18\t \x01(\t\"(\n\x08\x42\x65\x61mType\x12\x08\n\x04SCAN\x10\x01\x12\x08\n\x04WEAP\x10\x02\x12\x08\n\x04\x43OMM\x10\x03\"\xf8\x01\n\rScanResultMsg\x12\x18\n\x04name\x18\x01 \x01(\t:\nSCANRESULT\x12\x0c\n\x04mass\x18\x02 \x02(\x01\x12%\n\x08position\x18\x03 \x02(\x0b\x32\x13.universe.VectorMsg\x12%\n\x08velocity\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\x12(\n\x0borientation\x18\x05 \x02(\x0b\x32\x13.universe.VectorMsg\x12#\n\x06thrust\x18\x06 \x02(\x0b\x32\x13.universe.VectorMsg\x12\x0e\n\x06radius\x18\x07 \x02(\x01\x12\x12\n\nextraParms\x18\x08 \x01(\t\"p\n\x0cScanQueryMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tSCANQUERY\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\x11\n\tscanPower\x18\x03 \x02(\x01\x12$\n\x07scanDir\x18\x04 \x02(\x0b\x32\x13.universe.VectorMsg\"D\n\x0bScanRespMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08SCANRESP\x12\x0e\n\x06scanID\x18\x02 \x02(\x05\x12\r\n\x05parms\x18\x03 \x02(\t\"\'\n\x0c\x44irectoryMsg\x12\x17\n\x04name\x18\x01 \x01(\t:\tDIRECTORY')
 
 
 
@@ -24,43 +24,43 @@ _MESSAGEWRAPPER_MESSAGETYPE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='HELLO', index=0, number=2,
+      name='HELLO', index=0, number=3,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='GOODBYE', index=1, number=3,
+      name='GOODBYE', index=1, number=4,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PHYSPROPS', index=2, number=4,
+      name='PHYSPROPS', index=2, number=10,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='COLLISION', index=3, number=5,
+      name='COLLISION', index=3, number=11,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SPAWN', index=4, number=6,
+      name='SPAWN', index=4, number=12,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='BEAM', index=5, number=7,
+      name='BEAM', index=5, number=13,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SCANRESULT', index=6, number=8,
+      name='SCANRESULT', index=6, number=14,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SCANQUERY', index=7, number=9,
+      name='SCANQUERY', index=7, number=15,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='SCANRESP', index=8, number=10,
+      name='SCANRESP', index=8, number=16,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='DIRECTORY', index=9, number=11,
+      name='DIRECTORY', index=9, number=17,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
@@ -86,8 +86,8 @@ _MESSAGEWRAPPER_MESSAGETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=713,
-  serialized_end=947,
+  serialized_start=777,
+  serialized_end=1011,
 )
 
 _COLLISIONMSG_COLLISIONTYPE = _descriptor.EnumDescriptor(
@@ -115,8 +115,8 @@ _COLLISIONMSG_COLLISIONTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1512,
-  serialized_end=1607,
+  serialized_start=1576,
+  serialized_end=1671,
 )
 
 _BEAMMSG_BEAMTYPE = _descriptor.EnumDescriptor(
@@ -140,8 +140,8 @@ _BEAMMSG_BEAMTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2301,
-  serialized_end=2341,
+  serialized_start=2365,
+  serialized_end=2405,
 )
 
 
@@ -155,103 +155,117 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='messageType', full_name='universe.MessageWrapper.messageType', index=0,
       number=1, type=14, cpp_type=8, label=2,
-      has_default_value=False, default_value=2,
+      has_default_value=False, default_value=3,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='helloMsg', full_name='universe.MessageWrapper.helloMsg', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='objectID', full_name='universe.MessageWrapper.objectID', index=1,
+      number=2, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='goodByeMsg', full_name='universe.MessageWrapper.goodByeMsg', index=2,
+      name='helloMsg', full_name='universe.MessageWrapper.helloMsg', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='physPropsMsg', full_name='universe.MessageWrapper.physPropsMsg', index=3,
+      name='goodByeMsg', full_name='universe.MessageWrapper.goodByeMsg', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='collisionMsg', full_name='universe.MessageWrapper.collisionMsg', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='spawnMsg', full_name='universe.MessageWrapper.spawnMsg', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='beamMsg', full_name='universe.MessageWrapper.beamMsg', index=6,
-      number=7, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='scanResultMsg', full_name='universe.MessageWrapper.scanResultMsg', index=7,
-      number=8, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='scanQueryMsg', full_name='universe.MessageWrapper.scanQueryMsg', index=8,
-      number=9, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='scanRespMsg', full_name='universe.MessageWrapper.scanRespMsg', index=9,
+      name='physPropsMsg', full_name='universe.MessageWrapper.physPropsMsg', index=4,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='visProps', full_name='universe.MessageWrapper.visProps', index=10,
+      name='collisionMsg', full_name='universe.MessageWrapper.collisionMsg', index=5,
+      number=11, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='spawnMsg', full_name='universe.MessageWrapper.spawnMsg', index=6,
+      number=12, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='beamMsg', full_name='universe.MessageWrapper.beamMsg', index=7,
+      number=13, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanResultMsg', full_name='universe.MessageWrapper.scanResultMsg', index=8,
+      number=14, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanQueryMsg', full_name='universe.MessageWrapper.scanQueryMsg', index=9,
+      number=15, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='scanRespMsg', full_name='universe.MessageWrapper.scanRespMsg', index=10,
+      number=16, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='directoryMsg', full_name='universe.MessageWrapper.directoryMsg', index=11,
+      number=17, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='visProps', full_name='universe.MessageWrapper.visProps', index=12,
       number=100, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='visDataEnable', full_name='universe.MessageWrapper.visDataEnable', index=11,
+      name='visDataEnable', full_name='universe.MessageWrapper.visDataEnable', index=13,
       number=101, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='visMetaDataEnable', full_name='universe.MessageWrapper.visMetaDataEnable', index=12,
+      name='visMetaDataEnable', full_name='universe.MessageWrapper.visMetaDataEnable', index=14,
       number=102, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='visMetaData', full_name='universe.MessageWrapper.visMetaData', index=13,
+      name='visMetaData', full_name='universe.MessageWrapper.visMetaData', index=15,
       number=103, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='visData', full_name='universe.MessageWrapper.visData', index=14,
+      name='visData', full_name='universe.MessageWrapper.visData', index=16,
       number=104, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -268,7 +282,7 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=29,
-  serialized_end=947,
+  serialized_end=1011,
 )
 
 
@@ -309,8 +323,8 @@ _VECTORMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=949,
-  serialized_end=993,
+  serialized_start=1013,
+  serialized_end=1057,
 )
 
 
@@ -337,8 +351,8 @@ _HELLOMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=995,
-  serialized_end=1026,
+  serialized_start=1059,
+  serialized_end=1090,
 )
 
 
@@ -407,8 +421,8 @@ _PHYSPROPSMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1029,
-  serialized_end=1255,
+  serialized_start=1093,
+  serialized_end=1319,
 )
 
 
@@ -435,8 +449,8 @@ _GOODBYEMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1257,
-  serialized_end=1292,
+  serialized_start=1321,
+  serialized_end=1356,
 )
 
 
@@ -499,8 +513,8 @@ _COLLISIONMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1295,
-  serialized_end=1607,
+  serialized_start=1359,
+  serialized_end=1671,
 )
 
 
@@ -569,8 +583,8 @@ _SPAWNMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1610,
-  serialized_end=1828,
+  serialized_start=1674,
+  serialized_end=1892,
 )
 
 
@@ -597,8 +611,8 @@ _VISPROPS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1830,
-  serialized_end=1864,
+  serialized_start=1894,
+  serialized_end=1928,
 )
 
 
@@ -625,8 +639,8 @@ _VISDATAENABLE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1866,
-  serialized_end=1910,
+  serialized_start=1930,
+  serialized_end=1974,
 )
 
 
@@ -653,8 +667,8 @@ _VISDATA = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1912,
-  serialized_end=1944,
+  serialized_start=1976,
+  serialized_end=2008,
 )
 
 
@@ -681,8 +695,8 @@ _VISMETADATA = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1946,
-  serialized_end=1986,
+  serialized_start=2010,
+  serialized_end=2050,
 )
 
 
@@ -709,8 +723,8 @@ _VISMETADATAENABLE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1988,
-  serialized_end=2040,
+  serialized_start=2052,
+  serialized_end=2104,
 )
 
 
@@ -794,8 +808,8 @@ _BEAMMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2043,
-  serialized_end=2341,
+  serialized_start=2107,
+  serialized_end=2405,
 )
 
 
@@ -871,8 +885,8 @@ _SCANRESULTMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2344,
-  serialized_end=2592,
+  serialized_start=2408,
+  serialized_end=2656,
 )
 
 
@@ -920,8 +934,8 @@ _SCANQUERYMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2594,
-  serialized_end=2706,
+  serialized_start=2658,
+  serialized_end=2770,
 )
 
 
@@ -962,8 +976,8 @@ _SCANRESPMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2708,
-  serialized_end=2776,
+  serialized_start=2772,
+  serialized_end=2840,
 )
 
 
@@ -990,8 +1004,8 @@ _DIRECTORYMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=2778,
-  serialized_end=2817,
+  serialized_start=2842,
+  serialized_end=2881,
 )
 
 _MESSAGEWRAPPER.fields_by_name['messageType'].enum_type = _MESSAGEWRAPPER_MESSAGETYPE
@@ -1004,6 +1018,7 @@ _MESSAGEWRAPPER.fields_by_name['beamMsg'].message_type = _BEAMMSG
 _MESSAGEWRAPPER.fields_by_name['scanResultMsg'].message_type = _SCANRESULTMSG
 _MESSAGEWRAPPER.fields_by_name['scanQueryMsg'].message_type = _SCANQUERYMSG
 _MESSAGEWRAPPER.fields_by_name['scanRespMsg'].message_type = _SCANRESPMSG
+_MESSAGEWRAPPER.fields_by_name['directoryMsg'].message_type = _DIRECTORYMSG
 _MESSAGEWRAPPER.fields_by_name['visProps'].message_type = _VISPROPS
 _MESSAGEWRAPPER.fields_by_name['visDataEnable'].message_type = _VISDATAENABLE
 _MESSAGEWRAPPER.fields_by_name['visMetaDataEnable'].message_type = _VISMETADATAENABLE

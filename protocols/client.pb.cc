@@ -233,13 +233,13 @@ void protobuf_AddDesc_client_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\014client.proto\022\006client\"\317\002\n\016MessageWrappe"
     "r\0227\n\013messageType\030\001 \002(\0162\".client.MessageW"
-    "rapper.MessageType\022$\n\tthrustMsg\030\002 \001(\0132\021."
-    "client.ThrustMsg\022(\n\013velocityMsg\030\003 \001(\0132\023."
-    "client.VelocityMsg\022 \n\007jumpMsg\030\004 \001(\0132\017.cl"
-    "ient.JumpMsg\022 \n\007infoMsg\030\005 \001(\0132\017.client.I"
-    "nfoMsg\022&\n\nrequestMsg\030\006 \001(\0132\022.client.Requ"
-    "estMsg\"H\n\013MessageType\022\n\n\006THRUST\020\001\022\014\n\010VEL"
-    "OCITY\020\002\022\010\n\004JUMP\020\003\022\010\n\004INFO\020\004\022\013\n\007REQUEST\020\005"
+    "rapper.MessageType\022$\n\tthrustMsg\030\n \001(\0132\021."
+    "client.ThrustMsg\022(\n\013velocityMsg\030\013 \001(\0132\023."
+    "client.VelocityMsg\022 \n\007jumpMsg\030\014 \001(\0132\017.cl"
+    "ient.JumpMsg\022 \n\007infoMsg\030\r \001(\0132\017.client.I"
+    "nfoMsg\022&\n\nrequestMsg\030\016 \001(\0132\022.client.Requ"
+    "estMsg\"H\n\013MessageType\022\n\n\006THRUST\020\n\022\014\n\010VEL"
+    "OCITY\020\013\022\010\n\004JUMP\020\014\022\010\n\004INFO\020\r\022\013\n\007REQUEST\020\016"
     "\",\n\tVectorMsg\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z"
     "\030\003 \002(\001\"D\n\tThrustMsg\022\024\n\004name\030\001 \001(\t:\006THRUS"
     "T\022!\n\006thrust\030\002 \002(\0132\021.client.VectorMsg\"J\n\013"
@@ -295,11 +295,11 @@ const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor(
 }
 bool MessageWrapper_MessageType_IsValid(int value) {
   switch(value) {
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
       return true;
     default:
       return false;
@@ -346,7 +346,7 @@ MessageWrapper::MessageWrapper(const MessageWrapper& from)
 
 void MessageWrapper::SharedCtor() {
   _cached_size_ = 0;
-  messagetype_ = 1;
+  messagetype_ = 10;
   thrustmsg_ = NULL;
   velocitymsg_ = NULL;
   jumpmsg_ = NULL;
@@ -392,7 +392,7 @@ MessageWrapper* MessageWrapper::New() const {
 
 void MessageWrapper::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    messagetype_ = 1;
+    messagetype_ = 10;
     if (has_thrustmsg()) {
       if (thrustmsg_ != NULL) thrustmsg_->::client::ThrustMsg::Clear();
     }
@@ -435,12 +435,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_thrustMsg;
+        if (input->ExpectTag(82)) goto parse_thrustMsg;
         break;
       }
 
-      // optional .client.ThrustMsg thrustMsg = 2;
-      case 2: {
+      // optional .client.ThrustMsg thrustMsg = 10;
+      case 10: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_thrustMsg:
@@ -449,12 +449,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_velocityMsg;
+        if (input->ExpectTag(90)) goto parse_velocityMsg;
         break;
       }
 
-      // optional .client.VelocityMsg velocityMsg = 3;
-      case 3: {
+      // optional .client.VelocityMsg velocityMsg = 11;
+      case 11: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_velocityMsg:
@@ -463,12 +463,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_jumpMsg;
+        if (input->ExpectTag(98)) goto parse_jumpMsg;
         break;
       }
 
-      // optional .client.JumpMsg jumpMsg = 4;
-      case 4: {
+      // optional .client.JumpMsg jumpMsg = 12;
+      case 12: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_jumpMsg:
@@ -477,12 +477,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(42)) goto parse_infoMsg;
+        if (input->ExpectTag(106)) goto parse_infoMsg;
         break;
       }
 
-      // optional .client.InfoMsg infoMsg = 5;
-      case 5: {
+      // optional .client.InfoMsg infoMsg = 13;
+      case 13: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_infoMsg:
@@ -491,12 +491,12 @@ bool MessageWrapper::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_requestMsg;
+        if (input->ExpectTag(114)) goto parse_requestMsg;
         break;
       }
 
-      // optional .client.RequestMsg requestMsg = 6;
-      case 6: {
+      // optional .client.RequestMsg requestMsg = 14;
+      case 14: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_requestMsg:
@@ -533,34 +533,34 @@ void MessageWrapper::SerializeWithCachedSizes(
       1, this->messagetype(), output);
   }
 
-  // optional .client.ThrustMsg thrustMsg = 2;
+  // optional .client.ThrustMsg thrustMsg = 10;
   if (has_thrustmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->thrustmsg(), output);
+      10, this->thrustmsg(), output);
   }
 
-  // optional .client.VelocityMsg velocityMsg = 3;
+  // optional .client.VelocityMsg velocityMsg = 11;
   if (has_velocitymsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->velocitymsg(), output);
+      11, this->velocitymsg(), output);
   }
 
-  // optional .client.JumpMsg jumpMsg = 4;
+  // optional .client.JumpMsg jumpMsg = 12;
   if (has_jumpmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->jumpmsg(), output);
+      12, this->jumpmsg(), output);
   }
 
-  // optional .client.InfoMsg infoMsg = 5;
+  // optional .client.InfoMsg infoMsg = 13;
   if (has_infomsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      5, this->infomsg(), output);
+      13, this->infomsg(), output);
   }
 
-  // optional .client.RequestMsg requestMsg = 6;
+  // optional .client.RequestMsg requestMsg = 14;
   if (has_requestmsg()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      6, this->requestmsg(), output);
+      14, this->requestmsg(), output);
   }
 
   if (!unknown_fields().empty()) {
@@ -577,39 +577,39 @@ void MessageWrapper::SerializeWithCachedSizes(
       1, this->messagetype(), target);
   }
 
-  // optional .client.ThrustMsg thrustMsg = 2;
+  // optional .client.ThrustMsg thrustMsg = 10;
   if (has_thrustmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        2, this->thrustmsg(), target);
+        10, this->thrustmsg(), target);
   }
 
-  // optional .client.VelocityMsg velocityMsg = 3;
+  // optional .client.VelocityMsg velocityMsg = 11;
   if (has_velocitymsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        3, this->velocitymsg(), target);
+        11, this->velocitymsg(), target);
   }
 
-  // optional .client.JumpMsg jumpMsg = 4;
+  // optional .client.JumpMsg jumpMsg = 12;
   if (has_jumpmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        4, this->jumpmsg(), target);
+        12, this->jumpmsg(), target);
   }
 
-  // optional .client.InfoMsg infoMsg = 5;
+  // optional .client.InfoMsg infoMsg = 13;
   if (has_infomsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        5, this->infomsg(), target);
+        13, this->infomsg(), target);
   }
 
-  // optional .client.RequestMsg requestMsg = 6;
+  // optional .client.RequestMsg requestMsg = 14;
   if (has_requestmsg()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
-        6, this->requestmsg(), target);
+        14, this->requestmsg(), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -629,35 +629,35 @@ int MessageWrapper::ByteSize() const {
         ::google::protobuf::internal::WireFormatLite::EnumSize(this->messagetype());
     }
 
-    // optional .client.ThrustMsg thrustMsg = 2;
+    // optional .client.ThrustMsg thrustMsg = 10;
     if (has_thrustmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->thrustmsg());
     }
 
-    // optional .client.VelocityMsg velocityMsg = 3;
+    // optional .client.VelocityMsg velocityMsg = 11;
     if (has_velocitymsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocitymsg());
     }
 
-    // optional .client.JumpMsg jumpMsg = 4;
+    // optional .client.JumpMsg jumpMsg = 12;
     if (has_jumpmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->jumpmsg());
     }
 
-    // optional .client.InfoMsg infoMsg = 5;
+    // optional .client.InfoMsg infoMsg = 13;
     if (has_infomsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->infomsg());
     }
 
-    // optional .client.RequestMsg requestMsg = 6;
+    // optional .client.RequestMsg requestMsg = 14;
     if (has_requestmsg()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
