@@ -14,6 +14,7 @@ message MessageWrapper
         SCANRESULT = 8;
         SCANQUERY = 9;
         SCANRESP = 10;
+        DIRECTORY = 11;
         
         VISPROPS = 100;
         VISDATAENABLE = 101;
@@ -43,7 +44,7 @@ message MessageWrapper
     
 }
 
-message Vector
+message VectorMsg
 {
     required double x=1;
     required double y=2;
@@ -59,12 +60,12 @@ message PhysPropsMsg
 {
     optional string name =1 [default = "PHYSPROPS"];
     
-    required double mass =2;
-    required Vector position =3;
-    required Vector velocity =4;
-    required Vector orientation =5;
-    required Vector thrust =6;
-    required double radius =7;
+    optional double mass =2;
+    optional VectorMsg position =3;
+    optional VectorMsg velocity =4;
+    optional VectorMsg orientation =5;
+    optional VectorMsg thrust =6;
+    optional double radius =7;
 }
 
 message GoodbyeMsg
@@ -76,8 +77,8 @@ message CollisionMsg
 {
     optional string name =1 [default = "COLLISION"];
     
-    required Vector position =2;
-    required Vector direction =3;
+    required VectorMsg position =2;
+    required VectorMsg direction =3;
     required double energy =4;
 
     enum CollisionType
@@ -98,10 +99,10 @@ message SpawnMsg
     optional string name=1 [default = "SPAWN"];
     
     required double mass =2;
-    required Vector position =3;
-    required Vector velocity =4;
-    required Vector orientation =5;
-    required Vector thrust =6;
+    required VectorMsg position =3;
+    required VectorMsg velocity =4;
+    required VectorMsg orientation =5;
+    required VectorMsg thrust =6;
     required double radius =7;
 }
 
@@ -134,9 +135,9 @@ message BeamMsg
 {
     optional string name=1 [default = "BEAM"];
     
-    required Vector origin =2;
-    required Vector velocity =3;
-    required Vector up =4;
+    required VectorMsg origin =2;
+    required VectorMsg velocity =3;
+    required VectorMsg up =4;
     required double spread_h =5;
     required double spread_v =6;
     required double energy =7;
@@ -158,10 +159,10 @@ message ScanResultMsg
     optional string name=1 [default = "SCANRESULT"];
     
     required double mass =2;
-    required Vector position =3;
-    required Vector velocity =4;
-    required Vector orientation =5;
-    required Vector thrust =6;
+    required VectorMsg position =3;
+    required VectorMsg velocity =4;
+    required VectorMsg orientation =5;
+    required VectorMsg thrust =6;
     required double radius =7;
     
     optional string extraParms =8;
@@ -173,7 +174,7 @@ message ScanQueryMsg
     
     required int32 scanID =2;
     required double scanPower =3;
-    required Vector scanDir =4;
+    required VectorMsg scanDir =4;
 }
 
 message ScanRespMsg
@@ -182,4 +183,10 @@ message ScanRespMsg
    
    required int32 scanID =2;
    required string parms =3;
+}
+
+message DirectoryMsg
+{
+    optional string name =1 [default = "DIRECTORY"];
+    
 }

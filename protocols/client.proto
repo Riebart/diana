@@ -21,7 +21,7 @@ message MessageWrapper
 
 }
 
-message Vector
+message VectorMsg
 {
     required double x =1;
     required double y =2;
@@ -32,21 +32,21 @@ message ThrustMsg
 {
     optional string name =1 [default="THRUST"];
 
-    required Vector thrust =2;
+    required VectorMsg thrust =2;
 }
 
 message VelocityMsg
 {
     optional string name =1 [default="VELOCITY"];
     
-    required Vector velocity =2;
+    required VectorMsg velocity =2;
 }
 
 message JumpMsg
 {
     optional string name =1 [default="JUMP"];
     
-    required Vector new_position =2;
+    required VectorMsg new_position =2;
 }
 
 message InfoMsg
