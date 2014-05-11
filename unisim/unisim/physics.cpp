@@ -25,7 +25,7 @@ typedef struct Vector3 V3;
 
 bool is_big_enough(double m, double r)
 {
-	return ((6.67384e-11 * m / r) >= GRAVITY_CUTOFF ? true : false);
+	return ((6.67384e-11 * m / r) >= GRAVITY_CUTOFF);
 }
 
 void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
@@ -290,7 +290,7 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, struct PhysCol
 	}
 }
 
-void SmartPhysicsObject_init(SPO* obj, int client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
 {
 	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type);
 	obj->pobj.type = PHYSOBJECT_SMART;
@@ -302,165 +302,6 @@ void SmartPhysicsObject_init(SPO* obj, int client, uint64_t osim_id, Universe* u
 	obj->exists = true;
 	obj->parent_phys_id = 0;
 }
-
-///// @param args This describes the information about the thing that hit obj, that is other.
-//void SmartPhysicsObject_collision(PO* objt, PO* othert, double energy, struct PhysCollisionEffect* effect)
-//{
-//	switch(othert->type)
-//	{
-//	case PHYSOBJECT:
-//	case PHYSOBJECT_SMART:
-//		{
-//			PO* obj = (PO*)objt;
-//			// SEND A PHYS COLLISION MESSAGE
-//			// CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, "PHYS"])
-//			PhysicsObject_resolve_phys_collision(obj, energy, effect);
-//			//PhysicsObject_resolve_damage(obj, energy);
-//			throw "SmartPhysicsObject/PhysicsObject collision";
-//			break;
-//		}
-//	case BEAM_WEAP:
-//		{
-//			// SEND A PHYS COLLISION MESSAGE
-//			// CollisionMsg.send(self.client, slf.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type])
-//			throw "SmartPhysicsObject/BEAM_WEAP collision";
-//			break;
-//		}
-//	case BEAM_SCAN:
-//		{
-//			SPO* obj = (SPO*)objt;
-//			Beam* other = (Beam*)othert;
-//			//obj->query_id = obj->pobj.universe->queries.add(other, energy, obj);
-//			// ScanQueryMsg.send(self.client, self.phys_id, self.osim_id, [ query_id, energy, d.x, d.y, d.z ])
-//			throw "SmartPhysicsObject/BEAM_SCAN collision";
-//			break;
-//		}
-//	case BEAM_SCANRESULT:
-//		{
-//			// ScanResultMsg.send(self.client, self.phys_id, self.osim_id, PhysicalPropertiesMsg.make_from_object(obj.scan_target, self.position, self.velocity))
-//			throw "SmartPhysicsObject/BEAM_SCANRESULT collision";
-//			break;
-//		}
-//	case BEAM_COMM:
-//		{
-//			// CollisionMsg.send(self.client, self.phys_id, self.osim_id, [p.x, p.y, p.z, d.x, d.y, d.x, energy, obj.beam_type] + obj.message)
-//			throw "SmartPhysicsObject/BEAM_COMM collision";
-//			break;
-//		}
-//	default:
-//		{
-//			throw "SmartPhysicsObject/default collision";
-//			break;
-//		}
-//	}
-//}
-
-//void SmartPhysicsObject_handle(SPO* obj, void* msg)
-//{
-//throw "SmartPhysicsObject_handle";
-//def handle(self, msg):
-//       if isinstance(msg, HelloMsg):
-//           if msg.cli_id == None:
-//               return
-
-//           self.osim_id = msg.cli_id
-//           HelloMsg.send(self.client, self.phys_id, self.osim_id)
-
-//       # If we don't have a osim_id by this point, we can't accept any of the
-//       # following in good conscience...
-//       if self.osim_id == None:
-//           return
-
-//       if isinstance(msg, GoodbyeMsg):
-//           # ### TODO ### In any real language, we'll need to figure out who
-//           # still is keeping track of this object if the universe isn't...
-//           self.universe.expired.append(self)
-
-//       elif isinstance(msg, PhysicalPropertiesMsg):
-//           if msg.object_type != None:
-//               self.object_type = msg.object_type
-
-//           if msg.mass != None:
-//               self.mass = msg.mass
-
-//           if msg.position != None:
-//               if self.position == None:
-//                   self.position = Vector3(msg.position)
-//               else:
-//                   self.position.add(Vector3(msg.position))
-
-//           if msg.velocity != None:
-//               if self.velocity == None:
-//                   self.velocity = Vector3(msg.velocity)
-//               else:
-//                   self.velocity.add(Vector3(msg.velocity))
-
-//           if msg.orientation != None:
-//               self.from_orientation(msg.orientation)
-
-//           if msg.thrust != None:
-//               self.thrust = Vector3(msg.thrust)
-
-//           if msg.radius != None:
-//               self.radius = msg.radius
-
-//           if self.exists == 1 and self.mass != None and self.radius != None:
-//               new_emits = PhysicsObject.is_big_enough(self.mass, self.radius)
-//               diff = self.emits_gravity - new_emits
-//               if diff != 0:
-//                   self.universe.update_attractor(self)
-
-//           # Check for when we finally have a fully defined object.
-//           if (self.exists == 0 and self.object_type != None and self.mass != None and
-//               self.radius != None and self.position != None and
-//               self.velocity != None and self.thrust != None):
-
-//               if self.parent_phys_id != None:
-//                   parent = self.universe.smarties[self.parent_phys_id]
-//                   self.velocity += parent.velocity
-//                   self.position += parent.position
-
-//               self.universe.add_object(self)
-//               self.exists = 1
-
-//       elif isinstance(msg, VisualPropertiesMsg):
-//           if self.art_id == None:
-//               self.art_id = self.universe.curator.register_art(msg.mesh, msg.texture)
-//           else:
-//               self.universe.curator.update_art(self.art_id, msg.mesh, msg.texture)
-//               self.universe.curator.attach_art_asset(self.art_id, self.phys_id)
-
-//       elif isinstance(msg, VisualDataEnableMsg):
-//           changed = msg.enabled - self.vis_data
-//           self.vis_data = msg.enabled
-
-//           if changed != 0:
-//               self.universe.register_for_vis_data(self, self.vis_data)
-
-//       elif isinstance(msg, VisualMetaDataEnableMsg):
-//           changed = msg.enabled - self.vis_meta_data
-//           self.vis_meta_data = msg.enabled
-
-//           if changed != 0:
-//               self.universe.curator.register_client(self, self.vis_meta_data)
-
-//       elif isinstance(msg, BeamMsg):
-//           msg.origin[0] += self.position.x
-//           msg.origin[1] += self.position.y
-//           msg.origin[2] += self.position.z
-
-//           # ### TODO ### Relativistic velocity composition?
-//           msg.velocity[0] += self.velocity.x
-//           msg.velocity[0] += self.velocity.y
-//           msg.velocity[0] += self.velocity.z
-
-//           beam = Beam.build(msg, self.universe)
-
-//           if msg.beam_type == "COMM":
-//               beam.message = msg.msg
-
-//           self.universe.add_beam(beam)
-//}
 
 void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type)
 {
@@ -503,7 +344,7 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 {
 	/// @todo Take radius into account
 
-	// Move the object position to a point relative to the beam's origin.
+	// Move the object position to a point32_t relative to the beam's origin.
 	// Then scale the velocity by dt, and add it to the position to get the
 	// start, end, and difference vectors.
 
@@ -556,7 +397,7 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 
 	// This assumes that out position delta is small enough that we can consider things linear
 	// Lots of linear approximation going on.
-	for (int i = 0 ; i < 2 ; i++)
+	for (int32_t i = 0 ; i < 2 ; i++)
 	{
 		if (!current_b[i])
 		{

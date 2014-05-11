@@ -65,7 +65,7 @@ void gravity(V3* out, PO* big, PO* small)
 void Universe::get_grav_pull(V3* g, PO* obj)
 {
 	V3 cg;
-	for (int i = 0 ; i < attractors.size() ; i++)
+	for (int32_t i = 0 ; i < attractors.size() ; i++)
 	{
 		gravity(&cg, attractors[i], obj);
 		Vector3_add(g, &cg);
@@ -84,7 +84,7 @@ void sim(Universe* u)
 		// Sleep for dt time so that 
 		if (u->paused)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * dt)));
+			std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * dt)));
 			continue;
 		}
 
@@ -99,7 +99,7 @@ void sim(Universe* u)
 		{
 			// C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requestion.
 			// As opposed to usleep which may wake up early.
-			std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * (dt - elapsed.count()))));
+			std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (dt - elapsed.count()))));
 			end = std::chrono::high_resolution_clock::now();
 			elapsed = end - start;
 			e = elapsed.count();
@@ -112,19 +112,19 @@ void sim(Universe* u)
 	}
 }
 
-void Universe_hangup_objects(int c, void* arg)
+void Universe_hangup_objects(int32_t c, void* arg)
 {
 	Universe* u = (Universe*)arg;
 	u->hangup_objects(c);
 }
 
-void Universe_handle_message(int c, void* arg)
+void Universe_handle_message(int32_t c, void* arg)
 {
 	Universe* u = (Universe*)arg;
 	u->handle_message(c);
 }
 
-Universe::Universe(double min_frametime, double max_frametime, double vis_frametime, int port, int num_threads, double rate)
+Universe::Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate)
 {
 	this->rate = rate;
 
@@ -206,10 +206,10 @@ void Universe::expire(uint64_t phys_id)
 	expire_lock.unlock();
 }
 
-void Universe::hangup_objects(int c)
+void Universe::hangup_objects(int32_t c)
 {
 	expire_lock.lock();
-	std::map<unsigned long int, struct SmartPhysicsObject*>::iterator it;
+	std::map<uint64_t, struct SmartPhysicsObject*>::iterator it;
 
 	for (it = smarties.begin() ; it != smarties.end() ; ++it)
 	{
@@ -221,7 +221,7 @@ void Universe::hangup_objects(int c)
 	expire_lock.unlock();
 }
 
-void Universe::handle_message(int c)
+void Universe::handle_message(int32_t c)
 {
 	throw "Universe::handle_message";
 }
@@ -236,9 +236,9 @@ void Universe::tick(double dt)
 	/// @todo Allocate the result on the stack here and pass in a pointer.
 	struct PhysCollisionResult phys_result;
 	struct BeamCollisionResult beam_result;
-	for (int i = 0 ; i < phys_objects.size() ; i++)
+	for (int32_t i = 0 ; i < phys_objects.size() ; i++)
 	{
-		for (int j = i + 1 ; j < phys_objects.size() ; j++)
+		for (int32_t j = i + 1 ; j < phys_objects.size() ; j++)
 		{
 			// Return from a phys-phys collision is
 			//    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
@@ -266,7 +266,7 @@ void Universe::tick(double dt)
 				}
 			}
 
-			for (int bi = 0 ; bi < beams.size() ; bi++)
+			for (int32_t bi = 0 ; bi < beams.size() ; bi++)
 			{
 				Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
 
@@ -285,7 +285,7 @@ void Universe::tick(double dt)
 
 	// Now tick along each object
 	V3 g;
-	for (int i = 0 ; i < phys_objects.size() ; i++)
+	for (int32_t i = 0 ; i < phys_objects.size() ; i++)
 	{
 		g.x = 0.0;
 		g.y = 0.0;
@@ -301,16 +301,16 @@ void Universe::tick(double dt)
 	// Then we can binary search our way as we iterate over the list of phys IDs.
 	// That might have a big constant though
 	/// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-	for (int i = 0 ; i < phys_objects.size() ; i++)
+	for (int32_t i = 0 ; i < phys_objects.size() ; i++)
 	{
-		for (int j = 0 ; j < expired.size() ; j++)
+		for (int32_t j = 0 ; j < expired.size() ; j++)
 		{
 			if (expired[j] == phys_objects[i]->phys_id)
 			{
 				// If it's a beam...
 				if (phys_objects[i]->type >= BEAM_COMM)
 				{
-					for (int k = 0 ; k < beams.size() ; k++)
+					for (int32_t k = 0 ; k < beams.size() ; k++)
 					{
 						if (beams[k]->phys_id == expired[j])
 						{
@@ -328,7 +328,7 @@ void Universe::tick(double dt)
 
 					if (phys_objects[i]->emits_gravity)
 					{
-						for (int k = 0 ; k < attractors.size() ; k++)
+						for (int32_t k = 0 ; k < attractors.size() ; k++)
 						{
 							if (attractors[k]->phys_id == expired[j])
 							{
@@ -350,7 +350,7 @@ void Universe::tick(double dt)
 
 	add_lock.lock();
 	// Handle added queue
-	for (int i = 0 ; i < added.size() ; i++)
+	for (int32_t i = 0 ; i < added.size() ; i++)
 	{
 		switch (added[i]->type)
 		{

@@ -1,12 +1,14 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
+#include <stdint.h>
+
 struct Vector3
 {
 	double x, y, z;
 };
 
-struct Vector3* Vector3_alloc(int n = 1);
+struct Vector3* Vector3_alloc(int32_t n = 1);
 struct Vector3* Vector3_clone(struct Vector3* v);
 
 void Vector3_init(struct Vector3* v, double x, double y, double z);

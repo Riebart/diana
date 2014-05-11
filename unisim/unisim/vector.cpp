@@ -12,7 +12,7 @@ typedef struct Vector3 V3;
 /// in-place options for all of these, and you can differentiate by signature.
 /// @todo standardize what allocates a vector and what doesn't. Maybe force no allocations?
 
-V3* Vector3_alloc(int n)
+V3* Vector3_alloc(int32_t n)
 {
 	return (V3*)malloc(sizeof(V3) * n);
 }

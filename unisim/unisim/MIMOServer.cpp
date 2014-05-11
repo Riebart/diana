@@ -18,7 +18,6 @@
 #endif
 
 /// @todo Don't need to pass pointers, just the server which contains the other information.
-/// @todo Scrap this object and just use threads. We don't need this damn class proliferation. This isn't a webapp.
 /// @todo Potentially move message parsing into here, because message handling will cause the socket to block.
 class SocketThread
 {
@@ -27,14 +26,14 @@ class SocketThread
 	friend void serve_MIMOServer(MIMOServer* server);
 
 public:
-	SocketThread(int c, void (*handler)(int), MIMOServer* server);
-	SocketThread(int c, void (*handler)(int, void*), void* handler_context, MIMOServer* server);
+	SocketThread(int32_t c, void (*handler)(int32_t), MIMOServer* server);
+	SocketThread(int32_t c, void (*handler)(int32_t, void*), void* handler_context, MIMOServer* server);
 	~SocketThread();
 
 private:
-	int c;
-	void (*handler)(int);
-	void (*handler2)(int, void*);
+	int32_t c;
+	void (*handler)(int32_t);
+	void (*handler2)(int32_t, void*);
 	void* handler_context;
 	bool running;
 	std::thread t;
@@ -54,7 +53,7 @@ void serve_SocketThread(SocketThread* sock)
 		}
 
 		char b;
-		int ret = recv(sock->c, &b, 1, MSG_PEEK);
+		int32_t ret = recv(sock->c, &b, 1, MSG_PEEK);
 		// Ignore errors if we're no longer running.
 		if (!sock->running)
 		{
@@ -63,7 +62,7 @@ void serve_SocketThread(SocketThread* sock)
 
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Unable to peek at client %d (%d)\n", sock->c, ret);
 			break;
 		}
@@ -91,7 +90,7 @@ void serve_SocketThread(SocketThread* sock)
 	}
 }
 
-SocketThread::SocketThread(int c, void (*handler)(int), MIMOServer* server)
+SocketThread::SocketThread(int32_t c, void (*handler)(int32_t), MIMOServer* server)
 {
 	this->c = c;
 	this->handler = handler;
@@ -101,7 +100,7 @@ SocketThread::SocketThread(int c, void (*handler)(int), MIMOServer* server)
 	running = false;
 }
 
-SocketThread::SocketThread(int c, void (*handler)(int, void*), void* handler_context, MIMOServer* server)
+SocketThread::SocketThread(int32_t c, void (*handler)(int32_t, void*), void* handler_context, MIMOServer* server)
 {
 	this->c = c;
 	this->handler = NULL;
@@ -130,17 +129,17 @@ void SocketThread::stop()
 	if (running)
 	{
 		running = false;
-		int ret = shutdown(c, SHUT_RDWR);
+		int32_t ret = shutdown(c, SHUT_RDWR);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error shutting down socket %d (%d)\n", c, ret);
 		}
 
 		ret = closesocket(c);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error closing socket %d (%d)\n", c, ret);
 		}
 
@@ -157,7 +156,7 @@ void serve_MIMOServer(MIMOServer* server)
 	fd_set fds;
 	const timeval timeout = { 0, 10000 };
 
-	int nready;
+	int32_t nready;
 
 	while (server->running)
 	{
@@ -168,7 +167,7 @@ void serve_MIMOServer(MIMOServer* server)
 		nready = select(2, &fds, NULL, NULL, &timeout);
 		if (nready == SOCKET_ERROR)
 		{
-			nready = WSAGetLastError();
+			nready = errno;
 			fprintf(stderr, "Error when selecting sockets (%d)\n", nready);
 			server->stop();
 			break;
@@ -185,9 +184,9 @@ void serve_MIMOServer(MIMOServer* server)
 		if (server->hangups.size() > 0)
 		{
 			server->hangup_lock.lock();
-			int pre_hangup = server->inputs.size();
+			int32_t pre_hangup = server->inputs.size();
 
-			for (int i = 0 ; i < server->hangups.size() ; i++)
+			for (int32_t i = 0 ; i < server->hangups.size() ; i++)
 			{
 				server->hangup(server->hangups[i]);
 			}
@@ -201,13 +200,13 @@ void serve_MIMOServer(MIMOServer* server)
 		if (nready > 0)
 		{
 			struct sockaddr_storage addr = { 0 };
-			int addrlen = sizeof(struct sockaddr_storage);
+			int32_t addrlen = sizeof(struct sockaddr_storage);
 
-			for (int i = 0 ; i < fds.fd_count ; i++)
+			for (int32_t i = 0 ; i < fds.fd_count ; i++)
 			{
 				// First check to see if the socket is ready for a connection, or if we're shutting them down
 				int32_t err = -12345;
-				int sockoptslen = 4;
+				int32_t sockoptslen = 4;
 				nready = getsockopt(fds.fd_array[i], SOL_SOCKET, SO_ERROR, (char*)&err, &sockoptslen);
 				//fprintf(stderr, "%d\n", err);
 				// I don't think we are ready to accept this connection maybe?
@@ -216,10 +215,10 @@ void serve_MIMOServer(MIMOServer* server)
 					continue;
 				}
 
-				int c = accept(fds.fd_array[i], (struct sockaddr*)&addr, &addrlen);
+				int32_t c = accept(fds.fd_array[i], (struct sockaddr*)&addr, &addrlen);
 				if (c == INVALID_SOCKET)
 				{
-					nready = WSAGetLastError();
+					nready = errno;
 					fprintf(stderr, "Unable to accept connection on socket %d (%d)\n", fds.fd_array[i], nready);
 					continue;
 				}
@@ -257,7 +256,7 @@ void serve_MIMOServer(MIMOServer* server)
 	}
 }
 
-MIMOServer::MIMOServer(void (*data_callback)(int), void (*hangup_callback)(int), int port, int backlog)
+MIMOServer::MIMOServer(void (*data_callback)(int32_t), void (*hangup_callback)(int32_t), int32_t port, int32_t backlog)
 {
 	this->data_callback = data_callback;
 	this->data_callback2 = NULL;
@@ -277,7 +276,7 @@ MIMOServer::MIMOServer(void (*data_callback)(int), void (*hangup_callback)(int),
 	running = false;
 }
 
-MIMOServer::MIMOServer(void (*data_callback)(int, void*), void* data_context, void (*hangup_callback)(int, void*), void* hangup_context, int port, int backlog)
+MIMOServer::MIMOServer(void (*data_callback)(int32_t, void*), void* data_context, void (*hangup_callback)(int32_t, void*), void* hangup_context, int32_t port, int32_t backlog)
 {
 	this->data_callback = NULL;
 	this->data_callback2 = data_callback;
@@ -305,7 +304,7 @@ MIMOServer::~MIMOServer()
 	if (threadmap.size() > 0)
 	{
 		fprintf(stderr, "The threadmap still has %d things at the end of the destructor!\n", threadmap.size());
-		std::map<int, struct SocketThread*>::iterator it;
+		std::map<int32_t, struct SocketThread*>::iterator it;
 		for (it = threadmap.begin() ; it != threadmap.end() ; ++it)
 		{
 			it->second->stop();
@@ -314,21 +313,21 @@ MIMOServer::~MIMOServer()
 	}
 }
 
-int listen(int port, int backlog, int family, uint32_t addr4, IN6_ADDR addr6)
+int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, IN6_ADDR addr6)
 {
-	int server = socket(family, SOCK_STREAM, IPPROTO_TCP);
+	int32_t server = socket(family, SOCK_STREAM, IPPROTO_TCP);
 	if(server == INVALID_SOCKET)
 	{
 		perror("Can not create MIMOServer socket");
 		exit(EXIT_FAILURE);
 	}
 
-	int ret;
+	int32_t ret;
 	uint32_t sockopts = 1;
 	ret = setsockopt(server, SOL_SOCKET, SO_REUSEADDR, (const char*)&sockopts, 1);
 	if (ret == SOCKET_ERROR)
 	{
-		ret = WSAGetLastError();
+		ret = errno;
 		fprintf(stderr, "Can not set MIMOServer socket options (%d)\n", ret);
 		exit(EXIT_FAILURE);
 	}
@@ -357,12 +356,12 @@ int listen(int port, int backlog, int family, uint32_t addr4, IN6_ADDR addr6)
 		}
 	default:
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Invalid address family for socket (%d)\n", ret);
 			ret = closesocket(server);
 			if (ret == SOCKET_ERROR)
 			{
-				ret = WSAGetLastError();
+				ret = errno;
 				fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
 			}
 			exit(EXIT_FAILURE);
@@ -371,12 +370,12 @@ int listen(int port, int backlog, int family, uint32_t addr4, IN6_ADDR addr6)
 
 	if (ret == SOCKET_ERROR)
 	{
-		ret = WSAGetLastError();
+		ret = errno;
 		fprintf(stderr, "Can not bind MIMOServer socket (%d)\n", ret);
 		ret = closesocket(server);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
 		}
 		exit(EXIT_FAILURE);
@@ -385,12 +384,12 @@ int listen(int port, int backlog, int family, uint32_t addr4, IN6_ADDR addr6)
 	ret = listen(server, backlog);
 	if (ret == SOCKET_ERROR)
 	{
-		ret = WSAGetLastError();
+		ret = errno;
 		fprintf(stderr, "Can not put MIMOServer socket into listen state (%d)\n", ret);
 		ret = closesocket(server);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
 		}
 		exit(EXIT_FAILURE);
@@ -399,12 +398,12 @@ int listen(int port, int backlog, int family, uint32_t addr4, IN6_ADDR addr6)
 	return server;
 }
 
-int listen4(int port, int backlog, uint32_t addr)
+int32_t listen4(int32_t port, int32_t backlog, uint32_t addr)
 {
 	return listen(port, backlog, AF_INET, addr, in6addr_any);
 }
 
-int listen6(int port, int backlog, IN6_ADDR addr)
+int32_t listen6(int32_t port, int32_t backlog, IN6_ADDR addr)
 {
 	return listen(port, backlog, AF_INET6, INADDR_ANY, addr);
 }
@@ -435,10 +434,10 @@ void MIMOServer::stop()
 		server_thread.join();
 
 		fprintf(stderr, "Shutting down server...\n");
-		int ret = shutdown(server4, SHUT_RDWR);
+		int32_t ret = shutdown(server4, SHUT_RDWR);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			// Ignore socket not connected errors
 			if (ret != 10057)
 			{
@@ -448,14 +447,14 @@ void MIMOServer::stop()
 		ret = closesocket(server4);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error closing server4 socket %d (%d)\n", server4, ret);
 		}
 
 		ret = shutdown(server6, SHUT_RDWR);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			// Ignore socket not connected errors
 			if (ret != 10057)
 			{
@@ -465,7 +464,7 @@ void MIMOServer::stop()
 		ret = closesocket(server6);
 		if (ret == SOCKET_ERROR)
 		{
-			ret = WSAGetLastError();
+			ret = errno;
 			fprintf(stderr, "Error closing server6 socket %d (%d)\n", server6, ret);
 		}
 
@@ -474,7 +473,7 @@ void MIMOServer::stop()
 		{
 			fprintf(stderr, "Hanging up %d %sclients%s\n", inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
 
-			for (int i = 0 ; i < inputs.size() ; i++)
+			for (int32_t i = 0 ; i < inputs.size() ; i++)
 			{
 				hangup(inputs[i]);
 				i--;
@@ -487,7 +486,7 @@ void MIMOServer::stop()
 	}
 }
 
-void MIMOServer::on_hangup(int c)
+void MIMOServer::on_hangup(int32_t c)
 {
 	hangup_lock.lock();
 	hangups.push_back(c);
@@ -495,13 +494,13 @@ void MIMOServer::on_hangup(int c)
 }
 
 // Called from serve_MIMOServer() when a client hangs up.
-void MIMOServer::hangup(int c)
+void MIMOServer::hangup(int32_t c)
 {
 	fprintf(stderr, "Hanging up %d\n", c);
 
 	// @todo The python checks for already hung up clients,
 	// but we'll just arrange for that not to happen.
-	for (int i = 0 ; i < inputs.size() ; i++)
+	for (int32_t i = 0 ; i < inputs.size() ; i++)
 	{
 		if (inputs[i] == c)
 		{

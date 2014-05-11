@@ -6,18 +6,18 @@
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
-int compare(const void* aV, const void* bV)
+int32_t compare(const void* aV, const void* bV)
 {
 	uint64_t a = *(uint64_t*)aV;
 	uint64_t b = *(uint64_t*)bV;
 	return ((a < b) ? -1 : ((a == b) ? 0 : 1));
 }
 
-void dc(int c)
+void dc(int32_t c)
 {
 	fprintf(stderr, "DC %d\n", c);
 	char buf[1024];
-	int ngot = recv(c, buf, 1023, 0);
+	int32_t ngot = recv(c, buf, 1023, 0);
 	if (ngot == SOCKET_ERROR)
 	{
 		ngot = WSAGetLastError();
@@ -29,12 +29,12 @@ void dc(int c)
 	fprintf(stderr, "%s", buf);
 }
 
-void hc(int c)
+void hc(int32_t c)
 {
 	fprintf(stderr, "HC %d\n", c);
 }
 
-int main(int argc, char** argv)
+void main(int32_t argc, char** argv)
 {
 	try
 	{
@@ -45,7 +45,6 @@ int main(int argc, char** argv)
 		std::cin >> input;
 		u.stop_net();
 		u.stop_sim();
-		return 0;
 	}
 	catch (char* e)
 	{

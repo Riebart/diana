@@ -39,7 +39,7 @@ struct PhysicsObject
 		health;
 	Universe* universe;
 	char* obj_type;
-	int art_id;
+	int32_t art_id;
 	bool emits_gravity;
 };
 #pragma pack()
@@ -51,7 +51,7 @@ struct SmartPhysicsObject
 	uint64_t osim_id,
 		parent_phys_id,
 		query_id;
-	int client;
+	int32_t client;
 	bool vis_data,
 		vis_meta_data,
 		exists;
@@ -129,9 +129,7 @@ void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* o
 void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
 void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, struct PhysCollisionEffect* pce);
 
-void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_type);
-//void SmartPhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, struct PhysCollisionEffect* args);
-//void SmartPhysicsObject_handle(struct SmartPhysicsObject* obj, void* msg);
+void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_type);
 
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type);
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type);

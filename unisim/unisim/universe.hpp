@@ -66,11 +66,11 @@ struct Beam;
 class Universe
 {
 	friend void sim(Universe* u);
-	friend void Universe_hangup_objects(int c, void* arg);
-	friend void Universe_handle_message(int c, void* arg);
+	friend void Universe_hangup_objects(int32_t c, void* arg);
+	friend void Universe_handle_message(int32_t c, void* arg);
 
 public:
-	Universe(double min_frametime, double max_frametime, double vis_frametime, int port, int num_threads, double rate = 1.0);
+	Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0);
 	~Universe();
 	void start_net();
 	void stop_net();
@@ -101,13 +101,13 @@ public:
 	void expire(uint64_t phys_id);
 
 	/// Expire all objects in the universe associated with the given client.
-	void hangup_objects(int c);
+	void hangup_objects(int32_t c);
 
 	/// Update whether or not an object emits gravity.
 	void update_attractor(struct PhysicsObject* obj);
 
 	/// Associate 'smart' properties with an exiting dumb object.
-	//struct SmartPhysicsObject* register_smarty(int c, uint64_t osim_id, uint64_t phys_id);
+	//struct SmartPhysicsObject* register_smarty(int32_t c, uint64_t osim_id, uint64_t phys_id);
 
 	void register_for_vis_data(uint64_t phys_id, bool enable);
 
@@ -115,13 +115,13 @@ private:
 	uint64_t get_id();
 	void broadcast_vis_data();
 	void tick(double dt);
-	void handle_message(int c);
+	void handle_message(int32_t c);
 	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
 	MIMOServer* net;
 	//ArtCurator* curator;
 
-	std::map<unsigned long int, struct SmartPhysicsObject*> smarties;
+	std::map<uint64_t, struct SmartPhysicsObject*> smarties;
 	std::vector<struct PhysicsObject*> attractors;
 	std::vector<struct PhysicsObject*> phys_objects;
 	std::vector<struct Beam*> beams;
@@ -134,7 +134,7 @@ private:
 	/// this structure. When the query result message comes back, the original
 	/// collision information is retrieved, the SCANRESULT beam is built and
 	/// added to the universe.
-	std::map<unsigned long int, unsigned long int> queries;
+	std::map<uint64_t, uint64_t> queries;
 	std::vector<int> vis_clients;
 
 	std::thread sim_thread;
@@ -153,7 +153,7 @@ private:
 	double wall_frametime;
 	uint64_t num_ticks;
 
-	int num_threads;
+	int32_t num_threads;
 	bool paused;
 	bool running;
 
