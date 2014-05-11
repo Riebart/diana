@@ -24,9 +24,9 @@ const ::google::protobuf::Descriptor* MessageWrapper_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   MessageWrapper_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* Vector_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* VectorMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  Vector_reflection_ = NULL;
+  VectorMsg_reflection_ = NULL;
 const ::google::protobuf::Descriptor* HelloMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   HelloMsg_reflection_ = NULL;
@@ -71,6 +71,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* ScanRespMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ScanRespMsg_reflection_ = NULL;
+const ::google::protobuf::Descriptor* DirectoryMsg_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  DirectoryMsg_reflection_ = NULL;
 
 }  // namespace
 
@@ -111,23 +114,23 @@ void protobuf_AssignDesc_universe_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MessageWrapper));
   MessageWrapper_MessageType_descriptor_ = MessageWrapper_descriptor_->enum_type(0);
-  Vector_descriptor_ = file->message_type(1);
-  static const int Vector_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, x_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, y_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, z_),
+  VectorMsg_descriptor_ = file->message_type(1);
+  static const int VectorMsg_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, x_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, y_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, z_),
   };
-  Vector_reflection_ =
+  VectorMsg_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
-      Vector_descriptor_,
-      Vector::default_instance_,
-      Vector_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, _unknown_fields_),
+      VectorMsg_descriptor_,
+      VectorMsg::default_instance_,
+      VectorMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, _unknown_fields_),
       -1,
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(Vector));
+      sizeof(VectorMsg));
   HelloMsg_descriptor_ = file->message_type(2);
   static const int HelloMsg_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HelloMsg, name_),
@@ -377,6 +380,21 @@ void protobuf_AssignDesc_universe_2eproto() {
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(ScanRespMsg));
+  DirectoryMsg_descriptor_ = file->message_type(16);
+  static const int DirectoryMsg_offsets_[1] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DirectoryMsg, name_),
+  };
+  DirectoryMsg_reflection_ =
+    new ::google::protobuf::internal::GeneratedMessageReflection(
+      DirectoryMsg_descriptor_,
+      DirectoryMsg::default_instance_,
+      DirectoryMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DirectoryMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DirectoryMsg, _unknown_fields_),
+      -1,
+      ::google::protobuf::DescriptorPool::generated_pool(),
+      ::google::protobuf::MessageFactory::generated_factory(),
+      sizeof(DirectoryMsg));
 }
 
 namespace {
@@ -392,7 +410,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MessageWrapper_descriptor_, &MessageWrapper::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Vector_descriptor_, &Vector::default_instance());
+    VectorMsg_descriptor_, &VectorMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     HelloMsg_descriptor_, &HelloMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -421,6 +439,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
     ScanQueryMsg_descriptor_, &ScanQueryMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ScanRespMsg_descriptor_, &ScanRespMsg::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+    DirectoryMsg_descriptor_, &DirectoryMsg::default_instance());
 }
 
 }  // namespace
@@ -428,8 +448,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void protobuf_ShutdownFile_universe_2eproto() {
   delete MessageWrapper::default_instance_;
   delete MessageWrapper_reflection_;
-  delete Vector::default_instance_;
-  delete Vector_reflection_;
+  delete VectorMsg::default_instance_;
+  delete VectorMsg_reflection_;
   delete HelloMsg::default_instance_;
   delete HelloMsg_reflection_;
   delete HelloMsg::_default_name_;
@@ -472,6 +492,9 @@ void protobuf_ShutdownFile_universe_2eproto() {
   delete ScanRespMsg::default_instance_;
   delete ScanRespMsg_reflection_;
   delete ScanRespMsg::_default_name_;
+  delete DirectoryMsg::default_instance_;
+  delete DirectoryMsg_reflection_;
+  delete DirectoryMsg::_default_name_;
 }
 
 void protobuf_AddDesc_universe_2eproto() {
@@ -481,7 +504,7 @@ void protobuf_AddDesc_universe_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\016universe.proto\022\010universe\"\207\007\n\016MessageWr"
+    "\n\016universe.proto\022\010universe\"\226\007\n\016MessageWr"
     "apper\0229\n\013messageType\030\001 \002(\0162$.universe.Me"
     "ssageWrapper.MessageType\022$\n\010helloMsg\030\002 \001"
     "(\0132\022.universe.HelloMsg\022(\n\ngoodByeMsg\030\003 \001"
@@ -498,61 +521,64 @@ void protobuf_AddDesc_universe_2eproto() {
     ".VisDataEnable\0226\n\021visMetaDataEnable\030f \001("
     "\0132\033.universe.VisMetaDataEnable\022*\n\013visMet"
     "aData\030g \001(\0132\025.universe.VisMetaData\022\"\n\007vi"
-    "sData\030h \001(\0132\021.universe.VisData\"\333\001\n\013Messa"
+    "sData\030h \001(\0132\021.universe.VisData\"\352\001\n\013Messa"
     "geType\022\t\n\005HELLO\020\002\022\013\n\007GOODBYE\020\003\022\r\n\tPHYSPR"
     "OPS\020\004\022\r\n\tCOLLISION\020\005\022\t\n\005SPAWN\020\006\022\010\n\004BEAM\020"
     "\007\022\016\n\nSCANRESULT\020\010\022\r\n\tSCANQUERY\020\t\022\014\n\010SCAN"
-    "RESP\020\n\022\014\n\010VISPROPS\020d\022\021\n\rVISDATAENABLE\020e\022"
-    "\025\n\021VISMETADATAENABLE\020f\022\017\n\013VISMETADATA\020g\022"
-    "\013\n\007VISDATA\020h\")\n\006Vector\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002"
-    " \002(\001\022\t\n\001z\030\003 \002(\001\"\037\n\010HelloMsg\022\023\n\004name\030\001 \001("
-    "\t:\005HELLO\"\326\001\n\014PhysPropsMsg\022\027\n\004name\030\001 \001(\t:"
-    "\tPHYSPROPS\022\014\n\004mass\030\002 \002(\001\022\"\n\010position\030\003 \002"
-    "(\0132\020.universe.Vector\022\"\n\010velocity\030\004 \002(\0132\020"
-    ".universe.Vector\022%\n\013orientation\030\005 \002(\0132\020."
-    "universe.Vector\022 \n\006thrust\030\006 \002(\0132\020.univer"
-    "se.Vector\022\016\n\006radius\030\007 \002(\001\"#\n\nGoodbyeMsg\022"
-    "\025\n\004name\030\001 \001(\t:\007GOODBYE\"\262\002\n\014CollisionMsg\022"
-    "\027\n\004name\030\001 \001(\t:\tCOLLISION\022\"\n\010position\030\002 \002"
-    "(\0132\020.universe.Vector\022#\n\tdirection\030\003 \002(\0132"
-    "\020.universe.Vector\022\016\n\006energy\030\004 \002(\001\022;\n\rcol"
-    "lisionType\030\005 \002(\0162$.universe.CollisionMsg"
-    ".CollisionType\022\022\n\ncommString\030\006 \001(\t\"_\n\rCo"
-    "llisionType\022\022\n\016PHYS_COLLISION\020\001\022\022\n\016SCAN_"
-    "COLLISION\020\002\022\022\n\016WEAP_COLLISION\020\003\022\022\n\016COMM_"
-    "COLLISION\020\004\"\316\001\n\010SpawnMsg\022\023\n\004name\030\001 \001(\t:\005"
-    "SPAWN\022\014\n\004mass\030\002 \002(\001\022\"\n\010position\030\003 \002(\0132\020."
-    "universe.Vector\022\"\n\010velocity\030\004 \002(\0132\020.univ"
-    "erse.Vector\022%\n\013orientation\030\005 \002(\0132\020.unive"
-    "rse.Vector\022 \n\006thrust\030\006 \002(\0132\020.universe.Ve"
-    "ctor\022\016\n\006radius\030\007 \002(\001\"\"\n\010VisProps\022\026\n\004name"
-    "\030\001 \001(\t:\010VISPROPS\",\n\rVisDataEnable\022\033\n\004nam"
-    "e\030\001 \001(\t:\rVISDATAENABLE\" \n\007VisData\022\025\n\004nam"
-    "e\030\001 \001(\t:\007VISDATA\"(\n\013VisMetaData\022\031\n\004name\030"
-    "\001 \001(\t:\013VISMETADATA\"4\n\021VisMetaDataEnable\022"
-    "\037\n\004name\030\001 \001(\t:\021VISMETADATAENABLE\"\241\002\n\007Bea"
-    "mMsg\022\022\n\004name\030\001 \001(\t:\004BEAM\022 \n\006origin\030\002 \002(\013"
-    "2\020.universe.Vector\022\"\n\010velocity\030\003 \002(\0132\020.u"
-    "niverse.Vector\022\034\n\002up\030\004 \002(\0132\020.universe.Ve"
-    "ctor\022\020\n\010spread_h\030\005 \002(\001\022\020\n\010spread_v\030\006 \002(\001"
-    "\022\016\n\006energy\030\007 \002(\001\022,\n\010beamType\030\010 \002(\0162\032.uni"
-    "verse.BeamMsg.BeamType\022\022\n\ncommString\030\t \001"
-    "(\t\"(\n\010BeamType\022\010\n\004SCAN\020\001\022\010\n\004WEAP\020\002\022\010\n\004CO"
-    "MM\020\003\"\354\001\n\rScanResultMsg\022\030\n\004name\030\001 \001(\t:\nSC"
-    "ANRESULT\022\014\n\004mass\030\002 \002(\001\022\"\n\010position\030\003 \002(\013"
-    "2\020.universe.Vector\022\"\n\010velocity\030\004 \002(\0132\020.u"
-    "niverse.Vector\022%\n\013orientation\030\005 \002(\0132\020.un"
-    "iverse.Vector\022 \n\006thrust\030\006 \002(\0132\020.universe"
-    ".Vector\022\016\n\006radius\030\007 \002(\001\022\022\n\nextraParms\030\010 "
-    "\001(\t\"m\n\014ScanQueryMsg\022\027\n\004name\030\001 \001(\t:\tSCANQ"
-    "UERY\022\016\n\006scanID\030\002 \002(\005\022\021\n\tscanPower\030\003 \002(\001\022"
-    "!\n\007scanDir\030\004 \002(\0132\020.universe.Vector\"D\n\013Sc"
-    "anRespMsg\022\026\n\004name\030\001 \001(\t:\010SCANRESP\022\016\n\006sca"
-    "nID\030\002 \002(\005\022\r\n\005parms\030\003 \002(\t", 2704);
+    "RESP\020\n\022\r\n\tDIRECTORY\020\013\022\014\n\010VISPROPS\020d\022\021\n\rV"
+    "ISDATAENABLE\020e\022\025\n\021VISMETADATAENABLE\020f\022\017\n"
+    "\013VISMETADATA\020g\022\013\n\007VISDATA\020h\",\n\tVectorMsg"
+    "\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z\030\003 \002(\001\"\037\n\010Hel"
+    "loMsg\022\023\n\004name\030\001 \001(\t:\005HELLO\"\342\001\n\014PhysProps"
+    "Msg\022\027\n\004name\030\001 \001(\t:\tPHYSPROPS\022\014\n\004mass\030\002 \001"
+    "(\001\022%\n\010position\030\003 \001(\0132\023.universe.VectorMs"
+    "g\022%\n\010velocity\030\004 \001(\0132\023.universe.VectorMsg"
+    "\022(\n\013orientation\030\005 \001(\0132\023.universe.VectorM"
+    "sg\022#\n\006thrust\030\006 \001(\0132\023.universe.VectorMsg\022"
+    "\016\n\006radius\030\007 \001(\001\"#\n\nGoodbyeMsg\022\025\n\004name\030\001 "
+    "\001(\t:\007GOODBYE\"\270\002\n\014CollisionMsg\022\027\n\004name\030\001 "
+    "\001(\t:\tCOLLISION\022%\n\010position\030\002 \002(\0132\023.unive"
+    "rse.VectorMsg\022&\n\tdirection\030\003 \002(\0132\023.unive"
+    "rse.VectorMsg\022\016\n\006energy\030\004 \002(\001\022;\n\rcollisi"
+    "onType\030\005 \002(\0162$.universe.CollisionMsg.Col"
+    "lisionType\022\022\n\ncommString\030\006 \001(\t\"_\n\rCollis"
+    "ionType\022\022\n\016PHYS_COLLISION\020\001\022\022\n\016SCAN_COLL"
+    "ISION\020\002\022\022\n\016WEAP_COLLISION\020\003\022\022\n\016COMM_COLL"
+    "ISION\020\004\"\332\001\n\010SpawnMsg\022\023\n\004name\030\001 \001(\t:\005SPAW"
+    "N\022\014\n\004mass\030\002 \002(\001\022%\n\010position\030\003 \002(\0132\023.univ"
+    "erse.VectorMsg\022%\n\010velocity\030\004 \002(\0132\023.unive"
+    "rse.VectorMsg\022(\n\013orientation\030\005 \002(\0132\023.uni"
+    "verse.VectorMsg\022#\n\006thrust\030\006 \002(\0132\023.univer"
+    "se.VectorMsg\022\016\n\006radius\030\007 \002(\001\"\"\n\010VisProps"
+    "\022\026\n\004name\030\001 \001(\t:\010VISPROPS\",\n\rVisDataEnabl"
+    "e\022\033\n\004name\030\001 \001(\t:\rVISDATAENABLE\" \n\007VisDat"
+    "a\022\025\n\004name\030\001 \001(\t:\007VISDATA\"(\n\013VisMetaData\022"
+    "\031\n\004name\030\001 \001(\t:\013VISMETADATA\"4\n\021VisMetaDat"
+    "aEnable\022\037\n\004name\030\001 \001(\t:\021VISMETADATAENABLE"
+    "\"\252\002\n\007BeamMsg\022\022\n\004name\030\001 \001(\t:\004BEAM\022#\n\006orig"
+    "in\030\002 \002(\0132\023.universe.VectorMsg\022%\n\010velocit"
+    "y\030\003 \002(\0132\023.universe.VectorMsg\022\037\n\002up\030\004 \002(\013"
+    "2\023.universe.VectorMsg\022\020\n\010spread_h\030\005 \002(\001\022"
+    "\020\n\010spread_v\030\006 \002(\001\022\016\n\006energy\030\007 \002(\001\022,\n\010bea"
+    "mType\030\010 \002(\0162\032.universe.BeamMsg.BeamType\022"
+    "\022\n\ncommString\030\t \001(\t\"(\n\010BeamType\022\010\n\004SCAN\020"
+    "\001\022\010\n\004WEAP\020\002\022\010\n\004COMM\020\003\"\370\001\n\rScanResultMsg\022"
+    "\030\n\004name\030\001 \001(\t:\nSCANRESULT\022\014\n\004mass\030\002 \002(\001\022"
+    "%\n\010position\030\003 \002(\0132\023.universe.VectorMsg\022%"
+    "\n\010velocity\030\004 \002(\0132\023.universe.VectorMsg\022(\n"
+    "\013orientation\030\005 \002(\0132\023.universe.VectorMsg\022"
+    "#\n\006thrust\030\006 \002(\0132\023.universe.VectorMsg\022\016\n\006"
+    "radius\030\007 \002(\001\022\022\n\nextraParms\030\010 \001(\t\"p\n\014Scan"
+    "QueryMsg\022\027\n\004name\030\001 \001(\t:\tSCANQUERY\022\016\n\006sca"
+    "nID\030\002 \002(\005\022\021\n\tscanPower\030\003 \002(\001\022$\n\007scanDir\030"
+    "\004 \002(\0132\023.universe.VectorMsg\"D\n\013ScanRespMs"
+    "g\022\026\n\004name\030\001 \001(\t:\010SCANRESP\022\016\n\006scanID\030\002 \002("
+    "\005\022\r\n\005parms\030\003 \002(\t\"\'\n\014DirectoryMsg\022\027\n\004name"
+    "\030\001 \001(\t:\tDIRECTORY", 2817);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "universe.proto", &protobuf_RegisterTypes);
   MessageWrapper::default_instance_ = new MessageWrapper();
-  Vector::default_instance_ = new Vector();
+  VectorMsg::default_instance_ = new VectorMsg();
   HelloMsg::_default_name_ =
       new ::std::string("HELLO", 5);
   HelloMsg::default_instance_ = new HelloMsg();
@@ -595,8 +621,11 @@ void protobuf_AddDesc_universe_2eproto() {
   ScanRespMsg::_default_name_ =
       new ::std::string("SCANRESP", 8);
   ScanRespMsg::default_instance_ = new ScanRespMsg();
+  DirectoryMsg::_default_name_ =
+      new ::std::string("DIRECTORY", 9);
+  DirectoryMsg::default_instance_ = new DirectoryMsg();
   MessageWrapper::default_instance_->InitAsDefaultInstance();
-  Vector::default_instance_->InitAsDefaultInstance();
+  VectorMsg::default_instance_->InitAsDefaultInstance();
   HelloMsg::default_instance_->InitAsDefaultInstance();
   PhysPropsMsg::default_instance_->InitAsDefaultInstance();
   GoodbyeMsg::default_instance_->InitAsDefaultInstance();
@@ -611,6 +640,7 @@ void protobuf_AddDesc_universe_2eproto() {
   ScanResultMsg::default_instance_->InitAsDefaultInstance();
   ScanQueryMsg::default_instance_->InitAsDefaultInstance();
   ScanRespMsg::default_instance_->InitAsDefaultInstance();
+  DirectoryMsg::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_universe_2eproto);
 }
 
@@ -638,6 +668,7 @@ bool MessageWrapper_MessageType_IsValid(int value) {
     case 8:
     case 9:
     case 10:
+    case 11:
     case 100:
     case 101:
     case 102:
@@ -659,6 +690,7 @@ const MessageWrapper_MessageType MessageWrapper::BEAM;
 const MessageWrapper_MessageType MessageWrapper::SCANRESULT;
 const MessageWrapper_MessageType MessageWrapper::SCANQUERY;
 const MessageWrapper_MessageType MessageWrapper::SCANRESP;
+const MessageWrapper_MessageType MessageWrapper::DIRECTORY;
 const MessageWrapper_MessageType MessageWrapper::VISPROPS;
 const MessageWrapper_MessageType MessageWrapper::VISDATAENABLE;
 const MessageWrapper_MessageType MessageWrapper::VISMETADATAENABLE;
@@ -1541,26 +1573,26 @@ void MessageWrapper::Swap(MessageWrapper* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Vector::kXFieldNumber;
-const int Vector::kYFieldNumber;
-const int Vector::kZFieldNumber;
+const int VectorMsg::kXFieldNumber;
+const int VectorMsg::kYFieldNumber;
+const int VectorMsg::kZFieldNumber;
 #endif  // !_MSC_VER
 
-Vector::Vector()
+VectorMsg::VectorMsg()
   : ::google::protobuf::Message() {
   SharedCtor();
 }
 
-void Vector::InitAsDefaultInstance() {
+void VectorMsg::InitAsDefaultInstance() {
 }
 
-Vector::Vector(const Vector& from)
+VectorMsg::VectorMsg(const VectorMsg& from)
   : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
-void Vector::SharedCtor() {
+void VectorMsg::SharedCtor() {
   _cached_size_ = 0;
   x_ = 0;
   y_ = 0;
@@ -1568,37 +1600,37 @@ void Vector::SharedCtor() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-Vector::~Vector() {
+VectorMsg::~VectorMsg() {
   SharedDtor();
 }
 
-void Vector::SharedDtor() {
+void VectorMsg::SharedDtor() {
   if (this != default_instance_) {
   }
 }
 
-void Vector::SetCachedSize(int size) const {
+void VectorMsg::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* Vector::descriptor() {
+const ::google::protobuf::Descriptor* VectorMsg::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return Vector_descriptor_;
+  return VectorMsg_descriptor_;
 }
 
-const Vector& Vector::default_instance() {
+const VectorMsg& VectorMsg::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_universe_2eproto();
   return *default_instance_;
 }
 
-Vector* Vector::default_instance_ = NULL;
+VectorMsg* VectorMsg::default_instance_ = NULL;
 
-Vector* Vector::New() const {
-  return new Vector;
+VectorMsg* VectorMsg::New() const {
+  return new VectorMsg;
 }
 
-void Vector::Clear() {
+void VectorMsg::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     x_ = 0;
     y_ = 0;
@@ -1608,7 +1640,7 @@ void Vector::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool Vector::MergePartialFromCodedStream(
+bool VectorMsg::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
@@ -1677,7 +1709,7 @@ bool Vector::MergePartialFromCodedStream(
 #undef DO_
 }
 
-void Vector::SerializeWithCachedSizes(
+void VectorMsg::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // required double x = 1;
   if (has_x()) {
@@ -1700,7 +1732,7 @@ void Vector::SerializeWithCachedSizes(
   }
 }
 
-::google::protobuf::uint8* Vector::SerializeWithCachedSizesToArray(
+::google::protobuf::uint8* VectorMsg::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // required double x = 1;
   if (has_x()) {
@@ -1724,7 +1756,7 @@ void Vector::SerializeWithCachedSizes(
   return target;
 }
 
-int Vector::ByteSize() const {
+int VectorMsg::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
@@ -1755,10 +1787,10 @@ int Vector::ByteSize() const {
   return total_size;
 }
 
-void Vector::MergeFrom(const ::google::protobuf::Message& from) {
+void VectorMsg::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const Vector* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Vector*>(
+  const VectorMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VectorMsg*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
@@ -1767,7 +1799,7 @@ void Vector::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void Vector::MergeFrom(const Vector& from) {
+void VectorMsg::MergeFrom(const VectorMsg& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_x()) {
@@ -1783,25 +1815,25 @@ void Vector::MergeFrom(const Vector& from) {
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void Vector::CopyFrom(const ::google::protobuf::Message& from) {
+void VectorMsg::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void Vector::CopyFrom(const Vector& from) {
+void VectorMsg::CopyFrom(const VectorMsg& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool Vector::IsInitialized() const {
+bool VectorMsg::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
 
   return true;
 }
 
-void Vector::Swap(Vector* other) {
+void VectorMsg::Swap(VectorMsg* other) {
   if (other != this) {
     std::swap(x_, other->x_);
     std::swap(y_, other->y_);
@@ -1812,11 +1844,11 @@ void Vector::Swap(Vector* other) {
   }
 }
 
-::google::protobuf::Metadata Vector::GetMetadata() const {
+::google::protobuf::Metadata VectorMsg::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = Vector_descriptor_;
-  metadata.reflection = Vector_reflection_;
+  metadata.descriptor = VectorMsg_descriptor_;
+  metadata.reflection = VectorMsg_reflection_;
   return metadata;
 }
 
@@ -2066,10 +2098,10 @@ PhysPropsMsg::PhysPropsMsg()
 }
 
 void PhysPropsMsg::InitAsDefaultInstance() {
-  position_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  velocity_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  orientation_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  thrust_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  position_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  velocity_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  orientation_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  thrust_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 PhysPropsMsg::PhysPropsMsg(const PhysPropsMsg& from)
@@ -2136,16 +2168,16 @@ void PhysPropsMsg::Clear() {
     }
     mass_ = 0;
     if (has_position()) {
-      if (position_ != NULL) position_->::universe::Vector::Clear();
+      if (position_ != NULL) position_->::universe::VectorMsg::Clear();
     }
     if (has_velocity()) {
-      if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+      if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
     }
     if (has_orientation()) {
-      if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+      if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
     }
     if (has_thrust()) {
-      if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+      if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
     }
     radius_ = 0;
   }
@@ -2175,7 +2207,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required double mass = 2;
+      // optional double mass = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
@@ -2191,7 +2223,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector position = 3;
+      // optional .universe.VectorMsg position = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2205,7 +2237,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector velocity = 4;
+      // optional .universe.VectorMsg velocity = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2219,7 +2251,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector orientation = 5;
+      // optional .universe.VectorMsg orientation = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2233,7 +2265,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector thrust = 6;
+      // optional .universe.VectorMsg thrust = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2247,7 +2279,7 @@ bool PhysPropsMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required double radius = 7;
+      // optional double radius = 7;
       case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
@@ -2290,36 +2322,36 @@ void PhysPropsMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required double mass = 2;
+  // optional double mass = 2;
   if (has_mass()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
   }
 
-  // required .universe.Vector position = 3;
+  // optional .universe.VectorMsg position = 3;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->position(), output);
   }
 
-  // required .universe.Vector velocity = 4;
+  // optional .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->velocity(), output);
   }
 
-  // required .universe.Vector orientation = 5;
+  // optional .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       5, this->orientation(), output);
   }
 
-  // required .universe.Vector thrust = 6;
+  // optional .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->thrust(), output);
   }
 
-  // required double radius = 7;
+  // optional double radius = 7;
   if (has_radius()) {
     ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->radius(), output);
   }
@@ -2342,40 +2374,40 @@ void PhysPropsMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required double mass = 2;
+  // optional double mass = 2;
   if (has_mass()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->mass(), target);
   }
 
-  // required .universe.Vector position = 3;
+  // optional .universe.VectorMsg position = 3;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         3, this->position(), target);
   }
 
-  // required .universe.Vector velocity = 4;
+  // optional .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         4, this->velocity(), target);
   }
 
-  // required .universe.Vector orientation = 5;
+  // optional .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         5, this->orientation(), target);
   }
 
-  // required .universe.Vector thrust = 6;
+  // optional .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         6, this->thrust(), target);
   }
 
-  // required double radius = 7;
+  // optional double radius = 7;
   if (has_radius()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->radius(), target);
   }
@@ -2398,40 +2430,40 @@ int PhysPropsMsg::ByteSize() const {
           this->name());
     }
 
-    // required double mass = 2;
+    // optional double mass = 2;
     if (has_mass()) {
       total_size += 1 + 8;
     }
 
-    // required .universe.Vector position = 3;
+    // optional .universe.VectorMsg position = 3;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->position());
     }
 
-    // required .universe.Vector velocity = 4;
+    // optional .universe.VectorMsg velocity = 4;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocity());
     }
 
-    // required .universe.Vector orientation = 5;
+    // optional .universe.VectorMsg orientation = 5;
     if (has_orientation()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->orientation());
     }
 
-    // required .universe.Vector thrust = 6;
+    // optional .universe.VectorMsg thrust = 6;
     if (has_thrust()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->thrust());
     }
 
-    // required double radius = 7;
+    // optional double radius = 7;
     if (has_radius()) {
       total_size += 1 + 8;
     }
@@ -2470,16 +2502,16 @@ void PhysPropsMsg::MergeFrom(const PhysPropsMsg& from) {
       set_mass(from.mass());
     }
     if (from.has_position()) {
-      mutable_position()->::universe::Vector::MergeFrom(from.position());
+      mutable_position()->::universe::VectorMsg::MergeFrom(from.position());
     }
     if (from.has_velocity()) {
-      mutable_velocity()->::universe::Vector::MergeFrom(from.velocity());
+      mutable_velocity()->::universe::VectorMsg::MergeFrom(from.velocity());
     }
     if (from.has_orientation()) {
-      mutable_orientation()->::universe::Vector::MergeFrom(from.orientation());
+      mutable_orientation()->::universe::VectorMsg::MergeFrom(from.orientation());
     }
     if (from.has_thrust()) {
-      mutable_thrust()->::universe::Vector::MergeFrom(from.thrust());
+      mutable_thrust()->::universe::VectorMsg::MergeFrom(from.thrust());
     }
     if (from.has_radius()) {
       set_radius(from.radius());
@@ -2501,7 +2533,6 @@ void PhysPropsMsg::CopyFrom(const PhysPropsMsg& from) {
 }
 
 bool PhysPropsMsg::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
 
   if (has_position()) {
     if (!this->position().IsInitialized()) return false;
@@ -2811,8 +2842,8 @@ CollisionMsg::CollisionMsg()
 }
 
 void CollisionMsg::InitAsDefaultInstance() {
-  position_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  direction_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  position_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  direction_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 CollisionMsg::CollisionMsg(const CollisionMsg& from)
@@ -2878,10 +2909,10 @@ void CollisionMsg::Clear() {
       }
     }
     if (has_position()) {
-      if (position_ != NULL) position_->::universe::Vector::Clear();
+      if (position_ != NULL) position_->::universe::VectorMsg::Clear();
     }
     if (has_direction()) {
-      if (direction_ != NULL) direction_->::universe::Vector::Clear();
+      if (direction_ != NULL) direction_->::universe::VectorMsg::Clear();
     }
     energy_ = 0;
     collisiontype_ = 1;
@@ -2917,7 +2948,7 @@ bool CollisionMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector position = 2;
+      // required .universe.VectorMsg position = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -2931,7 +2962,7 @@ bool CollisionMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector direction = 3;
+      // required .universe.VectorMsg direction = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -3026,13 +3057,13 @@ void CollisionMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required .universe.Vector position = 2;
+  // required .universe.VectorMsg position = 2;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->position(), output);
   }
 
-  // required .universe.Vector direction = 3;
+  // required .universe.VectorMsg direction = 3;
   if (has_direction()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->direction(), output);
@@ -3076,14 +3107,14 @@ void CollisionMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required .universe.Vector position = 2;
+  // required .universe.VectorMsg position = 2;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         2, this->position(), target);
   }
 
-  // required .universe.Vector direction = 3;
+  // required .universe.VectorMsg direction = 3;
   if (has_direction()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -3129,14 +3160,14 @@ int CollisionMsg::ByteSize() const {
           this->name());
     }
 
-    // required .universe.Vector position = 2;
+    // required .universe.VectorMsg position = 2;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->position());
     }
 
-    // required .universe.Vector direction = 3;
+    // required .universe.VectorMsg direction = 3;
     if (has_direction()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -3192,10 +3223,10 @@ void CollisionMsg::MergeFrom(const CollisionMsg& from) {
       set_name(from.name());
     }
     if (from.has_position()) {
-      mutable_position()->::universe::Vector::MergeFrom(from.position());
+      mutable_position()->::universe::VectorMsg::MergeFrom(from.position());
     }
     if (from.has_direction()) {
-      mutable_direction()->::universe::Vector::MergeFrom(from.direction());
+      mutable_direction()->::universe::VectorMsg::MergeFrom(from.direction());
     }
     if (from.has_energy()) {
       set_energy(from.energy());
@@ -3276,10 +3307,10 @@ SpawnMsg::SpawnMsg()
 }
 
 void SpawnMsg::InitAsDefaultInstance() {
-  position_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  velocity_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  orientation_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  thrust_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  position_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  velocity_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  orientation_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  thrust_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 SpawnMsg::SpawnMsg(const SpawnMsg& from)
@@ -3346,16 +3377,16 @@ void SpawnMsg::Clear() {
     }
     mass_ = 0;
     if (has_position()) {
-      if (position_ != NULL) position_->::universe::Vector::Clear();
+      if (position_ != NULL) position_->::universe::VectorMsg::Clear();
     }
     if (has_velocity()) {
-      if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+      if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
     }
     if (has_orientation()) {
-      if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+      if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
     }
     if (has_thrust()) {
-      if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+      if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
     }
     radius_ = 0;
   }
@@ -3401,7 +3432,7 @@ bool SpawnMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector position = 3;
+      // required .universe.VectorMsg position = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -3415,7 +3446,7 @@ bool SpawnMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector velocity = 4;
+      // required .universe.VectorMsg velocity = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -3429,7 +3460,7 @@ bool SpawnMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector orientation = 5;
+      // required .universe.VectorMsg orientation = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -3443,7 +3474,7 @@ bool SpawnMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector thrust = 6;
+      // required .universe.VectorMsg thrust = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -3505,25 +3536,25 @@ void SpawnMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
   }
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->position(), output);
   }
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->velocity(), output);
   }
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       5, this->orientation(), output);
   }
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->thrust(), output);
@@ -3557,28 +3588,28 @@ void SpawnMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->mass(), target);
   }
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         3, this->position(), target);
   }
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         4, this->velocity(), target);
   }
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         5, this->orientation(), target);
   }
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -3613,28 +3644,28 @@ int SpawnMsg::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // required .universe.Vector position = 3;
+    // required .universe.VectorMsg position = 3;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->position());
     }
 
-    // required .universe.Vector velocity = 4;
+    // required .universe.VectorMsg velocity = 4;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocity());
     }
 
-    // required .universe.Vector orientation = 5;
+    // required .universe.VectorMsg orientation = 5;
     if (has_orientation()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->orientation());
     }
 
-    // required .universe.Vector thrust = 6;
+    // required .universe.VectorMsg thrust = 6;
     if (has_thrust()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -3680,16 +3711,16 @@ void SpawnMsg::MergeFrom(const SpawnMsg& from) {
       set_mass(from.mass());
     }
     if (from.has_position()) {
-      mutable_position()->::universe::Vector::MergeFrom(from.position());
+      mutable_position()->::universe::VectorMsg::MergeFrom(from.position());
     }
     if (from.has_velocity()) {
-      mutable_velocity()->::universe::Vector::MergeFrom(from.velocity());
+      mutable_velocity()->::universe::VectorMsg::MergeFrom(from.velocity());
     }
     if (from.has_orientation()) {
-      mutable_orientation()->::universe::Vector::MergeFrom(from.orientation());
+      mutable_orientation()->::universe::VectorMsg::MergeFrom(from.orientation());
     }
     if (from.has_thrust()) {
-      mutable_thrust()->::universe::Vector::MergeFrom(from.thrust());
+      mutable_thrust()->::universe::VectorMsg::MergeFrom(from.thrust());
     }
     if (from.has_radius()) {
       set_radius(from.radius());
@@ -4926,9 +4957,9 @@ BeamMsg::BeamMsg()
 }
 
 void BeamMsg::InitAsDefaultInstance() {
-  origin_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  velocity_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  up_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  origin_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  velocity_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  up_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 BeamMsg::BeamMsg(const BeamMsg& from)
@@ -4998,13 +5029,13 @@ void BeamMsg::Clear() {
       }
     }
     if (has_origin()) {
-      if (origin_ != NULL) origin_->::universe::Vector::Clear();
+      if (origin_ != NULL) origin_->::universe::VectorMsg::Clear();
     }
     if (has_velocity()) {
-      if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+      if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
     }
     if (has_up()) {
-      if (up_ != NULL) up_->::universe::Vector::Clear();
+      if (up_ != NULL) up_->::universe::VectorMsg::Clear();
     }
     spread_h_ = 0;
     spread_v_ = 0;
@@ -5044,7 +5075,7 @@ bool BeamMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector origin = 2;
+      // required .universe.VectorMsg origin = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5058,7 +5089,7 @@ bool BeamMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector velocity = 3;
+      // required .universe.VectorMsg velocity = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5072,7 +5103,7 @@ bool BeamMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector up = 4;
+      // required .universe.VectorMsg up = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5199,19 +5230,19 @@ void BeamMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required .universe.Vector origin = 2;
+  // required .universe.VectorMsg origin = 2;
   if (has_origin()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->origin(), output);
   }
 
-  // required .universe.Vector velocity = 3;
+  // required .universe.VectorMsg velocity = 3;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->velocity(), output);
   }
 
-  // required .universe.Vector up = 4;
+  // required .universe.VectorMsg up = 4;
   if (has_up()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->up(), output);
@@ -5265,21 +5296,21 @@ void BeamMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required .universe.Vector origin = 2;
+  // required .universe.VectorMsg origin = 2;
   if (has_origin()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         2, this->origin(), target);
   }
 
-  // required .universe.Vector velocity = 3;
+  // required .universe.VectorMsg velocity = 3;
   if (has_velocity()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         3, this->velocity(), target);
   }
 
-  // required .universe.Vector up = 4;
+  // required .universe.VectorMsg up = 4;
   if (has_up()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -5335,21 +5366,21 @@ int BeamMsg::ByteSize() const {
           this->name());
     }
 
-    // required .universe.Vector origin = 2;
+    // required .universe.VectorMsg origin = 2;
     if (has_origin()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->origin());
     }
 
-    // required .universe.Vector velocity = 3;
+    // required .universe.VectorMsg velocity = 3;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocity());
     }
 
-    // required .universe.Vector up = 4;
+    // required .universe.VectorMsg up = 4;
     if (has_up()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -5417,13 +5448,13 @@ void BeamMsg::MergeFrom(const BeamMsg& from) {
       set_name(from.name());
     }
     if (from.has_origin()) {
-      mutable_origin()->::universe::Vector::MergeFrom(from.origin());
+      mutable_origin()->::universe::VectorMsg::MergeFrom(from.origin());
     }
     if (from.has_velocity()) {
-      mutable_velocity()->::universe::Vector::MergeFrom(from.velocity());
+      mutable_velocity()->::universe::VectorMsg::MergeFrom(from.velocity());
     }
     if (from.has_up()) {
-      mutable_up()->::universe::Vector::MergeFrom(from.up());
+      mutable_up()->::universe::VectorMsg::MergeFrom(from.up());
     }
     if (from.has_spread_h()) {
       set_spread_h(from.spread_h());
@@ -5519,10 +5550,10 @@ ScanResultMsg::ScanResultMsg()
 }
 
 void ScanResultMsg::InitAsDefaultInstance() {
-  position_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  velocity_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  orientation_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
-  thrust_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  position_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  velocity_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  orientation_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
+  thrust_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 ScanResultMsg::ScanResultMsg(const ScanResultMsg& from)
@@ -5593,16 +5624,16 @@ void ScanResultMsg::Clear() {
     }
     mass_ = 0;
     if (has_position()) {
-      if (position_ != NULL) position_->::universe::Vector::Clear();
+      if (position_ != NULL) position_->::universe::VectorMsg::Clear();
     }
     if (has_velocity()) {
-      if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+      if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
     }
     if (has_orientation()) {
-      if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+      if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
     }
     if (has_thrust()) {
-      if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+      if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
     }
     radius_ = 0;
     if (has_extraparms()) {
@@ -5653,7 +5684,7 @@ bool ScanResultMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector position = 3;
+      // required .universe.VectorMsg position = 3;
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5667,7 +5698,7 @@ bool ScanResultMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector velocity = 4;
+      // required .universe.VectorMsg velocity = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5681,7 +5712,7 @@ bool ScanResultMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector orientation = 5;
+      // required .universe.VectorMsg orientation = 5;
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5695,7 +5726,7 @@ bool ScanResultMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector thrust = 6;
+      // required .universe.VectorMsg thrust = 6;
       case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -5774,25 +5805,25 @@ void ScanResultMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
   }
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, this->position(), output);
   }
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->velocity(), output);
   }
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       5, this->orientation(), output);
   }
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       6, this->thrust(), output);
@@ -5835,28 +5866,28 @@ void ScanResultMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->mass(), target);
   }
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   if (has_position()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         3, this->position(), target);
   }
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   if (has_velocity()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         4, this->velocity(), target);
   }
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   if (has_orientation()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
         5, this->orientation(), target);
   }
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   if (has_thrust()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -5901,28 +5932,28 @@ int ScanResultMsg::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // required .universe.Vector position = 3;
+    // required .universe.VectorMsg position = 3;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->position());
     }
 
-    // required .universe.Vector velocity = 4;
+    // required .universe.VectorMsg velocity = 4;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocity());
     }
 
-    // required .universe.Vector orientation = 5;
+    // required .universe.VectorMsg orientation = 5;
     if (has_orientation()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->orientation());
     }
 
-    // required .universe.Vector thrust = 6;
+    // required .universe.VectorMsg thrust = 6;
     if (has_thrust()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -5975,16 +6006,16 @@ void ScanResultMsg::MergeFrom(const ScanResultMsg& from) {
       set_mass(from.mass());
     }
     if (from.has_position()) {
-      mutable_position()->::universe::Vector::MergeFrom(from.position());
+      mutable_position()->::universe::VectorMsg::MergeFrom(from.position());
     }
     if (from.has_velocity()) {
-      mutable_velocity()->::universe::Vector::MergeFrom(from.velocity());
+      mutable_velocity()->::universe::VectorMsg::MergeFrom(from.velocity());
     }
     if (from.has_orientation()) {
-      mutable_orientation()->::universe::Vector::MergeFrom(from.orientation());
+      mutable_orientation()->::universe::VectorMsg::MergeFrom(from.orientation());
     }
     if (from.has_thrust()) {
-      mutable_thrust()->::universe::Vector::MergeFrom(from.thrust());
+      mutable_thrust()->::universe::VectorMsg::MergeFrom(from.thrust());
     }
     if (from.has_radius()) {
       set_radius(from.radius());
@@ -6067,7 +6098,7 @@ ScanQueryMsg::ScanQueryMsg()
 }
 
 void ScanQueryMsg::InitAsDefaultInstance() {
-  scandir_ = const_cast< ::universe::Vector*>(&::universe::Vector::default_instance());
+  scandir_ = const_cast< ::universe::VectorMsg*>(&::universe::VectorMsg::default_instance());
 }
 
 ScanQueryMsg::ScanQueryMsg(const ScanQueryMsg& from)
@@ -6129,7 +6160,7 @@ void ScanQueryMsg::Clear() {
     scanid_ = 0;
     scanpower_ = 0;
     if (has_scandir()) {
-      if (scandir_ != NULL) scandir_->::universe::Vector::Clear();
+      if (scandir_ != NULL) scandir_->::universe::VectorMsg::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -6190,7 +6221,7 @@ bool ScanQueryMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .universe.Vector scanDir = 4;
+      // required .universe.VectorMsg scanDir = 4;
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -6241,7 +6272,7 @@ void ScanQueryMsg::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->scanpower(), output);
   }
 
-  // required .universe.Vector scanDir = 4;
+  // required .universe.VectorMsg scanDir = 4;
   if (has_scandir()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->scandir(), output);
@@ -6275,7 +6306,7 @@ void ScanQueryMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->scanpower(), target);
   }
 
-  // required .universe.Vector scanDir = 4;
+  // required .universe.VectorMsg scanDir = 4;
   if (has_scandir()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -6312,7 +6343,7 @@ int ScanQueryMsg::ByteSize() const {
       total_size += 1 + 8;
     }
 
-    // required .universe.Vector scanDir = 4;
+    // required .universe.VectorMsg scanDir = 4;
     if (has_scandir()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -6356,7 +6387,7 @@ void ScanQueryMsg::MergeFrom(const ScanQueryMsg& from) {
       set_scanpower(from.scanpower());
     }
     if (from.has_scandir()) {
-      mutable_scandir()->::universe::Vector::MergeFrom(from.scandir());
+      mutable_scandir()->::universe::VectorMsg::MergeFrom(from.scandir());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -6724,6 +6755,232 @@ void ScanRespMsg::Swap(ScanRespMsg* other) {
   ::google::protobuf::Metadata metadata;
   metadata.descriptor = ScanRespMsg_descriptor_;
   metadata.reflection = ScanRespMsg_reflection_;
+  return metadata;
+}
+
+
+// ===================================================================
+
+::std::string* DirectoryMsg::_default_name_ = NULL;
+#ifndef _MSC_VER
+const int DirectoryMsg::kNameFieldNumber;
+#endif  // !_MSC_VER
+
+DirectoryMsg::DirectoryMsg()
+  : ::google::protobuf::Message() {
+  SharedCtor();
+}
+
+void DirectoryMsg::InitAsDefaultInstance() {
+}
+
+DirectoryMsg::DirectoryMsg(const DirectoryMsg& from)
+  : ::google::protobuf::Message() {
+  SharedCtor();
+  MergeFrom(from);
+}
+
+void DirectoryMsg::SharedCtor() {
+  _cached_size_ = 0;
+  name_ = const_cast< ::std::string*>(_default_name_);
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+}
+
+DirectoryMsg::~DirectoryMsg() {
+  SharedDtor();
+}
+
+void DirectoryMsg::SharedDtor() {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (this != default_instance_) {
+  }
+}
+
+void DirectoryMsg::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* DirectoryMsg::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return DirectoryMsg_descriptor_;
+}
+
+const DirectoryMsg& DirectoryMsg::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_universe_2eproto();
+  return *default_instance_;
+}
+
+DirectoryMsg* DirectoryMsg::default_instance_ = NULL;
+
+DirectoryMsg* DirectoryMsg::New() const {
+  return new DirectoryMsg;
+}
+
+void DirectoryMsg::Clear() {
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (has_name()) {
+      if (name_ != _default_name_) {
+        name_->assign(*_default_name_);
+      }
+    }
+  }
+  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  mutable_unknown_fields()->Clear();
+}
+
+bool DirectoryMsg::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!(EXPRESSION)) return false
+  ::google::protobuf::uint32 tag;
+  while ((tag = input->ReadTag()) != 0) {
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1 [default = "DIRECTORY"];
+      case 1: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormat::PARSE);
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectAtEnd()) return true;
+        break;
+      }
+
+      default: {
+      handle_uninterpreted:
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          return true;
+        }
+        DO_(::google::protobuf::internal::WireFormat::SkipField(
+              input, tag, mutable_unknown_fields()));
+        break;
+      }
+    }
+  }
+  return true;
+#undef DO_
+}
+
+void DirectoryMsg::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // optional string name = 1 [default = "DIRECTORY"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      1, this->name(), output);
+  }
+
+  if (!unknown_fields().empty()) {
+    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
+        unknown_fields(), output);
+  }
+}
+
+::google::protobuf::uint8* DirectoryMsg::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
+  // optional string name = 1 [default = "DIRECTORY"];
+  if (has_name()) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE);
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  if (!unknown_fields().empty()) {
+    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+        unknown_fields(), target);
+  }
+  return target;
+}
+
+int DirectoryMsg::ByteSize() const {
+  int total_size = 0;
+
+  if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    // optional string name = 1 [default = "DIRECTORY"];
+    if (has_name()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::StringSize(
+          this->name());
+    }
+
+  }
+  if (!unknown_fields().empty()) {
+    total_size +=
+      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
+        unknown_fields());
+  }
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void DirectoryMsg::MergeFrom(const ::google::protobuf::Message& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  const DirectoryMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const DirectoryMsg*>(
+      &from);
+  if (source == NULL) {
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+    MergeFrom(*source);
+  }
+}
+
+void DirectoryMsg::MergeFrom(const DirectoryMsg& from) {
+  GOOGLE_CHECK_NE(&from, this);
+  if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
+    if (from.has_name()) {
+      set_name(from.name());
+    }
+  }
+  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+}
+
+void DirectoryMsg::CopyFrom(const ::google::protobuf::Message& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DirectoryMsg::CopyFrom(const DirectoryMsg& from) {
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DirectoryMsg::IsInitialized() const {
+
+  return true;
+}
+
+void DirectoryMsg::Swap(DirectoryMsg* other) {
+  if (other != this) {
+    std::swap(name_, other->name_);
+    std::swap(_has_bits_[0], other->_has_bits_[0]);
+    _unknown_fields_.Swap(&other->_unknown_fields_);
+    std::swap(_cached_size_, other->_cached_size_);
+  }
+}
+
+::google::protobuf::Metadata DirectoryMsg::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = DirectoryMsg_descriptor_;
+  metadata.reflection = DirectoryMsg_reflection_;
   return metadata;
 }
 

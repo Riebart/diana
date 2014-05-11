@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='client.proto',
   package='client',
-  serialized_pb='\n\x0c\x63lient.proto\x12\x06\x63lient\"\xcf\x02\n\x0eMessageWrapper\x12\x37\n\x0bmessageType\x18\x01 \x02(\x0e\x32\".client.MessageWrapper.MessageType\x12$\n\tthrustMsg\x18\x02 \x01(\x0b\x32\x11.client.ThrustMsg\x12(\n\x0bvelocityMsg\x18\x03 \x01(\x0b\x32\x13.client.VelocityMsg\x12 \n\x07jumpMsg\x18\x04 \x01(\x0b\x32\x0f.client.JumpMsg\x12 \n\x07infoMsg\x18\x05 \x01(\x0b\x32\x0f.client.InfoMsg\x12&\n\nrequestMsg\x18\x06 \x01(\x0b\x32\x12.client.RequestMsg\"H\n\x0bMessageType\x12\n\n\x06THRUST\x10\x01\x12\x0c\n\x08VELOCITY\x10\x02\x12\x08\n\x04JUMP\x10\x03\x12\x08\n\x04INFO\x10\x04\x12\x0b\n\x07REQUEST\x10\x05\")\n\x06Vector\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"A\n\tThrustMsg\x12\x14\n\x04name\x18\x01 \x01(\t:\x06THRUST\x12\x1e\n\x06thrust\x18\x02 \x02(\x0b\x32\x0e.client.Vector\"G\n\x0bVelocityMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VELOCITY\x12 \n\x08velocity\x18\x02 \x02(\x0b\x32\x0e.client.Vector\"C\n\x07JumpMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04JUMP\x12$\n\x0cnew_position\x18\x02 \x02(\x0b\x32\x0e.client.Vector\"=\n\x07InfoMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04INFO\x12\x10\n\x08infoType\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x02(\t\"L\n\nRequestMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07REQUEST\x12\x12\n\ncontinuous\x18\x02 \x02(\x05\x12\x13\n\x0brequestType\x18\x03 \x02(\t')
+  serialized_pb='\n\x0c\x63lient.proto\x12\x06\x63lient\"\xcf\x02\n\x0eMessageWrapper\x12\x37\n\x0bmessageType\x18\x01 \x02(\x0e\x32\".client.MessageWrapper.MessageType\x12$\n\tthrustMsg\x18\x02 \x01(\x0b\x32\x11.client.ThrustMsg\x12(\n\x0bvelocityMsg\x18\x03 \x01(\x0b\x32\x13.client.VelocityMsg\x12 \n\x07jumpMsg\x18\x04 \x01(\x0b\x32\x0f.client.JumpMsg\x12 \n\x07infoMsg\x18\x05 \x01(\x0b\x32\x0f.client.InfoMsg\x12&\n\nrequestMsg\x18\x06 \x01(\x0b\x32\x12.client.RequestMsg\"H\n\x0bMessageType\x12\n\n\x06THRUST\x10\x01\x12\x0c\n\x08VELOCITY\x10\x02\x12\x08\n\x04JUMP\x10\x03\x12\x08\n\x04INFO\x10\x04\x12\x0b\n\x07REQUEST\x10\x05\",\n\tVectorMsg\x12\t\n\x01x\x18\x01 \x02(\x01\x12\t\n\x01y\x18\x02 \x02(\x01\x12\t\n\x01z\x18\x03 \x02(\x01\"D\n\tThrustMsg\x12\x14\n\x04name\x18\x01 \x01(\t:\x06THRUST\x12!\n\x06thrust\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"J\n\x0bVelocityMsg\x12\x16\n\x04name\x18\x01 \x01(\t:\x08VELOCITY\x12#\n\x08velocity\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"F\n\x07JumpMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04JUMP\x12\'\n\x0cnew_position\x18\x02 \x02(\x0b\x32\x11.client.VectorMsg\"=\n\x07InfoMsg\x12\x12\n\x04name\x18\x01 \x01(\t:\x04INFO\x12\x10\n\x08infoType\x18\x02 \x02(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x02(\t\"L\n\nRequestMsg\x12\x15\n\x04name\x18\x01 \x01(\t:\x07REQUEST\x12\x12\n\ncontinuous\x18\x02 \x02(\x05\x12\x13\n\x0brequestType\x18\x03 \x02(\t')
 
 
 
@@ -115,29 +115,29 @@ _MESSAGEWRAPPER = _descriptor.Descriptor(
 )
 
 
-_VECTOR = _descriptor.Descriptor(
-  name='Vector',
-  full_name='client.Vector',
+_VECTORMSG = _descriptor.Descriptor(
+  name='VectorMsg',
+  full_name='client.VectorMsg',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='client.Vector.x', index=0,
+      name='x', full_name='client.VectorMsg.x', index=0,
       number=1, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='y', full_name='client.Vector.y', index=1,
+      name='y', full_name='client.VectorMsg.y', index=1,
       number=2, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='z', full_name='client.Vector.z', index=2,
+      name='z', full_name='client.VectorMsg.z', index=2,
       number=3, type=1, cpp_type=5, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -153,7 +153,7 @@ _VECTOR = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=362,
-  serialized_end=403,
+  serialized_end=406,
 )
 
 
@@ -187,8 +187,8 @@ _THRUSTMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=405,
-  serialized_end=470,
+  serialized_start=408,
+  serialized_end=476,
 )
 
 
@@ -222,8 +222,8 @@ _VELOCITYMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=472,
-  serialized_end=543,
+  serialized_start=478,
+  serialized_end=552,
 )
 
 
@@ -257,8 +257,8 @@ _JUMPMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=545,
-  serialized_end=612,
+  serialized_start=554,
+  serialized_end=624,
 )
 
 
@@ -299,8 +299,8 @@ _INFOMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=614,
-  serialized_end=675,
+  serialized_start=626,
+  serialized_end=687,
 )
 
 
@@ -341,8 +341,8 @@ _REQUESTMSG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=677,
-  serialized_end=753,
+  serialized_start=689,
+  serialized_end=765,
 )
 
 _MESSAGEWRAPPER.fields_by_name['messageType'].enum_type = _MESSAGEWRAPPER_MESSAGETYPE
@@ -352,11 +352,11 @@ _MESSAGEWRAPPER.fields_by_name['jumpMsg'].message_type = _JUMPMSG
 _MESSAGEWRAPPER.fields_by_name['infoMsg'].message_type = _INFOMSG
 _MESSAGEWRAPPER.fields_by_name['requestMsg'].message_type = _REQUESTMSG
 _MESSAGEWRAPPER_MESSAGETYPE.containing_type = _MESSAGEWRAPPER;
-_THRUSTMSG.fields_by_name['thrust'].message_type = _VECTOR
-_VELOCITYMSG.fields_by_name['velocity'].message_type = _VECTOR
-_JUMPMSG.fields_by_name['new_position'].message_type = _VECTOR
+_THRUSTMSG.fields_by_name['thrust'].message_type = _VECTORMSG
+_VELOCITYMSG.fields_by_name['velocity'].message_type = _VECTORMSG
+_JUMPMSG.fields_by_name['new_position'].message_type = _VECTORMSG
 DESCRIPTOR.message_types_by_name['MessageWrapper'] = _MESSAGEWRAPPER
-DESCRIPTOR.message_types_by_name['Vector'] = _VECTOR
+DESCRIPTOR.message_types_by_name['VectorMsg'] = _VECTORMSG
 DESCRIPTOR.message_types_by_name['ThrustMsg'] = _THRUSTMSG
 DESCRIPTOR.message_types_by_name['VelocityMsg'] = _VELOCITYMSG
 DESCRIPTOR.message_types_by_name['JumpMsg'] = _JUMPMSG
@@ -369,11 +369,11 @@ class MessageWrapper(_message.Message):
 
   # @@protoc_insertion_point(class_scope:client.MessageWrapper)
 
-class Vector(_message.Message):
+class VectorMsg(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _VECTOR
+  DESCRIPTOR = _VECTORMSG
 
-  # @@protoc_insertion_point(class_scope:client.Vector)
+  # @@protoc_insertion_point(class_scope:client.VectorMsg)
 
 class ThrustMsg(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType

@@ -24,9 +24,9 @@ const ::google::protobuf::Descriptor* MessageWrapper_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   MessageWrapper_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* Vector_descriptor_ = NULL;
+const ::google::protobuf::Descriptor* VectorMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
-  Vector_reflection_ = NULL;
+  VectorMsg_reflection_ = NULL;
 const ::google::protobuf::Descriptor* ThrustMsg_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ThrustMsg_reflection_ = NULL;
@@ -73,23 +73,23 @@ void protobuf_AssignDesc_client_2eproto() {
       ::google::protobuf::MessageFactory::generated_factory(),
       sizeof(MessageWrapper));
   MessageWrapper_MessageType_descriptor_ = MessageWrapper_descriptor_->enum_type(0);
-  Vector_descriptor_ = file->message_type(1);
-  static const int Vector_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, x_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, y_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, z_),
+  VectorMsg_descriptor_ = file->message_type(1);
+  static const int VectorMsg_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, x_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, y_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, z_),
   };
-  Vector_reflection_ =
+  VectorMsg_reflection_ =
     new ::google::protobuf::internal::GeneratedMessageReflection(
-      Vector_descriptor_,
-      Vector::default_instance_,
-      Vector_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector, _unknown_fields_),
+      VectorMsg_descriptor_,
+      VectorMsg::default_instance_,
+      VectorMsg_offsets_,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VectorMsg, _unknown_fields_),
       -1,
       ::google::protobuf::DescriptorPool::generated_pool(),
       ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(Vector));
+      sizeof(VectorMsg));
   ThrustMsg_descriptor_ = file->message_type(2);
   static const int ThrustMsg_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ThrustMsg, name_),
@@ -187,7 +187,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     MessageWrapper_descriptor_, &MessageWrapper::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    Vector_descriptor_, &Vector::default_instance());
+    VectorMsg_descriptor_, &VectorMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
     ThrustMsg_descriptor_, &ThrustMsg::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -205,8 +205,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
 void protobuf_ShutdownFile_client_2eproto() {
   delete MessageWrapper::default_instance_;
   delete MessageWrapper_reflection_;
-  delete Vector::default_instance_;
-  delete Vector_reflection_;
+  delete VectorMsg::default_instance_;
+  delete VectorMsg_reflection_;
   delete ThrustMsg::default_instance_;
   delete ThrustMsg_reflection_;
   delete ThrustMsg::_default_name_;
@@ -240,20 +240,21 @@ void protobuf_AddDesc_client_2eproto() {
     "nfoMsg\022&\n\nrequestMsg\030\006 \001(\0132\022.client.Requ"
     "estMsg\"H\n\013MessageType\022\n\n\006THRUST\020\001\022\014\n\010VEL"
     "OCITY\020\002\022\010\n\004JUMP\020\003\022\010\n\004INFO\020\004\022\013\n\007REQUEST\020\005"
-    "\")\n\006Vector\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z\030\003 "
-    "\002(\001\"A\n\tThrustMsg\022\024\n\004name\030\001 \001(\t:\006THRUST\022\036"
-    "\n\006thrust\030\002 \002(\0132\016.client.Vector\"G\n\013Veloci"
-    "tyMsg\022\026\n\004name\030\001 \001(\t:\010VELOCITY\022 \n\010velocit"
-    "y\030\002 \002(\0132\016.client.Vector\"C\n\007JumpMsg\022\022\n\004na"
-    "me\030\001 \001(\t:\004JUMP\022$\n\014new_position\030\002 \002(\0132\016.c"
-    "lient.Vector\"=\n\007InfoMsg\022\022\n\004name\030\001 \001(\t:\004I"
-    "NFO\022\020\n\010infoType\030\002 \002(\t\022\014\n\004data\030\003 \002(\t\"L\n\nR"
-    "equestMsg\022\025\n\004name\030\001 \001(\t:\007REQUEST\022\022\n\ncont"
-    "inuous\030\002 \002(\005\022\023\n\013requestType\030\003 \002(\t", 753);
+    "\",\n\tVectorMsg\022\t\n\001x\030\001 \002(\001\022\t\n\001y\030\002 \002(\001\022\t\n\001z"
+    "\030\003 \002(\001\"D\n\tThrustMsg\022\024\n\004name\030\001 \001(\t:\006THRUS"
+    "T\022!\n\006thrust\030\002 \002(\0132\021.client.VectorMsg\"J\n\013"
+    "VelocityMsg\022\026\n\004name\030\001 \001(\t:\010VELOCITY\022#\n\010v"
+    "elocity\030\002 \002(\0132\021.client.VectorMsg\"F\n\007Jump"
+    "Msg\022\022\n\004name\030\001 \001(\t:\004JUMP\022\'\n\014new_position\030"
+    "\002 \002(\0132\021.client.VectorMsg\"=\n\007InfoMsg\022\022\n\004n"
+    "ame\030\001 \001(\t:\004INFO\022\020\n\010infoType\030\002 \002(\t\022\014\n\004dat"
+    "a\030\003 \002(\t\"L\n\nRequestMsg\022\025\n\004name\030\001 \001(\t:\007REQ"
+    "UEST\022\022\n\ncontinuous\030\002 \002(\005\022\023\n\013requestType\030"
+    "\003 \002(\t", 765);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "client.proto", &protobuf_RegisterTypes);
   MessageWrapper::default_instance_ = new MessageWrapper();
-  Vector::default_instance_ = new Vector();
+  VectorMsg::default_instance_ = new VectorMsg();
   ThrustMsg::_default_name_ =
       new ::std::string("THRUST", 6);
   ThrustMsg::default_instance_ = new ThrustMsg();
@@ -270,7 +271,7 @@ void protobuf_AddDesc_client_2eproto() {
       new ::std::string("REQUEST", 7);
   RequestMsg::default_instance_ = new RequestMsg();
   MessageWrapper::default_instance_->InitAsDefaultInstance();
-  Vector::default_instance_->InitAsDefaultInstance();
+  VectorMsg::default_instance_->InitAsDefaultInstance();
   ThrustMsg::default_instance_->InitAsDefaultInstance();
   VelocityMsg::default_instance_->InitAsDefaultInstance();
   JumpMsg::default_instance_->InitAsDefaultInstance();
@@ -771,26 +772,26 @@ void MessageWrapper::Swap(MessageWrapper* other) {
 // ===================================================================
 
 #ifndef _MSC_VER
-const int Vector::kXFieldNumber;
-const int Vector::kYFieldNumber;
-const int Vector::kZFieldNumber;
+const int VectorMsg::kXFieldNumber;
+const int VectorMsg::kYFieldNumber;
+const int VectorMsg::kZFieldNumber;
 #endif  // !_MSC_VER
 
-Vector::Vector()
+VectorMsg::VectorMsg()
   : ::google::protobuf::Message() {
   SharedCtor();
 }
 
-void Vector::InitAsDefaultInstance() {
+void VectorMsg::InitAsDefaultInstance() {
 }
 
-Vector::Vector(const Vector& from)
+VectorMsg::VectorMsg(const VectorMsg& from)
   : ::google::protobuf::Message() {
   SharedCtor();
   MergeFrom(from);
 }
 
-void Vector::SharedCtor() {
+void VectorMsg::SharedCtor() {
   _cached_size_ = 0;
   x_ = 0;
   y_ = 0;
@@ -798,37 +799,37 @@ void Vector::SharedCtor() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
-Vector::~Vector() {
+VectorMsg::~VectorMsg() {
   SharedDtor();
 }
 
-void Vector::SharedDtor() {
+void VectorMsg::SharedDtor() {
   if (this != default_instance_) {
   }
 }
 
-void Vector::SetCachedSize(int size) const {
+void VectorMsg::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* Vector::descriptor() {
+const ::google::protobuf::Descriptor* VectorMsg::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return Vector_descriptor_;
+  return VectorMsg_descriptor_;
 }
 
-const Vector& Vector::default_instance() {
+const VectorMsg& VectorMsg::default_instance() {
   if (default_instance_ == NULL) protobuf_AddDesc_client_2eproto();
   return *default_instance_;
 }
 
-Vector* Vector::default_instance_ = NULL;
+VectorMsg* VectorMsg::default_instance_ = NULL;
 
-Vector* Vector::New() const {
-  return new Vector;
+VectorMsg* VectorMsg::New() const {
+  return new VectorMsg;
 }
 
-void Vector::Clear() {
+void VectorMsg::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     x_ = 0;
     y_ = 0;
@@ -838,7 +839,7 @@ void Vector::Clear() {
   mutable_unknown_fields()->Clear();
 }
 
-bool Vector::MergePartialFromCodedStream(
+bool VectorMsg::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!(EXPRESSION)) return false
   ::google::protobuf::uint32 tag;
@@ -907,7 +908,7 @@ bool Vector::MergePartialFromCodedStream(
 #undef DO_
 }
 
-void Vector::SerializeWithCachedSizes(
+void VectorMsg::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // required double x = 1;
   if (has_x()) {
@@ -930,7 +931,7 @@ void Vector::SerializeWithCachedSizes(
   }
 }
 
-::google::protobuf::uint8* Vector::SerializeWithCachedSizesToArray(
+::google::protobuf::uint8* VectorMsg::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // required double x = 1;
   if (has_x()) {
@@ -954,7 +955,7 @@ void Vector::SerializeWithCachedSizes(
   return target;
 }
 
-int Vector::ByteSize() const {
+int VectorMsg::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
@@ -985,10 +986,10 @@ int Vector::ByteSize() const {
   return total_size;
 }
 
-void Vector::MergeFrom(const ::google::protobuf::Message& from) {
+void VectorMsg::MergeFrom(const ::google::protobuf::Message& from) {
   GOOGLE_CHECK_NE(&from, this);
-  const Vector* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Vector*>(
+  const VectorMsg* source =
+    ::google::protobuf::internal::dynamic_cast_if_available<const VectorMsg*>(
       &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
@@ -997,7 +998,7 @@ void Vector::MergeFrom(const ::google::protobuf::Message& from) {
   }
 }
 
-void Vector::MergeFrom(const Vector& from) {
+void VectorMsg::MergeFrom(const VectorMsg& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_x()) {
@@ -1013,25 +1014,25 @@ void Vector::MergeFrom(const Vector& from) {
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
 }
 
-void Vector::CopyFrom(const ::google::protobuf::Message& from) {
+void VectorMsg::CopyFrom(const ::google::protobuf::Message& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-void Vector::CopyFrom(const Vector& from) {
+void VectorMsg::CopyFrom(const VectorMsg& from) {
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
-bool Vector::IsInitialized() const {
+bool VectorMsg::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
 
   return true;
 }
 
-void Vector::Swap(Vector* other) {
+void VectorMsg::Swap(VectorMsg* other) {
   if (other != this) {
     std::swap(x_, other->x_);
     std::swap(y_, other->y_);
@@ -1042,11 +1043,11 @@ void Vector::Swap(Vector* other) {
   }
 }
 
-::google::protobuf::Metadata Vector::GetMetadata() const {
+::google::protobuf::Metadata VectorMsg::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::Metadata metadata;
-  metadata.descriptor = Vector_descriptor_;
-  metadata.reflection = Vector_reflection_;
+  metadata.descriptor = VectorMsg_descriptor_;
+  metadata.reflection = VectorMsg_reflection_;
   return metadata;
 }
 
@@ -1065,7 +1066,7 @@ ThrustMsg::ThrustMsg()
 }
 
 void ThrustMsg::InitAsDefaultInstance() {
-  thrust_ = const_cast< ::client::Vector*>(&::client::Vector::default_instance());
+  thrust_ = const_cast< ::client::VectorMsg*>(&::client::VectorMsg::default_instance());
 }
 
 ThrustMsg::ThrustMsg(const ThrustMsg& from)
@@ -1123,7 +1124,7 @@ void ThrustMsg::Clear() {
       }
     }
     if (has_thrust()) {
-      if (thrust_ != NULL) thrust_->::client::Vector::Clear();
+      if (thrust_ != NULL) thrust_->::client::VectorMsg::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1152,7 +1153,7 @@ bool ThrustMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .client.Vector thrust = 2;
+      // required .client.VectorMsg thrust = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1193,7 +1194,7 @@ void ThrustMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required .client.Vector thrust = 2;
+  // required .client.VectorMsg thrust = 2;
   if (has_thrust()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->thrust(), output);
@@ -1217,7 +1218,7 @@ void ThrustMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required .client.Vector thrust = 2;
+  // required .client.VectorMsg thrust = 2;
   if (has_thrust()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1242,7 +1243,7 @@ int ThrustMsg::ByteSize() const {
           this->name());
     }
 
-    // required .client.Vector thrust = 2;
+    // required .client.VectorMsg thrust = 2;
     if (has_thrust()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -1280,7 +1281,7 @@ void ThrustMsg::MergeFrom(const ThrustMsg& from) {
       set_name(from.name());
     }
     if (from.has_thrust()) {
-      mutable_thrust()->::client::Vector::MergeFrom(from.thrust());
+      mutable_thrust()->::client::VectorMsg::MergeFrom(from.thrust());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1340,7 +1341,7 @@ VelocityMsg::VelocityMsg()
 }
 
 void VelocityMsg::InitAsDefaultInstance() {
-  velocity_ = const_cast< ::client::Vector*>(&::client::Vector::default_instance());
+  velocity_ = const_cast< ::client::VectorMsg*>(&::client::VectorMsg::default_instance());
 }
 
 VelocityMsg::VelocityMsg(const VelocityMsg& from)
@@ -1398,7 +1399,7 @@ void VelocityMsg::Clear() {
       }
     }
     if (has_velocity()) {
-      if (velocity_ != NULL) velocity_->::client::Vector::Clear();
+      if (velocity_ != NULL) velocity_->::client::VectorMsg::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1427,7 +1428,7 @@ bool VelocityMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .client.Vector velocity = 2;
+      // required .client.VectorMsg velocity = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1468,7 +1469,7 @@ void VelocityMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required .client.Vector velocity = 2;
+  // required .client.VectorMsg velocity = 2;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->velocity(), output);
@@ -1492,7 +1493,7 @@ void VelocityMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required .client.Vector velocity = 2;
+  // required .client.VectorMsg velocity = 2;
   if (has_velocity()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1517,7 +1518,7 @@ int VelocityMsg::ByteSize() const {
           this->name());
     }
 
-    // required .client.Vector velocity = 2;
+    // required .client.VectorMsg velocity = 2;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -1555,7 +1556,7 @@ void VelocityMsg::MergeFrom(const VelocityMsg& from) {
       set_name(from.name());
     }
     if (from.has_velocity()) {
-      mutable_velocity()->::client::Vector::MergeFrom(from.velocity());
+      mutable_velocity()->::client::VectorMsg::MergeFrom(from.velocity());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());
@@ -1615,7 +1616,7 @@ JumpMsg::JumpMsg()
 }
 
 void JumpMsg::InitAsDefaultInstance() {
-  new_position_ = const_cast< ::client::Vector*>(&::client::Vector::default_instance());
+  new_position_ = const_cast< ::client::VectorMsg*>(&::client::VectorMsg::default_instance());
 }
 
 JumpMsg::JumpMsg(const JumpMsg& from)
@@ -1673,7 +1674,7 @@ void JumpMsg::Clear() {
       }
     }
     if (has_new_position()) {
-      if (new_position_ != NULL) new_position_->::client::Vector::Clear();
+      if (new_position_ != NULL) new_position_->::client::VectorMsg::Clear();
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -1702,7 +1703,7 @@ bool JumpMsg::MergePartialFromCodedStream(
         break;
       }
 
-      // required .client.Vector new_position = 2;
+      // required .client.VectorMsg new_position = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
@@ -1743,7 +1744,7 @@ void JumpMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required .client.Vector new_position = 2;
+  // required .client.VectorMsg new_position = 2;
   if (has_new_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       2, this->new_position(), output);
@@ -1767,7 +1768,7 @@ void JumpMsg::SerializeWithCachedSizes(
         1, this->name(), target);
   }
 
-  // required .client.Vector new_position = 2;
+  // required .client.VectorMsg new_position = 2;
   if (has_new_position()) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteMessageNoVirtualToArray(
@@ -1792,7 +1793,7 @@ int JumpMsg::ByteSize() const {
           this->name());
     }
 
-    // required .client.Vector new_position = 2;
+    // required .client.VectorMsg new_position = 2;
     if (has_new_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
@@ -1830,7 +1831,7 @@ void JumpMsg::MergeFrom(const JumpMsg& from) {
       set_name(from.name());
     }
     if (from.has_new_position()) {
-      mutable_new_position()->::client::Vector::MergeFrom(from.new_position());
+      mutable_new_position()->::client::VectorMsg::MergeFrom(from.new_position());
     }
   }
   mutable_unknown_fields()->MergeFrom(from.unknown_fields());

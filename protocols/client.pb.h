@@ -35,7 +35,7 @@ void protobuf_AssignDesc_client_2eproto();
 void protobuf_ShutdownFile_client_2eproto();
 
 class MessageWrapper;
-class Vector;
+class VectorMsg;
 class ThrustMsg;
 class VelocityMsg;
 class JumpMsg;
@@ -235,14 +235,14 @@ class MessageWrapper : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class Vector : public ::google::protobuf::Message {
+class VectorMsg : public ::google::protobuf::Message {
  public:
-  Vector();
-  virtual ~Vector();
+  VectorMsg();
+  virtual ~VectorMsg();
 
-  Vector(const Vector& from);
+  VectorMsg(const VectorMsg& from);
 
-  inline Vector& operator=(const Vector& from) {
+  inline VectorMsg& operator=(const VectorMsg& from) {
     CopyFrom(from);
     return *this;
   }
@@ -256,17 +256,17 @@ class Vector : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const Vector& default_instance();
+  static const VectorMsg& default_instance();
 
-  void Swap(Vector* other);
+  void Swap(VectorMsg* other);
 
   // implements Message ----------------------------------------------
 
-  Vector* New() const;
+  VectorMsg* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const Vector& from);
-  void MergeFrom(const Vector& from);
+  void CopyFrom(const VectorMsg& from);
+  void MergeFrom(const VectorMsg& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -310,7 +310,7 @@ class Vector : public ::google::protobuf::Message {
   inline double z() const;
   inline void set_z(double value);
 
-  // @@protoc_insertion_point(class_scope:client.Vector)
+  // @@protoc_insertion_point(class_scope:client.VectorMsg)
  private:
   inline void set_has_x();
   inline void clear_has_x();
@@ -333,7 +333,7 @@ class Vector : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_client_2eproto();
 
   void InitAsDefaultInstance();
-  static Vector* default_instance_;
+  static VectorMsg* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -403,14 +403,14 @@ class ThrustMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required .client.Vector thrust = 2;
+  // required .client.VectorMsg thrust = 2;
   inline bool has_thrust() const;
   inline void clear_thrust();
   static const int kThrustFieldNumber = 2;
-  inline const ::client::Vector& thrust() const;
-  inline ::client::Vector* mutable_thrust();
-  inline ::client::Vector* release_thrust();
-  inline void set_allocated_thrust(::client::Vector* thrust);
+  inline const ::client::VectorMsg& thrust() const;
+  inline ::client::VectorMsg* mutable_thrust();
+  inline ::client::VectorMsg* release_thrust();
+  inline void set_allocated_thrust(::client::VectorMsg* thrust);
 
   // @@protoc_insertion_point(class_scope:client.ThrustMsg)
  private:
@@ -423,7 +423,7 @@ class ThrustMsg : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
-  ::client::Vector* thrust_;
+  ::client::VectorMsg* thrust_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -503,14 +503,14 @@ class VelocityMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required .client.Vector velocity = 2;
+  // required .client.VectorMsg velocity = 2;
   inline bool has_velocity() const;
   inline void clear_velocity();
   static const int kVelocityFieldNumber = 2;
-  inline const ::client::Vector& velocity() const;
-  inline ::client::Vector* mutable_velocity();
-  inline ::client::Vector* release_velocity();
-  inline void set_allocated_velocity(::client::Vector* velocity);
+  inline const ::client::VectorMsg& velocity() const;
+  inline ::client::VectorMsg* mutable_velocity();
+  inline ::client::VectorMsg* release_velocity();
+  inline void set_allocated_velocity(::client::VectorMsg* velocity);
 
   // @@protoc_insertion_point(class_scope:client.VelocityMsg)
  private:
@@ -523,7 +523,7 @@ class VelocityMsg : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
-  ::client::Vector* velocity_;
+  ::client::VectorMsg* velocity_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -603,14 +603,14 @@ class JumpMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required .client.Vector new_position = 2;
+  // required .client.VectorMsg new_position = 2;
   inline bool has_new_position() const;
   inline void clear_new_position();
   static const int kNewPositionFieldNumber = 2;
-  inline const ::client::Vector& new_position() const;
-  inline ::client::Vector* mutable_new_position();
-  inline ::client::Vector* release_new_position();
-  inline void set_allocated_new_position(::client::Vector* new_position);
+  inline const ::client::VectorMsg& new_position() const;
+  inline ::client::VectorMsg* mutable_new_position();
+  inline ::client::VectorMsg* release_new_position();
+  inline void set_allocated_new_position(::client::VectorMsg* new_position);
 
   // @@protoc_insertion_point(class_scope:client.JumpMsg)
  private:
@@ -623,7 +623,7 @@ class JumpMsg : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
-  ::client::Vector* new_position_;
+  ::client::VectorMsg* new_position_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -1088,70 +1088,70 @@ inline void MessageWrapper::set_allocated_requestmsg(::client::RequestMsg* reque
 
 // -------------------------------------------------------------------
 
-// Vector
+// VectorMsg
 
 // required double x = 1;
-inline bool Vector::has_x() const {
+inline bool VectorMsg::has_x() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Vector::set_has_x() {
+inline void VectorMsg::set_has_x() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void Vector::clear_has_x() {
+inline void VectorMsg::clear_has_x() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void Vector::clear_x() {
+inline void VectorMsg::clear_x() {
   x_ = 0;
   clear_has_x();
 }
-inline double Vector::x() const {
+inline double VectorMsg::x() const {
   return x_;
 }
-inline void Vector::set_x(double value) {
+inline void VectorMsg::set_x(double value) {
   set_has_x();
   x_ = value;
 }
 
 // required double y = 2;
-inline bool Vector::has_y() const {
+inline bool VectorMsg::has_y() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Vector::set_has_y() {
+inline void VectorMsg::set_has_y() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void Vector::clear_has_y() {
+inline void VectorMsg::clear_has_y() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void Vector::clear_y() {
+inline void VectorMsg::clear_y() {
   y_ = 0;
   clear_has_y();
 }
-inline double Vector::y() const {
+inline double VectorMsg::y() const {
   return y_;
 }
-inline void Vector::set_y(double value) {
+inline void VectorMsg::set_y(double value) {
   set_has_y();
   y_ = value;
 }
 
 // required double z = 3;
-inline bool Vector::has_z() const {
+inline bool VectorMsg::has_z() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Vector::set_has_z() {
+inline void VectorMsg::set_has_z() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void Vector::clear_has_z() {
+inline void VectorMsg::clear_has_z() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void Vector::clear_z() {
+inline void VectorMsg::clear_z() {
   z_ = 0;
   clear_has_z();
 }
-inline double Vector::z() const {
+inline double VectorMsg::z() const {
   return z_;
 }
-inline void Vector::set_z(double value) {
+inline void VectorMsg::set_z(double value) {
   set_has_z();
   z_ = value;
 }
@@ -1230,7 +1230,7 @@ inline void ThrustMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required .client.Vector thrust = 2;
+// required .client.VectorMsg thrust = 2;
 inline bool ThrustMsg::has_thrust() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1241,24 +1241,24 @@ inline void ThrustMsg::clear_has_thrust() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void ThrustMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::client::Vector::Clear();
+  if (thrust_ != NULL) thrust_->::client::VectorMsg::Clear();
   clear_has_thrust();
 }
-inline const ::client::Vector& ThrustMsg::thrust() const {
+inline const ::client::VectorMsg& ThrustMsg::thrust() const {
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
 }
-inline ::client::Vector* ThrustMsg::mutable_thrust() {
+inline ::client::VectorMsg* ThrustMsg::mutable_thrust() {
   set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::client::Vector;
+  if (thrust_ == NULL) thrust_ = new ::client::VectorMsg;
   return thrust_;
 }
-inline ::client::Vector* ThrustMsg::release_thrust() {
+inline ::client::VectorMsg* ThrustMsg::release_thrust() {
   clear_has_thrust();
-  ::client::Vector* temp = thrust_;
+  ::client::VectorMsg* temp = thrust_;
   thrust_ = NULL;
   return temp;
 }
-inline void ThrustMsg::set_allocated_thrust(::client::Vector* thrust) {
+inline void ThrustMsg::set_allocated_thrust(::client::VectorMsg* thrust) {
   delete thrust_;
   thrust_ = thrust;
   if (thrust) {
@@ -1342,7 +1342,7 @@ inline void VelocityMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required .client.Vector velocity = 2;
+// required .client.VectorMsg velocity = 2;
 inline bool VelocityMsg::has_velocity() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1353,24 +1353,24 @@ inline void VelocityMsg::clear_has_velocity() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void VelocityMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::client::Vector::Clear();
+  if (velocity_ != NULL) velocity_->::client::VectorMsg::Clear();
   clear_has_velocity();
 }
-inline const ::client::Vector& VelocityMsg::velocity() const {
+inline const ::client::VectorMsg& VelocityMsg::velocity() const {
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
 }
-inline ::client::Vector* VelocityMsg::mutable_velocity() {
+inline ::client::VectorMsg* VelocityMsg::mutable_velocity() {
   set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::client::Vector;
+  if (velocity_ == NULL) velocity_ = new ::client::VectorMsg;
   return velocity_;
 }
-inline ::client::Vector* VelocityMsg::release_velocity() {
+inline ::client::VectorMsg* VelocityMsg::release_velocity() {
   clear_has_velocity();
-  ::client::Vector* temp = velocity_;
+  ::client::VectorMsg* temp = velocity_;
   velocity_ = NULL;
   return temp;
 }
-inline void VelocityMsg::set_allocated_velocity(::client::Vector* velocity) {
+inline void VelocityMsg::set_allocated_velocity(::client::VectorMsg* velocity) {
   delete velocity_;
   velocity_ = velocity;
   if (velocity) {
@@ -1454,7 +1454,7 @@ inline void JumpMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required .client.Vector new_position = 2;
+// required .client.VectorMsg new_position = 2;
 inline bool JumpMsg::has_new_position() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -1465,24 +1465,24 @@ inline void JumpMsg::clear_has_new_position() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void JumpMsg::clear_new_position() {
-  if (new_position_ != NULL) new_position_->::client::Vector::Clear();
+  if (new_position_ != NULL) new_position_->::client::VectorMsg::Clear();
   clear_has_new_position();
 }
-inline const ::client::Vector& JumpMsg::new_position() const {
+inline const ::client::VectorMsg& JumpMsg::new_position() const {
   return new_position_ != NULL ? *new_position_ : *default_instance_->new_position_;
 }
-inline ::client::Vector* JumpMsg::mutable_new_position() {
+inline ::client::VectorMsg* JumpMsg::mutable_new_position() {
   set_has_new_position();
-  if (new_position_ == NULL) new_position_ = new ::client::Vector;
+  if (new_position_ == NULL) new_position_ = new ::client::VectorMsg;
   return new_position_;
 }
-inline ::client::Vector* JumpMsg::release_new_position() {
+inline ::client::VectorMsg* JumpMsg::release_new_position() {
   clear_has_new_position();
-  ::client::Vector* temp = new_position_;
+  ::client::VectorMsg* temp = new_position_;
   new_position_ = NULL;
   return temp;
 }
-inline void JumpMsg::set_allocated_new_position(::client::Vector* new_position) {
+inline void JumpMsg::set_allocated_new_position(::client::VectorMsg* new_position) {
   delete new_position_;
   new_position_ = new_position;
   if (new_position) {

@@ -35,7 +35,7 @@ void protobuf_AssignDesc_universe_2eproto();
 void protobuf_ShutdownFile_universe_2eproto();
 
 class MessageWrapper;
-class Vector;
+class VectorMsg;
 class HelloMsg;
 class PhysPropsMsg;
 class GoodbyeMsg;
@@ -50,6 +50,7 @@ class BeamMsg;
 class ScanResultMsg;
 class ScanQueryMsg;
 class ScanRespMsg;
+class DirectoryMsg;
 
 enum MessageWrapper_MessageType {
   MessageWrapper_MessageType_HELLO = 2,
@@ -61,6 +62,7 @@ enum MessageWrapper_MessageType {
   MessageWrapper_MessageType_SCANRESULT = 8,
   MessageWrapper_MessageType_SCANQUERY = 9,
   MessageWrapper_MessageType_SCANRESP = 10,
+  MessageWrapper_MessageType_DIRECTORY = 11,
   MessageWrapper_MessageType_VISPROPS = 100,
   MessageWrapper_MessageType_VISDATAENABLE = 101,
   MessageWrapper_MessageType_VISMETADATAENABLE = 102,
@@ -187,6 +189,7 @@ class MessageWrapper : public ::google::protobuf::Message {
   static const MessageType SCANRESULT = MessageWrapper_MessageType_SCANRESULT;
   static const MessageType SCANQUERY = MessageWrapper_MessageType_SCANQUERY;
   static const MessageType SCANRESP = MessageWrapper_MessageType_SCANRESP;
+  static const MessageType DIRECTORY = MessageWrapper_MessageType_DIRECTORY;
   static const MessageType VISPROPS = MessageWrapper_MessageType_VISPROPS;
   static const MessageType VISDATAENABLE = MessageWrapper_MessageType_VISDATAENABLE;
   static const MessageType VISMETADATAENABLE = MessageWrapper_MessageType_VISMETADATAENABLE;
@@ -411,14 +414,14 @@ class MessageWrapper : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class Vector : public ::google::protobuf::Message {
+class VectorMsg : public ::google::protobuf::Message {
  public:
-  Vector();
-  virtual ~Vector();
+  VectorMsg();
+  virtual ~VectorMsg();
 
-  Vector(const Vector& from);
+  VectorMsg(const VectorMsg& from);
 
-  inline Vector& operator=(const Vector& from) {
+  inline VectorMsg& operator=(const VectorMsg& from) {
     CopyFrom(from);
     return *this;
   }
@@ -432,17 +435,17 @@ class Vector : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const Vector& default_instance();
+  static const VectorMsg& default_instance();
 
-  void Swap(Vector* other);
+  void Swap(VectorMsg* other);
 
   // implements Message ----------------------------------------------
 
-  Vector* New() const;
+  VectorMsg* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const Vector& from);
-  void MergeFrom(const Vector& from);
+  void CopyFrom(const VectorMsg& from);
+  void MergeFrom(const VectorMsg& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -486,7 +489,7 @@ class Vector : public ::google::protobuf::Message {
   inline double z() const;
   inline void set_z(double value);
 
-  // @@protoc_insertion_point(class_scope:universe.Vector)
+  // @@protoc_insertion_point(class_scope:universe.VectorMsg)
  private:
   inline void set_has_x();
   inline void clear_has_x();
@@ -509,7 +512,7 @@ class Vector : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_universe_2eproto();
 
   void InitAsDefaultInstance();
-  static Vector* default_instance_;
+  static VectorMsg* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -667,50 +670,50 @@ class PhysPropsMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required double mass = 2;
+  // optional double mass = 2;
   inline bool has_mass() const;
   inline void clear_mass();
   static const int kMassFieldNumber = 2;
   inline double mass() const;
   inline void set_mass(double value);
 
-  // required .universe.Vector position = 3;
+  // optional .universe.VectorMsg position = 3;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 3;
-  inline const ::universe::Vector& position() const;
-  inline ::universe::Vector* mutable_position();
-  inline ::universe::Vector* release_position();
-  inline void set_allocated_position(::universe::Vector* position);
+  inline const ::universe::VectorMsg& position() const;
+  inline ::universe::VectorMsg* mutable_position();
+  inline ::universe::VectorMsg* release_position();
+  inline void set_allocated_position(::universe::VectorMsg* position);
 
-  // required .universe.Vector velocity = 4;
+  // optional .universe.VectorMsg velocity = 4;
   inline bool has_velocity() const;
   inline void clear_velocity();
   static const int kVelocityFieldNumber = 4;
-  inline const ::universe::Vector& velocity() const;
-  inline ::universe::Vector* mutable_velocity();
-  inline ::universe::Vector* release_velocity();
-  inline void set_allocated_velocity(::universe::Vector* velocity);
+  inline const ::universe::VectorMsg& velocity() const;
+  inline ::universe::VectorMsg* mutable_velocity();
+  inline ::universe::VectorMsg* release_velocity();
+  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
 
-  // required .universe.Vector orientation = 5;
+  // optional .universe.VectorMsg orientation = 5;
   inline bool has_orientation() const;
   inline void clear_orientation();
   static const int kOrientationFieldNumber = 5;
-  inline const ::universe::Vector& orientation() const;
-  inline ::universe::Vector* mutable_orientation();
-  inline ::universe::Vector* release_orientation();
-  inline void set_allocated_orientation(::universe::Vector* orientation);
+  inline const ::universe::VectorMsg& orientation() const;
+  inline ::universe::VectorMsg* mutable_orientation();
+  inline ::universe::VectorMsg* release_orientation();
+  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
 
-  // required .universe.Vector thrust = 6;
+  // optional .universe.VectorMsg thrust = 6;
   inline bool has_thrust() const;
   inline void clear_thrust();
   static const int kThrustFieldNumber = 6;
-  inline const ::universe::Vector& thrust() const;
-  inline ::universe::Vector* mutable_thrust();
-  inline ::universe::Vector* release_thrust();
-  inline void set_allocated_thrust(::universe::Vector* thrust);
+  inline const ::universe::VectorMsg& thrust() const;
+  inline ::universe::VectorMsg* mutable_thrust();
+  inline ::universe::VectorMsg* release_thrust();
+  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
 
-  // required double radius = 7;
+  // optional double radius = 7;
   inline bool has_radius() const;
   inline void clear_radius();
   static const int kRadiusFieldNumber = 7;
@@ -739,10 +742,10 @@ class PhysPropsMsg : public ::google::protobuf::Message {
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
-  ::universe::Vector* position_;
-  ::universe::Vector* velocity_;
-  ::universe::Vector* orientation_;
-  ::universe::Vector* thrust_;
+  ::universe::VectorMsg* position_;
+  ::universe::VectorMsg* velocity_;
+  ::universe::VectorMsg* orientation_;
+  ::universe::VectorMsg* thrust_;
   double radius_;
 
   mutable int _cached_size_;
@@ -937,23 +940,23 @@ class CollisionMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required .universe.Vector position = 2;
+  // required .universe.VectorMsg position = 2;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 2;
-  inline const ::universe::Vector& position() const;
-  inline ::universe::Vector* mutable_position();
-  inline ::universe::Vector* release_position();
-  inline void set_allocated_position(::universe::Vector* position);
+  inline const ::universe::VectorMsg& position() const;
+  inline ::universe::VectorMsg* mutable_position();
+  inline ::universe::VectorMsg* release_position();
+  inline void set_allocated_position(::universe::VectorMsg* position);
 
-  // required .universe.Vector direction = 3;
+  // required .universe.VectorMsg direction = 3;
   inline bool has_direction() const;
   inline void clear_direction();
   static const int kDirectionFieldNumber = 3;
-  inline const ::universe::Vector& direction() const;
-  inline ::universe::Vector* mutable_direction();
-  inline ::universe::Vector* release_direction();
-  inline void set_allocated_direction(::universe::Vector* direction);
+  inline const ::universe::VectorMsg& direction() const;
+  inline ::universe::VectorMsg* mutable_direction();
+  inline ::universe::VectorMsg* release_direction();
+  inline void set_allocated_direction(::universe::VectorMsg* direction);
 
   // required double energy = 4;
   inline bool has_energy() const;
@@ -1000,8 +1003,8 @@ class CollisionMsg : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
-  ::universe::Vector* position_;
-  ::universe::Vector* direction_;
+  ::universe::VectorMsg* position_;
+  ::universe::VectorMsg* direction_;
   double energy_;
   ::std::string* commstring_;
   int collisiontype_;
@@ -1091,41 +1094,41 @@ class SpawnMsg : public ::google::protobuf::Message {
   inline double mass() const;
   inline void set_mass(double value);
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 3;
-  inline const ::universe::Vector& position() const;
-  inline ::universe::Vector* mutable_position();
-  inline ::universe::Vector* release_position();
-  inline void set_allocated_position(::universe::Vector* position);
+  inline const ::universe::VectorMsg& position() const;
+  inline ::universe::VectorMsg* mutable_position();
+  inline ::universe::VectorMsg* release_position();
+  inline void set_allocated_position(::universe::VectorMsg* position);
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   inline bool has_velocity() const;
   inline void clear_velocity();
   static const int kVelocityFieldNumber = 4;
-  inline const ::universe::Vector& velocity() const;
-  inline ::universe::Vector* mutable_velocity();
-  inline ::universe::Vector* release_velocity();
-  inline void set_allocated_velocity(::universe::Vector* velocity);
+  inline const ::universe::VectorMsg& velocity() const;
+  inline ::universe::VectorMsg* mutable_velocity();
+  inline ::universe::VectorMsg* release_velocity();
+  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   inline bool has_orientation() const;
   inline void clear_orientation();
   static const int kOrientationFieldNumber = 5;
-  inline const ::universe::Vector& orientation() const;
-  inline ::universe::Vector* mutable_orientation();
-  inline ::universe::Vector* release_orientation();
-  inline void set_allocated_orientation(::universe::Vector* orientation);
+  inline const ::universe::VectorMsg& orientation() const;
+  inline ::universe::VectorMsg* mutable_orientation();
+  inline ::universe::VectorMsg* release_orientation();
+  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   inline bool has_thrust() const;
   inline void clear_thrust();
   static const int kThrustFieldNumber = 6;
-  inline const ::universe::Vector& thrust() const;
-  inline ::universe::Vector* mutable_thrust();
-  inline ::universe::Vector* release_thrust();
-  inline void set_allocated_thrust(::universe::Vector* thrust);
+  inline const ::universe::VectorMsg& thrust() const;
+  inline ::universe::VectorMsg* mutable_thrust();
+  inline ::universe::VectorMsg* release_thrust();
+  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
 
   // required double radius = 7;
   inline bool has_radius() const;
@@ -1156,10 +1159,10 @@ class SpawnMsg : public ::google::protobuf::Message {
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
-  ::universe::Vector* position_;
-  ::universe::Vector* velocity_;
-  ::universe::Vector* orientation_;
-  ::universe::Vector* thrust_;
+  ::universe::VectorMsg* position_;
+  ::universe::VectorMsg* velocity_;
+  ::universe::VectorMsg* orientation_;
+  ::universe::VectorMsg* thrust_;
   double radius_;
 
   mutable int _cached_size_;
@@ -1705,32 +1708,32 @@ class BeamMsg : public ::google::protobuf::Message {
   inline ::std::string* release_name();
   inline void set_allocated_name(::std::string* name);
 
-  // required .universe.Vector origin = 2;
+  // required .universe.VectorMsg origin = 2;
   inline bool has_origin() const;
   inline void clear_origin();
   static const int kOriginFieldNumber = 2;
-  inline const ::universe::Vector& origin() const;
-  inline ::universe::Vector* mutable_origin();
-  inline ::universe::Vector* release_origin();
-  inline void set_allocated_origin(::universe::Vector* origin);
+  inline const ::universe::VectorMsg& origin() const;
+  inline ::universe::VectorMsg* mutable_origin();
+  inline ::universe::VectorMsg* release_origin();
+  inline void set_allocated_origin(::universe::VectorMsg* origin);
 
-  // required .universe.Vector velocity = 3;
+  // required .universe.VectorMsg velocity = 3;
   inline bool has_velocity() const;
   inline void clear_velocity();
   static const int kVelocityFieldNumber = 3;
-  inline const ::universe::Vector& velocity() const;
-  inline ::universe::Vector* mutable_velocity();
-  inline ::universe::Vector* release_velocity();
-  inline void set_allocated_velocity(::universe::Vector* velocity);
+  inline const ::universe::VectorMsg& velocity() const;
+  inline ::universe::VectorMsg* mutable_velocity();
+  inline ::universe::VectorMsg* release_velocity();
+  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
 
-  // required .universe.Vector up = 4;
+  // required .universe.VectorMsg up = 4;
   inline bool has_up() const;
   inline void clear_up();
   static const int kUpFieldNumber = 4;
-  inline const ::universe::Vector& up() const;
-  inline ::universe::Vector* mutable_up();
-  inline ::universe::Vector* release_up();
-  inline void set_allocated_up(::universe::Vector* up);
+  inline const ::universe::VectorMsg& up() const;
+  inline ::universe::VectorMsg* mutable_up();
+  inline ::universe::VectorMsg* release_up();
+  inline void set_allocated_up(::universe::VectorMsg* up);
 
   // required double spread_h = 5;
   inline bool has_spread_h() const;
@@ -1797,9 +1800,9 @@ class BeamMsg : public ::google::protobuf::Message {
 
   ::std::string* name_;
   static ::std::string* _default_name_;
-  ::universe::Vector* origin_;
-  ::universe::Vector* velocity_;
-  ::universe::Vector* up_;
+  ::universe::VectorMsg* origin_;
+  ::universe::VectorMsg* velocity_;
+  ::universe::VectorMsg* up_;
   double spread_h_;
   double spread_v_;
   double energy_;
@@ -1891,41 +1894,41 @@ class ScanResultMsg : public ::google::protobuf::Message {
   inline double mass() const;
   inline void set_mass(double value);
 
-  // required .universe.Vector position = 3;
+  // required .universe.VectorMsg position = 3;
   inline bool has_position() const;
   inline void clear_position();
   static const int kPositionFieldNumber = 3;
-  inline const ::universe::Vector& position() const;
-  inline ::universe::Vector* mutable_position();
-  inline ::universe::Vector* release_position();
-  inline void set_allocated_position(::universe::Vector* position);
+  inline const ::universe::VectorMsg& position() const;
+  inline ::universe::VectorMsg* mutable_position();
+  inline ::universe::VectorMsg* release_position();
+  inline void set_allocated_position(::universe::VectorMsg* position);
 
-  // required .universe.Vector velocity = 4;
+  // required .universe.VectorMsg velocity = 4;
   inline bool has_velocity() const;
   inline void clear_velocity();
   static const int kVelocityFieldNumber = 4;
-  inline const ::universe::Vector& velocity() const;
-  inline ::universe::Vector* mutable_velocity();
-  inline ::universe::Vector* release_velocity();
-  inline void set_allocated_velocity(::universe::Vector* velocity);
+  inline const ::universe::VectorMsg& velocity() const;
+  inline ::universe::VectorMsg* mutable_velocity();
+  inline ::universe::VectorMsg* release_velocity();
+  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
 
-  // required .universe.Vector orientation = 5;
+  // required .universe.VectorMsg orientation = 5;
   inline bool has_orientation() const;
   inline void clear_orientation();
   static const int kOrientationFieldNumber = 5;
-  inline const ::universe::Vector& orientation() const;
-  inline ::universe::Vector* mutable_orientation();
-  inline ::universe::Vector* release_orientation();
-  inline void set_allocated_orientation(::universe::Vector* orientation);
+  inline const ::universe::VectorMsg& orientation() const;
+  inline ::universe::VectorMsg* mutable_orientation();
+  inline ::universe::VectorMsg* release_orientation();
+  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
 
-  // required .universe.Vector thrust = 6;
+  // required .universe.VectorMsg thrust = 6;
   inline bool has_thrust() const;
   inline void clear_thrust();
   static const int kThrustFieldNumber = 6;
-  inline const ::universe::Vector& thrust() const;
-  inline ::universe::Vector* mutable_thrust();
-  inline ::universe::Vector* release_thrust();
-  inline void set_allocated_thrust(::universe::Vector* thrust);
+  inline const ::universe::VectorMsg& thrust() const;
+  inline ::universe::VectorMsg* mutable_thrust();
+  inline ::universe::VectorMsg* release_thrust();
+  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
 
   // required double radius = 7;
   inline bool has_radius() const;
@@ -1970,10 +1973,10 @@ class ScanResultMsg : public ::google::protobuf::Message {
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
-  ::universe::Vector* position_;
-  ::universe::Vector* velocity_;
-  ::universe::Vector* orientation_;
-  ::universe::Vector* thrust_;
+  ::universe::VectorMsg* position_;
+  ::universe::VectorMsg* velocity_;
+  ::universe::VectorMsg* orientation_;
+  ::universe::VectorMsg* thrust_;
   double radius_;
   ::std::string* extraparms_;
 
@@ -2069,14 +2072,14 @@ class ScanQueryMsg : public ::google::protobuf::Message {
   inline double scanpower() const;
   inline void set_scanpower(double value);
 
-  // required .universe.Vector scanDir = 4;
+  // required .universe.VectorMsg scanDir = 4;
   inline bool has_scandir() const;
   inline void clear_scandir();
   static const int kScanDirFieldNumber = 4;
-  inline const ::universe::Vector& scandir() const;
-  inline ::universe::Vector* mutable_scandir();
-  inline ::universe::Vector* release_scandir();
-  inline void set_allocated_scandir(::universe::Vector* scandir);
+  inline const ::universe::VectorMsg& scandir() const;
+  inline ::universe::VectorMsg* mutable_scandir();
+  inline ::universe::VectorMsg* release_scandir();
+  inline void set_allocated_scandir(::universe::VectorMsg* scandir);
 
   // @@protoc_insertion_point(class_scope:universe.ScanQueryMsg)
  private:
@@ -2094,7 +2097,7 @@ class ScanQueryMsg : public ::google::protobuf::Message {
   ::std::string* name_;
   static ::std::string* _default_name_;
   double scanpower_;
-  ::universe::Vector* scandir_;
+  ::universe::VectorMsg* scandir_;
   ::google::protobuf::int32 scanid_;
 
   mutable int _cached_size_;
@@ -2219,6 +2222,94 @@ class ScanRespMsg : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static ScanRespMsg* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class DirectoryMsg : public ::google::protobuf::Message {
+ public:
+  DirectoryMsg();
+  virtual ~DirectoryMsg();
+
+  DirectoryMsg(const DirectoryMsg& from);
+
+  inline DirectoryMsg& operator=(const DirectoryMsg& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const DirectoryMsg& default_instance();
+
+  void Swap(DirectoryMsg* other);
+
+  // implements Message ----------------------------------------------
+
+  DirectoryMsg* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const DirectoryMsg& from);
+  void MergeFrom(const DirectoryMsg& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1 [default = "DIRECTORY"];
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const char* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // @@protoc_insertion_point(class_scope:universe.DirectoryMsg)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  static ::std::string* _default_name_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+  friend void  protobuf_AddDesc_universe_2eproto();
+  friend void protobuf_AssignDesc_universe_2eproto();
+  friend void protobuf_ShutdownFile_universe_2eproto();
+
+  void InitAsDefaultInstance();
+  static DirectoryMsg* default_instance_;
 };
 // ===================================================================
 
@@ -2784,70 +2875,70 @@ inline void MessageWrapper::set_allocated_visdata(::universe::VisData* visdata) 
 
 // -------------------------------------------------------------------
 
-// Vector
+// VectorMsg
 
 // required double x = 1;
-inline bool Vector::has_x() const {
+inline bool VectorMsg::has_x() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Vector::set_has_x() {
+inline void VectorMsg::set_has_x() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void Vector::clear_has_x() {
+inline void VectorMsg::clear_has_x() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void Vector::clear_x() {
+inline void VectorMsg::clear_x() {
   x_ = 0;
   clear_has_x();
 }
-inline double Vector::x() const {
+inline double VectorMsg::x() const {
   return x_;
 }
-inline void Vector::set_x(double value) {
+inline void VectorMsg::set_x(double value) {
   set_has_x();
   x_ = value;
 }
 
 // required double y = 2;
-inline bool Vector::has_y() const {
+inline bool VectorMsg::has_y() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void Vector::set_has_y() {
+inline void VectorMsg::set_has_y() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void Vector::clear_has_y() {
+inline void VectorMsg::clear_has_y() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void Vector::clear_y() {
+inline void VectorMsg::clear_y() {
   y_ = 0;
   clear_has_y();
 }
-inline double Vector::y() const {
+inline double VectorMsg::y() const {
   return y_;
 }
-inline void Vector::set_y(double value) {
+inline void VectorMsg::set_y(double value) {
   set_has_y();
   y_ = value;
 }
 
 // required double z = 3;
-inline bool Vector::has_z() const {
+inline bool VectorMsg::has_z() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Vector::set_has_z() {
+inline void VectorMsg::set_has_z() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void Vector::clear_has_z() {
+inline void VectorMsg::clear_has_z() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void Vector::clear_z() {
+inline void VectorMsg::clear_z() {
   z_ = 0;
   clear_has_z();
 }
-inline double Vector::z() const {
+inline double VectorMsg::z() const {
   return z_;
 }
-inline void Vector::set_z(double value) {
+inline void VectorMsg::set_z(double value) {
   set_has_z();
   z_ = value;
 }
@@ -3000,7 +3091,7 @@ inline void PhysPropsMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required double mass = 2;
+// optional double mass = 2;
 inline bool PhysPropsMsg::has_mass() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -3022,7 +3113,7 @@ inline void PhysPropsMsg::set_mass(double value) {
   mass_ = value;
 }
 
-// required .universe.Vector position = 3;
+// optional .universe.VectorMsg position = 3;
 inline bool PhysPropsMsg::has_position() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -3033,24 +3124,24 @@ inline void PhysPropsMsg::clear_has_position() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void PhysPropsMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::Vector::Clear();
+  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
   clear_has_position();
 }
-inline const ::universe::Vector& PhysPropsMsg::position() const {
+inline const ::universe::VectorMsg& PhysPropsMsg::position() const {
   return position_ != NULL ? *position_ : *default_instance_->position_;
 }
-inline ::universe::Vector* PhysPropsMsg::mutable_position() {
+inline ::universe::VectorMsg* PhysPropsMsg::mutable_position() {
   set_has_position();
-  if (position_ == NULL) position_ = new ::universe::Vector;
+  if (position_ == NULL) position_ = new ::universe::VectorMsg;
   return position_;
 }
-inline ::universe::Vector* PhysPropsMsg::release_position() {
+inline ::universe::VectorMsg* PhysPropsMsg::release_position() {
   clear_has_position();
-  ::universe::Vector* temp = position_;
+  ::universe::VectorMsg* temp = position_;
   position_ = NULL;
   return temp;
 }
-inline void PhysPropsMsg::set_allocated_position(::universe::Vector* position) {
+inline void PhysPropsMsg::set_allocated_position(::universe::VectorMsg* position) {
   delete position_;
   position_ = position;
   if (position) {
@@ -3060,7 +3151,7 @@ inline void PhysPropsMsg::set_allocated_position(::universe::Vector* position) {
   }
 }
 
-// required .universe.Vector velocity = 4;
+// optional .universe.VectorMsg velocity = 4;
 inline bool PhysPropsMsg::has_velocity() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -3071,24 +3162,24 @@ inline void PhysPropsMsg::clear_has_velocity() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void PhysPropsMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
   clear_has_velocity();
 }
-inline const ::universe::Vector& PhysPropsMsg::velocity() const {
+inline const ::universe::VectorMsg& PhysPropsMsg::velocity() const {
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
 }
-inline ::universe::Vector* PhysPropsMsg::mutable_velocity() {
+inline ::universe::VectorMsg* PhysPropsMsg::mutable_velocity() {
   set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::Vector;
+  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
   return velocity_;
 }
-inline ::universe::Vector* PhysPropsMsg::release_velocity() {
+inline ::universe::VectorMsg* PhysPropsMsg::release_velocity() {
   clear_has_velocity();
-  ::universe::Vector* temp = velocity_;
+  ::universe::VectorMsg* temp = velocity_;
   velocity_ = NULL;
   return temp;
 }
-inline void PhysPropsMsg::set_allocated_velocity(::universe::Vector* velocity) {
+inline void PhysPropsMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
   delete velocity_;
   velocity_ = velocity;
   if (velocity) {
@@ -3098,7 +3189,7 @@ inline void PhysPropsMsg::set_allocated_velocity(::universe::Vector* velocity) {
   }
 }
 
-// required .universe.Vector orientation = 5;
+// optional .universe.VectorMsg orientation = 5;
 inline bool PhysPropsMsg::has_orientation() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -3109,24 +3200,24 @@ inline void PhysPropsMsg::clear_has_orientation() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void PhysPropsMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
   clear_has_orientation();
 }
-inline const ::universe::Vector& PhysPropsMsg::orientation() const {
+inline const ::universe::VectorMsg& PhysPropsMsg::orientation() const {
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
 }
-inline ::universe::Vector* PhysPropsMsg::mutable_orientation() {
+inline ::universe::VectorMsg* PhysPropsMsg::mutable_orientation() {
   set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::Vector;
+  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
   return orientation_;
 }
-inline ::universe::Vector* PhysPropsMsg::release_orientation() {
+inline ::universe::VectorMsg* PhysPropsMsg::release_orientation() {
   clear_has_orientation();
-  ::universe::Vector* temp = orientation_;
+  ::universe::VectorMsg* temp = orientation_;
   orientation_ = NULL;
   return temp;
 }
-inline void PhysPropsMsg::set_allocated_orientation(::universe::Vector* orientation) {
+inline void PhysPropsMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
   delete orientation_;
   orientation_ = orientation;
   if (orientation) {
@@ -3136,7 +3227,7 @@ inline void PhysPropsMsg::set_allocated_orientation(::universe::Vector* orientat
   }
 }
 
-// required .universe.Vector thrust = 6;
+// optional .universe.VectorMsg thrust = 6;
 inline bool PhysPropsMsg::has_thrust() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -3147,24 +3238,24 @@ inline void PhysPropsMsg::clear_has_thrust() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void PhysPropsMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
   clear_has_thrust();
 }
-inline const ::universe::Vector& PhysPropsMsg::thrust() const {
+inline const ::universe::VectorMsg& PhysPropsMsg::thrust() const {
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
 }
-inline ::universe::Vector* PhysPropsMsg::mutable_thrust() {
+inline ::universe::VectorMsg* PhysPropsMsg::mutable_thrust() {
   set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::Vector;
+  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
   return thrust_;
 }
-inline ::universe::Vector* PhysPropsMsg::release_thrust() {
+inline ::universe::VectorMsg* PhysPropsMsg::release_thrust() {
   clear_has_thrust();
-  ::universe::Vector* temp = thrust_;
+  ::universe::VectorMsg* temp = thrust_;
   thrust_ = NULL;
   return temp;
 }
-inline void PhysPropsMsg::set_allocated_thrust(::universe::Vector* thrust) {
+inline void PhysPropsMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
   delete thrust_;
   thrust_ = thrust;
   if (thrust) {
@@ -3174,7 +3265,7 @@ inline void PhysPropsMsg::set_allocated_thrust(::universe::Vector* thrust) {
   }
 }
 
-// required double radius = 7;
+// optional double radius = 7;
 inline bool PhysPropsMsg::has_radius() const {
   return (_has_bits_[0] & 0x00000040u) != 0;
 }
@@ -3344,7 +3435,7 @@ inline void CollisionMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required .universe.Vector position = 2;
+// required .universe.VectorMsg position = 2;
 inline bool CollisionMsg::has_position() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -3355,24 +3446,24 @@ inline void CollisionMsg::clear_has_position() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void CollisionMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::Vector::Clear();
+  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
   clear_has_position();
 }
-inline const ::universe::Vector& CollisionMsg::position() const {
+inline const ::universe::VectorMsg& CollisionMsg::position() const {
   return position_ != NULL ? *position_ : *default_instance_->position_;
 }
-inline ::universe::Vector* CollisionMsg::mutable_position() {
+inline ::universe::VectorMsg* CollisionMsg::mutable_position() {
   set_has_position();
-  if (position_ == NULL) position_ = new ::universe::Vector;
+  if (position_ == NULL) position_ = new ::universe::VectorMsg;
   return position_;
 }
-inline ::universe::Vector* CollisionMsg::release_position() {
+inline ::universe::VectorMsg* CollisionMsg::release_position() {
   clear_has_position();
-  ::universe::Vector* temp = position_;
+  ::universe::VectorMsg* temp = position_;
   position_ = NULL;
   return temp;
 }
-inline void CollisionMsg::set_allocated_position(::universe::Vector* position) {
+inline void CollisionMsg::set_allocated_position(::universe::VectorMsg* position) {
   delete position_;
   position_ = position;
   if (position) {
@@ -3382,7 +3473,7 @@ inline void CollisionMsg::set_allocated_position(::universe::Vector* position) {
   }
 }
 
-// required .universe.Vector direction = 3;
+// required .universe.VectorMsg direction = 3;
 inline bool CollisionMsg::has_direction() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -3393,24 +3484,24 @@ inline void CollisionMsg::clear_has_direction() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void CollisionMsg::clear_direction() {
-  if (direction_ != NULL) direction_->::universe::Vector::Clear();
+  if (direction_ != NULL) direction_->::universe::VectorMsg::Clear();
   clear_has_direction();
 }
-inline const ::universe::Vector& CollisionMsg::direction() const {
+inline const ::universe::VectorMsg& CollisionMsg::direction() const {
   return direction_ != NULL ? *direction_ : *default_instance_->direction_;
 }
-inline ::universe::Vector* CollisionMsg::mutable_direction() {
+inline ::universe::VectorMsg* CollisionMsg::mutable_direction() {
   set_has_direction();
-  if (direction_ == NULL) direction_ = new ::universe::Vector;
+  if (direction_ == NULL) direction_ = new ::universe::VectorMsg;
   return direction_;
 }
-inline ::universe::Vector* CollisionMsg::release_direction() {
+inline ::universe::VectorMsg* CollisionMsg::release_direction() {
   clear_has_direction();
-  ::universe::Vector* temp = direction_;
+  ::universe::VectorMsg* temp = direction_;
   direction_ = NULL;
   return temp;
 }
-inline void CollisionMsg::set_allocated_direction(::universe::Vector* direction) {
+inline void CollisionMsg::set_allocated_direction(::universe::VectorMsg* direction) {
   delete direction_;
   direction_ = direction;
   if (direction) {
@@ -3631,7 +3722,7 @@ inline void SpawnMsg::set_mass(double value) {
   mass_ = value;
 }
 
-// required .universe.Vector position = 3;
+// required .universe.VectorMsg position = 3;
 inline bool SpawnMsg::has_position() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -3642,24 +3733,24 @@ inline void SpawnMsg::clear_has_position() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void SpawnMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::Vector::Clear();
+  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
   clear_has_position();
 }
-inline const ::universe::Vector& SpawnMsg::position() const {
+inline const ::universe::VectorMsg& SpawnMsg::position() const {
   return position_ != NULL ? *position_ : *default_instance_->position_;
 }
-inline ::universe::Vector* SpawnMsg::mutable_position() {
+inline ::universe::VectorMsg* SpawnMsg::mutable_position() {
   set_has_position();
-  if (position_ == NULL) position_ = new ::universe::Vector;
+  if (position_ == NULL) position_ = new ::universe::VectorMsg;
   return position_;
 }
-inline ::universe::Vector* SpawnMsg::release_position() {
+inline ::universe::VectorMsg* SpawnMsg::release_position() {
   clear_has_position();
-  ::universe::Vector* temp = position_;
+  ::universe::VectorMsg* temp = position_;
   position_ = NULL;
   return temp;
 }
-inline void SpawnMsg::set_allocated_position(::universe::Vector* position) {
+inline void SpawnMsg::set_allocated_position(::universe::VectorMsg* position) {
   delete position_;
   position_ = position;
   if (position) {
@@ -3669,7 +3760,7 @@ inline void SpawnMsg::set_allocated_position(::universe::Vector* position) {
   }
 }
 
-// required .universe.Vector velocity = 4;
+// required .universe.VectorMsg velocity = 4;
 inline bool SpawnMsg::has_velocity() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -3680,24 +3771,24 @@ inline void SpawnMsg::clear_has_velocity() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void SpawnMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
   clear_has_velocity();
 }
-inline const ::universe::Vector& SpawnMsg::velocity() const {
+inline const ::universe::VectorMsg& SpawnMsg::velocity() const {
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
 }
-inline ::universe::Vector* SpawnMsg::mutable_velocity() {
+inline ::universe::VectorMsg* SpawnMsg::mutable_velocity() {
   set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::Vector;
+  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
   return velocity_;
 }
-inline ::universe::Vector* SpawnMsg::release_velocity() {
+inline ::universe::VectorMsg* SpawnMsg::release_velocity() {
   clear_has_velocity();
-  ::universe::Vector* temp = velocity_;
+  ::universe::VectorMsg* temp = velocity_;
   velocity_ = NULL;
   return temp;
 }
-inline void SpawnMsg::set_allocated_velocity(::universe::Vector* velocity) {
+inline void SpawnMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
   delete velocity_;
   velocity_ = velocity;
   if (velocity) {
@@ -3707,7 +3798,7 @@ inline void SpawnMsg::set_allocated_velocity(::universe::Vector* velocity) {
   }
 }
 
-// required .universe.Vector orientation = 5;
+// required .universe.VectorMsg orientation = 5;
 inline bool SpawnMsg::has_orientation() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -3718,24 +3809,24 @@ inline void SpawnMsg::clear_has_orientation() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void SpawnMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
   clear_has_orientation();
 }
-inline const ::universe::Vector& SpawnMsg::orientation() const {
+inline const ::universe::VectorMsg& SpawnMsg::orientation() const {
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
 }
-inline ::universe::Vector* SpawnMsg::mutable_orientation() {
+inline ::universe::VectorMsg* SpawnMsg::mutable_orientation() {
   set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::Vector;
+  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
   return orientation_;
 }
-inline ::universe::Vector* SpawnMsg::release_orientation() {
+inline ::universe::VectorMsg* SpawnMsg::release_orientation() {
   clear_has_orientation();
-  ::universe::Vector* temp = orientation_;
+  ::universe::VectorMsg* temp = orientation_;
   orientation_ = NULL;
   return temp;
 }
-inline void SpawnMsg::set_allocated_orientation(::universe::Vector* orientation) {
+inline void SpawnMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
   delete orientation_;
   orientation_ = orientation;
   if (orientation) {
@@ -3745,7 +3836,7 @@ inline void SpawnMsg::set_allocated_orientation(::universe::Vector* orientation)
   }
 }
 
-// required .universe.Vector thrust = 6;
+// required .universe.VectorMsg thrust = 6;
 inline bool SpawnMsg::has_thrust() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -3756,24 +3847,24 @@ inline void SpawnMsg::clear_has_thrust() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void SpawnMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
   clear_has_thrust();
 }
-inline const ::universe::Vector& SpawnMsg::thrust() const {
+inline const ::universe::VectorMsg& SpawnMsg::thrust() const {
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
 }
-inline ::universe::Vector* SpawnMsg::mutable_thrust() {
+inline ::universe::VectorMsg* SpawnMsg::mutable_thrust() {
   set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::Vector;
+  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
   return thrust_;
 }
-inline ::universe::Vector* SpawnMsg::release_thrust() {
+inline ::universe::VectorMsg* SpawnMsg::release_thrust() {
   clear_has_thrust();
-  ::universe::Vector* temp = thrust_;
+  ::universe::VectorMsg* temp = thrust_;
   thrust_ = NULL;
   return temp;
 }
-inline void SpawnMsg::set_allocated_thrust(::universe::Vector* thrust) {
+inline void SpawnMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
   delete thrust_;
   thrust_ = thrust;
   if (thrust) {
@@ -4249,7 +4340,7 @@ inline void BeamMsg::set_allocated_name(::std::string* name) {
   }
 }
 
-// required .universe.Vector origin = 2;
+// required .universe.VectorMsg origin = 2;
 inline bool BeamMsg::has_origin() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -4260,24 +4351,24 @@ inline void BeamMsg::clear_has_origin() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void BeamMsg::clear_origin() {
-  if (origin_ != NULL) origin_->::universe::Vector::Clear();
+  if (origin_ != NULL) origin_->::universe::VectorMsg::Clear();
   clear_has_origin();
 }
-inline const ::universe::Vector& BeamMsg::origin() const {
+inline const ::universe::VectorMsg& BeamMsg::origin() const {
   return origin_ != NULL ? *origin_ : *default_instance_->origin_;
 }
-inline ::universe::Vector* BeamMsg::mutable_origin() {
+inline ::universe::VectorMsg* BeamMsg::mutable_origin() {
   set_has_origin();
-  if (origin_ == NULL) origin_ = new ::universe::Vector;
+  if (origin_ == NULL) origin_ = new ::universe::VectorMsg;
   return origin_;
 }
-inline ::universe::Vector* BeamMsg::release_origin() {
+inline ::universe::VectorMsg* BeamMsg::release_origin() {
   clear_has_origin();
-  ::universe::Vector* temp = origin_;
+  ::universe::VectorMsg* temp = origin_;
   origin_ = NULL;
   return temp;
 }
-inline void BeamMsg::set_allocated_origin(::universe::Vector* origin) {
+inline void BeamMsg::set_allocated_origin(::universe::VectorMsg* origin) {
   delete origin_;
   origin_ = origin;
   if (origin) {
@@ -4287,7 +4378,7 @@ inline void BeamMsg::set_allocated_origin(::universe::Vector* origin) {
   }
 }
 
-// required .universe.Vector velocity = 3;
+// required .universe.VectorMsg velocity = 3;
 inline bool BeamMsg::has_velocity() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -4298,24 +4389,24 @@ inline void BeamMsg::clear_has_velocity() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void BeamMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
   clear_has_velocity();
 }
-inline const ::universe::Vector& BeamMsg::velocity() const {
+inline const ::universe::VectorMsg& BeamMsg::velocity() const {
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
 }
-inline ::universe::Vector* BeamMsg::mutable_velocity() {
+inline ::universe::VectorMsg* BeamMsg::mutable_velocity() {
   set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::Vector;
+  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
   return velocity_;
 }
-inline ::universe::Vector* BeamMsg::release_velocity() {
+inline ::universe::VectorMsg* BeamMsg::release_velocity() {
   clear_has_velocity();
-  ::universe::Vector* temp = velocity_;
+  ::universe::VectorMsg* temp = velocity_;
   velocity_ = NULL;
   return temp;
 }
-inline void BeamMsg::set_allocated_velocity(::universe::Vector* velocity) {
+inline void BeamMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
   delete velocity_;
   velocity_ = velocity;
   if (velocity) {
@@ -4325,7 +4416,7 @@ inline void BeamMsg::set_allocated_velocity(::universe::Vector* velocity) {
   }
 }
 
-// required .universe.Vector up = 4;
+// required .universe.VectorMsg up = 4;
 inline bool BeamMsg::has_up() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -4336,24 +4427,24 @@ inline void BeamMsg::clear_has_up() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void BeamMsg::clear_up() {
-  if (up_ != NULL) up_->::universe::Vector::Clear();
+  if (up_ != NULL) up_->::universe::VectorMsg::Clear();
   clear_has_up();
 }
-inline const ::universe::Vector& BeamMsg::up() const {
+inline const ::universe::VectorMsg& BeamMsg::up() const {
   return up_ != NULL ? *up_ : *default_instance_->up_;
 }
-inline ::universe::Vector* BeamMsg::mutable_up() {
+inline ::universe::VectorMsg* BeamMsg::mutable_up() {
   set_has_up();
-  if (up_ == NULL) up_ = new ::universe::Vector;
+  if (up_ == NULL) up_ = new ::universe::VectorMsg;
   return up_;
 }
-inline ::universe::Vector* BeamMsg::release_up() {
+inline ::universe::VectorMsg* BeamMsg::release_up() {
   clear_has_up();
-  ::universe::Vector* temp = up_;
+  ::universe::VectorMsg* temp = up_;
   up_ = NULL;
   return temp;
 }
-inline void BeamMsg::set_allocated_up(::universe::Vector* up) {
+inline void BeamMsg::set_allocated_up(::universe::VectorMsg* up) {
   delete up_;
   up_ = up;
   if (up) {
@@ -4618,7 +4709,7 @@ inline void ScanResultMsg::set_mass(double value) {
   mass_ = value;
 }
 
-// required .universe.Vector position = 3;
+// required .universe.VectorMsg position = 3;
 inline bool ScanResultMsg::has_position() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
@@ -4629,24 +4720,24 @@ inline void ScanResultMsg::clear_has_position() {
   _has_bits_[0] &= ~0x00000004u;
 }
 inline void ScanResultMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::Vector::Clear();
+  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
   clear_has_position();
 }
-inline const ::universe::Vector& ScanResultMsg::position() const {
+inline const ::universe::VectorMsg& ScanResultMsg::position() const {
   return position_ != NULL ? *position_ : *default_instance_->position_;
 }
-inline ::universe::Vector* ScanResultMsg::mutable_position() {
+inline ::universe::VectorMsg* ScanResultMsg::mutable_position() {
   set_has_position();
-  if (position_ == NULL) position_ = new ::universe::Vector;
+  if (position_ == NULL) position_ = new ::universe::VectorMsg;
   return position_;
 }
-inline ::universe::Vector* ScanResultMsg::release_position() {
+inline ::universe::VectorMsg* ScanResultMsg::release_position() {
   clear_has_position();
-  ::universe::Vector* temp = position_;
+  ::universe::VectorMsg* temp = position_;
   position_ = NULL;
   return temp;
 }
-inline void ScanResultMsg::set_allocated_position(::universe::Vector* position) {
+inline void ScanResultMsg::set_allocated_position(::universe::VectorMsg* position) {
   delete position_;
   position_ = position;
   if (position) {
@@ -4656,7 +4747,7 @@ inline void ScanResultMsg::set_allocated_position(::universe::Vector* position) 
   }
 }
 
-// required .universe.Vector velocity = 4;
+// required .universe.VectorMsg velocity = 4;
 inline bool ScanResultMsg::has_velocity() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -4667,24 +4758,24 @@ inline void ScanResultMsg::clear_has_velocity() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void ScanResultMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::Vector::Clear();
+  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
   clear_has_velocity();
 }
-inline const ::universe::Vector& ScanResultMsg::velocity() const {
+inline const ::universe::VectorMsg& ScanResultMsg::velocity() const {
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
 }
-inline ::universe::Vector* ScanResultMsg::mutable_velocity() {
+inline ::universe::VectorMsg* ScanResultMsg::mutable_velocity() {
   set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::Vector;
+  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
   return velocity_;
 }
-inline ::universe::Vector* ScanResultMsg::release_velocity() {
+inline ::universe::VectorMsg* ScanResultMsg::release_velocity() {
   clear_has_velocity();
-  ::universe::Vector* temp = velocity_;
+  ::universe::VectorMsg* temp = velocity_;
   velocity_ = NULL;
   return temp;
 }
-inline void ScanResultMsg::set_allocated_velocity(::universe::Vector* velocity) {
+inline void ScanResultMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
   delete velocity_;
   velocity_ = velocity;
   if (velocity) {
@@ -4694,7 +4785,7 @@ inline void ScanResultMsg::set_allocated_velocity(::universe::Vector* velocity) 
   }
 }
 
-// required .universe.Vector orientation = 5;
+// required .universe.VectorMsg orientation = 5;
 inline bool ScanResultMsg::has_orientation() const {
   return (_has_bits_[0] & 0x00000010u) != 0;
 }
@@ -4705,24 +4796,24 @@ inline void ScanResultMsg::clear_has_orientation() {
   _has_bits_[0] &= ~0x00000010u;
 }
 inline void ScanResultMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::Vector::Clear();
+  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
   clear_has_orientation();
 }
-inline const ::universe::Vector& ScanResultMsg::orientation() const {
+inline const ::universe::VectorMsg& ScanResultMsg::orientation() const {
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
 }
-inline ::universe::Vector* ScanResultMsg::mutable_orientation() {
+inline ::universe::VectorMsg* ScanResultMsg::mutable_orientation() {
   set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::Vector;
+  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
   return orientation_;
 }
-inline ::universe::Vector* ScanResultMsg::release_orientation() {
+inline ::universe::VectorMsg* ScanResultMsg::release_orientation() {
   clear_has_orientation();
-  ::universe::Vector* temp = orientation_;
+  ::universe::VectorMsg* temp = orientation_;
   orientation_ = NULL;
   return temp;
 }
-inline void ScanResultMsg::set_allocated_orientation(::universe::Vector* orientation) {
+inline void ScanResultMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
   delete orientation_;
   orientation_ = orientation;
   if (orientation) {
@@ -4732,7 +4823,7 @@ inline void ScanResultMsg::set_allocated_orientation(::universe::Vector* orienta
   }
 }
 
-// required .universe.Vector thrust = 6;
+// required .universe.VectorMsg thrust = 6;
 inline bool ScanResultMsg::has_thrust() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
@@ -4743,24 +4834,24 @@ inline void ScanResultMsg::clear_has_thrust() {
   _has_bits_[0] &= ~0x00000020u;
 }
 inline void ScanResultMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::Vector::Clear();
+  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
   clear_has_thrust();
 }
-inline const ::universe::Vector& ScanResultMsg::thrust() const {
+inline const ::universe::VectorMsg& ScanResultMsg::thrust() const {
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
 }
-inline ::universe::Vector* ScanResultMsg::mutable_thrust() {
+inline ::universe::VectorMsg* ScanResultMsg::mutable_thrust() {
   set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::Vector;
+  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
   return thrust_;
 }
-inline ::universe::Vector* ScanResultMsg::release_thrust() {
+inline ::universe::VectorMsg* ScanResultMsg::release_thrust() {
   clear_has_thrust();
-  ::universe::Vector* temp = thrust_;
+  ::universe::VectorMsg* temp = thrust_;
   thrust_ = NULL;
   return temp;
 }
-inline void ScanResultMsg::set_allocated_thrust(::universe::Vector* thrust) {
+inline void ScanResultMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
   delete thrust_;
   thrust_ = thrust;
   if (thrust) {
@@ -4980,7 +5071,7 @@ inline void ScanQueryMsg::set_scanpower(double value) {
   scanpower_ = value;
 }
 
-// required .universe.Vector scanDir = 4;
+// required .universe.VectorMsg scanDir = 4;
 inline bool ScanQueryMsg::has_scandir() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
@@ -4991,24 +5082,24 @@ inline void ScanQueryMsg::clear_has_scandir() {
   _has_bits_[0] &= ~0x00000008u;
 }
 inline void ScanQueryMsg::clear_scandir() {
-  if (scandir_ != NULL) scandir_->::universe::Vector::Clear();
+  if (scandir_ != NULL) scandir_->::universe::VectorMsg::Clear();
   clear_has_scandir();
 }
-inline const ::universe::Vector& ScanQueryMsg::scandir() const {
+inline const ::universe::VectorMsg& ScanQueryMsg::scandir() const {
   return scandir_ != NULL ? *scandir_ : *default_instance_->scandir_;
 }
-inline ::universe::Vector* ScanQueryMsg::mutable_scandir() {
+inline ::universe::VectorMsg* ScanQueryMsg::mutable_scandir() {
   set_has_scandir();
-  if (scandir_ == NULL) scandir_ = new ::universe::Vector;
+  if (scandir_ == NULL) scandir_ = new ::universe::VectorMsg;
   return scandir_;
 }
-inline ::universe::Vector* ScanQueryMsg::release_scandir() {
+inline ::universe::VectorMsg* ScanQueryMsg::release_scandir() {
   clear_has_scandir();
-  ::universe::Vector* temp = scandir_;
+  ::universe::VectorMsg* temp = scandir_;
   scandir_ = NULL;
   return temp;
 }
-inline void ScanQueryMsg::set_allocated_scandir(::universe::Vector* scandir) {
+inline void ScanQueryMsg::set_allocated_scandir(::universe::VectorMsg* scandir) {
   delete scandir_;
   scandir_ = scandir;
   if (scandir) {
@@ -5181,6 +5272,80 @@ inline void ScanRespMsg::set_allocated_parms(::std::string* parms) {
   } else {
     clear_has_parms();
     parms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// -------------------------------------------------------------------
+
+// DirectoryMsg
+
+// optional string name = 1 [default = "DIRECTORY"];
+inline bool DirectoryMsg::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DirectoryMsg::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DirectoryMsg::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void DirectoryMsg::clear_name() {
+  if (name_ != _default_name_) {
+    name_->assign(*_default_name_);
+  }
+  clear_has_name();
+}
+inline const ::std::string& DirectoryMsg::name() const {
+  return *name_;
+}
+inline void DirectoryMsg::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void DirectoryMsg::set_name(const char* value) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void DirectoryMsg::set_name(const char* value, size_t size) {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* DirectoryMsg::mutable_name() {
+  set_has_name();
+  if (name_ == _default_name_) {
+    name_ = new ::std::string(*_default_name_);
+  }
+  return name_;
+}
+inline ::std::string* DirectoryMsg::release_name() {
+  clear_has_name();
+  if (name_ == _default_name_) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(_default_name_);
+    return temp;
+  }
+}
+inline void DirectoryMsg::set_allocated_name(::std::string* name) {
+  if (name_ != _default_name_) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(_default_name_);
   }
 }
 
