@@ -27,6 +27,7 @@ struct PhysicsObject
 {
     PhysicsObjectType type;
     uint64_t phys_id;
+    Universe* universe;
     struct Vector3 position,
         velocity,
         ang_velocity,
@@ -37,7 +38,6 @@ struct PhysicsObject
     double mass,
         radius,
         health;
-    Universe* universe;
     char* obj_desc;
     int32_t art_id;
     bool emits_gravity;
@@ -63,8 +63,8 @@ struct Beam
 {
     PhysicsObjectType type;
     uint64_t phys_id;
-    PhysicsObject* scan_target;
     Universe* universe;
+    PhysicsObject* scan_target;
     struct Vector3 origin,
         direction,
         front_position,

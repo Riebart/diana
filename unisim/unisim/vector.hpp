@@ -8,12 +8,11 @@ struct Vector3
     double x, y, z;
 };
 
-// @todo Make sure that the cpp signatures match the hpp signatures in variable names.
 struct Vector3* Vector3_alloc(int32_t n  = 1);
 struct Vector3* Vector3_clone(struct Vector3* v);
 
 void Vector3_init(struct Vector3* v, double x, double y, double z);
-void Vector3_init(struct Vector3* v1, struct Vector3* v2);
+void Vector3_init(struct Vector3* out, struct Vector3* v);
 
 bool Vector3_almost_zeroS(double v);
 bool Vector3_almost_zero(struct Vector3* v);
@@ -28,8 +27,8 @@ void Vector3_normalize(struct Vector3* out, struct Vector3* v);
 void Vector3_normalize(struct Vector3* v);
 
 void Vector3_cross(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
-void Vector3_project_onto(struct Vector3* out, struct Vector3* v, struct Vector3* a);
-void Vector3_project_down(struct Vector3* out, struct Vector3* v, struct Vector3* a);
+void Vector3_project_onto(struct Vector3* out, struct Vector3* v, struct Vector3* axis);
+void Vector3_project_down(struct Vector3* out, struct Vector3* v, struct Vector3* axis);
 
 double Vector3_dot(struct Vector3* v1, struct Vector3* v2);
 double Vector3_length2(struct Vector3* v);

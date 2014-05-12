@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <chrono>
 
-#define ABSOLUTE_MIN_FRAMETIME 0.000001
+#define ABSOLUTE_MIN_FRAMETIME 0.001
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -23,6 +23,7 @@ void gravity(V3* out, PO* big, PO* small)
 
 void sim(Universe* u)
 {
+    // dt is the amount of time that will pass in the game world during the next tick.
     double dt = u->min_frametime;
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     std::chrono::duration<double> elapsed;
@@ -30,10 +31,11 @@ void sim(Universe* u)
     while (u->running)
     {
         // If we're paused, then just sleep. We're not picky on how long we sleep for.
-        // Sleep for dt time so that we're responsive to unpausing.
+        // Sleep for max_frametime time so that we're responsive to unpausing, but not
+        // waking up too often.
         if (u->paused)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * dt)));
+            std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
             continue;
         }
 
@@ -43,20 +45,38 @@ void sim(Universe* u)
 
         elapsed = end - start;
         double e = elapsed.count();
+        u->phys_frametime = e;
 
-        if ((dt - e) > 0.0)
+        // If we're simulating in real time, make sure that we aren't going too fast
+        // If the physics took less time than the minimum we're allowing, sleep for
+        // at least the remainder.
+        if (u->realtime && ((u->min_frametime - e) > 1e-9))
         {
-            // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requestion.
-            // As opposed to usleep which may wake up early.
-            std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (dt - e))));
+            // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requested.
+            // As opposed to Python's sleep which may wake up early.
+            // On Windows 8, this has an accuracy of about 1ms.
+            std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
             end = std::chrono::high_resolution_clock::now();
             elapsed = end - start;
             e = elapsed.count();
+
+            // If the tick lasted less than the max, let it pass by in 'real' time.
+            // Otherwise, clamp it down which is where we get the slowdown effect.
+            dt = MIN(u->max_frametime, e);
+        }
+        // If we're not simulating then just make sure that the time step next time
+        // is at least the min_frametime.
+        else if (!u->realtime)
+        {
+            dt = MAX(e, u->min_frametime);
         }
 
-        u->wall_frametime = dt;
-        dt = MIN(u->max_frametime, e);
-        u->frametime = dt;
+        // The wall frametime is how long it took to actually do the physics plus
+        // sleeping to get us up to the min_frametime.
+        u->wall_frametime = e;
+        // The time elapsed in the game world on the next physics tick.
+        u->game_frametime = dt;
+        // Total time elapsed in the game world at the end of the next tick.
         u->total_time += u->rate * dt;
         u->num_ticks++;
     }
@@ -74,21 +94,26 @@ void Universe_handle_message(int32_t c, void* arg)
     u->handle_message(c);
 }
 
-Universe::Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate)
+/// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
     this->rate = rate;
 
-    if (min_frametime < ABSOLUTE_MIN_FRAMETIME)
+    if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
     {
         fprintf(stderr, "WARNING: min_framtime set below absolute minimum. Raising it to %g s.\n", ABSOLUTE_MIN_FRAMETIME);
         min_frametime = ABSOLUTE_MIN_FRAMETIME;
         max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
     }
+
     this->min_frametime = min_frametime;
     this->max_frametime = max_frametime;
-    this->vis_frametime = vis_frametime;
+    this->min_vis_frametime = min_vis_frametime;
+    this->realtime = realtime;
 
-    frametime = 0.0;
+    phys_frametime = 0.0;
+    wall_frametime = 0.0;
+    game_frametime = 0.0;
     vis_frametime = 0.0;
 
     total_time = 0.0;
@@ -140,9 +165,15 @@ void Universe::stop_sim()
 
 void Universe::get_frametime(double* out)
 {
-    out[0] = frametime;
+    out[0] = phys_frametime;
     out[1] = wall_frametime;
-    out[2] = vis_frametime;
+    out[2] = game_frametime;
+    out[3] = vis_frametime;
+}
+
+uint64_t Universe::get_ticks()
+{
+    return num_ticks;
 }
 
 uint64_t Universe::get_id()

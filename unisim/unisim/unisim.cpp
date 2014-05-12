@@ -57,20 +57,25 @@ void main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    u = new Universe(0.0, 0.001, 0.01, 5505, 1);
+    //u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    u = new Universe(1e-9, 1e-9, 0.5, 5505, 1, 1.0, false);
 
     try
     {
         u->start_net();
         u->start_sim();
 
-        double frametimes[3];
+        double frametimes[4];
         std::chrono::seconds dura(1);
+        uint64_t last_ticks = u->get_ticks();
+        uint64_t cur_ticks;
 
         while (running)
         {
             u->get_frametime(frametimes);
-            fprintf(stderr, "%g, %g %g\n", frametimes[0], frametimes[1], frametimes[2]);
+            cur_ticks = u->get_ticks();
+            fprintf(stderr, "%g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], cur_ticks - last_ticks);
+            last_ticks = cur_ticks;
             std::this_thread::sleep_for(dura);
         }
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
-
+#include <stdint.h>
 
 class SocketThread;
 

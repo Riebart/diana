@@ -17,19 +17,6 @@ V3* Vector3_alloc(int32_t n)
     return (V3*)malloc(sizeof(V3) * n);
 }
 
-void Vector3_init(V3* out, double x, double y, double z)
-{
-    out->x = x;
-    out->y = y;
-    out->z = z;
-}
-
-void Vector3_init(V3* out, V3* v2)
-{
-    out->x = v2->x;
-    out->y = v2->y;
-    out->z = v2->z;
-}
 
 V3* Vector3_clone(V3* v)
 {
@@ -42,6 +29,20 @@ V3* Vector3_clone(V3* v)
     return r;
 }
 
+void Vector3_init(V3* out, double x, double y, double z)
+{
+    out->x = x;
+    out->y = y;
+    out->z = z;
+}
+
+void Vector3_init(V3* out, V3* v)
+{
+    out->x = v->x;
+    out->y = v->y;
+    out->z = v->z;
+}
+
 bool Vector3_almost_zeroS(double v)
 {
     return ((v > -CHOP_CUTOFF) && (v < CHOP_CUTOFF));
@@ -52,11 +53,11 @@ bool Vector3_almost_zero(V3* v)
     return (Vector3_almost_zeroS(v->x) && Vector3_almost_zeroS(v->y) && Vector3_almost_zeroS(v->z));
 }
 
-void Vector3_add(V3* r, V3* v1, V3* v2)
+void Vector3_add(V3* out, V3* v1, V3* v2)
 {
-    r->x = v1->x + v2->x;
-    r->y = v1->y + v2->y;
-    r->z = v1->z + v2->z;
+    out->x = v1->x + v2->x;
+    out->y = v1->y + v2->y;
+    out->z = v1->z + v2->z;
 }
 
 void Vector3_add(V3* v1, V3* v2)
@@ -64,16 +65,38 @@ void Vector3_add(V3* v1, V3* v2)
     Vector3_add(v1, v1, v2);
 }
 
-void Vector3_subtract(V3* r, V3* v1, V3* v2)
+void Vector3_subtract(V3* out, V3* v1, V3* v2)
 {
-    r->x = v1->x - v2->x;
-    r->y = v1->y - v2->y;
-    r->z = v1->z - v2->z;
+    out->x = v1->x - v2->x;
+    out->y = v1->y - v2->y;
+    out->z = v1->z - v2->z;
 }
 
 void Vector3_subtract(V3* v1, V3* v2)
 {
     Vector3_subtract(v1, v1, v2);
+}
+
+void Vector3_scale(V3* out, V3* v, double s)
+{
+    out->x = v->x * s;
+    out->y = v->y * s;
+    out->z = v->z * s;
+}
+
+void Vector3_scale(V3* v, double s)
+{
+    Vector3_scale(v, v, s);
+}
+
+void Vector3_normalize(V3* out, V3* v)
+{
+    Vector3_scale(out, v, Vector3_length(v));
+}
+
+void Vector3_normalize(V3* v)
+{
+    Vector3_scale(v, Vector3_length(v));
 }
 
 void Vector3_cross(V3* out, V3* v1, V3* v2)
@@ -122,28 +145,6 @@ double Vector3_distance(V3* v1, V3* v2)
     V3 d;
     Vector3_subtract(&d, v1, v2);
     return Vector3_length(&d);
-}
-
-void Vector3_scale(V3* out, V3* v, double s)
-{
-    out->x = v->x * s;
-    out->y = v->y * s;
-    out->z = v->z * s;
-}
-
-void Vector3_scale(V3* v, double s)
-{
-    Vector3_scale(v, v, s);
-}
-
-void Vector3_normalize(V3* out, V3* v)
-{
-    Vector3_scale(out, v, Vector3_length(v));
-}
-
-void Vector3_normalize(V3* v)
-{
-    Vector3_scale(v, Vector3_length(v));
 }
 
 /// Produce a vector that starts at 2 and goes to 1

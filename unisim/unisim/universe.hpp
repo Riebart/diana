@@ -4,11 +4,11 @@
 #include <stdint.h>
 #include <atomic>
 
-// We get these from MIMOServer.hpp
-//#include <map>
-//#include <vector>
-//#include <thread>
-//#include <mutex> 
+// We get these from MIMOServer.hpp too
+#include <map>
+#include <vector>
+#include <thread>
+#include <mutex> 
 
 #include "vector.hpp"
 #include "physics.hpp"
@@ -62,6 +62,10 @@
 /// as its ID. This ID will never be re-used, and since it uniquely identifies that
 /// object in the universe this ID is used as a reference to that object whenever
 /// a reference needs to be made.
+///
+/// The simulation can be run in a non-realtime manner by specifying realtime=false
+/// on construction. This is useful for simulations that do not rely on real-time
+/// constraints and are, perhaps, not interactive.
 class Universe
 {
     friend void sim(Universe* u);
@@ -70,7 +74,7 @@ class Universe
     friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
 public:
-    Universe(double min_frametime, double max_frametime, double vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0);
+    Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
     ~Universe();
     void start_net();
     void stop_net();
@@ -78,11 +82,15 @@ public:
     void pause_sim();
     void stop_sim();
 
-    /// The parameter should have space for three doubles:
+    /// The parameter should have space for four doubles:
+    /// The time spent actually calculating physics.
+    /// The wall clock time spent on the last tick, including physics and sleeping
     /// The time elapsed in game on the last physics tick.
-    /// The wall clock time elapsed on the last physics tick.
     /// The wall clock duration of the last visdata blast.
     void get_frametime(double* out);
+
+    /// Get the total number of ticks so far.
+    uint64_t get_ticks();
 
     /// Add an object to the universe. It will appear on the next physics tick.
     /// This function is used when the universe has never seen the object before.
@@ -135,18 +143,31 @@ private:
     std::mutex phys_lock;
     std::mutex vis_lock;
 
+    /// Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
     double rate;
+    /// Total time elapsed in the game world
     double total_time;
+    /// The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks.
     double min_frametime;
+    /// The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse.
     double max_frametime;
-    double vis_frametime;
-    double frametime;
+    /// The time spent calculating the physics on the last physics tick.
+    double phys_frametime;
+    /// The time elapsed calcualting physics and sleeping (if that happened) on the last physics tick.
     double wall_frametime;
+    /// The time elapsed in the game world on the last physics tick.
+    double game_frametime;
+    /// The minimum time to spend between VISDATA blasts.
+    double min_vis_frametime;
+    /// The time spent sending out the last VISDATA blast.
+    double vis_frametime;
+    /// Total number of physics ticks so far.
     uint64_t num_ticks;
 
     int32_t num_threads;
     bool paused;
     bool running;
+    bool realtime;
 
     std::atomic_uint64_t total_objs;
 };

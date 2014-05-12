@@ -11,9 +11,11 @@
 // Make sure to link with ws2_32.lib
 #include <ws2tcpip.h>
 #define SHUT_RDWR SD_BOTH
+#define GET_ERROR WSAGetLastError()
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#define GET_ERROR errno
 #endif
 
 /// @todo Don't need to pass pointers, just the server which contains the other information.
@@ -61,7 +63,7 @@ void serve_SocketThread(SocketThread* sock)
 
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Unable to peek at client %d (%d)\n", sock->c, ret);
             break;
         }
@@ -131,14 +133,14 @@ void SocketThread::stop()
         int32_t ret = shutdown(c, SHUT_RDWR);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error shutting down socket %d (%d)\n", c, ret);
         }
 
         ret = closesocket(c);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error closing socket %d (%d)\n", c, ret);
         }
 
@@ -166,7 +168,7 @@ void serve_MIMOServer(MIMOServer* server)
         nready = select(2, &fds, NULL, NULL, &timeout);
         if (nready == SOCKET_ERROR)
         {
-            nready = errno;
+            nready = GET_ERROR;
             fprintf(stderr, "Error when selecting sockets (%d)\n", nready);
             server->stop();
             break;
@@ -217,7 +219,7 @@ void serve_MIMOServer(MIMOServer* server)
                 int32_t c = accept(fds.fd_array[i], (struct sockaddr*)&addr, &addrlen);
                 if (c == INVALID_SOCKET)
                 {
-                    nready = errno;
+                    nready = GET_ERROR;
                     fprintf(stderr, "Unable to accept connection on socket %d (%d)\n", fds.fd_array[i], nready);
                     continue;
                 }
@@ -326,7 +328,7 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, IN
     ret = setsockopt(server, SOL_SOCKET, SO_REUSEADDR, (const char*)&sockopts, 1);
     if (ret == SOCKET_ERROR)
     {
-        ret = errno;
+        ret = GET_ERROR;
         fprintf(stderr, "Can not set MIMOServer socket options (%d)\n", ret);
         exit(EXIT_FAILURE);
     }
@@ -355,12 +357,12 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, IN
         }
     default:
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Invalid address family for socket (%d)\n", ret);
             ret = closesocket(server);
             if (ret == SOCKET_ERROR)
             {
-                ret = errno;
+                ret = GET_ERROR;
                 fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
             }
             exit(EXIT_FAILURE);
@@ -369,12 +371,12 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, IN
 
     if (ret == SOCKET_ERROR)
     {
-        ret = errno;
+        ret = GET_ERROR;
         fprintf(stderr, "Can not bind MIMOServer socket (%d)\n", ret);
         ret = closesocket(server);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
         }
         exit(EXIT_FAILURE);
@@ -383,12 +385,12 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, IN
     ret = listen(server, backlog);
     if (ret == SOCKET_ERROR)
     {
-        ret = errno;
+        ret = GET_ERROR;
         fprintf(stderr, "Can not put MIMOServer socket into listen state (%d)\n", ret);
         ret = closesocket(server);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error closing socket %d (%d)\n", server, ret);
         }
         exit(EXIT_FAILURE);
@@ -436,7 +438,7 @@ void MIMOServer::stop()
         int32_t ret = shutdown(server4, SHUT_RDWR);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             // Ignore socket not connected errors
             if (ret != 10057)
             {
@@ -446,14 +448,15 @@ void MIMOServer::stop()
         ret = closesocket(server4);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error closing server4 socket %d (%d)\n", server4, ret);
         }
 
         ret = shutdown(server6, SHUT_RDWR);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
+            ret = WSAGetLastError();
             // Ignore socket not connected errors
             if (ret != 10057)
             {
@@ -463,7 +466,7 @@ void MIMOServer::stop()
         ret = closesocket(server6);
         if (ret == SOCKET_ERROR)
         {
-            ret = errno;
+            ret = GET_ERROR;
             fprintf(stderr, "Error closing server6 socket %d (%d)\n", server6, ret);
         }
 
