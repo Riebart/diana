@@ -91,12 +91,12 @@ void Vector3_scale(V3* v, double s)
 
 void Vector3_normalize(V3* out, V3* v)
 {
-    Vector3_scale(out, v, Vector3_length(v));
+    Vector3_scale(out, v, 1.0 / Vector3_length(v));
 }
 
 void Vector3_normalize(V3* v)
 {
-    Vector3_scale(v, Vector3_length(v));
+    Vector3_scale(v, 1.0 / Vector3_length(v));
 }
 
 void Vector3_cross(V3* out, V3* v1, V3* v2)
@@ -255,4 +255,3 @@ void Vector3_apply_ypr(V3* forward, V3* up, V3* right, V3* angles)
     Vector3_rotate_around(right, forward, angles->z);
     Vector3_rotate_around(up, forward, angles->z);
 }
-

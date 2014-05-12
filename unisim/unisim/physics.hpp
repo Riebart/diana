@@ -81,13 +81,13 @@ struct Beam
 
 struct PhysCollisionEffect
 {
-    // Direction of impact
+    // Direction the other object was moving, relative to this, at time of impact (normalized).
     struct Vector3 d;
-    // Position of impact on object's bounding sphere, relative to centre
+    // Position of impact on object's bounding sphere, relative to centre.
     struct Vector3 p;
-    // Velocity tangential to impact, remains unchanged
+    // Velocity of the 'hit' object tangential to impact. This remains unchanged.
     struct Vector3 t;
-    // Velocity along normal of impact
+    // Velocity change along normal of impact imparted due to impact.
     struct Vector3 n;
 };
 

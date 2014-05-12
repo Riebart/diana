@@ -252,6 +252,7 @@ void Universe::tick(double dt)
 
             if (phys_result.t >= 0.0)
             {
+                fprintf(stderr, "Collision: %u <-> %u\n", i, j);
                 PhysicsObject_collision(phys_objects[i], phys_objects[j], phys_result.e1, &phys_result.pce1);
                 PhysicsObject_collision(phys_objects[j], phys_objects[i], phys_result.e2, &phys_result.pce2);
 

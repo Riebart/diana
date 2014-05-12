@@ -30,7 +30,7 @@ bool is_big_enough(double m, double r)
 void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_desc)
 {
     obj->type = PHYSOBJECT;
-    obj->phys_id = universe->get_id();
+    obj->phys_id = 0;
     obj->art_id = -1;
 
     obj->universe = universe;
@@ -139,71 +139,86 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
         /// @todo Relativistic kinetic energy
         /// @todo Angular velocity, which reqires location of impact and shape and stuff
 
-        // collision normal: points at obj1
+        // collision normal: unit vector from points from obj1 to obj2
         V3 n;
         Vector3_subtract(&n, &obj2->position, &obj1->position);
+        Vector3_normalize(&n);
 
         // Collision tangential velocities. These parts don't change in the collision
         // Take the velocity, then subtract off the part that is along the normal
         // (OPTIONAL?!) Normalize the result, and scale by the dot of original velocity with this.
         cr->pce1.t = obj1->velocity;
         Vector3_fmad(&cr->pce1.t, -1 * Vector3_dot(&n, &obj1->velocity), &n);
-        Vector3_normalize(&cr->pce1.t);
-        Vector3_scale(&cr->pce1.t, Vector3_dot(&obj1->velocity, &cr->pce1.t));
+        //Vector3_normalize(&cr->pce1.t);
+        //Vector3_scale(&cr->pce1.t, Vector3_dot(&obj1->velocity, &cr->pce1.t));
 
         cr->pce2.t = obj2->velocity;
         Vector3_fmad(&cr->pce2.t, -1 * Vector3_dot(&n, &obj2->velocity), &n);
-        Vector3_normalize(&cr->pce2.t);
-        Vector3_scale(&cr->pce2.t, Vector3_dot(&obj2->velocity, &cr->pce2.t));
+        //Vector3_normalize(&cr->pce2.t);
+        //Vector3_scale(&cr->pce2.t, Vector3_dot(&obj2->velocity, &cr->pce2.t));
 
         // Now we need the amount of energy transferred in each direction along the normal
 
         // This is the amount of velocity given up by each object.
+        // It is the velocity of obj2 relative to obj1, or rather obj2's velocity in obj1's
+        // inertial reference frame.
         V3 v;
         Vector3_subtract(&v, &obj2->velocity, &obj1->velocity);
-        double vdn = Vector3_dot(&v, &n);
+        // The amount of obj2's velocity that is along the normal relative to obj1. Since the normal
+        // points from obj1 to obj2, this is negative if there is energy transfer from 2 to 1, and positive
+        // if there is energy transfer from 1 to 2.
+        //double vdn = Vector3_dot(&v, &n);
 
         // vn1 and vn2 are the velcoities that the objects are giving up
         // along the normal.
         //
         // Since the normal points from 1 to 2, if obj1 is moving away from 2,
         // then it contiributes nothing to 2, and vice versa.
-        V3 vn1 = { 0, 0, 0 };
-        V3 vn2 = { 0, 0, 0 };
+        Vector3_init(&cr->pce1.n, 0.0, 0.0, 0.0);
+        Vector3_init(&cr->pce2.n, 0.0, 0.0, 0.0);
 
-        if (Vector3_dot(&obj1->velocity, &n) > 0)
-        {
-            Vector3_init(&vn1, &n);
-            Vector3_scale(&vn1, vdn);
-        }
+        double vdn;
 
-        if (Vector3_dot(&obj2->velocity, &n) > 0)
-        {
-            Vector3_init(&vn2, &n);
-            Vector3_scale(&vn2, vdn);
-        }
+        // We make an exception here. If the object receiving object has zero mass,
+        // it doesn't get any energy.
 
-        // n1 and n2 are the changes in velocities of objects 1 and 2 along
-        // the collision normal.
-        cr->pce1.n = vn1;
-        cr->pce2.n = vn2;
-        double e1 = 0.0;
-        double e2 = 0.0;
-
+        // Energy given to obj1.
         if (obj1->mass > 0)
         {
-            Vector3_fmad(&cr->pce1.n, obj2->mass / obj1->mass, &vn2);
-            e1 = Vector3_length2(&cr->pce1.n) * obj1->mass * 0.5;
+            // This dot is positive if obj1 is moving towards obj2
+            vdn = Vector3_dot(&obj1->velocity, &n);
+            if (vdn > 0)
+            {
+                cr->pce1.n = n;
+                Vector3_scale(&cr->pce1.n, vdn);
+            }
+            cr->e1 = Vector3_length2(&cr->pce1.n) * obj1->mass * 0.5;
+
+            // Add the other object's mass-ratio-scaled velocity to our normal
+            // contribution.
+            Vector3_fmad(&cr->pce1.n, obj2->mass / obj1->mass, &cr->pce2.n);
+
+            // Negate this one because of how the normal points from obj1 to obj2.
+            Vector3_scale(&cr->pce1.n, -1.0);
         }
 
         if (obj2->mass > 0)
         {
-            Vector3_fmad(&cr->pce2.n, -1 * obj1->mass / obj2->mass, &vn1);
-            e1 = Vector3_length2(&cr->pce2.n) * obj2->mass * 0.5;
-        }
+            // This dot is negative if obj2 is moving towards obj1.
+            vdn = Vector3_dot(&obj1->velocity, &n);
+            if (vdn < 0)
+            {
+                cr->pce2.n = n;
+                Vector3_scale(&cr->pce2.n, vdn);
+            }
+            cr->e2 = Vector3_length2(&cr->pce2.n) * obj2->mass * 0.5;
 
-        cr->e1 = e1;
-        cr->e2 = e2;
+            // Add the other object's mass-ratio-scaled velocity to our normal
+            // contribution.
+            Vector3_fmad(&cr->pce2.n, -1 * obj1->mass / obj2->mass, &cr->pce1.n);
+
+            // Don't need to negate here.
+        }
 
         cr->pce1.d = v;
         Vector3_normalize(&cr->pce1.d);
@@ -253,6 +268,7 @@ void PhysicsObject_resolve_phys_collision(PO* obj, double energy, struct PhysCol
     Vector3_add(&obj->velocity, &obj->velocity, &pce->n);
 }
 
+/// @todo fix variable and argument names. They aren't types.
 /// @param args This describes the information about the thing that hit obj, that is other.
 void PhysicsObject_collision(PO* objt, PO* othert, double energy, struct PhysCollisionEffect* effect)
 {

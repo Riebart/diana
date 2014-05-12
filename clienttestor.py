@@ -140,9 +140,6 @@ def pool_rack():
     from math import sin, cos, pi, sqrt
     from message import SpawnMsg
 
-    r = 10000000
-    t = 100000
-
     ball_mass = 10000
     ball_radius = 1
 
