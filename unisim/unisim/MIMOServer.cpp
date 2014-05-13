@@ -16,7 +16,7 @@
 
     typedef struct
     {
-        int_t fd_count;
+        u_int fd_count;
         SOCKET fd_array[FD_SETSIZE];
     } fd_setc;
 #else
