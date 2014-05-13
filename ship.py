@@ -144,13 +144,16 @@ class Laser:
 class Ship(SmartObject):
     name = "Default Player Ship"
 
+    #If we're going to make this a super-constructor, all non-default information
+    #should be moved out. Alternatively, we leave it as-is and allow this class to
+    #create a dummy ship type by default.
     def __init__(self, osim):
         SmartObject.__init__(self, osim)
 
-        # ### TODO ### Random ship names on instantiation?
         self.name = None
         self.object_type = None
 
+        #Items not common to all ships. See shiptypes.py
         self.max_missiles = 10
         self.cur_missiles = self.max_missiles
         self.max_energy = 1000

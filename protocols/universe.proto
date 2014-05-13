@@ -1,0 +1,194 @@
+package universe;
+
+message MessageWrapper
+{
+    enum MessageType
+    {
+        HELLO = 3;
+        GOODBYE = 4;
+        
+        PHYSPROPS = 10;
+        COLLISION = 11;
+        SPAWN = 12;
+        BEAM = 13;
+        SCANRESULT = 14;
+        SCANQUERY = 15;
+        SCANRESP = 16;
+        DIRECTORY = 17;
+        
+        VISPROPS = 100;
+        VISDATAENABLE = 101;
+        VISMETADATAENABLE = 102;
+        VISMETADATA = 103;
+        VISDATA = 104;
+    }
+    
+    required MessageType messageType = 1;
+    optional uint64 objectID = 2;
+    
+    optional HelloMsg helloMsg = 3;
+    optional GoodbyeMsg goodByeMsg = 4;
+    
+    optional PhysPropsMsg physPropsMsg = 10;
+    optional CollisionMsg collisionMsg = 11;
+    optional SpawnMsg spawnMsg = 12;
+    optional BeamMsg beamMsg = 13;
+    optional ScanResultMsg scanResultMsg = 14;
+    optional ScanQueryMsg scanQueryMsg = 15;
+    optional ScanRespMsg scanRespMsg =16;
+    optional DirectoryMsg directoryMsg =17;
+    
+    optional VisProps visProps =100;
+    optional VisDataEnable visDataEnable =101;
+    optional VisMetaDataEnable visMetaDataEnable =102;
+    optional VisMetaData visMetaData =103;
+    optional VisData visData =104;
+    
+}
+
+message VectorMsg
+{
+    required double x=1;
+    required double y=2;
+    required double z=3;
+}
+
+message HelloMsg
+{
+    optional string name =1 [default = "HELLO"];
+}
+
+message PhysPropsMsg
+{
+    optional string name =1 [default = "PHYSPROPS"];
+    
+    optional double mass =2;
+    optional VectorMsg position =3;
+    optional VectorMsg velocity =4;
+    optional VectorMsg orientation =5;
+    optional VectorMsg thrust =6;
+    optional double radius =7;
+}
+
+message GoodbyeMsg
+{
+    optional string name =1 [default = "GOODBYE"];
+}
+
+message CollisionMsg
+{
+    optional string name =1 [default = "COLLISION"];
+    
+    required VectorMsg position =2;
+    required VectorMsg direction =3;
+    required double energy =4;
+
+    enum CollisionType
+    {
+        PHYS_COLLISION =1;
+        SCAN_COLLISION =2;
+        WEAP_COLLISION =3;
+        COMM_COLLISION =4;
+    }
+    
+    required CollisionType collisionType =5;
+    
+    optional string commString =6;
+}
+
+message SpawnMsg
+{
+    optional string name=1 [default = "SPAWN"];
+    
+    required double mass =2;
+    required VectorMsg position =3;
+    required VectorMsg velocity =4;
+    required VectorMsg orientation =5;
+    required VectorMsg thrust =6;
+    required double radius =7;
+}
+
+message VisProps
+{
+    optional string name=1 [default = "VISPROPS"];
+}
+
+message VisDataEnable
+{
+    optional string name=1 [default = "VISDATAENABLE"];
+}
+
+message VisData
+{
+    optional string name=1 [default = "VISDATA"];
+}
+
+message VisMetaData
+{
+    optional string name=1 [default = "VISMETADATA"];
+}
+
+message VisMetaDataEnable
+{
+    optional string name=1 [default = "VISMETADATAENABLE"];
+}
+
+message BeamMsg
+{
+    optional string name=1 [default = "BEAM"];
+    
+    required VectorMsg origin =2;
+    required VectorMsg velocity =3;
+    required VectorMsg up =4;
+    required double spread_h =5;
+    required double spread_v =6;
+    required double energy =7;
+    
+    enum BeamType
+    {
+        SCAN = 1;
+        WEAP = 2;
+        COMM = 3;
+    }
+    
+    required BeamType beamType =8;
+    
+    optional string commString =9;
+}
+    
+message ScanResultMsg
+{
+    optional string name=1 [default = "SCANRESULT"];
+    
+    required double mass =2;
+    required VectorMsg position =3;
+    required VectorMsg velocity =4;
+    required VectorMsg orientation =5;
+    required VectorMsg thrust =6;
+    required double radius =7;
+    
+    optional string extraParms =8;
+}
+
+message ScanQueryMsg
+{
+    optional string name=1 [default = "SCANQUERY"];
+    
+    required int32 scanID =2;
+    required double scanPower =3;
+    required VectorMsg scanDir =4;
+}
+
+message ScanRespMsg
+{
+   optional string name=1 [default = "SCANRESP"];
+   
+   required int32 scanID =2;
+   required string parms =3;
+}
+
+message DirectoryMsg
+{
+    optional string name =1 [default = "DIRECTORY"];
+    
+}

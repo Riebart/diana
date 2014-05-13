@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+from protocols.universe_pb2 import VectorMsg
 from math import sin, cos, pi, sqrt, pow, atan2
+
 
 class Vector3:
     @staticmethod
@@ -107,14 +109,19 @@ class Vector3:
         up.rotate_aroundV(forward, angles[2])
 
     def __init__(self, v, y = None, z = None):
-        if y == None:
-            self.x = v[0]
-            self.y = v[1]
-            self.z = v[2]
-        else:
-            self.x = v
-            self.y = y
-            self.z = z
+        if isinstance(v, VectorMsg):
+            self.x = v.x
+            self.y = v.y
+            self.z = v.z
+        else:        
+            if y == None:
+                self.x = v[0]
+                self.y = v[1]
+                self.z = v[2]
+            else:
+                self.x = v
+                self.y = y
+                self.z = z
 
     def clone(self):
         return Vector3(self.x, self.y, self.z)
