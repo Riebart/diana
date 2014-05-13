@@ -258,7 +258,7 @@ void PhysicsObject_resolve_damage(PO* obj, double energy)
 
     if (obj->health <= 0)
     {
-        printf("%d has been destroyed\n", obj->phys_id);
+        printf("%lu has been destroyed\n", obj->phys_id);
         obj->universe->expire(obj->phys_id);
     }
 }
