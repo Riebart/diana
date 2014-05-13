@@ -3,6 +3,7 @@
 import sys
 import socket
 from vector import Vector3, zero3d
+from cStringIO import StringIO
 
 class Message:
     def __init__(self, client):
@@ -35,8 +36,6 @@ class Message:
     @staticmethod
     def big_read(client, num_bytes):
         num_got = 0
-
-        from cStringIO import StringIO
         file_str = StringIO()
 
         while num_got < num_bytes:

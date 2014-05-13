@@ -12,6 +12,8 @@ import time
 import spaceobj
 import sys
 import math
+import protocols.universe_pb2
+
 
 def testSimple():
     miss1 = spaceobj.Missile(osim)
@@ -56,14 +58,14 @@ def testVisData():
 #spawns two stationary ships. The first fires a missile at the other
 def testShip():
     
-    ship1 = Firefly(osim, type="Ship 1")
+    ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = Firefly(osim, type="Ship 2")
+    ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -81,14 +83,14 @@ def testShip():
 #spawns two stationary ships. The first fires a beam at the other
 def testBeam():
     
-    ship1 = Firefly(osim, type="Ship 1")
+    ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
     sys.stdout.flush()
 
-    ship2 = Firefly(osim, type="Ship 2")
+    ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -163,6 +165,22 @@ def test_threads():
         t.start()
         print "Started thread %d" % i
 
+        
+def test_pbs():
+    pass
+    #for now, this is exampe code
+"""
+    res_string = socket.doRead(size)
+    msg = MessageWrapper()
+    msg.ParseFromString(res_string)
+    l
+    if (msg.MessageType is PHYSPROPS):
+        doStuff(msg.HelloMsg)
+    else if (msg.MessageType is HELLO):
+        doStuff(msg.PhysPropsMsg)
+""" 
+        
+        
 osim = objectsim.ObjectSim()
 rand = random.Random()
 rand.seed(0)
