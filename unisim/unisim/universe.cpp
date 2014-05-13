@@ -49,12 +49,13 @@ void sim(Universe* u)
 
         // If we're simulating in real time, make sure that we aren't going too fast
         // If the physics took less time than the minimum we're allowing, sleep for
-        // at least the remainder.
+        // at least the remainder. The precision is nanoseconds, because that's the smallest
+        // interval we can represent with std::chrono.
         if (u->realtime && ((u->min_frametime - e) > 1e-9))
         {
             // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requested.
             // As opposed to Python's sleep which may wake up early.
-            // On Windows 8, this has an accuracy of about 1ms.
+            // On Windows 8, this has an accuracy of about 1.5ms.
             std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
             end = std::chrono::high_resolution_clock::now();
             elapsed = end - start;
@@ -72,7 +73,7 @@ void sim(Universe* u)
         }
 
         // The wall frametime is how long it took to actually do the physics plus
-        // sleeping to get us up to the min_frametime.
+        // any sleeping to get us up to the min_frametime
         u->wall_frametime = e;
         // The time elapsed in the game world on the next physics tick.
         u->game_frametime = dt;
@@ -111,6 +112,7 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     this->min_vis_frametime = min_vis_frametime;
     this->realtime = realtime;
 
+    total_time = 0.0;
     phys_frametime = 0.0;
     wall_frametime = 0.0;
     game_frametime = 0.0;
@@ -174,6 +176,11 @@ void Universe::get_frametime(double* out)
 uint64_t Universe::get_ticks()
 {
     return num_ticks;
+}
+
+double Universe::total_sim_time()
+{
+    return total_time;
 }
 
 uint64_t Universe::get_id()

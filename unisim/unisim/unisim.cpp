@@ -145,8 +145,8 @@ void main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 1);
-    //u = new Universe(1e-9, 1e-9, 0.5, 5505, 1, 1.0, false);
+    //u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    u = new Universe(1e-9, 1e-9, 0.5, 5505, 1, 1.0, false);
 
     try
     {
@@ -165,7 +165,7 @@ void main(int32_t argc, char** argv)
         {
             u->get_frametime(frametimes);
             cur_ticks = u->get_ticks();
-            fprintf(stderr, "%g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], cur_ticks - last_ticks);
+            fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
             print_positions();
             last_ticks = cur_ticks;
             std::this_thread::sleep_for(dura);

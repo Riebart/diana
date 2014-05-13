@@ -92,6 +92,9 @@ public:
     /// Get the total number of ticks so far.
     uint64_t get_ticks();
 
+    /// Get the total amount of time passed inside the simulation.
+    double total_sim_time();
+
     /// Add an object to the universe. It will appear on the next physics tick.
     /// This function is used when the universe has never seen the object before.
     /// Objects have their phys_id property set, and are queued to be added
