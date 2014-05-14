@@ -1,6 +1,5 @@
 #include "MIMOServer.hpp"
 
-#include <iostream>
 #include <stdio.h>
 
 // We can actually use Berkeley style sockets everywhere, just need to include the right stuff
@@ -343,7 +342,7 @@ MIMOServer::~MIMOServer()
 #else
         fprintf(stderr, "The threadmap still has %llu things at the end of the destructor!\n", (uint64_t)threadmap.size());
 #endif
-        std::map<int32_t, struct SocketThread*>::iterator it;
+        std::map<int32_t, SocketThread*>::iterator it;
         for (it = threadmap.begin() ; it != threadmap.end() ; ++it)
         {
             it->second->stop();
