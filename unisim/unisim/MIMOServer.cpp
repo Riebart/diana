@@ -212,8 +212,8 @@ void* serve_MIMOServer(void* serverV)
     const timeval timeout = { 0, 10000 };
 #else
     timeval timeout = { 0, 10000 };
-    int32_t fd_array[2] = { server->server4, server->server6 };
-    int32_t maxfd = (server->server6 > server->server4 ? server->server6 : server->server4);
+    int32_t maxfd = (server->server6 > server->server4 ? server->server6 : server->server4) + 1;
+    int32_t fd_array[] = { server->server4, server->server6 };
 #endif
 
     int32_t nready;
@@ -224,7 +224,7 @@ void* serve_MIMOServer(void* serverV)
         fds.fd_count = 2;
         fds.fd_array[0] = server->server4;
         fds.fd_array[1] = server->server6;
-        nready = select(2, (fd_set*)&fds, NULL, NULL, &timeout);
+        nready = select(2, &fds, NULL, NULL, &timeout);
 #else
         FD_ZERO(&fds);
         FD_SET(server->server4, &fds);
@@ -285,7 +285,7 @@ void* serve_MIMOServer(void* serverV)
             
             for (uint32_t i = 0 ; i < fds.fd_count ; i++)
             {
-                int32_t curfd = fd_array[i];
+                int32_t curfd = fds.fd_array[i];
                 int32_t sockoptslen = 4;
 #else
             socklen_t addrlen = sizeof(struct sockaddr_storage);

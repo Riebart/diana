@@ -418,8 +418,15 @@ void Universe::tick(double dt)
     // Then we can binary search our way as we iterate over the list of phys IDs.
     // That might have a big constant though
     /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
+    bool backtrack = false;
+    for (int32_t i = 0 ; i < phys_objects.size() ; i++)
     {
+        if (backtrack)
+        {
+            i--;
+            backtrack = false;
+        }
+
         for (uint32_t j = 0 ; j < expired.size() ; j++)
         {
             if (expired[j] == phys_objects[i]->phys_id)
@@ -438,7 +445,7 @@ void Universe::tick(double dt)
                 }
                 else
                 {
-                    if (phys_objects[j]->type == PHYSOBJECT_SMART)
+                    if (phys_objects[i]->type == PHYSOBJECT_SMART)
                     {
                         smarties.erase(expired[j]);
                     }
@@ -456,7 +463,7 @@ void Universe::tick(double dt)
                     }
 
                     phys_objects.erase(phys_objects.begin()+i);
-                    i--;
+                    backtrack = true;
                 }
                 continue;
             }
