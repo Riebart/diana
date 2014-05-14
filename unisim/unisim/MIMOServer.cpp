@@ -618,7 +618,7 @@ void MIMOServer::stop()
 void MIMOServer::on_hangup(int32_t c)
 {
 #ifdef CPP11THREADS
-    server->hangup_lock.lock();
+    hangup_lock.lock();
 #else
     pthread_rwlock_wrlock(&hangup_lock);
 #endif
@@ -626,7 +626,7 @@ void MIMOServer::on_hangup(int32_t c)
     hangups.push_back(c);
 
 #ifdef CPP11THREADS
-    server->hangup_lock.unlock();
+    hangup_lock.unlock();
 #else
     pthread_rwlock_unlock(&hangup_lock);
 #endif
