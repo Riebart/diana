@@ -1,14 +1,15 @@
 #include "universe.hpp"
 
 #include <stdio.h>
-#include <algorithm>
 
 #ifdef CPP11THREADS
 #include <chrono>
 #else
 #include <sys/timeb.h>
+#include <unistd.h>
 #endif
 
+#define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 0.001
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -71,7 +72,7 @@ void* sim(void* uV)
         ftime(&start);
         u->tick(u->rate * dt);
         ftime(&end);
-        double e = (end.time + start.time) + 0.001 * (end.millitm - start.millitm);
+        double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
 #endif
         u->phys_frametime = e;
 
@@ -83,7 +84,10 @@ void* sim(void* uV)
         {
             // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requested.
             // As opposed to Python's sleep which may wake up early.
-            // On Windows 8, this has an accuracy of about 1.5ms.
+            //
+            // In practice, a 1ms min frame time actually causes the average
+            // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
+            // a VBox VM).
 #ifdef CPP11THREADS
             std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
             end = std::chrono::high_resolution_clock::now();
@@ -92,7 +96,7 @@ void* sim(void* uV)
 #else
             usleep((uint32_t)(1000000 * (u->min_frametime - e)));
             ftime(&end);
-            e = (end.time + start.time) + 0.001 * (end.millitm - start.millitm);
+            e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
 #endif
 
             // If the tick lasted less than the max, let it pass by in 'real' time.
@@ -346,20 +350,32 @@ void Universe::tick(double dt)
 
             if (phys_result.t >= 0.0)
             {
-                fprintf(stderr, "Collision: %u <-> %u\n", i, j);
-                PhysicsObject_collision(phys_objects[i], phys_objects[j], phys_result.e1, &phys_result.pce1);
-                PhysicsObject_collision(phys_objects[j], phys_objects[i], phys_result.e2, &phys_result.pce2);
-
-                if (phys_objects[i]->type == PHYSOBJECT_SMART)
+                // By comparing the energy to a cutoff, this will help prevent
+                // spurious collision notifications due to physics time step
+                // increments and temporary object intersection.
+                
+                // Total energy involved. Both objects 'absorb' the samea amount
+                // of energy from an 'impact effect' perspective.
+                double e = phys_result.e1 + phys_result.e2;
+                
+                if ((e < -COLLISION_ENERGY_CUTOFF) || 
+                    (e > COLLISION_ENERGY_CUTOFF))
                 {
-                    //SPO* s = (SPO*)phys_objects[i];
-                    /// @todo Smart phys collision messages
-                }
-
-                if (phys_objects[j]->type == PHYSOBJECT_SMART)
-                {
-                    //SPO* s = (SPO*)phys_objects[j];
-                    /// @todo Smart phys collision (other) messages
+                    fprintf(stderr, "Collision: %u <-> %u (%g J)\n", i, j, e);
+                    PhysicsObject_collision(phys_objects[i], phys_objects[j], e, &phys_result.pce1);
+                    PhysicsObject_collision(phys_objects[j], phys_objects[i], e, &phys_result.pce2);
+                    
+                    if (phys_objects[i]->type == PHYSOBJECT_SMART)
+                    {
+                        //SPO* s = (SPO*)phys_objects[i];
+                        /// @todo Smart phys collision messages
+                    }
+                    
+                    if (phys_objects[j]->type == PHYSOBJECT_SMART)
+                    {
+                        //SPO* s = (SPO*)phys_objects[j];
+                        /// @todo Smart phys collision (other) messages
+                    }
                 }
             }
 

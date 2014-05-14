@@ -1,6 +1,6 @@
 CXX=g++
 #CFLAGS=-std=c++0x -I . -O0 -Wall -g -pthread -DCPP11THREADS
-CFLAGS=-std=c++0x -I . -O0 -Wall -g -pthread
+CFLAGS=-std=c++0x -I . -O3 -Wall -g -pthread
 
 all: unisim-bin
 
