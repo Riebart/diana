@@ -21,12 +21,6 @@
     #define SHUT_RDWR SD_BOTH
     #define GET_ERROR WSAGetLastError()
     #define CLOSESOCKET closesocket
-
-    typedef struct
-    {
-        u_int fd_count;
-        SOCKET fd_array[FD_SETSIZE];
-    } fd_setc;
 #else
     #include <sys/socket.h>
     #include <arpa/inet.h>
@@ -37,12 +31,6 @@
     #define SOCKET_ERROR -1
     #define INVALID_SOCKET -1
     #define CLOSESOCKET close
-
-    typedef struct
-    {
-        socklen_t fd_count;
-        int fd_array[FD_SETSIZE];
-    } fd_setc;
 #endif
 
 /// @todo Don't need to pass pointers, just the server which contains the other information.
@@ -214,25 +202,36 @@ void serve_MIMOServer(MIMOServer* server)
 #else
 void* serve_MIMOServer(void* serverV)
 {
+    printf("%d\n", FD_SETSIZE);
     MIMOServer* server = (MIMOServer*)serverV;
 #endif
 
-    fd_setc fds;
+    fd_set fds;
+    
 #ifdef WIN32
     const timeval timeout = { 0, 10000 };
 #else
     timeval timeout = { 0, 10000 };
+    int32_t fd_array[2] = { server->server4, server->server6 };
+    int32_t maxfd = (server->server6 > server->server4 ? server->server6 : server->server4);
 #endif
 
     int32_t nready;
 
     while (server->running)
     {
+#ifdef WIN32
         fds.fd_count = 2;
         fds.fd_array[0] = server->server4;
         fds.fd_array[1] = server->server6;
-
         nready = select(2, (fd_set*)&fds, NULL, NULL, &timeout);
+#else
+        FD_ZERO(&fds);
+        FD_SET(server->server4, &fds);
+        FD_SET(server->server6, &fds);
+        nready = select(maxfd, (fd_set*)&fds, NULL, NULL, &timeout);
+#endif
+        
         if (nready == SOCKET_ERROR)
         {
             nready = GET_ERROR;
@@ -280,22 +279,36 @@ void* serve_MIMOServer(void* serverV)
         if (nready > 0)
         {
             struct sockaddr_storage addr = { 0 };
+
 #ifdef WIN32
             int32_t addrlen = sizeof(struct sockaddr_storage);
-#else
-            socklen_t addrlen = sizeof(struct sockaddr_storage);
-#endif
-
+            
             for (uint32_t i = 0 ; i < fds.fd_count ; i++)
             {
-                // First check to see if the socket is ready for a connection, or if we're shutting them down
-                int32_t err = -12345;
-#ifdef WIN32
+                int32_t curfd = fd_array[i];
                 int32_t sockoptslen = 4;
 #else
+            socklen_t addrlen = sizeof(struct sockaddr_storage);
+            
+            for (uint32_t i = 0 ; i < 2 ; i++)
+            {
+                int32_t curfd;
+                if (FD_ISSET(fd_array[i], &fds))
+                {
+                    curfd = fd_array[i];
+                }
+                else
+                {
+                    continue;
+                }
+                
                 socklen_t sockoptslen = 4;
 #endif
-                nready = getsockopt(fds.fd_array[i], SOL_SOCKET, SO_ERROR, (char*)&err, &sockoptslen);
+
+                // First check to see if the socket is ready for a connection, or if we're shutting them down
+                int32_t err = -12345;
+                
+                nready = getsockopt(curfd, SOL_SOCKET, SO_ERROR, (char*)&err, &sockoptslen);
                 //fprintf(stderr, "%d\n", err);
                 // I don't think we are ready to accept this connection maybe?
                 if (err != 0)
@@ -303,22 +316,22 @@ void* serve_MIMOServer(void* serverV)
                     continue;
                 }
 
-                int32_t c = accept(fds.fd_array[i], (struct sockaddr*)&addr, &addrlen);
+                int32_t c = accept(curfd, (struct sockaddr*)&addr, &addrlen);
                 if (c == INVALID_SOCKET)
                 {
                     nready = GET_ERROR;
-                    fprintf(stderr, "Unable to accept connection on socket %d (%d)\n", fds.fd_array[i], nready);
+                    fprintf(stderr, "Unable to accept connection on socket %d (%d)\n", curfd, nready);
                     continue;
                 }
 
-                if (fds.fd_array[i] == server->server4)
+                if (curfd == server->server4)
                 {
                     char buf[16];
                     struct sockaddr_in* addr4 = (struct sockaddr_in*)&addr;
                     inet_ntop(AF_INET, &addr4->sin_addr, buf, 16);
                     fprintf(stderr, "Received connection from %s:%d\n", buf, ntohs(addr4->sin_port));
                 }
-                else // if (fds.fd_array[i] == server->server6)
+                else // if (curfd == server->server6)
                 {
                     char buf[40];
                     struct sockaddr_in6* addr6 = (struct sockaddr_in6*)&addr;
