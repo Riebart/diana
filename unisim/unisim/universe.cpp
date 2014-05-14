@@ -185,7 +185,11 @@ double Universe::total_sim_time()
 
 uint64_t Universe::get_id()
 {
+#ifdef WIN32
     uint64_t r = total_objs.fetch_add(1);
+#else
+    uint64_t r = __sync_fetch_and_add(&total_objs, 1);
+#endif
     return r;
 }
 
@@ -227,7 +231,7 @@ void Universe::handle_message(int32_t c)
 void Universe::get_grav_pull(V3* g, PO* obj)
 {
     V3 cg;
-    for (int32_t i = 0 ; i < attractors.size() ; i++)
+    for (uint32_t i = 0 ; i < attractors.size() ; i++)
     {
         gravity(&cg, attractors[i], obj);
         Vector3_add(g, &cg);
@@ -245,9 +249,9 @@ void Universe::tick(double dt)
     /// @todo Allocate the result on the stack here and pass in a pointer.
     struct PhysCollisionResult phys_result;
     struct BeamCollisionResult beam_result;
-    for (int32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
     {
-        for (int32_t j = i + 1 ; j < phys_objects.size() ; j++)
+        for (uint32_t j = i + 1 ; j < phys_objects.size() ; j++)
         {
             // Return from a phys-phys collision is
             //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
@@ -265,18 +269,18 @@ void Universe::tick(double dt)
 
                 if (phys_objects[i]->type == PHYSOBJECT_SMART)
                 {
-                    SPO* s = (SPO*)phys_objects[i];
+                    //SPO* s = (SPO*)phys_objects[i];
                     /// @todo Smart phys collision messages
                 }
 
                 if (phys_objects[j]->type == PHYSOBJECT_SMART)
                 {
-                    SPO* s = (SPO*)phys_objects[j];
+                    //SPO* s = (SPO*)phys_objects[j];
                     /// @todo Smart phys collision (other) messages
                 }
             }
 
-            for (int32_t bi = 0 ; bi < beams.size() ; bi++)
+            for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
             {
                 Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
 
@@ -295,7 +299,7 @@ void Universe::tick(double dt)
 
     // Now tick along each object
     V3 g;
-    for (int32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
     {
         g.x = 0.0;
         g.y = 0.0;
@@ -311,16 +315,16 @@ void Universe::tick(double dt)
     // Then we can binary search our way as we iterate over the list of phys IDs.
     // That might have a big constant though
     /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-    for (int32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
     {
-        for (int32_t j = 0 ; j < expired.size() ; j++)
+        for (uint32_t j = 0 ; j < expired.size() ; j++)
         {
             if (expired[j] == phys_objects[i]->phys_id)
             {
                 // If it's a beam...
                 if (phys_objects[i]->type >= BEAM_COMM)
                 {
-                    for (int32_t k = 0 ; k < beams.size() ; k++)
+                    for (uint32_t k = 0 ; k < beams.size() ; k++)
                     {
                         if (beams[k]->phys_id == expired[j])
                         {
@@ -338,7 +342,7 @@ void Universe::tick(double dt)
 
                     if (phys_objects[i]->emits_gravity)
                     {
-                        for (int32_t k = 0 ; k < attractors.size() ; k++)
+                        for (uint32_t k = 0 ; k < attractors.size() ; k++)
                         {
                             if (attractors[k]->phys_id == expired[j])
                             {
@@ -360,7 +364,7 @@ void Universe::tick(double dt)
 
     add_lock.lock();
     // Handle added queue
-    for (int32_t i = 0 ; i < added.size() ; i++)
+    for (uint32_t i = 0 ; i < added.size() ; i++)
     {
         switch (added[i]->type)
         {
@@ -376,6 +380,9 @@ void Universe::tick(double dt)
         case PHYSOBJECT_SMART:
             {
                 SPO* obj = (SPO*)added[i];
+                /// @todo Check to make sure this smarty adding is right.
+                smarties[obj->pobj.phys_id] = obj;
+                phys_objects.push_back(added[i]);
                 if (added[i]->emits_gravity)
                 {
                     attractors.push_back(added[i]);

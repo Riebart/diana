@@ -1,5 +1,6 @@
 #include "MIMOServer.hpp"
 
+#include <iostream>
 #include <stdio.h>
 
 // We can actually use Berkeley style sockets everywhere, just need to include the right stuff
@@ -208,12 +209,15 @@ void serve_MIMOServer(MIMOServer* server)
         if (server->hangups.size() > 0)
         {
             server->hangup_lock.lock();
-            int32_t pre_hangup = server->inputs.size();
+            uint32_t hungup = server->inputs.size();
 
-            for (int32_t i = 0 ; i < server->hangups.size() ; i++)
+            for (uint32_t i = 0 ; i < server->hangups.size() ; i++)
             {
                 server->hangup(server->hangups[i]);
             }
+            
+            hungup -= server->inputs.size();
+            fprintf(stderr, "Successfully hung up %u client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
             server->hangups.clear();
             server->hangup_lock.unlock();
@@ -230,7 +234,7 @@ void serve_MIMOServer(MIMOServer* server)
             socklen_t addrlen = sizeof(struct sockaddr_storage);
 #endif
 
-            for (int32_t i = 0 ; i < fds.fd_count ; i++)
+            for (uint32_t i = 0 ; i < fds.fd_count ; i++)
             {
                 // First check to see if the socket is ready for a connection, or if we're shutting them down
                 int32_t err = -12345;
@@ -335,7 +339,11 @@ MIMOServer::~MIMOServer()
     // Double-check that the threadmap is empty
     if (threadmap.size() > 0)
     {
-        fprintf(stderr, "The threadmap still has %lu things at the end of the destructor!\n", threadmap.size());
+#if _WIN64 || __x86_64__
+        fprintf(stderr, "The threadmap still has %lu things at the end of the destructor!\n", (uint64_t)threadmap.size());
+#else
+        fprintf(stderr, "The threadmap still has %llu things at the end of the destructor!\n", (uint64_t)threadmap.size());
+#endif
         std::map<int32_t, struct SocketThread*>::iterator it;
         for (it = threadmap.begin() ; it != threadmap.end() ; ++it)
         {
@@ -347,16 +355,19 @@ MIMOServer::~MIMOServer()
 
 int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, in6_addr addr6)
 {
+    int32_t ret;
+    
     int32_t server = socket(family, SOCK_STREAM, IPPROTO_TCP);
     if(server == INVALID_SOCKET)
     {
-        perror("Can not create MIMOServer socket");
+        ret = GET_ERROR;
+        fprintf(stderr, "Can not create MIMOServer socket (%d)\n", ret);
         exit(EXIT_FAILURE);
     }
 
-    int32_t ret;
     uint32_t sockopts = 1;
-    ret = setsockopt(server, SOL_SOCKET, SO_REUSEADDR, (const char*)&sockopts, 1);
+    ret = setsockopt(server, SOL_SOCKET, SO_REUSEADDR, (const char*)&sockopts, 4);
+
     if (ret == SOCKET_ERROR)
     {
         ret = GET_ERROR;
@@ -378,6 +389,19 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, in
         }
     case AF_INET6:
         {
+#ifndef WIN32
+            sockopts = 1;
+            ret = setsockopt(server, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&sockopts, 4);
+            
+            if (ret == SOCKET_ERROR)
+            {
+                perror(NULL);
+                ret = GET_ERROR;
+                fprintf(stderr, "Can not set MIMOServer v6 socket to v6 only (%d)\n", ret);
+                exit(EXIT_FAILURE);
+            }
+#endif
+            
             struct sockaddr_in6 stSockAddr;
             memset(&stSockAddr, 0, sizeof(stSockAddr));
             stSockAddr.sin6_family = AF_INET6;
@@ -404,6 +428,7 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, in
     {
         ret = GET_ERROR;
         fprintf(stderr, "Can not bind MIMOServer socket (%d)\n", ret);
+        perror(NULL);
         ret = CLOSESOCKET(server);
         if (ret == SOCKET_ERROR)
         {
@@ -503,13 +528,18 @@ void MIMOServer::stop()
         bool stubborn = false;
         while (inputs.size() > 0)
         {
-            fprintf(stderr, "Hanging up %lu %sclients%s\n", inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
+#if _WIN64 || __x86_64__
+            fprintf(stderr, "Hanging up %lu %sclients%s\n", (uint64_t)inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
+#else
+            fprintf(stderr, "Hanging up %llu %sclients%s\n", (uint64_t)inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
+#endif
 
-            for (int32_t i = 0 ; i < inputs.size() ; i++)
+            for (uint32_t i = 0 ; i < inputs.size() ; i++)
             {
                 hangup(inputs[i]);
-                i--;
+//                 i--;
             }
+            
             stubborn = true;
         }
 
@@ -532,7 +562,7 @@ void MIMOServer::hangup(int32_t c)
 
     // @todo The python checks for already hung up clients,
     // but we'll just arrange for that not to happen.
-    for (int32_t i = 0 ; i < inputs.size() ; i++)
+    for (uint32_t i = 0 ; i < inputs.size() ; i++)
     {
         if (inputs[i] == c)
         {

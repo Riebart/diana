@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <assert.h>
-
+#include <math.h>
 #include <signal.h>
 
 #ifdef WIN32
@@ -29,27 +29,6 @@ int32_t compare(const void* aV, const void* bV)
     uint64_t a = *(uint64_t*)aV;
     uint64_t b = *(uint64_t*)bV;
     return ((a < b) ? -1 : ((a == b) ? 0 : 1));
-}
-
-void dc(int32_t c)
-{
-    fprintf(stderr, "DC %d\n", c);
-    char buf[1024];
-    int32_t ngot = recv(c, buf, 1023, 0);
-    if (ngot == SOCKET_ERROR)
-    {
-        ngot = WSAGetLastError();
-        fprintf(stderr, "Couldn't read from socket %d (%d)\n", c, ngot);
-        return;
-    }
-
-    buf[ngot] = 0;
-    fprintf(stderr, "%s", buf);
-}
-
-void hc(int32_t c)
-{
-    fprintf(stderr, "HC %d\n", c);
 }
 
 void pool_rack()
@@ -104,7 +83,7 @@ void pool_rack()
     position.x = 0.0;
     position.y = 10.0;
     position.z = 0.0;
-    PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, ball_mass, ball_radius, NULL);
+    PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
     u->add_object(obj);
     objs.push_back(obj);
 }
@@ -133,13 +112,13 @@ void simple_collision()
 
 void print_positions()
 {
-    for (int i = 0 ; i < objs.size() ; i++)
+    for (uint32_t i = 0 ; i < objs.size() ; i++)
     {
         fprintf(stderr, "%g   %g   %g\n", objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
     }
 }
 
-void main(int32_t argc, char** argv)
+int main(int32_t argc, char** argv)
 {
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
@@ -165,7 +144,11 @@ void main(int32_t argc, char** argv)
         {
             u->get_frametime(frametimes);
             cur_ticks = u->get_ticks();
+#if _WIN64 || __x86_64__
+            fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#else
             fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#endif
             print_positions();
             last_ticks = cur_ticks;
             std::this_thread::sleep_for(dura);
@@ -174,9 +157,12 @@ void main(int32_t argc, char** argv)
         u->stop_net();
         u->stop_sim();
         delete u;
+        
+        return 0;
     }
     catch(char* e)
     {
         fprintf(stderr, "Caught error: %s\n", e);
+        return 1;
     }
 }

@@ -2,7 +2,11 @@
 #define UNIVERSE_HPP
 
 #include <stdint.h>
+
+// GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
+#ifdef WIN32
 #include <atomic>
+#endif
 
 // We get these from MIMOServer.hpp too
 #include <map>
@@ -172,7 +176,11 @@ private:
     bool running;
     bool realtime;
 
+#ifdef WIN32
     std::atomic_uint64_t total_objs;
+#else
+    uint64_t total_objs;
+#endif
 };
 
 #endif
