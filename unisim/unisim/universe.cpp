@@ -378,7 +378,7 @@ void Universe::tick(double dt)
     // That might have a big constant though
     /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
     bool backtrack = false;
-    for (int32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
     {
         if (backtrack)
         {
