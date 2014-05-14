@@ -4,9 +4,13 @@
 
 #ifdef CPP11THREADS
 #include <chrono>
+#define LOCK(l) l.lock()
+#define UNLOCK(l) l.unlock()
 #else
 #include <sys/timeb.h>
 #include <unistd.h>
+#define LOCK(l) pthread_rwlock_wrlock(&l)
+#define UNLOCK(l) pthread_rwlock_unlock(&l)
 #endif
 
 #define COLLISION_ENERGY_CUTOFF 1e-9
@@ -27,15 +31,10 @@ void gravity(V3* out, PO* big, PO* small)
     Vector3_scale(out, m);
 }
 
-#ifdef CPP11THREADS
-void sim(Universe* u)
-{
-#else
 void* sim(void* uV)
 {
     Universe* u = (Universe*)uV;
     
-#endif
     // dt is the amount of time that will pass in the game world during the next tick.
     double dt = u->min_frametime;
     
@@ -120,9 +119,7 @@ void* sim(void* uV)
         u->num_ticks++;
     }
     
-#ifndef CPP11THREADS
     return NULL;
-#endif
 }
 
 void Universe_hangup_objects(int32_t c, void* arg)
@@ -248,46 +245,21 @@ void Universe::add_object(PO* obj)
 {
     obj->phys_id = get_id();
     
-#ifdef CPP11THREADS
-    add_lock.lock();
-#else
-    pthread_rwlock_wrlock(&add_lock);
-#endif
-    
+    LOCK(add_lock);
     added.push_back(obj);
-    
-#ifdef CPP11THREADS
-    add_lock.unlock();
-#else
-    pthread_rwlock_unlock(&add_lock);
-#endif
+    UNLOCK(add_lock);
 }
 
 void Universe::expire(uint64_t phys_id)
 {
-#ifdef CPP11THREADS
-    expire_lock.lock();
-#else
     LOCK(expire_lock);
-#endif
-    
     expired.push_back(phys_id);
-    
-#ifdef CPP11THREADS
-    expire_lock.unlock();
-#else
     UNLOCK(expire_lock);
-#endif
 }
 
 void Universe::hangup_objects(int32_t c)
 {
-#ifdef CPP11THREADS
-    expire_lock.lock();
-#else
     LOCK(expire_lock);
-#endif
-    
     std::map<uint64_t, struct SmartPhysicsObject*>::iterator it;
 
     for (it = smarties.begin() ; it != smarties.end() ; ++it)
@@ -297,12 +269,7 @@ void Universe::hangup_objects(int32_t c)
             expired.push_back(it->first);
         }
     }
-    
-#ifdef CPP11THREADS
-    expire_lock.unlock();
-#else
     UNLOCK(expire_lock);
-#endif
 }
 
 void Universe::handle_message(int32_t c)
@@ -323,12 +290,8 @@ void Universe::get_grav_pull(V3* g, PO* obj)
 
 void Universe::tick(double dt)
 {
-#ifdef CPP11THREADS
-    phys_lock.lock();
-#else
     LOCK(phys_lock);
-#endif
-    
+
     // Only the visdata thread conflicts with this...
     // Are we OK with it getting data that is in the middle of being updated to?
     // This can be done single-threaded for now, and we'll thread it later.
@@ -408,11 +371,7 @@ void Universe::tick(double dt)
         PhysicsObject_tick(phys_objects[i], &g, dt);
     }
 
-#ifdef CPP11THREADS
-    expire_lock.lock();
-#else
     LOCK(expire_lock);
-#endif
     // Handle expiry queue
     // First sort the expiry queue, which is just a vector of phys_ids
     // Then we can binary search our way as we iterate over the list of phys IDs.
@@ -470,17 +429,9 @@ void Universe::tick(double dt)
         }
     }
     expired.clear();
-#ifdef CPP11THREADS
-    expire_lock.unlock();
-#else
     UNLOCK(expire_lock);
-#endif
 
-#ifdef CPP11THREADS
-    add_lock.lock();
-#else
     LOCK(add_lock);
-#endif
     // Handle added queue
     for (uint32_t i = 0 ; i < added.size() ; i++)
     {
@@ -520,16 +471,8 @@ void Universe::tick(double dt)
         }
     }
     added.clear();
-#ifdef CPP11THREADS
-    add_lock.unlock();
-#else
     UNLOCK(add_lock);
-#endif
 
     // Unlock everything
-#ifdef CPP11THREADS
-    phys_lock.unlock();
-#else
     UNLOCK(phys_lock);
-#endif
 }

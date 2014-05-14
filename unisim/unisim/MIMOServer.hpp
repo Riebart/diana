@@ -8,21 +8,20 @@
 #ifdef WIN32
 #include <thread>
 #include <mutex>
+#define LOCK_T std::mutex
+#define THREAD_T std::thread
 #else
 #include <pthread.h>
+#define LOCK_T pthread_rwlock_t
+#define THREAD_T pthread_t
 #endif
 
 class SocketThread;
 
 class MIMOServer
 {
-#ifdef WIN32
-    friend void serve_SocketThread(SocketThread* sock);
-    friend void serve_MIMOServer(MIMOServer* server);
-#else
     friend void* serve_SocketThread(void* sock);
     friend void* serve_MIMOServer(void* server);
-#endif
     
     friend void on_hangup_MIMOServer(MIMOServer* srv, int32_t c);
 
@@ -55,13 +54,8 @@ private:
     /// @todo Is this even necessary? Network input is serial anyway...
     std::map<int32_t, SocketThread*> threadmap;
     
-#ifdef WIN32
-    std::thread server_thread;
-    std::mutex hangup_lock;
-#else
-    pthread_t server_thread;
-    pthread_rwlock_t hangup_lock;
-#endif
+    THREAD_T server_thread;
+    LOCK_T hangup_lock;
     
 };
 

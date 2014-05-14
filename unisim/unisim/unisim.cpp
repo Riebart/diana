@@ -162,8 +162,8 @@ int main(int32_t argc, char** argv)
         u->start_sim();
 
         //pool_rack();
-        //simple_collision();
-        fast_collision();
+        simple_collision();
+        //fast_collision();
 
         double frametimes[4];
         uint64_t last_ticks = u->get_ticks();

@@ -3,23 +3,26 @@
 
 #include <stdint.h>
 
-// GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
-#ifdef CPP11THREADS
-#include <atomic>
-#endif
-
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
 
+/// @todo Should we be using typedefs instead of #defines here?
+
 #ifdef CPP11THREADS
+// GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
+#include <atomic>
 #include <thread>
 #include <mutex>
+
+#define LOCK_T std::mutex
+#define THREAD_T std::thread
+#define ATOMIC_T std::atomic_uint64_t
 #else
 #include <pthread.h>
-#define LOCK_TYPE pthread_rwlock_t
-#define LOCK(l) pthread_rwlock_wrlock(&l)
-#define UNLOCK(l) pthread_rwlock_unlock(&l)
+#define LOCK_T pthread_rwlock_t
+#define THREAD_T pthread_t
+#define ATOMIC_T uint64_t
 #endif
 
 #include "vector.hpp"
@@ -80,11 +83,7 @@
 /// constraints and are, perhaps, not interactive.
 class Universe
 {
-#ifdef CPP11THREADS
-    friend void sim(Universe* u);
-#else
     friend void* sim(void* u);
-#endif
     
     friend void Universe_hangup_objects(int32_t c, void* arg);
     friend void Universe_handle_message(int32_t c, void* arg);
@@ -156,21 +155,12 @@ private:
     std::map<uint64_t, uint64_t> queries;
     std::vector<int32_t> vis_clients;
 
-#ifdef CPP11THREADS
-    std::thread sim_thread;
-    std::thread vis_thread;
-    std::mutex add_lock;
-    std::mutex expire_lock;
-    std::mutex phys_lock;
-    std::mutex vis_lock;
-#else
-    pthread_t sim_thread;
-    pthread_t vis_thread;
-    LOCK_TYPE add_lock;
-    LOCK_TYPE expire_lock;
-    LOCK_TYPE phys_lock;
-    LOCK_TYPE vis_lock;
-#endif
+    THREAD_T sim_thread;
+    THREAD_T vis_thread;
+    LOCK_T add_lock;
+    LOCK_T expire_lock;
+    LOCK_T phys_lock;
+    LOCK_T vis_lock;
 
     /// Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
     double rate;
@@ -198,11 +188,7 @@ private:
     bool running;
     bool realtime;
 
-#ifdef CPP11THREADS
-    std::atomic_uint64_t total_objs;
-#else
-    uint64_t total_objs;
-#endif
+    ATOMIC_T total_objs;
 };
 
 #endif

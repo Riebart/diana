@@ -2,10 +2,15 @@
 
 #include <stdio.h>
 
-#ifndef CPP11THREADS
+#ifdef CPP11THREADS
+#define LOCK(l) l.lock()
+#define UNLOCK(l) l.unlock()
+#else
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#define LOCK(l) pthread_rwlock_wrlock(&l)
+#define UNLOCK(l) pthread_rwlock_unlock(&l)
 #endif
 
 /// @todo #ifdef between perror() and WSAGetLastErrorMessage()
@@ -39,13 +44,8 @@ class SocketThread
 {
     friend class MIMOServer;
     
-#ifdef CPP11THREADS
-    friend void serve_SocketThread(SocketThread* sock);
-    friend void serve_MIMOServer(MIMOServer* server);
-#else
     friend void* serve_SocketThread(void* sock);
     friend void* serve_MIMOServer(void* server);
-#endif
 
 public:
     SocketThread(int32_t c, void (*handler)(int32_t), MIMOServer* server);
@@ -58,25 +58,18 @@ private:
     void (*handler2)(int32_t, void*);
     void* handler_context;
     bool running;
-#ifdef CPP11THREADS
-    std::thread t;
-#else
-    pthread_t t;
-#endif
+
+    THREAD_T t;
+
     MIMOServer* server;
 
     void start();
     void stop();
 };
 
-#ifdef CPP11THREADS
-void serve_SocketThread(SocketThread* sock)
-{
-#else
 void* serve_SocketThread(void* sockV)
 {
     SocketThread* sock = (SocketThread*)sockV;
-#endif
     
     while (sock->running)
     {
@@ -121,9 +114,7 @@ void* serve_SocketThread(void* sockV)
         sock->server->on_hangup(sock->c);
     }
     
-#ifndef CPP11THREADS
     return NULL;
-#endif
 }
 
 SocketThread::SocketThread(int32_t c, void (*handler)(int32_t), MIMOServer* server)
@@ -196,15 +187,10 @@ void SocketThread::stop()
 }
 
 // More on non-blocking IO: https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm
-#ifdef CPP11THREADS
-void serve_MIMOServer(MIMOServer* server)
-{
-#else
 void* serve_MIMOServer(void* serverV)
 {
     printf("%d\n", FD_SETSIZE);
     MIMOServer* server = (MIMOServer*)serverV;
-#endif
 
     fd_set fds;
     
@@ -250,11 +236,7 @@ void* serve_MIMOServer(void* serverV)
         // Service hangups
         if (server->hangups.size() > 0)
         {
-#ifdef CPP11THREADS
-            server->hangup_lock.lock();
-#else
-            pthread_rwlock_wrlock(&server->hangup_lock);
-#endif
+            LOCK(server->hangup_lock);
             uint32_t hungup = server->inputs.size();
 
             for (uint32_t i = 0 ; i < server->hangups.size() ; i++)
@@ -266,12 +248,7 @@ void* serve_MIMOServer(void* serverV)
             fprintf(stderr, "Successfully hung up %u client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
             server->hangups.clear();
-            
-#ifdef CPP11THREADS
-            server->hangup_lock.unlock();
-#else
-            pthread_rwlock_unlock(&server->hangup_lock);
-#endif
+            UNLOCK(server->hangup_lock);
             continue;
         }
 
@@ -356,9 +333,7 @@ void* serve_MIMOServer(void* serverV)
         }
     }
     
-#ifndef CPP11THREADS
     return NULL;
-#endif
 }
 
 MIMOServer::MIMOServer(void (*data_callback)(int32_t), void (*hangup_callback)(int32_t), int32_t port, int32_t backlog)
@@ -565,7 +540,10 @@ void MIMOServer::stop()
         running = false;
 
 #ifdef CPP11THREADS
-        server_thread.join();
+        if (server_thread.joinable())
+        {
+            server_thread.join();
+        }
 #else
         pthread_join(server_thread, NULL);
 #endif
@@ -630,19 +608,9 @@ void MIMOServer::stop()
 
 void MIMOServer::on_hangup(int32_t c)
 {
-#ifdef CPP11THREADS
-    hangup_lock.lock();
-#else
-    pthread_rwlock_wrlock(&hangup_lock);
-#endif
-    
+    LOCK(hangup_lock);
     hangups.push_back(c);
-
-#ifdef CPP11THREADS
-    hangup_lock.unlock();
-#else
-    pthread_rwlock_unlock(&hangup_lock);
-#endif
+    UNLOCK(hangup_lock);
 }
 
 // Called from serve_MIMOServer() when a client hangs up.
