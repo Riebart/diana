@@ -17,6 +17,9 @@
 #include <mutex>
 #else
 #include <pthread.h>
+#define LOCK_TYPE LOCK_TYPE
+#define LOCK(l) pthread_rwlock_wrlock(&l)
+#define UNLOCK(l) pthread_rwlock_unlock(&l)
 #endif
 
 #include "vector.hpp"
@@ -163,10 +166,10 @@ private:
 #else
     pthread_t sim_thread;
     pthread_t vis_thread;
-    pthread_rwlock_t add_lock;
-    pthread_rwlock_t expire_lock;
-    pthread_rwlock_t phys_lock;
-    pthread_rwlock_t vis_lock;
+    LOCK_TYPE add_lock;
+    LOCK_TYPE expire_lock;
+    LOCK_TYPE phys_lock;
+    LOCK_TYPE vis_lock;
 #endif
 
     /// Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.

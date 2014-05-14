@@ -268,7 +268,7 @@ void Universe::expire(uint64_t phys_id)
 #ifdef CPP11THREADS
     expire_lock.lock();
 #else
-    pthread_rwlock_wrlock(&expire_lock);
+    LOCK(expire_lock);
 #endif
     
     expired.push_back(phys_id);
@@ -276,7 +276,7 @@ void Universe::expire(uint64_t phys_id)
 #ifdef CPP11THREADS
     expire_lock.unlock();
 #else
-    pthread_rwlock_unlock(&expire_lock);
+    UNLOCK(expire_lock);
 #endif
 }
 
@@ -285,7 +285,7 @@ void Universe::hangup_objects(int32_t c)
 #ifdef CPP11THREADS
     expire_lock.lock();
 #else
-    pthread_rwlock_wrlock(&expire_lock);
+    LOCK(expire_lock);
 #endif
     
     std::map<uint64_t, struct SmartPhysicsObject*>::iterator it;
@@ -301,7 +301,7 @@ void Universe::hangup_objects(int32_t c)
 #ifdef CPP11THREADS
     expire_lock.unlock();
 #else
-    pthread_rwlock_unlock(&expire_lock);
+    UNLOCK(expire_lock);
 #endif
 }
 
@@ -326,7 +326,7 @@ void Universe::tick(double dt)
 #ifdef CPP11THREADS
     phys_lock.lock();
 #else
-    pthread_rwlock_wrlock(&phys_lock);
+    LOCK(phys_lock);
 #endif
     
     // Only the visdata thread conflicts with this...
@@ -411,7 +411,7 @@ void Universe::tick(double dt)
 #ifdef CPP11THREADS
     expire_lock.lock();
 #else
-    pthread_rwlock_wrlock(&expire_lock);
+    LOCK(expire_lock);
 #endif
     // Handle expiry queue
     // First sort the expiry queue, which is just a vector of phys_ids
@@ -466,13 +466,13 @@ void Universe::tick(double dt)
 #ifdef CPP11THREADS
     expire_lock.unlock();
 #else
-    pthread_rwlock_unlock(&expire_lock);
+    UNLOCK(expire_lock);
 #endif
 
 #ifdef CPP11THREADS
     add_lock.lock();
 #else
-    pthread_rwlock_wrlock(&add_lock);
+    LOCK(add_lock);
 #endif
     // Handle added queue
     for (uint32_t i = 0 ; i < added.size() ; i++)
@@ -516,13 +516,13 @@ void Universe::tick(double dt)
 #ifdef CPP11THREADS
     add_lock.unlock();
 #else
-    pthread_rwlock_unlock(&add_lock);
+    UNLOCK(add_lock);
 #endif
 
     // Unlock everything
 #ifdef CPP11THREADS
     phys_lock.unlock();
 #else
-    pthread_rwlock_unlock(&phys_lock);
+    UNLOCK(phys_lock);
 #endif
 }
