@@ -107,7 +107,6 @@ void serve_SocketThread(SocketThread* sock)
     if (sock->running)
     {
         sock->server->on_hangup(sock->c);
-        sock->running = false;
     }
 }
 
