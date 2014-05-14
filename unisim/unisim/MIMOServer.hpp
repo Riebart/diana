@@ -3,16 +3,27 @@
 
 #include <map>
 #include <vector>
+#include <stdint.h>
+
+#ifdef WIN32
 #include <thread>
 #include <mutex>
-#include <stdint.h>
+#else
+#include <pthread.h>
+#endif
 
 class SocketThread;
 
 class MIMOServer
 {
+#ifdef WIN32
     friend void serve_SocketThread(SocketThread* sock);
     friend void serve_MIMOServer(MIMOServer* server);
+#else
+    friend void* serve_SocketThread(void* sock);
+    friend void* serve_MIMOServer(void* server);
+#endif
+    
     friend void on_hangup_MIMOServer(MIMOServer* srv, int32_t c);
 
 public:
@@ -40,11 +51,18 @@ private:
     void* hangup_context;
     std::vector<int32_t> inputs;
     std::vector<int32_t> hangups;
-    std::thread server_thread;
     // Map client FDs to their asynchronous reader threads.
     /// @todo Is this even necessary? Network input is serial anyway...
     std::map<int32_t, SocketThread*> threadmap;
+    
+#ifdef WIN32
+    std::thread server_thread;
     std::mutex hangup_lock;
+#else
+    pthread_t server_thread;
+    pthread_rwlock_t hangup_lock;
+#endif
+    
 };
 
 #endif

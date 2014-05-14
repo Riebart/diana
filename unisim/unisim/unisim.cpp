@@ -4,10 +4,10 @@
 #include <math.h>
 #include <signal.h>
 
-#ifdef WIN32
-#include <WinSock2.h>
+#ifdef CPP11THREADS
+#include <chrono>
 #else
-#include <sys/socket.h>
+#include <unistd.h>
 #endif
 
 #include "universe.hpp"
@@ -136,9 +136,12 @@ int main(int32_t argc, char** argv)
         simple_collision();
 
         double frametimes[4];
-        std::chrono::seconds dura(1);
         uint64_t last_ticks = u->get_ticks();
         uint64_t cur_ticks;
+        
+#ifdef CPP11THREADS
+        std::chrono::seconds dura(1);
+#endif
 
         while (running)
         {
@@ -151,7 +154,12 @@ int main(int32_t argc, char** argv)
 #endif
             print_positions();
             last_ticks = cur_ticks;
+            
+#ifdef CPP11THREADS
             std::this_thread::sleep_for(dura);
+#else
+            usleep(1000000);
+#endif
         }
 
         u->stop_net();

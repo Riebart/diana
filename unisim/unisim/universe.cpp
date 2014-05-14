@@ -2,7 +2,12 @@
 
 #include <stdio.h>
 #include <algorithm>
+
+#ifdef CPP11THREADS
 #include <chrono>
+#else
+#include <sys/timeb.h>
+#endif
 
 #define ABSOLUTE_MIN_FRAMETIME 0.001
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -21,12 +26,24 @@ void gravity(V3* out, PO* big, PO* small)
     Vector3_scale(out, m);
 }
 
+#ifdef CPP11THREADS
 void sim(Universe* u)
 {
+#else
+void* sim(void* uV)
+{
+    Universe* u = (Universe*)uV;
+    
+#endif
     // dt is the amount of time that will pass in the game world during the next tick.
     double dt = u->min_frametime;
+    
+#ifdef CPP11THREADS
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     std::chrono::duration<double> elapsed;
+#else
+    struct timeb start, end;
+#endif
 
     while (u->running)
     {
@@ -35,16 +52,27 @@ void sim(Universe* u)
         // waking up too often.
         if (u->paused)
         {
+#ifdef CPP11THREADS
             std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+#else
+            usleep((uint32_t)(1000000 * u->max_frametime));
+#endif
             continue;
         }
 
+#ifdef CPP11THREADS
         start = std::chrono::high_resolution_clock::now();
         u->tick(u->rate * dt);
         end = std::chrono::high_resolution_clock::now();
 
         elapsed = end - start;
         double e = elapsed.count();
+#else
+        ftime(&start);
+        u->tick(u->rate * dt);
+        ftime(&end);
+        double e = (end.time + start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
         u->phys_frametime = e;
 
         // If we're simulating in real time, make sure that we aren't going too fast
@@ -56,10 +84,16 @@ void sim(Universe* u)
             // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requested.
             // As opposed to Python's sleep which may wake up early.
             // On Windows 8, this has an accuracy of about 1.5ms.
+#ifdef CPP11THREADS
             std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
             end = std::chrono::high_resolution_clock::now();
             elapsed = end - start;
             e = elapsed.count();
+#else
+            usleep((uint32_t)(1000000 * (u->min_frametime - e)));
+            ftime(&end);
+            e = (end.time + start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
 
             // If the tick lasted less than the max, let it pass by in 'real' time.
             // Otherwise, clamp it down which is where we get the slowdown effect.
@@ -81,6 +115,10 @@ void sim(Universe* u)
         u->total_time += u->rate * dt;
         u->num_ticks++;
     }
+    
+#ifndef CPP11THREADS
+    return NULL;
+#endif
 }
 
 void Universe_hangup_objects(int32_t c, void* arg)
@@ -147,7 +185,11 @@ void Universe::start_sim()
     {
         running = true;
         paused = false;
+#ifdef CPP11THREADS
         sim_thread = std::thread(sim, this);
+#else
+        pthread_create(&sim_thread, NULL, sim, (void*)this);
+#endif
     }
 }
 
@@ -159,10 +201,15 @@ void Universe::pause_sim()
 void Universe::stop_sim()
 {
     running = false;
+    
+#ifdef CPP11THREADS
     if (sim_thread.joinable())
     {
         sim_thread.join();
     }
+#else
+    pthread_join(sim_thread, NULL);
+#endif
 }
 
 void Universe::get_frametime(double* out)
@@ -185,7 +232,7 @@ double Universe::total_sim_time()
 
 uint64_t Universe::get_id()
 {
-#ifdef WIN32
+#ifdef CPP11THREADS
     uint64_t r = total_objs.fetch_add(1);
 #else
     uint64_t r = __sync_fetch_and_add(&total_objs, 1);
@@ -196,21 +243,47 @@ uint64_t Universe::get_id()
 void Universe::add_object(PO* obj)
 {
     obj->phys_id = get_id();
+    
+#ifdef CPP11THREADS
     add_lock.lock();
+#else
+    pthread_rwlock_wrlock(&add_lock);
+#endif
+    
     added.push_back(obj);
+    
+#ifdef CPP11THREADS
     add_lock.unlock();
+#else
+    pthread_rwlock_unlock(&add_lock);
+#endif
 }
 
 void Universe::expire(uint64_t phys_id)
 {
+#ifdef CPP11THREADS
     expire_lock.lock();
+#else
+    pthread_rwlock_wrlock(&expire_lock);
+#endif
+    
     expired.push_back(phys_id);
+    
+#ifdef CPP11THREADS
     expire_lock.unlock();
+#else
+    pthread_rwlock_unlock(&expire_lock);
+#endif
 }
 
 void Universe::hangup_objects(int32_t c)
 {
+#ifdef CPP11THREADS
     expire_lock.lock();
+#else
+    pthread_rwlock_wrlock(&expire_lock);
+#endif
+    
     std::map<uint64_t, struct SmartPhysicsObject*>::iterator it;
 
     for (it = smarties.begin() ; it != smarties.end() ; ++it)
@@ -220,7 +293,12 @@ void Universe::hangup_objects(int32_t c)
             expired.push_back(it->first);
         }
     }
+    
+#ifdef CPP11THREADS
     expire_lock.unlock();
+#else
+    pthread_rwlock_unlock(&expire_lock);
+#endif
 }
 
 void Universe::handle_message(int32_t c)
@@ -241,7 +319,12 @@ void Universe::get_grav_pull(V3* g, PO* obj)
 
 void Universe::tick(double dt)
 {
+#ifdef CPP11THREADS
     phys_lock.lock();
+#else
+    pthread_rwlock_wrlock(&phys_lock);
+#endif
+    
     // Only the visdata thread conflicts with this...
     // Are we OK with it getting data that is in the middle of being updated to?
     // This can be done single-threaded for now, and we'll thread it later.
@@ -309,7 +392,11 @@ void Universe::tick(double dt)
         PhysicsObject_tick(phys_objects[i], &g, dt);
     }
 
+#ifdef CPP11THREADS
     expire_lock.lock();
+#else
+    pthread_rwlock_wrlock(&expire_lock);
+#endif
     // Handle expiry queue
     // First sort the expiry queue, which is just a vector of phys_ids
     // Then we can binary search our way as we iterate over the list of phys IDs.
@@ -360,9 +447,17 @@ void Universe::tick(double dt)
         }
     }
     expired.clear();
+#ifdef CPP11THREADS
     expire_lock.unlock();
+#else
+    pthread_rwlock_unlock(&expire_lock);
+#endif
 
+#ifdef CPP11THREADS
     add_lock.lock();
+#else
+    pthread_rwlock_wrlock(&add_lock);
+#endif
     // Handle added queue
     for (uint32_t i = 0 ; i < added.size() ; i++)
     {
@@ -402,8 +497,16 @@ void Universe::tick(double dt)
         }
     }
     added.clear();
+#ifdef CPP11THREADS
     add_lock.unlock();
+#else
+    pthread_rwlock_unlock(&add_lock);
+#endif
 
     // Unlock everything
+#ifdef CPP11THREADS
     phys_lock.unlock();
+#else
+    pthread_rwlock_unlock(&phys_lock);
+#endif
 }

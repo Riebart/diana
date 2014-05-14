@@ -4,15 +4,20 @@
 #include <stdint.h>
 
 // GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
-#ifdef WIN32
+#ifdef CPP11THREADS
 #include <atomic>
 #endif
 
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
+
+#ifdef CPP11THREADS
 #include <thread>
-#include <mutex> 
+#include <mutex>
+#else
+#include <pthread.h>
+#endif
 
 #include "vector.hpp"
 #include "physics.hpp"
@@ -72,7 +77,12 @@
 /// constraints and are, perhaps, not interactive.
 class Universe
 {
+#ifdef CPP11THREADS
     friend void sim(Universe* u);
+#else
+    friend void* sim(void* u);
+#endif
+    
     friend void Universe_hangup_objects(int32_t c, void* arg);
     friend void Universe_handle_message(int32_t c, void* arg);
     friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
@@ -143,12 +153,21 @@ private:
     std::map<uint64_t, uint64_t> queries;
     std::vector<int32_t> vis_clients;
 
+#ifdef CPP11THREADS
     std::thread sim_thread;
     std::thread vis_thread;
     std::mutex add_lock;
     std::mutex expire_lock;
     std::mutex phys_lock;
     std::mutex vis_lock;
+#else
+    pthread_t sim_thread;
+    pthread_t vis_thread;
+    pthread_rwlock_t add_lock;
+    pthread_rwlock_t expire_lock;
+    pthread_rwlock_t phys_lock;
+    pthread_rwlock_t vis_lock;
+#endif
 
     /// Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
     double rate;
@@ -176,7 +195,7 @@ private:
     bool running;
     bool realtime;
 
-#ifdef WIN32
+#ifdef CPP11THREADS
     std::atomic_uint64_t total_objs;
 #else
     uint64_t total_objs;
