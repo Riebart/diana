@@ -17,7 +17,7 @@
 #include <mutex>
 #else
 #include <pthread.h>
-#define LOCK_TYPE LOCK_TYPE
+#define LOCK_TYPE pthread_rwlock_t
 #define LOCK(l) pthread_rwlock_wrlock(&l)
 #define UNLOCK(l) pthread_rwlock_unlock(&l)
 #endif
