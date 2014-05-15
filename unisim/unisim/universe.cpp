@@ -106,7 +106,7 @@ void* sim(void* uV)
         // is at least the min_frametime.
         else if (!u->realtime)
         {
-            dt = MAX(e, u->min_frametime);
+            dt = MIN(u->max_frametime, MAX(e, u->min_frametime));
         }
 
         // The wall frametime is how long it took to actually do the physics plus
@@ -297,6 +297,8 @@ void Universe::tick(double dt)
     // This can be done single-threaded for now, and we'll thread it later.
 
     /// @todo Allocate the result on the stack here and pass in a pointer.
+    /// @todo Multi-level collisoin detecitons in the tick.
+    /// @todo Have some concept of collision destruction criteria here.
     struct PhysCollisionResult phys_result;
     struct BeamCollisionResult beam_result;
     for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
@@ -324,7 +326,8 @@ void Universe::tick(double dt)
                 if ((e < -COLLISION_ENERGY_CUTOFF) || 
                     (e > COLLISION_ENERGY_CUTOFF))
                 {
-                    fprintf(stderr, "Collision: %u <-> %u (%g J)\n", i, j, e);
+                    /// @todo Messaging in the tick is going to be back for performance.
+                    fprintf(stderr, "Collision: %u <-> %u (%.15g J)\n", i, j, e);
                     PhysicsObject_collision(phys_objects[i], phys_objects[j], e, &phys_result.pce1);
                     PhysicsObject_collision(phys_objects[j], phys_objects[i], e, &phys_result.pce2);
                     
@@ -475,4 +478,55 @@ void Universe::tick(double dt)
 
     // Unlock everything
     UNLOCK(phys_lock);
+}
+
+void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
+{
+    // This requires a linear search of the attractors, but whatever.
+    if (calculate)
+    {
+        // If 
+        bool newval = is_big_enough(obj->mass, obj->radius);
+        
+        // If we're a new attractor, assume that obj->emits_gravity hasn't been changed out of band
+        // And just push it onto the list
+        if (newval && !obj->emits_gravity)
+        {
+            attractors.push_back(obj);
+        }
+        else if (!newval && obj->emits_gravity)
+        {
+            for (uint32_t i = 0 ; i < attractors.size() ; i++)
+            {
+                if (attractors[i]->phys_id == obj->phys_id)
+                {
+                    attractors.erase(attractors.begin() + i);
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        // Here we have no idea what oldval was, so we need to iterate every time.
+        bool in = false;
+        for (uint32_t i = 0 ; i < attractors.size() ; i++)
+        {
+            if (attractors[i]->phys_id == obj->phys_id)
+            {
+                if (!obj->emits_gravity)
+                {
+                    attractors.erase(attractors.begin() + i);
+                }
+                in = true;
+                break;
+            }
+
+            // If we didn't find it, and we want it in there, push it back.
+            if (!in && obj->emits_gravity)
+            {
+                attractors.push_back(obj);
+            }
+        }
+    }
 }

@@ -125,7 +125,7 @@ public:
     void hangup_objects(int32_t c);
 
     /// Update whether or not an object emits gravity.
-    void update_attractor(struct PhysicsObject* obj);
+    void update_attractor(struct PhysicsObject* obj, bool calculate);
 
     void register_for_vis_data(uint64_t phys_id, bool enable);
 

@@ -362,6 +362,8 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, do
 void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 {
     /// @todo Take radius into account
+    /// @todo Add in proper occlusion
+    /// @todo Take into account how much of the object is in the beam's path.
 
     // Move the object position to a point32_t relative to the beam's origin.
     // Then scale the velocity by dt, and add it to the position to get the

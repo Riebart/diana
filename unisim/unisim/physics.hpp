@@ -25,21 +25,40 @@ enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEA
 #pragma pack(1)
 struct PhysicsObject
 {
+    /// Type of PhysicsObject
     PhysicsObjectType type;
+    /// Unique ID as assigned by the universe
     uint64_t phys_id;
+    /// For collisions, this is in [0,1] and is how far into the interval the collision occurred
+    double t;
+    /// Universe this object is assigned to.
     Universe* universe;
+    /// Position in metres relative to universal origin
     struct Vector3 position,
+        /// Velocity in metres/second
         velocity,
+        /// Angular velocity in radians/second
         ang_velocity,
+        /// Thrust in Newtons
         thrust,
+        /// Normal vector indicating forward of its local basis
         forward,
+        /// Normal vector indicating up of its local basis
         up,
+        /// Normal vector indicating right of its local basis
         right;
+    /// Mass in kilograms.
     double mass,
+        /// Radius of bounding sphere in metres centres on its position
         radius,
+        /// Health in some arbitrary hit points.
         health;
+    /// Arbitrary C-string offering an object description of some sort
     char* obj_desc;
-    int32_t art_id;
+    /// A unique art ID for any art assets as assigned by an ArtCurator.
+    uint32_t art_id;
+    /// Whether or not this object should be considered an attractor by the Universe.
+    /// Make sure to call Universe::update_attractor if you set this or change the mass/radius.
     bool emits_gravity;
 };
 #pragma pack()
@@ -47,13 +66,21 @@ struct PhysicsObject
 #pragma pack(1)
 struct SmartPhysicsObject
 {
+    /// Physical object that forms teh base of the object
     struct PhysicsObject pobj;
+    /// OSim ID (UNUSED)
     uint64_t osim_id,
+        /// Parent physical ID (UNUSED)
         parent_phys_id,
+        /// Query ID (UNUSED)
         query_id;
+    /// Client FD to talk out of.
     int32_t client;
+    /// Is this client registered for vis data
     bool vis_data,
+        /// Is this client registered for vis meta data
         vis_meta_data,
+        /// Does this exist in the world (UNUSED)
         exists;
 };
 #pragma pack()
@@ -81,28 +108,28 @@ struct Beam
 
 struct PhysCollisionEffect
 {
-    // Direction the other object was moving, relative to this, at time of impact (normalized).
+    /// Direction the other object was moving, relative to this, at time of impact (normalized).
     struct Vector3 d;
-    // Position of impact on object's bounding sphere, relative to centre.
+    /// Position of impact on object's bounding sphere, relative to centre.
     struct Vector3 p;
-    // Velocity of the 'hit' object tangential to impact. This remains unchanged.
+    /// Velocity of the 'hit' object tangential to impact. This remains unchanged.
     struct Vector3 t;
-    // Velocity change along normal of impact imparted due to impact.
+    /// Velocity change along normal of impact imparted due to impact.
     struct Vector3 n;
 };
 
 struct PhysCollisionResult
 {
-    // Effect on 'first' object
-    struct PhysCollisionEffect pce1;
-    // effect on 'second' object
-    struct PhysCollisionEffect pce2;
-    // Time in [0,1] alont dt of the impact
+    /// Time in [0,1] alont dt of the impact
     double t;
-    // Energy given up by object 1 to object 2
+    /// Energy given up by object 1 to object 2
     double e1;
-    // Energy given up by object 2 to object 1
+    /// Energy given up by object 2 to object 1
     double e2;
+    /// Effect on 'first' object
+    struct PhysCollisionEffect pce1;
+    /// effect on 'second' object
+    struct PhysCollisionEffect pce2;
 };
 
 struct BeamCollisionResult
@@ -134,5 +161,7 @@ void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, st
 void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
 void Beam_tick(struct Beam* beam, double dt);
 struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
+
+bool is_big_enough(double m, double r);
 
 #endif

@@ -13,6 +13,11 @@
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
+/// @todo Let's start talking about 128-bit fixed-point arithmetic for some stuff
+/// http://msdn.microsoft.com/en-us/library/windows/desktop/aa383711(v=vs.85).aspx
+/// GCC: __uint128_t and __int128_t
+/// Look back at the UniverseGenerator code, and see if we can resurrect some of it.
+
 bool running = true;
 Universe* u;
 std::vector<struct PhysicsObject*> objs;
@@ -98,7 +103,7 @@ void simple_collision()
     obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
     objs.push_back(obj);
     position.x = 0.0;
-    position.y = 0.5;
+    position.y = 0.0;
     velocity.x = -5.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
     u->add_object(obj);
@@ -139,6 +144,10 @@ void fast_collision()
     u->add_object(obj);
 }
 
+void slow_beam_collision()
+{
+}
+
 void print_positions()
 {
     for (uint32_t i = 0 ; i < objs.size() ; i++)
@@ -153,8 +162,8 @@ int main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    //u = new Universe(0.001, 0.05, 0.5, 5505, 1);
-    u = new Universe(1e-9, 1e-9, 0.5, 5505, 1, 1.0, false);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    //u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
 
     try
     {
