@@ -84,7 +84,7 @@
 class Universe
 {
     friend void* sim(void* u);
-    
+
     friend void Universe_hangup_objects(int32_t c, void* arg);
     friend void Universe_handle_message(int32_t c, void* arg);
     friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
@@ -117,6 +117,7 @@ public:
     /// at the end of the current physics tick.
     /// @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
     void add_object(struct PhysicsObject* obj);
+    void add_object(struct Beam* beam);
 
     /// Queue an object for expiry in the next physics tick.
     void expire(uint64_t phys_id);

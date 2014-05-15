@@ -21,6 +21,7 @@
 bool running = true;
 Universe* u;
 std::vector<struct PhysicsObject*> objs;
+std::vector<struct Beam*> beams;
 
 void sighandler(int32_t sig)
 {
@@ -144,15 +145,99 @@ void fast_collision()
     u->add_object(obj);
 }
 
-void slow_beam_collision()
+void beam_collision()
 {
+    struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
+    struct Vector3 position = { 10.0, 0.0, 0.0 };
+    struct Vector3 velocity = { -4000.0, 0.0, 0.0 };
+    struct Vector3 up = { 0.0, 0.0, 1.0 };
+    struct Beam* beam;
+
+    beam = (struct Beam*)malloc(sizeof(struct Beam));
+    beams.push_back(beam);
+    Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_WEAP);
+    u->add_object((struct PhysicsObject*)beam);
+
+    double mass = 1.0;
+    struct PhysicsObject* obj;
+
+    obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+    objs.push_back(obj);
+    position.x = 0.0;
+    position.y = 0.0;
+    velocity.x = 0.0;
+    PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
+    obj->health = 1e10;
+    u->add_object(obj);
+
+    obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+    objs.push_back(obj);
+    position.x = -20;
+    position.y = 0.0;
+    velocity.x = 0.0;
+    PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
+    obj->health = 1e10;
+    u->add_object(obj);
+}
+
+void beam_multi_collision()
+{
+    struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
+    struct Vector3 position = { 10.0, 0.0, 0.0 };
+    struct Vector3 velocity = { -4000.0, 0.0, 0.0 };
+    struct Vector3 up = { 0.0, 0.0, 1.0 };
+    struct Beam* beam;
+
+    beam = (struct Beam*)malloc(sizeof(struct Beam));
+    beams.push_back(beam);
+    Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_WEAP);
+    u->add_object((struct PhysicsObject*)beam);
+
+    double mass = 1.0;
+    double radius = 1.0;
+    struct PhysicsObject* obj;
+
+    obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+    objs.push_back(obj);
+    position.x = 0.0;
+    position.y = 0.0;
+    velocity.x = 0.0;
+    PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+    obj->health = 1e10;
+    u->add_object(obj);
+
+    for (int i = 0 ; i < 10 ; i++)
+    {
+        obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+        objs.push_back(obj);
+        position.x = 0.0;
+        position.z = 1.0 + i * radius;
+        velocity.x = 0.0;
+        PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+        obj->health = 1e10;
+        u->add_object(obj);
+
+        obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+        objs.push_back(obj);
+        position.x = 0.0;
+        position.z = -1.0 - i * radius;
+        velocity.x = 0.0;
+        PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+        obj->health = 1e10;
+        u->add_object(obj);
+    }
 }
 
 void print_positions()
 {
     for (uint32_t i = 0 ; i < objs.size() ; i++)
     {
-        fprintf(stderr, "%g   %g   %g\n", objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+        fprintf(stderr, "PO%u   %g   %g   %g\n", i, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+    }
+
+    for (uint32_t i = 0 ; i < beams.size() ; i++)
+    {
+        fprintf(stderr, "BM%u   %g   %g   %g\n", i, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
     }
 }
 
@@ -171,13 +256,15 @@ int main(int32_t argc, char** argv)
         u->start_sim();
 
         //pool_rack();
-        simple_collision();
+        //simple_collision();
         //fast_collision();
+        //beam_collision();
+        beam_multi_collision();
 
         double frametimes[4];
         uint64_t last_ticks = u->get_ticks();
         uint64_t cur_ticks;
-        
+
 #ifdef CPP11THREADS
         std::chrono::seconds dura(1);
 #endif
@@ -193,7 +280,7 @@ int main(int32_t argc, char** argv)
 #endif
             print_positions();
             last_ticks = cur_ticks;
-            
+
 #ifdef CPP11THREADS
             std::this_thread::sleep_for(dura);
 #else
@@ -204,7 +291,7 @@ int main(int32_t argc, char** argv)
         u->stop_net();
         u->stop_sim();
         delete u;
-        
+
         return 0;
     }
     catch(char* e)

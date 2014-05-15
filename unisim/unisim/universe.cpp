@@ -34,10 +34,10 @@ void gravity(V3* out, PO* big, PO* small)
 void* sim(void* uV)
 {
     Universe* u = (Universe*)uV;
-    
+
     // dt is the amount of time that will pass in the game world during the next tick.
     double dt = u->min_frametime;
-    
+
 #ifdef CPP11THREADS
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     std::chrono::duration<double> elapsed;
@@ -118,7 +118,7 @@ void* sim(void* uV)
         u->total_time += u->rate * dt;
         u->num_ticks++;
     }
-    
+
     return NULL;
 }
 
@@ -202,7 +202,7 @@ void Universe::pause_sim()
 void Universe::stop_sim()
 {
     running = false;
-    
+
 #ifdef CPP11THREADS
     if (sim_thread.joinable())
     {
@@ -244,10 +244,15 @@ uint64_t Universe::get_id()
 void Universe::add_object(PO* obj)
 {
     obj->phys_id = get_id();
-    
+
     LOCK(add_lock);
     added.push_back(obj);
     UNLOCK(add_lock);
+}
+
+void Universe::add_object(B* beam)
+{
+    add_object((PO*)beam);
 }
 
 void Universe::expire(uint64_t phys_id)
@@ -318,25 +323,29 @@ void Universe::tick(double dt)
                 // By comparing the energy to a cutoff, this will help prevent
                 // spurious collision notifications due to physics time step
                 // increments and temporary object intersection.
-                
+
                 // Total energy involved. Both objects 'absorb' the samea amount
                 // of energy from an 'impact effect' perspective.
                 double e = phys_result.e1 + phys_result.e2;
-                
+
                 if ((e < -COLLISION_ENERGY_CUTOFF) || 
                     (e > COLLISION_ENERGY_CUTOFF))
                 {
                     /// @todo Messaging in the tick is going to be back for performance.
-                    fprintf(stderr, "Collision: %u <-> %u (%.15g J)\n", i, j, e);
+#if _WIN64 || __x86_64__
+                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, e);
+#else
+                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, e);
+#endif
                     PhysicsObject_collision(phys_objects[i], phys_objects[j], e, &phys_result.pce1);
                     PhysicsObject_collision(phys_objects[j], phys_objects[i], e, &phys_result.pce2);
-                    
+
                     if (phys_objects[i]->type == PHYSOBJECT_SMART)
                     {
                         //SPO* s = (SPO*)phys_objects[i];
                         /// @todo Smart phys collision messages
                     }
-                    
+
                     if (phys_objects[j]->type == PHYSOBJECT_SMART)
                     {
                         //SPO* s = (SPO*)phys_objects[j];
@@ -344,20 +353,25 @@ void Universe::tick(double dt)
                     }
                 }
             }
+        }
 
-            for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
+        for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
+        {
+            Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
+
+            if (beam_result.t >= 0.0)
             {
-                Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
+                phys_result.pce1.d = beam_result.d;
+                phys_result.pce1.p = beam_result.p;
 
-                if (beam_result.t >= 0.0)
-                {
-                    phys_result.pce1.d = beam_result.d;
-                    phys_result.pce1.p = beam_result.p;
-
-                    PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, &phys_result.pce1);
-                    /// @todo Smarty beam collision messages
-                    /// @todo Beam collision messages
-                }
+#if _WIN64 || __x86_64__
+                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+#else
+                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+#endif
+                PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, &phys_result.pce1);
+                /// @todo Smarty beam collision messages
+                /// @todo Beam collision messages
             }
         }
     }
@@ -372,6 +386,13 @@ void Universe::tick(double dt)
 
         get_grav_pull(&g, phys_objects[i]);
         PhysicsObject_tick(phys_objects[i], &g, dt);
+    }
+
+    // Now tick along each beam while we're here because we won't be
+    // needing to reference them afer this.
+    for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
+    {
+        Beam_tick(beams[bi], dt);
     }
 
     LOCK(expire_lock);
@@ -487,7 +508,7 @@ void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
     {
         // If 
         bool newval = is_big_enough(obj->mass, obj->radius);
-        
+
         // If we're a new attractor, assume that obj->emits_gravity hasn't been changed out of band
         // And just push it onto the list
         if (newval && !obj->emits_gravity)

@@ -391,10 +391,14 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
     V3 proj_s[2];
     Vector3_project_down(&proj_s[0], &p, &b->up);
     Vector3_project_down(&proj_s[1], &p, &b->right);
+    Vector3_normalize(&proj_s[0]);
+    Vector3_normalize(&proj_s[1]);
 
     V3 proj_e[2];
     Vector3_project_down(&proj_e[0], &p2, &b->up);
     Vector3_project_down(&proj_e[1], &p2, &b->right);
+    Vector3_normalize(&proj_e[0]);
+    Vector3_normalize(&proj_e[1]);
 
     // Now dot with the beam direction to get the angles of the rays make. Do it for
     // the original position, and for the position plus the position delta. Projecting
@@ -425,6 +429,9 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
             // If we're out, and coming in
             if (future_b[i])
             {
+                // Note, the delta[i] in the bottom will never be zero.
+                // It might be close to zero for small objects, slow moving objects,
+                // or objects far away from the origin.
                 entering = MAX(entering, ((b->cosines[i] - current[i]) / delta[i]));
             }
             // If we're out and staying out

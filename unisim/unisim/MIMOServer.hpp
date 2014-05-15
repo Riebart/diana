@@ -22,7 +22,7 @@ class MIMOServer
 {
     friend void* serve_SocketThread(void* sock);
     friend void* serve_MIMOServer(void* server);
-    
+
     friend void on_hangup_MIMOServer(MIMOServer* srv, int32_t c);
 
 public:
@@ -53,10 +53,10 @@ private:
     // Map client FDs to their asynchronous reader threads.
     /// @todo Is this even necessary? Network input is serial anyway...
     std::map<int32_t, SocketThread*> threadmap;
-    
+
     THREAD_T server_thread;
     LOCK_T hangup_lock;
-    
+
 };
 
 #endif
