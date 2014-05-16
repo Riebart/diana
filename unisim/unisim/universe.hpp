@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+/// @todo We should probably namespace all of this at some point.
+
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
