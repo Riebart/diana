@@ -1,0 +1,6 @@
+Copy the entire src/google/protobuf folder from the Google Protocol Buffers archive into here.
+
+Technically you only need the headers, but whatever, just bring everything it's easier.
+
+You'll also need to stick the static/dynamic libraries here when compiling under Visual Studio.
+We might be tracking that archive, maybe maybe not.

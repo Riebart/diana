@@ -29,6 +29,7 @@
 #include "physics.hpp"
 #include "MIMOServer.hpp"
 
+#include "universe.pb.h"
 
 /// Contains the code that handles physics simulation and communicating via smart objects
 ///
