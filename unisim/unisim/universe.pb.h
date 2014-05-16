@@ -20,11 +20,9 @@
 #endif
 
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
 namespace universe {
@@ -74,16 +72,6 @@ const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MIN = Me
 const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MAX = MessageWrapper_MessageType_VISDATA;
 const int MessageWrapper_MessageType_MessageType_ARRAYSIZE = MessageWrapper_MessageType_MessageType_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* MessageWrapper_MessageType_descriptor();
-inline const ::std::string& MessageWrapper_MessageType_Name(MessageWrapper_MessageType value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    MessageWrapper_MessageType_descriptor(), value);
-}
-inline bool MessageWrapper_MessageType_Parse(
-    const ::std::string& name, MessageWrapper_MessageType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<MessageWrapper_MessageType>(
-    MessageWrapper_MessageType_descriptor(), name, value);
-}
 enum CollisionMsg_CollisionType {
   CollisionMsg_CollisionType_PHYS_COLLISION = 1,
   CollisionMsg_CollisionType_SCAN_COLLISION = 2,
@@ -95,16 +83,6 @@ const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MIN = 
 const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MAX = CollisionMsg_CollisionType_COMM_COLLISION;
 const int CollisionMsg_CollisionType_CollisionType_ARRAYSIZE = CollisionMsg_CollisionType_CollisionType_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* CollisionMsg_CollisionType_descriptor();
-inline const ::std::string& CollisionMsg_CollisionType_Name(CollisionMsg_CollisionType value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    CollisionMsg_CollisionType_descriptor(), value);
-}
-inline bool CollisionMsg_CollisionType_Parse(
-    const ::std::string& name, CollisionMsg_CollisionType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<CollisionMsg_CollisionType>(
-    CollisionMsg_CollisionType_descriptor(), name, value);
-}
 enum BeamMsg_BeamType {
   BeamMsg_BeamType_SCAN = 1,
   BeamMsg_BeamType_WEAP = 2,
@@ -115,19 +93,9 @@ const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MIN = BeamMsg_BeamType_SCAN;
 const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MAX = BeamMsg_BeamType_COMM;
 const int BeamMsg_BeamType_BeamType_ARRAYSIZE = BeamMsg_BeamType_BeamType_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* BeamMsg_BeamType_descriptor();
-inline const ::std::string& BeamMsg_BeamType_Name(BeamMsg_BeamType value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    BeamMsg_BeamType_descriptor(), value);
-}
-inline bool BeamMsg_BeamType_Parse(
-    const ::std::string& name, BeamMsg_BeamType* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<BeamMsg_BeamType>(
-    BeamMsg_BeamType_descriptor(), name, value);
-}
 // ===================================================================
 
-class MessageWrapper : public ::google::protobuf::Message {
+class MessageWrapper : public ::google::protobuf::MessageLite {
  public:
   MessageWrapper();
   virtual ~MessageWrapper();
@@ -139,24 +107,24 @@ class MessageWrapper : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const MessageWrapper& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const MessageWrapper* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(MessageWrapper* other);
 
   // implements Message ----------------------------------------------
 
   MessageWrapper* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const MessageWrapper& from);
   void MergeFrom(const MessageWrapper& from);
   void Clear();
@@ -167,7 +135,6 @@ class MessageWrapper : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -175,7 +142,7 @@ class MessageWrapper : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -204,17 +171,6 @@ class MessageWrapper : public ::google::protobuf::Message {
     MessageWrapper_MessageType_MessageType_MAX;
   static const int MessageType_ARRAYSIZE =
     MessageWrapper_MessageType_MessageType_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  MessageType_descriptor() {
-    return MessageWrapper_MessageType_descriptor();
-  }
-  static inline const ::std::string& MessageType_Name(MessageType value) {
-    return MessageWrapper_MessageType_Name(value);
-  }
-  static inline bool MessageType_Parse(const ::std::string& name,
-      MessageType* value) {
-    return MessageWrapper_MessageType_Parse(name, value);
-  }
 
   // accessors -------------------------------------------------------
 
@@ -404,8 +360,6 @@ class MessageWrapper : public ::google::protobuf::Message {
   inline void set_has_visdata();
   inline void clear_has_visdata();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::uint64 objectid_;
   ::universe::HelloMsg* hellomsg_;
   ::universe::GoodbyeMsg* goodbyemsg_;
@@ -427,7 +381,11 @@ class MessageWrapper : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -436,7 +394,7 @@ class MessageWrapper : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VectorMsg : public ::google::protobuf::Message {
+class VectorMsg : public ::google::protobuf::MessageLite {
  public:
   VectorMsg();
   virtual ~VectorMsg();
@@ -448,24 +406,24 @@ class VectorMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VectorMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VectorMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VectorMsg* other);
 
   // implements Message ----------------------------------------------
 
   VectorMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VectorMsg& from);
   void MergeFrom(const VectorMsg& from);
   void Clear();
@@ -476,7 +434,6 @@ class VectorMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -484,7 +441,7 @@ class VectorMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -520,8 +477,6 @@ class VectorMsg : public ::google::protobuf::Message {
   inline void set_has_z();
   inline void clear_has_z();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   double x_;
   double y_;
   double z_;
@@ -529,7 +484,11 @@ class VectorMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -538,7 +497,7 @@ class VectorMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class HelloMsg : public ::google::protobuf::Message {
+class HelloMsg : public ::google::protobuf::MessageLite {
  public:
   HelloMsg();
   virtual ~HelloMsg();
@@ -550,24 +509,24 @@ class HelloMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const HelloMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const HelloMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(HelloMsg* other);
 
   // implements Message ----------------------------------------------
 
   HelloMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const HelloMsg& from);
   void MergeFrom(const HelloMsg& from);
   void Clear();
@@ -578,7 +537,6 @@ class HelloMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -586,7 +544,7 @@ class HelloMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -609,15 +567,17 @@ class HelloMsg : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -626,7 +586,7 @@ class HelloMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class PhysPropsMsg : public ::google::protobuf::Message {
+class PhysPropsMsg : public ::google::protobuf::MessageLite {
  public:
   PhysPropsMsg();
   virtual ~PhysPropsMsg();
@@ -638,24 +598,24 @@ class PhysPropsMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const PhysPropsMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const PhysPropsMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(PhysPropsMsg* other);
 
   // implements Message ----------------------------------------------
 
   PhysPropsMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const PhysPropsMsg& from);
   void MergeFrom(const PhysPropsMsg& from);
   void Clear();
@@ -666,7 +626,6 @@ class PhysPropsMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -674,7 +633,7 @@ class PhysPropsMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -759,8 +718,6 @@ class PhysPropsMsg : public ::google::protobuf::Message {
   inline void set_has_radius();
   inline void clear_has_radius();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
@@ -773,7 +730,11 @@ class PhysPropsMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -782,7 +743,7 @@ class PhysPropsMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class GoodbyeMsg : public ::google::protobuf::Message {
+class GoodbyeMsg : public ::google::protobuf::MessageLite {
  public:
   GoodbyeMsg();
   virtual ~GoodbyeMsg();
@@ -794,24 +755,24 @@ class GoodbyeMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const GoodbyeMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const GoodbyeMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(GoodbyeMsg* other);
 
   // implements Message ----------------------------------------------
 
   GoodbyeMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const GoodbyeMsg& from);
   void MergeFrom(const GoodbyeMsg& from);
   void Clear();
@@ -822,7 +783,6 @@ class GoodbyeMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -830,7 +790,7 @@ class GoodbyeMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -853,15 +813,17 @@ class GoodbyeMsg : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -870,7 +832,7 @@ class GoodbyeMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class CollisionMsg : public ::google::protobuf::Message {
+class CollisionMsg : public ::google::protobuf::MessageLite {
  public:
   CollisionMsg();
   virtual ~CollisionMsg();
@@ -882,24 +844,24 @@ class CollisionMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const CollisionMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const CollisionMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(CollisionMsg* other);
 
   // implements Message ----------------------------------------------
 
   CollisionMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const CollisionMsg& from);
   void MergeFrom(const CollisionMsg& from);
   void Clear();
@@ -910,7 +872,6 @@ class CollisionMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -918,7 +879,7 @@ class CollisionMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -936,17 +897,6 @@ class CollisionMsg : public ::google::protobuf::Message {
     CollisionMsg_CollisionType_CollisionType_MAX;
   static const int CollisionType_ARRAYSIZE =
     CollisionMsg_CollisionType_CollisionType_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  CollisionType_descriptor() {
-    return CollisionMsg_CollisionType_descriptor();
-  }
-  static inline const ::std::string& CollisionType_Name(CollisionType value) {
-    return CollisionMsg_CollisionType_Name(value);
-  }
-  static inline bool CollisionType_Parse(const ::std::string& name,
-      CollisionType* value) {
-    return CollisionMsg_CollisionType_Parse(name, value);
-  }
 
   // accessors -------------------------------------------------------
 
@@ -1021,8 +971,6 @@ class CollisionMsg : public ::google::protobuf::Message {
   inline void set_has_commstring();
   inline void clear_has_commstring();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   ::universe::VectorMsg* position_;
@@ -1034,7 +982,11 @@ class CollisionMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1043,7 +995,7 @@ class CollisionMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class SpawnMsg : public ::google::protobuf::Message {
+class SpawnMsg : public ::google::protobuf::MessageLite {
  public:
   SpawnMsg();
   virtual ~SpawnMsg();
@@ -1055,24 +1007,24 @@ class SpawnMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const SpawnMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const SpawnMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(SpawnMsg* other);
 
   // implements Message ----------------------------------------------
 
   SpawnMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const SpawnMsg& from);
   void MergeFrom(const SpawnMsg& from);
   void Clear();
@@ -1083,7 +1035,6 @@ class SpawnMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1091,7 +1042,7 @@ class SpawnMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1176,8 +1127,6 @@ class SpawnMsg : public ::google::protobuf::Message {
   inline void set_has_radius();
   inline void clear_has_radius();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
@@ -1190,7 +1139,11 @@ class SpawnMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1199,7 +1152,7 @@ class SpawnMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VisProps : public ::google::protobuf::Message {
+class VisProps : public ::google::protobuf::MessageLite {
  public:
   VisProps();
   virtual ~VisProps();
@@ -1211,24 +1164,24 @@ class VisProps : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VisProps& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VisProps* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VisProps* other);
 
   // implements Message ----------------------------------------------
 
   VisProps* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VisProps& from);
   void MergeFrom(const VisProps& from);
   void Clear();
@@ -1239,7 +1192,6 @@ class VisProps : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1247,7 +1199,7 @@ class VisProps : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1270,15 +1222,17 @@ class VisProps : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1287,7 +1241,7 @@ class VisProps : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VisDataEnable : public ::google::protobuf::Message {
+class VisDataEnable : public ::google::protobuf::MessageLite {
  public:
   VisDataEnable();
   virtual ~VisDataEnable();
@@ -1299,24 +1253,24 @@ class VisDataEnable : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VisDataEnable& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VisDataEnable* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VisDataEnable* other);
 
   // implements Message ----------------------------------------------
 
   VisDataEnable* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VisDataEnable& from);
   void MergeFrom(const VisDataEnable& from);
   void Clear();
@@ -1327,7 +1281,6 @@ class VisDataEnable : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1335,7 +1288,7 @@ class VisDataEnable : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1358,15 +1311,17 @@ class VisDataEnable : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1375,7 +1330,7 @@ class VisDataEnable : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VisData : public ::google::protobuf::Message {
+class VisData : public ::google::protobuf::MessageLite {
  public:
   VisData();
   virtual ~VisData();
@@ -1387,24 +1342,24 @@ class VisData : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VisData& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VisData* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VisData* other);
 
   // implements Message ----------------------------------------------
 
   VisData* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VisData& from);
   void MergeFrom(const VisData& from);
   void Clear();
@@ -1415,7 +1370,6 @@ class VisData : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1423,7 +1377,7 @@ class VisData : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1446,15 +1400,17 @@ class VisData : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1463,7 +1419,7 @@ class VisData : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VisMetaData : public ::google::protobuf::Message {
+class VisMetaData : public ::google::protobuf::MessageLite {
  public:
   VisMetaData();
   virtual ~VisMetaData();
@@ -1475,24 +1431,24 @@ class VisMetaData : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VisMetaData& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VisMetaData* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VisMetaData* other);
 
   // implements Message ----------------------------------------------
 
   VisMetaData* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VisMetaData& from);
   void MergeFrom(const VisMetaData& from);
   void Clear();
@@ -1503,7 +1459,6 @@ class VisMetaData : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1511,7 +1466,7 @@ class VisMetaData : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1534,15 +1489,17 @@ class VisMetaData : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1551,7 +1508,7 @@ class VisMetaData : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class VisMetaDataEnable : public ::google::protobuf::Message {
+class VisMetaDataEnable : public ::google::protobuf::MessageLite {
  public:
   VisMetaDataEnable();
   virtual ~VisMetaDataEnable();
@@ -1563,24 +1520,24 @@ class VisMetaDataEnable : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const VisMetaDataEnable& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const VisMetaDataEnable* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(VisMetaDataEnable* other);
 
   // implements Message ----------------------------------------------
 
   VisMetaDataEnable* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const VisMetaDataEnable& from);
   void MergeFrom(const VisMetaDataEnable& from);
   void Clear();
@@ -1591,7 +1548,6 @@ class VisMetaDataEnable : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1599,7 +1555,7 @@ class VisMetaDataEnable : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1622,15 +1578,17 @@ class VisMetaDataEnable : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1639,7 +1597,7 @@ class VisMetaDataEnable : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class BeamMsg : public ::google::protobuf::Message {
+class BeamMsg : public ::google::protobuf::MessageLite {
  public:
   BeamMsg();
   virtual ~BeamMsg();
@@ -1651,24 +1609,24 @@ class BeamMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const BeamMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const BeamMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(BeamMsg* other);
 
   // implements Message ----------------------------------------------
 
   BeamMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const BeamMsg& from);
   void MergeFrom(const BeamMsg& from);
   void Clear();
@@ -1679,7 +1637,6 @@ class BeamMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1687,7 +1644,7 @@ class BeamMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1704,17 +1661,6 @@ class BeamMsg : public ::google::protobuf::Message {
     BeamMsg_BeamType_BeamType_MAX;
   static const int BeamType_ARRAYSIZE =
     BeamMsg_BeamType_BeamType_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  BeamType_descriptor() {
-    return BeamMsg_BeamType_descriptor();
-  }
-  static inline const ::std::string& BeamType_Name(BeamType value) {
-    return BeamMsg_BeamType_Name(value);
-  }
-  static inline bool BeamType_Parse(const ::std::string& name,
-      BeamType* value) {
-    return BeamMsg_BeamType_Parse(name, value);
-  }
 
   // accessors -------------------------------------------------------
 
@@ -1818,8 +1764,6 @@ class BeamMsg : public ::google::protobuf::Message {
   inline void set_has_commstring();
   inline void clear_has_commstring();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   ::universe::VectorMsg* origin_;
@@ -1834,7 +1778,11 @@ class BeamMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -1843,7 +1791,7 @@ class BeamMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ScanResultMsg : public ::google::protobuf::Message {
+class ScanResultMsg : public ::google::protobuf::MessageLite {
  public:
   ScanResultMsg();
   virtual ~ScanResultMsg();
@@ -1855,24 +1803,24 @@ class ScanResultMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const ScanResultMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const ScanResultMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(ScanResultMsg* other);
 
   // implements Message ----------------------------------------------
 
   ScanResultMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const ScanResultMsg& from);
   void MergeFrom(const ScanResultMsg& from);
   void Clear();
@@ -1883,7 +1831,6 @@ class ScanResultMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1891,7 +1838,7 @@ class ScanResultMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1990,8 +1937,6 @@ class ScanResultMsg : public ::google::protobuf::Message {
   inline void set_has_extraparms();
   inline void clear_has_extraparms();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   double mass_;
@@ -2005,7 +1950,11 @@ class ScanResultMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -2014,7 +1963,7 @@ class ScanResultMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ScanQueryMsg : public ::google::protobuf::Message {
+class ScanQueryMsg : public ::google::protobuf::MessageLite {
  public:
   ScanQueryMsg();
   virtual ~ScanQueryMsg();
@@ -2026,24 +1975,24 @@ class ScanQueryMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const ScanQueryMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const ScanQueryMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(ScanQueryMsg* other);
 
   // implements Message ----------------------------------------------
 
   ScanQueryMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const ScanQueryMsg& from);
   void MergeFrom(const ScanQueryMsg& from);
   void Clear();
@@ -2054,7 +2003,6 @@ class ScanQueryMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2062,7 +2010,7 @@ class ScanQueryMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2114,8 +2062,6 @@ class ScanQueryMsg : public ::google::protobuf::Message {
   inline void set_has_scandir();
   inline void clear_has_scandir();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   double scanpower_;
@@ -2125,7 +2071,11 @@ class ScanQueryMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -2134,7 +2084,7 @@ class ScanQueryMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class ScanRespMsg : public ::google::protobuf::Message {
+class ScanRespMsg : public ::google::protobuf::MessageLite {
  public:
   ScanRespMsg();
   virtual ~ScanRespMsg();
@@ -2146,24 +2096,24 @@ class ScanRespMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const ScanRespMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const ScanRespMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(ScanRespMsg* other);
 
   // implements Message ----------------------------------------------
 
   ScanRespMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const ScanRespMsg& from);
   void MergeFrom(const ScanRespMsg& from);
   void Clear();
@@ -2174,7 +2124,6 @@ class ScanRespMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2182,7 +2131,7 @@ class ScanRespMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2228,8 +2177,6 @@ class ScanRespMsg : public ::google::protobuf::Message {
   inline void set_has_parms();
   inline void clear_has_parms();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
   ::std::string* parms_;
@@ -2238,7 +2185,11 @@ class ScanRespMsg : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -2247,7 +2198,7 @@ class ScanRespMsg : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class DirectoryMsg : public ::google::protobuf::Message {
+class DirectoryMsg : public ::google::protobuf::MessageLite {
  public:
   DirectoryMsg();
   virtual ~DirectoryMsg();
@@ -2259,24 +2210,24 @@ class DirectoryMsg : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const DirectoryMsg& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const DirectoryMsg* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(DirectoryMsg* other);
 
   // implements Message ----------------------------------------------
 
   DirectoryMsg* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const DirectoryMsg& from);
   void MergeFrom(const DirectoryMsg& from);
   void Clear();
@@ -2287,7 +2238,6 @@ class DirectoryMsg : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2295,7 +2245,7 @@ class DirectoryMsg : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2318,15 +2268,17 @@ class DirectoryMsg : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* name_;
   static ::std::string* _default_name_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_universe_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_universe_2eproto();
+  #endif
   friend void protobuf_AssignDesc_universe_2eproto();
   friend void protobuf_ShutdownFile_universe_2eproto();
 
@@ -2400,7 +2352,11 @@ inline void MessageWrapper::clear_hellomsg() {
   clear_has_hellomsg();
 }
 inline const ::universe::HelloMsg& MessageWrapper::hellomsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return hellomsg_ != NULL ? *hellomsg_ : *default_instance().hellomsg_;
+#else
   return hellomsg_ != NULL ? *hellomsg_ : *default_instance_->hellomsg_;
+#endif
 }
 inline ::universe::HelloMsg* MessageWrapper::mutable_hellomsg() {
   set_has_hellomsg();
@@ -2438,7 +2394,11 @@ inline void MessageWrapper::clear_goodbyemsg() {
   clear_has_goodbyemsg();
 }
 inline const ::universe::GoodbyeMsg& MessageWrapper::goodbyemsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance().goodbyemsg_;
+#else
   return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance_->goodbyemsg_;
+#endif
 }
 inline ::universe::GoodbyeMsg* MessageWrapper::mutable_goodbyemsg() {
   set_has_goodbyemsg();
@@ -2476,7 +2436,11 @@ inline void MessageWrapper::clear_physpropsmsg() {
   clear_has_physpropsmsg();
 }
 inline const ::universe::PhysPropsMsg& MessageWrapper::physpropsmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance().physpropsmsg_;
+#else
   return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance_->physpropsmsg_;
+#endif
 }
 inline ::universe::PhysPropsMsg* MessageWrapper::mutable_physpropsmsg() {
   set_has_physpropsmsg();
@@ -2514,7 +2478,11 @@ inline void MessageWrapper::clear_collisionmsg() {
   clear_has_collisionmsg();
 }
 inline const ::universe::CollisionMsg& MessageWrapper::collisionmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance().collisionmsg_;
+#else
   return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance_->collisionmsg_;
+#endif
 }
 inline ::universe::CollisionMsg* MessageWrapper::mutable_collisionmsg() {
   set_has_collisionmsg();
@@ -2552,7 +2520,11 @@ inline void MessageWrapper::clear_spawnmsg() {
   clear_has_spawnmsg();
 }
 inline const ::universe::SpawnMsg& MessageWrapper::spawnmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance().spawnmsg_;
+#else
   return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance_->spawnmsg_;
+#endif
 }
 inline ::universe::SpawnMsg* MessageWrapper::mutable_spawnmsg() {
   set_has_spawnmsg();
@@ -2590,7 +2562,11 @@ inline void MessageWrapper::clear_beammsg() {
   clear_has_beammsg();
 }
 inline const ::universe::BeamMsg& MessageWrapper::beammsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return beammsg_ != NULL ? *beammsg_ : *default_instance().beammsg_;
+#else
   return beammsg_ != NULL ? *beammsg_ : *default_instance_->beammsg_;
+#endif
 }
 inline ::universe::BeamMsg* MessageWrapper::mutable_beammsg() {
   set_has_beammsg();
@@ -2628,7 +2604,11 @@ inline void MessageWrapper::clear_scanresultmsg() {
   clear_has_scanresultmsg();
 }
 inline const ::universe::ScanResultMsg& MessageWrapper::scanresultmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance().scanresultmsg_;
+#else
   return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance_->scanresultmsg_;
+#endif
 }
 inline ::universe::ScanResultMsg* MessageWrapper::mutable_scanresultmsg() {
   set_has_scanresultmsg();
@@ -2666,7 +2646,11 @@ inline void MessageWrapper::clear_scanquerymsg() {
   clear_has_scanquerymsg();
 }
 inline const ::universe::ScanQueryMsg& MessageWrapper::scanquerymsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance().scanquerymsg_;
+#else
   return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance_->scanquerymsg_;
+#endif
 }
 inline ::universe::ScanQueryMsg* MessageWrapper::mutable_scanquerymsg() {
   set_has_scanquerymsg();
@@ -2704,7 +2688,11 @@ inline void MessageWrapper::clear_scanrespmsg() {
   clear_has_scanrespmsg();
 }
 inline const ::universe::ScanRespMsg& MessageWrapper::scanrespmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance().scanrespmsg_;
+#else
   return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance_->scanrespmsg_;
+#endif
 }
 inline ::universe::ScanRespMsg* MessageWrapper::mutable_scanrespmsg() {
   set_has_scanrespmsg();
@@ -2742,7 +2730,11 @@ inline void MessageWrapper::clear_directorymsg() {
   clear_has_directorymsg();
 }
 inline const ::universe::DirectoryMsg& MessageWrapper::directorymsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return directorymsg_ != NULL ? *directorymsg_ : *default_instance().directorymsg_;
+#else
   return directorymsg_ != NULL ? *directorymsg_ : *default_instance_->directorymsg_;
+#endif
 }
 inline ::universe::DirectoryMsg* MessageWrapper::mutable_directorymsg() {
   set_has_directorymsg();
@@ -2780,7 +2772,11 @@ inline void MessageWrapper::clear_visprops() {
   clear_has_visprops();
 }
 inline const ::universe::VisProps& MessageWrapper::visprops() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return visprops_ != NULL ? *visprops_ : *default_instance().visprops_;
+#else
   return visprops_ != NULL ? *visprops_ : *default_instance_->visprops_;
+#endif
 }
 inline ::universe::VisProps* MessageWrapper::mutable_visprops() {
   set_has_visprops();
@@ -2818,7 +2814,11 @@ inline void MessageWrapper::clear_visdataenable() {
   clear_has_visdataenable();
 }
 inline const ::universe::VisDataEnable& MessageWrapper::visdataenable() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return visdataenable_ != NULL ? *visdataenable_ : *default_instance().visdataenable_;
+#else
   return visdataenable_ != NULL ? *visdataenable_ : *default_instance_->visdataenable_;
+#endif
 }
 inline ::universe::VisDataEnable* MessageWrapper::mutable_visdataenable() {
   set_has_visdataenable();
@@ -2856,7 +2856,11 @@ inline void MessageWrapper::clear_vismetadataenable() {
   clear_has_vismetadataenable();
 }
 inline const ::universe::VisMetaDataEnable& MessageWrapper::vismetadataenable() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance().vismetadataenable_;
+#else
   return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance_->vismetadataenable_;
+#endif
 }
 inline ::universe::VisMetaDataEnable* MessageWrapper::mutable_vismetadataenable() {
   set_has_vismetadataenable();
@@ -2894,7 +2898,11 @@ inline void MessageWrapper::clear_vismetadata() {
   clear_has_vismetadata();
 }
 inline const ::universe::VisMetaData& MessageWrapper::vismetadata() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return vismetadata_ != NULL ? *vismetadata_ : *default_instance().vismetadata_;
+#else
   return vismetadata_ != NULL ? *vismetadata_ : *default_instance_->vismetadata_;
+#endif
 }
 inline ::universe::VisMetaData* MessageWrapper::mutable_vismetadata() {
   set_has_vismetadata();
@@ -2932,7 +2940,11 @@ inline void MessageWrapper::clear_visdata() {
   clear_has_visdata();
 }
 inline const ::universe::VisData& MessageWrapper::visdata() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return visdata_ != NULL ? *visdata_ : *default_instance().visdata_;
+#else
   return visdata_ != NULL ? *visdata_ : *default_instance_->visdata_;
+#endif
 }
 inline ::universe::VisData* MessageWrapper::mutable_visdata() {
   set_has_visdata();
@@ -3210,7 +3222,11 @@ inline void PhysPropsMsg::clear_position() {
   clear_has_position();
 }
 inline const ::universe::VectorMsg& PhysPropsMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return position_ != NULL ? *position_ : *default_instance().position_;
+#else
   return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
 }
 inline ::universe::VectorMsg* PhysPropsMsg::mutable_position() {
   set_has_position();
@@ -3248,7 +3264,11 @@ inline void PhysPropsMsg::clear_velocity() {
   clear_has_velocity();
 }
 inline const ::universe::VectorMsg& PhysPropsMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
 }
 inline ::universe::VectorMsg* PhysPropsMsg::mutable_velocity() {
   set_has_velocity();
@@ -3286,7 +3306,11 @@ inline void PhysPropsMsg::clear_orientation() {
   clear_has_orientation();
 }
 inline const ::universe::VectorMsg& PhysPropsMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
 }
 inline ::universe::VectorMsg* PhysPropsMsg::mutable_orientation() {
   set_has_orientation();
@@ -3324,7 +3348,11 @@ inline void PhysPropsMsg::clear_thrust() {
   clear_has_thrust();
 }
 inline const ::universe::VectorMsg& PhysPropsMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
 }
 inline ::universe::VectorMsg* PhysPropsMsg::mutable_thrust() {
   set_has_thrust();
@@ -3532,7 +3560,11 @@ inline void CollisionMsg::clear_position() {
   clear_has_position();
 }
 inline const ::universe::VectorMsg& CollisionMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return position_ != NULL ? *position_ : *default_instance().position_;
+#else
   return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
 }
 inline ::universe::VectorMsg* CollisionMsg::mutable_position() {
   set_has_position();
@@ -3570,7 +3602,11 @@ inline void CollisionMsg::clear_direction() {
   clear_has_direction();
 }
 inline const ::universe::VectorMsg& CollisionMsg::direction() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return direction_ != NULL ? *direction_ : *default_instance().direction_;
+#else
   return direction_ != NULL ? *direction_ : *default_instance_->direction_;
+#endif
 }
 inline ::universe::VectorMsg* CollisionMsg::mutable_direction() {
   set_has_direction();
@@ -3819,7 +3855,11 @@ inline void SpawnMsg::clear_position() {
   clear_has_position();
 }
 inline const ::universe::VectorMsg& SpawnMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return position_ != NULL ? *position_ : *default_instance().position_;
+#else
   return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
 }
 inline ::universe::VectorMsg* SpawnMsg::mutable_position() {
   set_has_position();
@@ -3857,7 +3897,11 @@ inline void SpawnMsg::clear_velocity() {
   clear_has_velocity();
 }
 inline const ::universe::VectorMsg& SpawnMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
 }
 inline ::universe::VectorMsg* SpawnMsg::mutable_velocity() {
   set_has_velocity();
@@ -3895,7 +3939,11 @@ inline void SpawnMsg::clear_orientation() {
   clear_has_orientation();
 }
 inline const ::universe::VectorMsg& SpawnMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
 }
 inline ::universe::VectorMsg* SpawnMsg::mutable_orientation() {
   set_has_orientation();
@@ -3933,7 +3981,11 @@ inline void SpawnMsg::clear_thrust() {
   clear_has_thrust();
 }
 inline const ::universe::VectorMsg& SpawnMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
 }
 inline ::universe::VectorMsg* SpawnMsg::mutable_thrust() {
   set_has_thrust();
@@ -4437,7 +4489,11 @@ inline void BeamMsg::clear_origin() {
   clear_has_origin();
 }
 inline const ::universe::VectorMsg& BeamMsg::origin() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return origin_ != NULL ? *origin_ : *default_instance().origin_;
+#else
   return origin_ != NULL ? *origin_ : *default_instance_->origin_;
+#endif
 }
 inline ::universe::VectorMsg* BeamMsg::mutable_origin() {
   set_has_origin();
@@ -4475,7 +4531,11 @@ inline void BeamMsg::clear_velocity() {
   clear_has_velocity();
 }
 inline const ::universe::VectorMsg& BeamMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
 }
 inline ::universe::VectorMsg* BeamMsg::mutable_velocity() {
   set_has_velocity();
@@ -4513,7 +4573,11 @@ inline void BeamMsg::clear_up() {
   clear_has_up();
 }
 inline const ::universe::VectorMsg& BeamMsg::up() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return up_ != NULL ? *up_ : *default_instance().up_;
+#else
   return up_ != NULL ? *up_ : *default_instance_->up_;
+#endif
 }
 inline ::universe::VectorMsg* BeamMsg::mutable_up() {
   set_has_up();
@@ -4806,7 +4870,11 @@ inline void ScanResultMsg::clear_position() {
   clear_has_position();
 }
 inline const ::universe::VectorMsg& ScanResultMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return position_ != NULL ? *position_ : *default_instance().position_;
+#else
   return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
 }
 inline ::universe::VectorMsg* ScanResultMsg::mutable_position() {
   set_has_position();
@@ -4844,7 +4912,11 @@ inline void ScanResultMsg::clear_velocity() {
   clear_has_velocity();
 }
 inline const ::universe::VectorMsg& ScanResultMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
   return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
 }
 inline ::universe::VectorMsg* ScanResultMsg::mutable_velocity() {
   set_has_velocity();
@@ -4882,7 +4954,11 @@ inline void ScanResultMsg::clear_orientation() {
   clear_has_orientation();
 }
 inline const ::universe::VectorMsg& ScanResultMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
   return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
 }
 inline ::universe::VectorMsg* ScanResultMsg::mutable_orientation() {
   set_has_orientation();
@@ -4920,7 +4996,11 @@ inline void ScanResultMsg::clear_thrust() {
   clear_has_thrust();
 }
 inline const ::universe::VectorMsg& ScanResultMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
   return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
 }
 inline ::universe::VectorMsg* ScanResultMsg::mutable_thrust() {
   set_has_thrust();
@@ -5168,7 +5248,11 @@ inline void ScanQueryMsg::clear_scandir() {
   clear_has_scandir();
 }
 inline const ::universe::VectorMsg& ScanQueryMsg::scandir() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return scandir_ != NULL ? *scandir_ : *default_instance().scandir_;
+#else
   return scandir_ != NULL ? *scandir_ : *default_instance_->scandir_;
+#endif
 }
 inline ::universe::VectorMsg* ScanQueryMsg::mutable_scandir() {
   set_has_scandir();
@@ -5435,27 +5519,6 @@ inline void DirectoryMsg::set_allocated_name(::std::string* name) {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace universe
-
-#ifndef SWIG
-namespace google {
-namespace protobuf {
-
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::universe::MessageWrapper_MessageType>() {
-  return ::universe::MessageWrapper_MessageType_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::universe::CollisionMsg_CollisionType>() {
-  return ::universe::CollisionMsg_CollisionType_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::universe::BeamMsg_BeamType>() {
-  return ::universe::BeamMsg_BeamType_descriptor();
-}
-
-}  // namespace google
-}  // namespace protobuf
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

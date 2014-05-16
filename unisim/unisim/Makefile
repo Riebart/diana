@@ -1,6 +1,5 @@
 CXX=g++
-#CFLAGS=-std=c++0x -I . -O0 -Wall -g -pthread -DCPP11THREADS
-CFLAGS=-std=c++0x -I . -O3 -Wall -g -pthread
+CFLAGS=-std=c++0x -I . -O2 -Wall -g -pthread -fopenmp
 
 all: unisim-bin
 
@@ -11,7 +10,7 @@ clean:
 # 	$(CXX) $(CFLAGS) -shared -fPIC -o $@ $<
 	
 diana-shared:
-	$(CXX) $(CFLAGS) *.cpp -o libdiana.so -fPIC -shared
+	$(CXX) $(CFLAGS) vector.cpp physics.cpp universe.cpp MIMOServer.cpp unisim.cpp universe.pb.cc google/linux-x64/libprotobuf-lite.a -o libdiana.so -fPIC -shared
 
 unisim-bin:
-	$(CXX) $(CFLAGS) *.cpp -o unisim
+	$(CXX) $(CFLAGS) vector.cpp physics.cpp universe.cpp MIMOServer.cpp unisim.cpp universe.pb.cc google/linux-x64/libprotobuf-lite.a -o unisim
