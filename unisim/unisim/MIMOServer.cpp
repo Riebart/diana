@@ -516,7 +516,12 @@ void MIMOServer::start()
     {
 #ifdef WIN32
         WSADATA wsad;
-        WSAStartup(22, &wsad);
+        int ret = WSAStartup(22, &wsad);
+        if (ret != 0)
+        {
+            fprintf(stderr, "Unable to initialize Windows Sockets runtime (%d)\n", ret);
+            exit(EXIT_FAILURE);
+        }
 #endif
 
         server4 = listen4(port, backlog, INADDR_ANY);

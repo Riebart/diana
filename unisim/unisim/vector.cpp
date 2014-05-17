@@ -17,7 +17,6 @@ V3* Vector3_alloc(int32_t n)
     return (V3*)malloc(sizeof(V3) * n);
 }
 
-
 V3* Vector3_clone(V3* v)
 {
     V3* r = Vector3_alloc();
