@@ -8,6 +8,15 @@ struct Vector3
     double x, y, z;
 };
 
+/// Represents an axis-aligned bounding box
+struct AABB
+{
+    /// Lower coordinates
+    struct Vector3 l;
+    /// Upper coordinates
+    struct Vector3 u;
+};
+
 struct Vector3* Vector3_alloc(int32_t n  = 1);
 struct Vector3* Vector3_clone(struct Vector3* v);
 
@@ -44,5 +53,12 @@ struct Vector3* Vector3_easy_look_at2(struct Vector3* forward, struct Vector3* u
 void Vector3_rotate_around(struct Vector3* v, double x, double y, double z, double angle);
 void Vector3_rotate_around(struct Vector3* v, struct Vector3* axis, double angle);
 void Vector3_apply_ypr(struct Vector3* forward, struct Vector3* up, struct Vector3* right, struct Vector3* angles);
+
+int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b);
+int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b, int32_t d);
+int32_t Vector3_compare_aabbX(struct AABB* a, struct AABB* b);
+int32_t Vector3_compare_aabbY(struct AABB* a, struct AABB* b);
+int32_t Vector3_compare_aabbZ(struct AABB* a, struct AABB* b);
+bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b);
 
 #endif

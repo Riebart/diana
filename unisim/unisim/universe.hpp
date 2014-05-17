@@ -137,6 +137,7 @@ private:
     uint64_t get_id();
     void broadcast_vis_data();
     void tick(double dt);
+    void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
     void handle_message(int32_t c);
     void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
@@ -149,6 +150,12 @@ private:
     std::vector<struct Beam*> beams;
     std::vector<uint64_t> expired;
     std::vector<struct PhysicsObject*> added;
+
+    /// Hold a re-arranged list of indices that sort the physics objects by
+    /// the start of their bounding boxes, as computed and stored in boxes.
+    std::vector<struct AABB*> boxes;
+    uint64_t num_boxes_updated;
+
     /// Keeps track of the queries from SCAN beam collisions that are in progress.
     /// When a scan beam collides with a smart objects, certain information can
     /// be reported, but that requires a query to the OSim. These queries are

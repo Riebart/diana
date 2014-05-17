@@ -151,6 +151,7 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject*
 void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, struct PhysCollisionEffect* args);
 void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
 void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, struct PhysCollisionEffect* pce);
+void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
 void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 

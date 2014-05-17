@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define SIGN(x) (((x) < 0) ? -1 : (((x) > 0) ? 1 : 0))
 #define CHOP_CUTOFF 1e-50
 
 typedef struct Vector3 V3;
@@ -253,4 +254,112 @@ void Vector3_apply_ypr(V3* forward, V3* up, V3* right, V3* angles)
 
     Vector3_rotate_around(right, forward, angles->z);
     Vector3_rotate_around(up, forward, angles->z);
+}
+
+/// Compares two AABBs, and returns negative if the first comes before the second, positive if vice versa, and zero otherwise.
+int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b)
+{
+    double c;
+    
+    c = a->l.x - b->l.x;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+
+    c = a->l.y - b->l.y;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+
+    c = a->l.z - b->l.z;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+
+    return 0;
+}
+
+int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b, int32_t d)
+{
+    switch (d)
+    {
+    case 0:
+        return Vector3_compare_aabbX(a, b);
+    case 1:
+        return Vector3_compare_aabbY(a, b);
+    case 2:
+        return Vector3_compare_aabbZ(a, b);
+    default:
+        return 0;
+    }
+}
+
+int32_t Vector3_compare_aabbX(struct AABB* a, struct AABB* b)
+{
+    double c;
+    
+    c = a->l.x - b->l.x;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int32_t Vector3_compare_aabbY(struct AABB* a, struct AABB* b)
+{
+    double c;
+    
+    c = a->l.y - b->l.y;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int32_t Vector3_compare_aabbZ(struct AABB* a, struct AABB* b)
+{
+    double c;
+    
+    c = a->l.z - b->l.z;
+    if (!Vector3_almost_zeroS(c))
+    {
+        return SIGN(c);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b)
+{
+    // Since the primary use is going to be when a starts before b
+    // First check to see if b->l is 'less than' a->u
+    // We need that to be true for all components.
+    bool c = (a->u.x >= b->l.x);
+    c &= (a->u.y >= b->l.y);
+    c &= (a->u.z >= b->l.z);
+
+    if (c)
+    {
+        return true;
+    }
+
+    // The alternative is that a->l is less than b->u
+    c = (b->u.x >= a->l.x);
+    c &= (b->u.y >= a->l.y);
+    c &= (b->u.z >= a->l.z);
+
+    return c;
 }

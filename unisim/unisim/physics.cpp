@@ -277,7 +277,42 @@ void PhysicsObject_resolve_damage(PO* obj, double energy)
 void PhysicsObject_resolve_phys_collision(PO* obj, double energy, struct PhysCollisionEffect* pce)
 {
     Vector3_add(&obj->velocity, &pce->t, &pce->n);
-    //Vector3_add(&obj->velocity, &obj->velocity, &pce->n);
+}
+
+void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
+{
+    if (obj->velocity.x < 0)
+    {
+        b->l.x = obj->position.x + dt * obj->velocity.x;
+        b->u.x = obj->position.x;
+    }
+    else
+    {
+        b->u.x = obj->position.x + dt * obj->velocity.x;
+        b->l.x = obj->position.x;
+    }
+
+    if (obj->velocity.y < 0)
+    {
+        b->l.y = obj->position.y + dt * obj->velocity.y;
+        b->u.y = obj->position.y;
+    }
+    else
+    {
+        b->u.y = obj->position.y + dt * obj->velocity.y;
+        b->l.y = obj->position.y;
+    }
+
+    if (obj->velocity.z < 0)
+    {
+        b->l.z = obj->position.z + dt * obj->velocity.z;
+        b->u.z = obj->position.z;
+    }
+    else
+    {
+        b->u.z = obj->position.z + dt * obj->velocity.z;
+        b->l.z = obj->position.z;
+    }
 }
 
 /// @todo fix variable and argument names. They aren't types.

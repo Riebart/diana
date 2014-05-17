@@ -157,6 +157,8 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     game_frametime = 0.0;
     vis_frametime = 0.0;
 
+    num_boxes_updated = 0;
+
     total_time = 0.0;
     num_ticks = 0;
     total_objs = 1;
@@ -292,7 +294,55 @@ void Universe::get_grav_pull(V3* g, PO* obj)
     }
 }
 
+/// Get the next collision, as ordered by time
+void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_result)
+{
+    // Employs gnome sort to sort the lists, computing the bounding boxes along the way
+    // http://en.wikipedia.org/wiki/Gnome_sort
 
+    struct AABB* box_swap;
+    uint64_t max_so_far = 0;
+
+    // This gets recomputed every time even if we call it multiple times per tick, but whatever.
+
+    for (int32_t d = 0 ; d < 2 ; d++)
+    {
+        PhysicsObject_estimate_aabb(phys_objects[0], boxes[0], dt);
+        for (uint64_t i = 1 ; i < phys_objects.size() ; i++)
+        {
+            if (i > max_so_far)
+            {
+                // We only need to compute the bounding boxes on the first pass.
+                if (d == 0)
+                {
+                    PhysicsObject_estimate_aabb(phys_objects[i], boxes[i], dt);
+                }
+
+                max_so_far = i;
+            }
+
+            /// @todo Could the AABB comparisons be costly?
+
+            // Compare to the previous one if we're not at the first one.
+            int c = Vector3_compare_aabb(boxes[i], boxes[i-1], d);
+
+            if (c < 0)
+            {
+                box_swap = boxes[i];
+                boxes[i] = boxes[i-1];
+                boxes[i-1] = box_swap;
+            
+                // And then step back if we're not at the start.
+                i -= (i > 1);
+            }
+            else
+            {
+                // Jump back to before we started going backwards swapping.
+                i = max_so_far;
+            }
+        }
+    }
+}
 
 void Universe::tick(double dt)
 {
@@ -501,6 +551,10 @@ void Universe::tick(double dt)
         default:
             break;
         }
+
+        // Allocate and push back a bounding box, as well as index
+        // members to each of the sorting vectors.
+        boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
     }
     added.clear();
     UNLOCK(add_lock);
