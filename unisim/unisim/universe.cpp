@@ -285,7 +285,7 @@ void Universe::handle_message(int32_t c)
 void Universe::get_grav_pull(V3* g, PO* obj)
 {
     V3 cg;
-    for (uint32_t i = 0 ; i < attractors.size() ; i++)
+    for (size_t i = 0 ; i < attractors.size() ; i++)
     {
         gravity(&cg, attractors[i], obj);
         Vector3_add(g, &cg);
@@ -306,9 +306,9 @@ void Universe::tick(double dt)
     /// @todo Have some concept of collision destruction criteria here.
     struct PhysCollisionResult phys_result;
     struct BeamCollisionResult beam_result;
-    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (size_t i = 0 ; i < phys_objects.size() ; i++)
     {
-        for (uint32_t j = i + 1 ; j < phys_objects.size() ; j++)
+        for (size_t j = i + 1 ; j < phys_objects.size() ; j++)
         {
             // Return from a phys-phys collision is
             //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
@@ -355,7 +355,7 @@ void Universe::tick(double dt)
             }
         }
 
-        for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
+        for (size_t bi = 0 ; bi < beams.size() ; bi++)
         {
             Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
 
@@ -378,7 +378,7 @@ void Universe::tick(double dt)
 
     // Now tick along each object
     V3 g;
-    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (size_t i = 0 ; i < phys_objects.size() ; i++)
     {
         g.x = 0.0;
         g.y = 0.0;
@@ -390,7 +390,7 @@ void Universe::tick(double dt)
 
     // Now tick along each beam while we're here because we won't be
     // needing to reference them afer this.
-    for (uint32_t bi = 0 ; bi < beams.size() ; bi++)
+    for (size_t bi = 0 ; bi < beams.size() ; bi++)
     {
         Beam_tick(beams[bi], dt);
     }
@@ -402,7 +402,7 @@ void Universe::tick(double dt)
     // That might have a big constant though
     /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
     bool backtrack = false;
-    for (uint32_t i = 0 ; i < phys_objects.size() ; i++)
+    for (size_t i = 0 ; i < phys_objects.size() ; i++)
     {
         if (backtrack)
         {
@@ -410,14 +410,14 @@ void Universe::tick(double dt)
             backtrack = false;
         }
 
-        for (uint32_t j = 0 ; j < expired.size() ; j++)
+        for (size_t j = 0 ; j < expired.size() ; j++)
         {
             if (expired[j] == phys_objects[i]->phys_id)
             {
                 // If it's a beam...
                 if (phys_objects[i]->type >= BEAM_COMM)
                 {
-                    for (uint32_t k = 0 ; k < beams.size() ; k++)
+                    for (size_t k = 0 ; k < beams.size() ; k++)
                     {
                         if (beams[k]->phys_id == expired[j])
                         {
@@ -435,7 +435,7 @@ void Universe::tick(double dt)
 
                     if (phys_objects[i]->emits_gravity)
                     {
-                        for (uint32_t k = 0 ; k < attractors.size() ; k++)
+                        for (size_t k = 0 ; k < attractors.size() ; k++)
                         {
                             if (attractors[k]->phys_id == expired[j])
                             {
@@ -457,7 +457,7 @@ void Universe::tick(double dt)
 
     LOCK(add_lock);
     // Handle added queue
-    for (uint32_t i = 0 ; i < added.size() ; i++)
+    for (size_t i = 0 ; i < added.size() ; i++)
     {
         switch (added[i]->type)
         {
@@ -517,7 +517,7 @@ void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
         }
         else if (!newval && obj->emits_gravity)
         {
-            for (uint32_t i = 0 ; i < attractors.size() ; i++)
+            for (size_t i = 0 ; i < attractors.size() ; i++)
             {
                 if (attractors[i]->phys_id == obj->phys_id)
                 {
@@ -531,7 +531,7 @@ void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
     {
         // Here we have no idea what oldval was, so we need to iterate every time.
         bool in = false;
-        for (uint32_t i = 0 ; i < attractors.size() ; i++)
+        for (size_t i = 0 ; i < attractors.size() ; i++)
         {
             if (attractors[i]->phys_id == obj->phys_id)
             {

@@ -237,9 +237,9 @@ void* serve_MIMOServer(void* serverV)
         if (server->hangups.size() > 0)
         {
             LOCK(server->hangup_lock);
-            uint32_t hungup = server->inputs.size();
+            size_t hungup = server->inputs.size();
 
-            for (uint32_t i = 0 ; i < server->hangups.size() ; i++)
+            for (size_t i = 0 ; i < server->hangups.size() ; i++)
             {
                 server->hangup(server->hangups[i]);
             }
@@ -262,7 +262,7 @@ void* serve_MIMOServer(void* serverV)
 
             for (uint32_t i = 0 ; i < fds.fd_count ; i++)
             {
-                int32_t curfd = fds.fd_array[i];
+                SOCKET curfd = fds.fd_array[i];
                 int32_t sockoptslen = 4;
 #else
             socklen_t addrlen = sizeof(struct sockaddr_storage);
@@ -293,7 +293,7 @@ void* serve_MIMOServer(void* serverV)
                     continue;
                 }
 
-                int32_t c = accept(curfd, (struct sockaddr*)&addr, &addrlen);
+                SOCKET c = accept(curfd, (struct sockaddr*)&addr, &addrlen);
                 if (c == INVALID_SOCKET)
                 {
                     nready = GET_ERROR;
@@ -401,7 +401,7 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, in
 {
     int32_t ret;
 
-    int32_t server = socket(family, SOCK_STREAM, IPPROTO_TCP);
+    SOCKET server = socket(family, SOCK_STREAM, IPPROTO_TCP);
     if(server == INVALID_SOCKET)
     {
         ret = GET_ERROR;
@@ -592,10 +592,9 @@ void MIMOServer::stop()
             fprintf(stderr, "Hanging up %llu %sclients%s\n", (uint64_t)inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
 #endif
 
-            for (uint32_t i = 0 ; i < inputs.size() ; i++)
+            for (size_t i = 0 ; i < inputs.size() ; i++)
             {
                 hangup(inputs[i]);
-                //                 i--;
             }
 
             stubborn = true;
@@ -620,7 +619,7 @@ void MIMOServer::hangup(int32_t c)
 
     // @todo The python checks for already hung up clients,
     // but we'll just arrange for that not to happen.
-    for (uint32_t i = 0 ; i < inputs.size() ; i++)
+    for (size_t i = 0 ; i < inputs.size() ; i++)
     {
         if (inputs[i] == c)
         {
