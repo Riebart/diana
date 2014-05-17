@@ -294,52 +294,106 @@ void Universe::get_grav_pull(V3* g, PO* obj)
     }
 }
 
+void Universe::get_collisions()
+{
+    struct AABB* a;
+    struct AABB* b;
+
+    for (size_t i = 0 ; i < sorted.size() - 1 ; i++)
+    {
+        // In order for a full intersection to be possible, there has to be intersection
+        // of the AABBs in all three dimensions. The sorted list contains the objects'
+        //
+        // AABBs sorted by their lowest coordinate in the X dimensions.
+        // We can test for potential intersections, first pruning by intersection along
+        // the X axis.
+        //
+        // First test to see if the X projects intersect. If they do, then test the others.
+
+        a = boxes[sorted[i]];
+        for (size_t j = i + 1 ; j < sorted.size() ; j++)
+        {
+            b = boxes[sorted[j]];
+
+            double d;
+            d = a->u.x - b->l.x;
+
+            // This is to text if they intersect/touch in X
+            // It's simpler here, because we have a guarantee (thanks to sorting)
+            // about the relative positions of the lower endpoints of the intervals so
+            // we don't need to worry about those here.
+            if (Vector3_almost_zeroS(d) || (d > 0))
+            {
+                // Now do a full test on the Y axis.
+                if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
+                {
+                    continue;
+                }
+
+                // And then a full test on Z
+                if (!Vector3_intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
+                {
+                    continue;
+                }
+
+                // If we succeeded on both, count this as a potential collision for
+                // honest-to-goodness testing.
+                potentials.push_back(phys_objects[sorted[i]]);
+                potentials.push_back(phys_objects[sorted[j]]);
+            }
+            else
+            {
+                // If we fail that X comparison, we know that we will fail for every object
+                // 'after', so we can bail on the loop.
+                break;
+            }
+        }
+    }
+}
+
 /// Get the next collision, as ordered by time
 void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_result)
+{
+}
+
+void Universe::sort_aabb(double dt)
 {
     // Employs gnome sort to sort the lists, computing the bounding boxes along the way
     // http://en.wikipedia.org/wiki/Gnome_sort
 
-    struct AABB* box_swap;
-    uint64_t max_so_far = 0;
+    uint64_t box_swap;
+    size_t max_so_far = 0;
 
-    // This gets recomputed every time even if we call it multiple times per tick, but whatever.
+    PhysicsObject_estimate_aabb(phys_objects[sorted[0]], boxes[sorted[0]], dt);
 
-    for (int32_t d = 0 ; d < 2 ; d++)
+    for (size_t i = 1 ; i < phys_objects.size() ; i++)
     {
-        PhysicsObject_estimate_aabb(phys_objects[0], boxes[0], dt);
-        for (uint64_t i = 1 ; i < phys_objects.size() ; i++)
+        if (i > max_so_far)
         {
-            if (i > max_so_far)
-            {
-                // We only need to compute the bounding boxes on the first pass.
-                if (d == 0)
-                {
-                    PhysicsObject_estimate_aabb(phys_objects[i], boxes[i], dt);
-                }
+            // We only need to compute the bounding boxes on the first pass.
+            PhysicsObject_estimate_aabb(phys_objects[sorted[i]], boxes[sorted[i]], dt);
 
-                max_so_far = i;
-            }
+            max_so_far = i;
+        }
 
-            /// @todo Could the AABB comparisons be costly?
+        /// @todo Could the AABB comparisons be costly?
 
-            // Compare to the previous one if we're not at the first one.
-            int c = Vector3_compare_aabb(boxes[i], boxes[i-1], d);
+        // Compare to the previous one if we're not at the first one.
+        int c = Vector3_compare_aabbX(boxes[sorted[i]], boxes[sorted[i-1]]);
 
-            if (c < 0)
-            {
-                box_swap = boxes[i];
-                boxes[i] = boxes[i-1];
-                boxes[i-1] = box_swap;
+        if (c < 0)
+        {
+            box_swap = sorted[i];
+            sorted[i] = sorted[i-1];
+            sorted[i-1] = box_swap;
             
-                // And then step back if we're not at the start.
-                i -= (i > 1);
-            }
-            else
-            {
-                // Jump back to before we started going backwards swapping.
-                i = max_so_far;
-            }
+            // And then step back if we're not at the start.
+            i -= 2 * (i > 1);
+        }
+        else
+        {
+            // Jump back to before we started going backwards swapping.
+            i = max_so_far;
         }
     }
 }
@@ -359,6 +413,12 @@ void Universe::tick(double dt)
     /// http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
     /// http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
 
+    if (phys_objects.size() > 1)
+    {
+        sort_aabb(dt);
+        get_collisions();
+    }
+
     /// @todo Allocate the result on the stack here and pass in a pointer.
     /// @todo Multi-level collisoin detecitons in the tick.
     /// @todo Have some concept of collision destruction criteria here.
@@ -366,15 +426,19 @@ void Universe::tick(double dt)
     struct BeamCollisionResult beam_result;
     for (size_t i = 0 ; i < phys_objects.size() ; i++)
     {
+        struct PhysicsObject* obj1 = phys_objects[i];
+
         for (size_t j = i + 1 ; j < phys_objects.size() ; j++)
         {
+            struct PhysicsObject* obj2 = phys_objects[j];
+
             // Return from a phys-phys collision is
             //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
             // t is in [0,1] and indicates when in the interval the collision happened
             // energy is obvious.
             // d1 is the direction obj2 was travelling relative to obj1 whe they collided
             // p1 is a vector from obj1's position to the collision sport on its bounding ball.
-            PhysicsObject_collide(&phys_result, phys_objects[i], phys_objects[j], dt);
+            PhysicsObject_collide(&phys_result, obj1, obj2, dt);
 
             if (phys_result.t >= 0.0)
             {
@@ -391,22 +455,22 @@ void Universe::tick(double dt)
                 {
                     /// @todo Messaging in the tick is going to be back for performance.
 #if _WIN64 || __x86_64__
-                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, e);
+                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, e);
 #else
-                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, phys_result.e);
+                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
-                    PhysicsObject_collision(phys_objects[i], phys_objects[j], phys_result.e, &phys_result.pce1);
-                    PhysicsObject_collision(phys_objects[j], phys_objects[i], phys_result.e, &phys_result.pce2);
+                    PhysicsObject_collision(obj1, obj2, phys_result.e, &phys_result.pce1);
+                    PhysicsObject_collision(obj2, obj1, phys_result.e, &phys_result.pce2);
 
-                    if (phys_objects[i]->type == PHYSOBJECT_SMART)
+                    if (obj1->type == PHYSOBJECT_SMART)
                     {
-                        //SPO* s = (SPO*)phys_objects[i];
+                        //SPO* s = (SPO*)obj1;
                         /// @todo Smart phys collision messages
                     }
 
-                    if (phys_objects[j]->type == PHYSOBJECT_SMART)
+                    if (obj2->type == PHYSOBJECT_SMART)
                     {
-                        //SPO* s = (SPO*)phys_objects[j];
+                        //SPO* s = (SPO*)obj2;
                         /// @todo Smart phys collision (other) messages
                     }
                 }
@@ -415,7 +479,7 @@ void Universe::tick(double dt)
 
         for (size_t bi = 0 ; bi < beams.size() ; bi++)
         {
-            Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
+            Beam_collide(&beam_result, beams[bi], obj1, dt);
 
             if (beam_result.t >= 0.0)
             {
@@ -423,11 +487,11 @@ void Universe::tick(double dt)
                 phys_result.pce1.p = beam_result.p;
 
 #if _WIN64 || __x86_64__
-                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, obj1->phys_id, beam_result.e);
 #else
-                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, obj1->phys_id, beam_result.e);
 #endif
-                PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, &phys_result.pce1);
+                PhysicsObject_collision(obj1, (PO*)beams[bi], beam_result.e, &phys_result.pce1);
                 /// @todo Smarty beam collision messages
                 /// @todo Beam collision messages
             }
@@ -452,112 +516,123 @@ void Universe::tick(double dt)
     {
         Beam_tick(beams[bi], dt);
     }
-
-    LOCK(expire_lock);
-    // Handle expiry queue
-    // First sort the expiry queue, which is just a vector of phys_ids
-    // Then we can binary search our way as we iterate over the list of phys IDs.
-    // That might have a big constant though
-    /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-    bool backtrack = false;
-    for (size_t i = 0 ; i < phys_objects.size() ; i++)
+    if (expired.size() > 0)
     {
-        if (backtrack)
+        LOCK(expire_lock);
+        // Handle expiry queue
+        // First sort the expiry queue, which is just a vector of phys_ids
+        // Then we can binary search our way as we iterate over the list of phys IDs.
+        // That might have a big constant though
+        /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
+        bool backtrack = false;
+        for (size_t i = 0 ; i < phys_objects.size() ; i++)
         {
-            i--;
-            backtrack = false;
-        }
-
-        for (size_t j = 0 ; j < expired.size() ; j++)
-        {
-            if (expired[j] == phys_objects[i]->phys_id)
+            if (backtrack)
             {
-                // If it's a beam...
-                if (phys_objects[i]->type >= BEAM_COMM)
-                {
-                    for (size_t k = 0 ; k < beams.size() ; k++)
-                    {
-                        if (beams[k]->phys_id == expired[j])
-                        {
-                            beams.erase(beams.begin()+k);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    if (phys_objects[i]->type == PHYSOBJECT_SMART)
-                    {
-                        smarties.erase(expired[j]);
-                    }
+                i--;
+                backtrack = false;
+            }
 
-                    if (phys_objects[i]->emits_gravity)
+            for (size_t j = 0 ; j < expired.size() ; j++)
+            {
+                if (expired[j] == phys_objects[i]->phys_id)
+                {
+                    // If it's a beam...
+                    if (phys_objects[i]->type >= BEAM_COMM)
                     {
-                        for (size_t k = 0 ; k < attractors.size() ; k++)
+                        for (size_t k = 0 ; k < beams.size() ; k++)
                         {
-                            if (attractors[k]->phys_id == expired[j])
+                            if (beams[k]->phys_id == expired[j])
                             {
-                                attractors.erase(attractors.begin()+k);
+                                beams.erase(beams.begin()+k);
                                 break;
                             }
                         }
                     }
+                    else
+                    {
+                        if (phys_objects[i]->type == PHYSOBJECT_SMART)
+                        {
+                            smarties.erase(expired[j]);
+                        }
 
-                    phys_objects.erase(phys_objects.begin()+i);
-                    backtrack = true;
+                        if (phys_objects[i]->emits_gravity)
+                        {
+                            for (size_t k = 0 ; k < attractors.size() ; k++)
+                            {
+                                if (attractors[k]->phys_id == expired[j])
+                                {
+                                    attractors.erase(attractors.begin()+k);
+                                    break;
+                                }
+                            }
+                        }
+
+                        phys_objects.erase(phys_objects.begin()+i);
+                        backtrack = true;
+                    }
+                    continue;
                 }
-                continue;
             }
         }
+        expired.clear();
+        UNLOCK(expire_lock);
     }
-    expired.clear();
-    UNLOCK(expire_lock);
 
-    LOCK(add_lock);
-    // Handle added queue
-    for (size_t i = 0 ; i < added.size() ; i++)
+    if (added.size() > 0)
     {
-        switch (added[i]->type)
+        LOCK(add_lock);
+        // Handle added queue
+        for (size_t i = 0 ; i < added.size() ; i++)
         {
-        case PHYSOBJECT:
+            switch (added[i]->type)
             {
-                phys_objects.push_back(added[i]);
-                if (added[i]->emits_gravity)
+            case PHYSOBJECT:
                 {
-                    attractors.push_back(added[i]);
-                }
-                break;
-            }
-        case PHYSOBJECT_SMART:
-            {
-                SPO* obj = (SPO*)added[i];
-                /// @todo Check to make sure this smarty adding is right.
-                smarties[obj->pobj.phys_id] = obj;
-                phys_objects.push_back(added[i]);
-                if (added[i]->emits_gravity)
-                {
-                    attractors.push_back(added[i]);
-                }
-                break;
-            }
-        case BEAM_COMM:
-        case BEAM_SCAN:
-        case BEAM_SCANRESULT:
-        case BEAM_WEAP:
-            {
-                beams.push_back((B*)added[i]);
-                break;
-            }
-        default:
-            break;
-        }
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
 
-        // Allocate and push back a bounding box, as well as index
-        // members to each of the sorting vectors.
-        boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
+                    // Allocate and push back a bounding box, as well as index
+                    // members to each of the sorting vectors.
+                    boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
+                    sorted.push_back(phys_objects.size() - 1);
+                    break;
+                }
+            case PHYSOBJECT_SMART:
+                {
+                    SPO* obj = (SPO*)added[i];
+                    /// @todo Check to make sure this smarty adding is right.
+                    smarties[obj->pobj.phys_id] = obj;
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
+
+                    // Allocate and push back a bounding box, as well as index
+                    // members to each of the sorting vectors.
+                    boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
+                    sorted.push_back(phys_objects.size() - 1);
+                    break;
+                }
+            case BEAM_COMM:
+            case BEAM_SCAN:
+            case BEAM_SCANRESULT:
+            case BEAM_WEAP:
+                {
+                    beams.push_back((B*)added[i]);
+                    break;
+                }
+            default:
+                break;
+            }
+        }
+        added.clear();
+        UNLOCK(add_lock);
     }
-    added.clear();
-    UNLOCK(add_lock);
 
     // Unlock everything
     UNLOCK(phys_lock);

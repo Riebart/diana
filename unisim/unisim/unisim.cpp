@@ -201,17 +201,19 @@ void beam_multi_collision()
     objs.push_back(obj);
     position.x = 0.0;
     position.y = 0.0;
+    position.z = 0.0;
     velocity.x = 0.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
     obj->health = 1e10;
     u->add_object(obj);
 
-    for (int i = 0 ; i < 10 ; i++)
+    for (int i = 0 ; i < 20 ; i++)
     {
         obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
         objs.push_back(obj);
-        position.x = 0.0;
-        position.z = 1.0 + i * radius;
+        position.x = -0.20 * i;
+        position.y = 10 * i;
+        position.z = 1.0 + 2 * i * radius;
         velocity.x = 0.0;
         PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
         obj->health = 1e10;
@@ -219,8 +221,9 @@ void beam_multi_collision()
 
         obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
         objs.push_back(obj);
-        position.x = 0.0;
-        position.z = -1.0 - i * radius;
+        position.x = 0.20 * i;
+        position.y = i * i;
+        position.z = -1.0 - 2 * i * radius;
         velocity.x = 0.0;
         PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
         obj->health = 1e10;
@@ -232,12 +235,20 @@ void print_positions()
 {
     for (size_t i = 0 ; i < objs.size() ; i++)
     {
-        fprintf(stderr, "PO%lu   %g   %g   %g\n", i, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+#if _WIN64 || __x86_64__
+        fprintf(stderr, "PO%lu   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+#else
+        fprintf(stderr, "PO%llu   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+#endif
     }
 
     for (size_t i = 0 ; i < beams.size() ; i++)
     {
-        fprintf(stderr, "BM%lu   %g   %g   %g\n", i, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#if _WIN64 || __x86_64__
+        fprintf(stderr, "BM%lu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#else
+        fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#endif
     }
 }
 
@@ -252,14 +263,16 @@ int main(int32_t argc, char** argv)
 
     try
     {
-        u->start_net();
-        u->start_sim();
-
         //pool_rack();
-        simple_collision();
+        //simple_collision();
         //fast_collision();
         //beam_collision();
-        //beam_multi_collision();
+        beam_multi_collision();
+
+        print_positions();
+
+        u->start_net();
+        u->start_sim();
 
         double frametimes[4];
         uint64_t last_ticks = u->get_ticks();

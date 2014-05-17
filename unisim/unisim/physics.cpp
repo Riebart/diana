@@ -42,6 +42,10 @@ void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity,
     obj->radius = radius;
     obj->obj_desc = obj_desc;
 
+    Vector3_init(&obj->forward, 1, 0, 0);
+    Vector3_init(&obj->right, 0, 1, 0);
+    Vector3_init(&obj->up, 0, 0, 1);
+
     obj->health = mass * 1000000;
     obj->emits_gravity = is_big_enough(mass, radius);
 }
@@ -64,6 +68,7 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
     Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
 }
 
+/// @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
 void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, double dt)
 {
     // Currently we treat dt and forces as small enough that they can be neglected,
@@ -283,35 +288,35 @@ void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
 {
     if (obj->velocity.x < 0)
     {
-        b->l.x = obj->position.x + dt * obj->velocity.x;
-        b->u.x = obj->position.x;
+        b->l.x = obj->position.x + dt * obj->velocity.x - obj->radius;
+        b->u.x = obj->position.x + obj->radius;
     }
     else
     {
-        b->u.x = obj->position.x + dt * obj->velocity.x;
-        b->l.x = obj->position.x;
+        b->u.x = obj->position.x + dt * obj->velocity.x + obj->radius;
+        b->l.x = obj->position.x - obj->radius;
     }
 
     if (obj->velocity.y < 0)
     {
-        b->l.y = obj->position.y + dt * obj->velocity.y;
-        b->u.y = obj->position.y;
+        b->l.y = obj->position.y + dt * obj->velocity.y - obj->radius;
+        b->u.y = obj->position.y + obj->radius;
     }
     else
     {
-        b->u.y = obj->position.y + dt * obj->velocity.y;
-        b->l.y = obj->position.y;
+        b->u.y = obj->position.y + dt * obj->velocity.y + obj->radius;
+        b->l.y = obj->position.y - obj->radius;
     }
 
     if (obj->velocity.z < 0)
     {
-        b->l.z = obj->position.z + dt * obj->velocity.z;
-        b->u.z = obj->position.z;
+        b->l.z = obj->position.z + dt * obj->velocity.z - obj->radius;
+        b->u.z = obj->position.z + obj->radius;
     }
     else
     {
-        b->u.z = obj->position.z + dt * obj->velocity.z;
-        b->l.z = obj->position.z;
+        b->u.z = obj->position.z + dt * obj->velocity.z + obj->radius;
+        b->l.z = obj->position.z - obj->radius;
     }
 }
 

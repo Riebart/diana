@@ -284,15 +284,16 @@ int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b)
 
 int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b, int32_t d)
 {
-    switch (d)
+    double c;
+
+    c = ((double*)&a->l)[d] - ((double*)&b->l)[d];
+
+    if (!Vector3_almost_zeroS(c))
     {
-    case 0:
-        return Vector3_compare_aabbX(a, b);
-    case 1:
-        return Vector3_compare_aabbY(a, b);
-    case 2:
-        return Vector3_compare_aabbZ(a, b);
-    default:
+        return SIGN(c);
+    }
+    else
+    {
         return 0;
     }
 }
@@ -342,8 +343,82 @@ int32_t Vector3_compare_aabbZ(struct AABB* a, struct AABB* b)
     }
 }
 
+bool Vector3_intersect_interval(double al, double au, double bl, double bu)
+{
+    // We need to do a full test for the other two dimensions.
+    // This means test all of the intersection conditions as well as being careful
+    // to be sensitive to then butting up against each other.
+    // 1) The end of b intersecting the start of a
+    //                AAAAAAAAAA
+    //           BBBBBBBBBB
+    // 2) The end of a intersecting the start of b
+    //                AAAAAAAAAA
+    //                      BBBBBBBBBB
+    // 3) a contained in b
+    //                AAAAAAAAAA
+    //             BBBBBBBBBBBBBBBB
+    // 4) b contained in a
+    //                AAAAAAAAAA
+    //                  BBBBB
+    //
+    // 1 and 4 both have that b->u < a->u, and 2 and 3 both share that a->u < b->u
+    //
+    // The cases of equality don't necessarily need ot be handled explicitly, but
+    // they need to be cared for. We can handle them, but canonically considering them
+    // an 'intersection', and bundling a call to Vector3_almost_zeroS() of the double
+    // diffference with the case of proper intersection. See above with how we got into
+    // this block.
+    // The cases are:
+    // 1e) b touches the low side of a
+    //                AAAAAAAAAA
+    //      BBBBBBBBBB
+    // 2e) a touches the low side of b
+    //                AAAAAAAAAA
+    //                          BBBBBBBBBB
+    // 3e) b is contained in a and touches one or both of the ends
+    //                AAAAAAAAAA
+    //                BBBBBBBBBB
+    //                BBBBBB
+    //                    BBBBBB
+    // 4e) a is contained in b and touches one or both of the ends
+    //                AAAAAA
+    //                    AAAAAA
+    //                AAAAAAAAAA
+    //                BBBBBBBBBB
+    //
+    // On the other hand, the ways in which we can NOT be intersecting is much, much simpler:
+    // A) b is wholly in front of a
+    //                AAAAAAAAA.au|
+    //                            |bl.BBBBBBBBB
+    // B) a is wholly in front of b
+    //                 |al.AAAAAAAAA
+    //     BBBBBBBBB.bu|
+    //
+    // So check to see if there are gaps in between au and bl, or bu and al
+    
+    double d;
+
+    // Case A: A before B
+    d = bl - au; // Should be positive if there's a gap
+    if (d > 0)
+    {
+        return false;
+    }
+
+    // Case B: A after B
+    d = al - bu; // Should be positive if there's a gap
+    if (d > 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b)
 {
+    /// @todo This isn't correct, fix it.
+
     // Since the primary use is going to be when a starts before b
     // First check to see if b->l is 'less than' a->u
     // We need that to be true for all components.
@@ -362,4 +437,9 @@ bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b)
     c &= (b->u.z >= a->l.z);
 
     return c;
+}
+
+bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b, int d)
+{
+    return Vector3_intersect_interval(((double*)&a->l)[d], ((double*)&a->u)[d], ((double*)&b->l)[d], ((double*)&b->u)[d]);
 }

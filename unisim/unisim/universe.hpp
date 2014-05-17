@@ -137,12 +137,13 @@ private:
     uint64_t get_id();
     void broadcast_vis_data();
     void tick(double dt);
+    void sort_aabb(double dt);
+    void get_collisions();
     void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
     void handle_message(int32_t c);
     void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
     MIMOServer* net;
-    //ArtCurator* curator;
 
     std::map<uint64_t, struct SmartPhysicsObject*> smarties;
     std::vector<struct PhysicsObject*> attractors;
@@ -153,7 +154,10 @@ private:
 
     /// Hold a re-arranged list of indices that sort the physics objects by
     /// the start of their bounding boxes, as computed and stored in boxes.
+    /// Primary sort condition is a projection onto the X axis.
+    std::vector<size_t> sorted;
     std::vector<struct AABB*> boxes;
+    std::vector<struct PhysicsObject*> potentials;
     uint64_t num_boxes_updated;
 
     /// Keeps track of the queries from SCAN beam collisions that are in progress.

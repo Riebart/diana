@@ -59,6 +59,7 @@ int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b, int32_t d);
 int32_t Vector3_compare_aabbX(struct AABB* a, struct AABB* b);
 int32_t Vector3_compare_aabbY(struct AABB* a, struct AABB* b);
 int32_t Vector3_compare_aabbZ(struct AABB* a, struct AABB* b);
+bool Vector3_intersect_interval(double al, double au, double bl, double bu);
 bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b);
 
 #endif
