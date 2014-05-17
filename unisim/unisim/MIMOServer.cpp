@@ -262,7 +262,7 @@ void* serve_MIMOServer(void* serverV)
 
             for (uint32_t i = 0 ; i < fds.fd_count ; i++)
             {
-                SOCKET curfd = fds.fd_array[i];
+                int32_t curfd = fds.fd_array[i];
                 int32_t sockoptslen = 4;
 #else
             socklen_t addrlen = sizeof(struct sockaddr_storage);
@@ -293,7 +293,7 @@ void* serve_MIMOServer(void* serverV)
                     continue;
                 }
 
-                SOCKET c = accept(curfd, (struct sockaddr*)&addr, &addrlen);
+                int32_t c = accept(curfd, (struct sockaddr*)&addr, &addrlen);
                 if (c == INVALID_SOCKET)
                 {
                     nready = GET_ERROR;
@@ -401,7 +401,7 @@ int32_t listen(int32_t port, int32_t backlog, int32_t family, uint32_t addr4, in
 {
     int32_t ret;
 
-    SOCKET server = socket(family, SOCK_STREAM, IPPROTO_TCP);
+    int32_t server = socket(family, SOCK_STREAM, IPPROTO_TCP);
     if(server == INVALID_SOCKET)
     {
         ret = GET_ERROR;
