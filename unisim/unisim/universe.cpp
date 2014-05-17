@@ -14,9 +14,14 @@
 #endif
 
 #define COLLISION_ENERGY_CUTOFF 1e-9
-#define ABSOLUTE_MIN_FRAMETIME 0.001
+#define ABSOLUTE_MIN_FRAMETIME 1e-7
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+
+// For performance comparisons, I'm leaving both codepaths in here.
+// Define this to use the old O(N^2) one.
+// In practice, for more than 
+//#define FULL_PAIRWISE_COLLISIONS
 
 typedef struct Beam B;
 typedef PhysicsObjectType POT;
@@ -413,17 +418,13 @@ void Universe::tick(double dt)
     /// http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
     /// http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
 
-    if (phys_objects.size() > 1)
-    {
-        sort_aabb(dt);
-        get_collisions();
-    }
-
     /// @todo Allocate the result on the stack here and pass in a pointer.
     /// @todo Multi-level collisoin detecitons in the tick.
     /// @todo Have some concept of collision destruction criteria here.
     struct PhysCollisionResult phys_result;
     struct BeamCollisionResult beam_result;
+
+#ifdef FULL_PAIRWISE_COLLISIONS
     for (size_t i = 0 ; i < phys_objects.size() ; i++)
     {
         struct PhysicsObject* obj1 = phys_objects[i];
@@ -455,7 +456,7 @@ void Universe::tick(double dt)
                 {
                     /// @todo Messaging in the tick is going to be back for performance.
 #if _WIN64 || __x86_64__
-                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, e);
+                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
                     fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
@@ -476,27 +477,66 @@ void Universe::tick(double dt)
                 }
             }
         }
-
-        for (size_t bi = 0 ; bi < beams.size() ; bi++)
-        {
-            Beam_collide(&beam_result, beams[bi], obj1, dt);
-
-            if (beam_result.t >= 0.0)
-            {
-                phys_result.pce1.d = beam_result.d;
-                phys_result.pce1.p = beam_result.p;
-
-#if _WIN64 || __x86_64__
-                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, obj1->phys_id, beam_result.e);
+    }
 #else
-                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, obj1->phys_id, beam_result.e);
+    if (phys_objects.size() > 1)
+    {
+        sort_aabb(dt);
+        get_collisions();
+    }
+
+    while (potentials.size() > 0)
+    {
+        struct PhysicsObject* obj1 = potentials.back();
+        potentials.pop_back();
+        struct PhysicsObject* obj2 = potentials.back();
+        potentials.pop_back();
+
+        // Return from a phys-phys collision is
+        //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
+        // t is in [0,1] and indicates when in the interval the collision happened
+        // energy is obvious.
+        // d1 is the direction obj2 was travelling relative to obj1 whe they collided
+        // p1 is a vector from obj1's position to the collision sport on its bounding ball.
+        PhysicsObject_collide(&phys_result, obj1, obj2, dt);
+
+        if (phys_result.t >= 0.0)
+        {
+            // By comparing the energy to a cutoff, this will help prevent
+            // spurious collision notifications due to physics time step
+            // increments and temporary object intersection.
+
+            // Total energy involved. Both objects 'absorb' the same amount
+            // of energy from an 'impact effect' perspective, and that is in
+            // the 'e' field of the collision result.
+
+            if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) || 
+                (phys_result.e > COLLISION_ENERGY_CUTOFF))
+            {
+                /// @todo Messaging in the tick is going to be back for performance.
+#if _WIN64 || __x86_64__
+                fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#else
+                fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
-                PhysicsObject_collision(obj1, (PO*)beams[bi], beam_result.e, &phys_result.pce1);
-                /// @todo Smarty beam collision messages
-                /// @todo Beam collision messages
+                PhysicsObject_collision(obj1, obj2, phys_result.e, &phys_result.pce1);
+                PhysicsObject_collision(obj2, obj1, phys_result.e, &phys_result.pce2);
+
+                if (obj1->type == PHYSOBJECT_SMART)
+                {
+                    //SPO* s = (SPO*)obj1;
+                    /// @todo Smart phys collision messages
+                }
+
+                if (obj2->type == PHYSOBJECT_SMART)
+                {
+                    //SPO* s = (SPO*)obj2;
+                    /// @todo Smart phys collision (other) messages
+                }
             }
         }
     }
+#endif
 
     // Now tick along each object
     V3 g;
@@ -508,6 +548,26 @@ void Universe::tick(double dt)
 
         get_grav_pull(&g, phys_objects[i]);
         PhysicsObject_tick(phys_objects[i], &g, dt);
+
+        for (size_t bi = 0 ; bi < beams.size() ; bi++)
+        {
+            Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
+
+            if (beam_result.t >= 0.0)
+            {
+                phys_result.pce1.d = beam_result.d;
+                phys_result.pce1.p = beam_result.p;
+
+#if _WIN64 || __x86_64__
+                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+#else
+                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
+#endif
+                PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, &phys_result.pce1);
+                /// @todo Smarty beam collision messages
+                /// @todo Beam collision messages
+            }
+        }
     }
 
     // Now tick along each beam while we're here because we won't be

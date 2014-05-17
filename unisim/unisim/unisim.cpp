@@ -104,7 +104,7 @@ void simple_collision()
     obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
     objs.push_back(obj);
     position.x = 0.0;
-    position.y = 0.5;
+    position.y = 0.0;
     velocity.x = -5.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
     u->add_object(obj);
@@ -207,7 +207,7 @@ void beam_multi_collision()
     obj->health = 1e10;
     u->add_object(obj);
 
-    for (int i = 0 ; i < 20 ; i++)
+    for (int i = 0 ; i < 5 ; i++)
     {
         obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
         objs.push_back(obj);
@@ -228,6 +228,56 @@ void beam_multi_collision()
         PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
         obj->health = 1e10;
         u->add_object(obj);
+    }
+}
+
+void shifting()
+{
+    struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
+    struct Vector3 position = { 10.0, 0.0, 0.0 };
+    struct Vector3 velocity = { -4000.0, 0.0, 0.0 };
+    struct Vector3 up = { 0.0, 0.0, 1.0 };
+
+    int num_per_row = 100; // 2x+1 = actual number per row
+    int num_rows = 25;
+
+    double mass = 1.0;
+    double radius = 1.0;
+    double spacingX = 0.0;
+    double spacingY = 0.0;
+    struct PhysicsObject* obj;
+
+    for (int i = 0 ; i < num_rows ; i++)
+    {
+        obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+        objs.push_back(obj);
+        position.x = 0;
+        position.y = i * (2 * radius + spacingY);
+        velocity.x = (2 * (i%2) - 1) * 1.0;
+        PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+        obj->health = 1e10;
+        u->add_object(obj);
+
+        for (int j = 1 ; j <= num_per_row ; j++)
+        {
+            obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+            objs.push_back(obj);
+            position.x = -1 * j * (2 * radius + spacingX);
+            position.y = i * (2 * radius + spacingY);
+            velocity.x = (2 * (i%2) - 1) * 1.0;
+            PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+            obj->health = 1e10;
+            u->add_object(obj);
+
+            obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
+            objs.push_back(obj);
+            position.x = j * (2 * radius + spacingX);
+            position.y = i * (2 * radius + spacingY);
+            velocity.x = (2 * (i%2) - 1) * 1.0;
+            PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+            obj->health = 1e10;
+            u->add_object(obj);
+        }
     }
 }
 
@@ -258,8 +308,9 @@ int main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 1);
-    //u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
+    //u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
+    //u = new Universe(1e-6, 0.01, 0.5, 5505, 1);
 
     try
     {
@@ -267,7 +318,8 @@ int main(int32_t argc, char** argv)
         //simple_collision();
         //fast_collision();
         //beam_collision();
-        beam_multi_collision();
+        //beam_multi_collision();
+        shifting();
 
         print_positions();
 
@@ -291,7 +343,7 @@ int main(int32_t argc, char** argv)
 #else
             fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
-            print_positions();
+            //print_positions();
             last_ticks = cur_ticks;
 
 #ifdef CPP11THREADS

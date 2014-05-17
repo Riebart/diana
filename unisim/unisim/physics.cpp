@@ -184,35 +184,38 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
         // instability.
         double vdn;
 
-        // We make an exception here. If the object receiving object has zero mass,
-        // it doesn't get any energy.
-
         // This is where relativistic energy will come into play, which is related to
         // relativistic velocity composition.
         cr->e = 0.5 * Vector3_length2(&v) * (obj1->mass + obj2->mass);
 
-        // Energy given to obj1.
-        if (obj1->mass > 0)
+        // This dot is positive if obj1 is moving towards obj2
+        bool contribution = false;
+        vdn = Vector3_dot(&obj1->velocity, &n);
+        if (!Vector3_almost_zeroS(vdn) && (vdn > 0))
         {
-            // This dot is positive if obj1 is moving towards obj2
-            vdn = Vector3_dot(&obj1->velocity, &n);
-            if (vdn > 0)
-            {
-                cr->pce1.n = n;
-                Vector3_scale(&cr->pce1.n, vdn);
-            }
+            contribution = true;
+            cr->pce1.n = n;
+            Vector3_scale(&cr->pce1.n, vdn);
         }
 
-        if (obj2->mass > 0)
+        // This dot is negative if obj2 is moving towards obj1.
+        vdn = Vector3_dot(&obj2->velocity, &n);
+        if (!Vector3_almost_zeroS(vdn) && (vdn > 0))
         {
-            // This dot is negative if obj2 is moving towards obj1.
-            vdn = Vector3_dot(&obj2->velocity, &n);
-            if (vdn < 0)
-            {
-                cr->pce2.n = n;
-                Vector3_scale(&cr->pce2.n, vdn);
-            }
+            contribution = true;
+            cr->pce2.n = n;
+            Vector3_scale(&cr->pce2.n, vdn);
         }
+
+        if (!contribution)
+        {
+            cr->t = -1.0;
+            return;
+        }
+        
+        // Now, at this point we need to bail on any collisions tha don't have any components
+        // in the direction of the normal that points (relative to 'it') at the other object.
+        // Components away from the other object count as not counting.
 
         // Now do the elastic velocity composition a-la http://en.wikipedia.org/wiki/Elastic_collision
         // This is eventually where we'd implement relativistic velocity composition.

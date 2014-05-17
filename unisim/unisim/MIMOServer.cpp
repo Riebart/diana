@@ -190,7 +190,6 @@ void SocketThread::stop()
 // More on non-blocking IO: https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm
 void* serve_MIMOServer(void* serverV)
 {
-    printf("%d\n", FD_SETSIZE);
     MIMOServer* server = (MIMOServer*)serverV;
 
     fd_set fds;
