@@ -1,4 +1,5 @@
 CXX=g++
+# Note that there aren't 32-bit protobuf libraries included, so building on 32-bit platforms won't work.
 CFLAGS=-std=c++0x -I . -O2 -Wall -g -pthread -fopenmp
 FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp ../../protocols/universe.pb.cc
 EXT_LIBS=google/linux-x64/libprotobuf-lite.a

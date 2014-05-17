@@ -232,12 +232,12 @@ void print_positions()
 {
     for (size_t i = 0 ; i < objs.size() ; i++)
     {
-        fprintf(stderr, "PO%u   %g   %g   %g\n", i, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+        fprintf(stderr, "PO%lu   %g   %g   %g\n", i, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
     }
 
     for (size_t i = 0 ; i < beams.size() ; i++)
     {
-        fprintf(stderr, "BM%u   %g   %g   %g\n", i, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+        fprintf(stderr, "BM%lu   %g   %g   %g\n", i, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
     }
 }
 

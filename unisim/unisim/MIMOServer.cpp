@@ -36,6 +36,7 @@
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define CLOSESOCKET close
+#define SOCKET int32_t
 #endif
 
 /// @todo Don't need to pass pointers, just the server which contains the other information.
@@ -245,7 +246,7 @@ void* serve_MIMOServer(void* serverV)
             }
 
             hungup -= server->inputs.size();
-            fprintf(stderr, "Successfully hung up %u client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+            fprintf(stderr, "Successfully hung up %lu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
             server->hangups.clear();
             UNLOCK(server->hangup_lock);
