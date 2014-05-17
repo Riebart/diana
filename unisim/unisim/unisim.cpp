@@ -104,7 +104,7 @@ void simple_collision()
     obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
     objs.push_back(obj);
     position.x = 0.0;
-    position.y = 0.0;
+    position.y = 0.5;
     velocity.x = -5.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
     u->add_object(obj);
@@ -113,7 +113,7 @@ void simple_collision()
     objs.push_back(obj);
     position.x = -20;
     position.y = 0.0;
-    velocity.x = 0.0;
+    velocity.x = 1.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
     u->add_object(obj);
 }
@@ -256,10 +256,10 @@ int main(int32_t argc, char** argv)
         u->start_sim();
 
         //pool_rack();
-        //simple_collision();
+        simple_collision();
         //fast_collision();
         //beam_collision();
-        beam_multi_collision();
+        //beam_multi_collision();
 
         double frametimes[4];
         uint64_t last_ticks = u->get_ticks();

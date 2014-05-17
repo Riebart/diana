@@ -112,9 +112,9 @@ struct PhysCollisionEffect
     struct Vector3 d;
     /// Position of impact on object's bounding sphere, relative to centre.
     struct Vector3 p;
-    /// Velocity of the 'hit' object tangential to impact. This remains unchanged.
+    /// Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n=v'
     struct Vector3 t;
-    /// Velocity change along normal of impact imparted due to impact.
+    /// New velocity along the normal of impact imparted due to impact. t+n=v'
     struct Vector3 n;
 };
 
@@ -122,10 +122,8 @@ struct PhysCollisionResult
 {
     /// Time in [0,1] alont dt of the impact
     double t;
-    /// Energy given up by object 1 to object 2
-    double e1;
-    /// Energy given up by object 2 to object 1
-    double e2;
+    /// Energy involved: (m1+m2)dv^2
+    double e;
     /// Effect on 'first' object
     struct PhysCollisionEffect pce1;
     /// effect on 'second' object

@@ -293,6 +293,7 @@ void Universe::get_grav_pull(V3* g, PO* obj)
 }
 
 
+
 void Universe::tick(double dt)
 {
     LOCK(phys_lock);
@@ -300,6 +301,13 @@ void Universe::tick(double dt)
     // Only the visdata thread conflicts with this...
     // Are we OK with it getting data that is in the middle of being updated to?
     // This can be done single-threaded for now, and we'll thread it later.
+
+    /// @todo Think about something proper. Temporally ordered collisions, for one, 
+    /// and something smarter than an N choose 2 approach, such as Axis Aligned Bounding Boxes,
+    /// or Oriented Bounding Boxes. The former with gnome-sort turns it into O(NlogN+N) complexity
+    /// per pass, roughly, but for an almost sorted list, the sort is O(N) basically.
+    /// http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
+    /// http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
 
     /// @todo Allocate the result on the stack here and pass in a pointer.
     /// @todo Multi-level collisoin detecitons in the tick.
@@ -324,21 +332,21 @@ void Universe::tick(double dt)
                 // spurious collision notifications due to physics time step
                 // increments and temporary object intersection.
 
-                // Total energy involved. Both objects 'absorb' the samea amount
-                // of energy from an 'impact effect' perspective.
-                double e = phys_result.e1 + phys_result.e2;
+                // Total energy involved. Both objects 'absorb' the same amount
+                // of energy from an 'impact effect' perspective, and that is in
+                // the 'e' field of the collision result.
 
-                if ((e < -COLLISION_ENERGY_CUTOFF) || 
-                    (e > COLLISION_ENERGY_CUTOFF))
+                if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) || 
+                    (phys_result.e > COLLISION_ENERGY_CUTOFF))
                 {
                     /// @todo Messaging in the tick is going to be back for performance.
 #if _WIN64 || __x86_64__
                     fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, e);
 #else
-                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, e);
+                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", phys_objects[i]->phys_id, phys_objects[j]->phys_id, phys_result.e);
 #endif
-                    PhysicsObject_collision(phys_objects[i], phys_objects[j], e, &phys_result.pce1);
-                    PhysicsObject_collision(phys_objects[j], phys_objects[i], e, &phys_result.pce2);
+                    PhysicsObject_collision(phys_objects[i], phys_objects[j], phys_result.e, &phys_result.pce1);
+                    PhysicsObject_collision(phys_objects[j], phys_objects[i], phys_result.e, &phys_result.pce2);
 
                     if (phys_objects[i]->type == PHYSOBJECT_SMART)
                     {
