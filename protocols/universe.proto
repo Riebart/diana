@@ -58,6 +58,8 @@ message VectorMsg
 message HelloMsg
 {
     optional string name =1 [default = "HELLO"];
+    
+    required uint64 tmpID =2;
 }
 
 message PhysPropsMsg
@@ -102,12 +104,15 @@ message SpawnMsg
 {
     optional string name=1 [default = "SPAWN"];
     
-    required double mass =2;
-    required VectorMsg position =3;
-    required VectorMsg velocity =4;
-    required VectorMsg orientation =5;
-    required VectorMsg thrust =6;
-    required double radius =7;
+    required uint64 tmpID =2;
+    required uint64 parentID =3;
+    
+    required double mass =4;
+    required VectorMsg position =5;
+    required VectorMsg velocity =6;
+    required VectorMsg orientation =7;
+    required VectorMsg thrust =8;
+    required double radius =9;
 }
 
 message VisProps
