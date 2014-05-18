@@ -113,7 +113,7 @@ void simple_collision()
     objs.push_back(obj);
     position.x = -20;
     position.y = 0.0;
-    velocity.x = 1.0;
+    velocity.x = -1.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
     u->add_object(obj);
 }
@@ -354,7 +354,7 @@ int main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    u = new Universe(0.01, 0.05, 0.5, 5505, 1);
     //u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
 
     try
@@ -388,7 +388,10 @@ int main(int32_t argc, char** argv)
 #else
             fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
-            //print_positions();
+            if (objs.size() < 10)
+            {
+                print_positions();
+            }
             last_ticks = cur_ticks;
 
 #ifdef CPP11THREADS
