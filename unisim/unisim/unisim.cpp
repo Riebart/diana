@@ -130,7 +130,7 @@ void fast_collision()
     objs.push_back(obj);
     position.x = 0.0;
     position.y = 0.0;
-    velocity.x = -5000.0;
+    velocity.x = -50000.0;
     PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
     obj->health = 1e10;
     u->add_object(obj);
@@ -302,15 +302,60 @@ void print_positions()
     }
 }
 
+void check_packing()
+{
+    struct PhysicsObject p;
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+        (uint64_t)&p.type-(uint64_t)&p,
+        (uint64_t)&p.phys_id-(uint64_t)&p,
+        (uint64_t)&p.universe-(uint64_t)&p,
+        (uint64_t)&p.box-(uint64_t)&p,
+        (uint64_t)&p.t-(uint64_t)&p,
+        (uint64_t)&p.position-(uint64_t)&p,
+        (uint64_t)&p.velocity-(uint64_t)&p,
+        (uint64_t)&p.ang_velocity-(uint64_t)&p,
+        (uint64_t)&p.thrust-(uint64_t)&p,
+        (uint64_t)&p.forward-(uint64_t)&p,
+        (uint64_t)&p.up-(uint64_t)&p,
+        (uint64_t)&p.right-(uint64_t)&p,
+        (uint64_t)&p.mass-(uint64_t)&p,
+        (uint64_t)&p.radius-(uint64_t)&p,
+        (uint64_t)&p.health-(uint64_t)&p,
+        (uint64_t)&p.obj_desc-(uint64_t)&p,
+        (uint64_t)&p.art_id-(uint64_t)&p,
+        (uint64_t)&p.emits_gravity-(uint64_t)&p);
+
+    struct SmartPhysicsObject s;
+    printf("%lu %lu\n",
+        (uint64_t)&s.pobj-(uint64_t)&s,
+        (uint64_t)&s.client-(uint64_t)&s);
+
+    struct Beam b;
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+        (uint64_t)&b.type-(uint64_t)&b,
+        (uint64_t)&b.phys_id-(uint64_t)&b,
+        (uint64_t)&b.universe-(uint64_t)&b,
+        (uint64_t)&b.scan_target-(uint64_t)&b,
+        (uint64_t)&b.origin-(uint64_t)&b,
+        (uint64_t)&b.direction-(uint64_t)&b,
+        (uint64_t)&b.up-(uint64_t)&b,
+        (uint64_t)&b.right-(uint64_t)&b,
+        (uint64_t)&b.cosines-(uint64_t)&b,
+        (uint64_t)&b.speed-(uint64_t)&b,
+        (uint64_t)&b.area_factor-(uint64_t)&b,
+        (uint64_t)&b.energy-(uint64_t)&b,
+        (uint64_t)&b.distance_travelled-(uint64_t)&b,
+        (uint64_t)&b.max_distance-(uint64_t)&b);
+}
+
 int main(int32_t argc, char** argv)
 {
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    //u = new Universe(0.001, 0.05, 0.5, 5505, 1);
-    u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
-    //u = new Universe(1e-6, 0.01, 0.5, 5505, 1);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 1);
+    //u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
 
     try
     {

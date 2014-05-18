@@ -22,17 +22,18 @@ class Universe;
 
 enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP };
 
-#pragma pack(1)
 struct PhysicsObject
 {
     /// Type of PhysicsObject
     PhysicsObjectType type;
     /// Unique ID as assigned by the universe
     uint64_t phys_id;
-    /// For collisions, this is in [0,1] and is how far into the interval the collision occurred
-    double t;
     /// Universe this object is assigned to.
     Universe* universe;
+    /// Axis aligned bounding box for this object.
+    struct AABB box;
+    /// For collisions, this is in [0,1] and is how far into the interval we've already traversed.
+    double t;
     /// Position in metres relative to universal origin
     struct Vector3 position,
         /// Velocity in metres/second
@@ -61,27 +62,27 @@ struct PhysicsObject
     /// Make sure to call Universe::update_attractor if you set this or change the mass/radius.
     bool emits_gravity;
 };
-#pragma pack()
 
+/// @note The pack() pragmas here actually improve performance under Release MSVS2012 x64 by a very consistent 6%
 #pragma pack(1)
 struct SmartPhysicsObject
 {
     /// Physical object that forms teh base of the object
     struct PhysicsObject pobj;
-    /// OSim ID (UNUSED)
-    uint64_t osim_id,
-        /// Parent physical ID (UNUSED)
-        parent_phys_id,
-        /// Query ID (UNUSED)
-        query_id;
+    ///// OSim ID (UNUSED)
+    //uint64_t osim_id,
+    //    /// Parent physical ID (UNUSED)
+    //    parent_phys_id,
+    //    /// Query ID (UNUSED)
+    //    query_id;
     /// Client FD to talk out of.
     int32_t client;
-    /// Is this client registered for vis data
-    bool vis_data,
-        /// Is this client registered for vis meta data
-        vis_meta_data,
-        /// Does this exist in the world (UNUSED)
-        exists;
+    ///// Is this client registered for vis data
+    //bool vis_data,
+    //    /// Is this client registered for vis meta data
+    //    vis_meta_data,
+    //    /// Does this exist in the world (UNUSED)
+    //    exists;
 };
 #pragma pack()
 
@@ -148,9 +149,9 @@ void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Ve
 void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
 
 void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
-void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, struct PhysCollisionEffect* args);
+void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, double dt, struct PhysCollisionEffect* args);
 void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
-void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, struct PhysCollisionEffect* pce);
+void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, double dt, struct PhysCollisionEffect* pce);
 void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
 void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, uint64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);

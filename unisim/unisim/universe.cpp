@@ -315,10 +315,10 @@ void Universe::get_collisions()
         //
         // First test to see if the X projects intersect. If they do, then test the others.
 
-        a = boxes[sorted[i]];
+        a = &phys_objects[sorted[i]]->box;
         for (size_t j = i + 1 ; j < sorted.size() ; j++)
         {
-            b = boxes[sorted[j]];
+            b = &phys_objects[sorted[j]]->box;
 
             double d;
             d = a->u.x - b->l.x;
@@ -361,7 +361,7 @@ void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_re
 {
 }
 
-void Universe::sort_aabb(double dt)
+void Universe::sort_aabb(double dt, bool calc)
 {
     // Employs gnome sort to sort the lists, computing the bounding boxes along the way
     // http://en.wikipedia.org/wiki/Gnome_sort
@@ -369,14 +369,20 @@ void Universe::sort_aabb(double dt)
     uint64_t box_swap;
     size_t max_so_far = 0;
 
-    PhysicsObject_estimate_aabb(phys_objects[sorted[0]], boxes[sorted[0]], dt);
+    if (calc)
+    {
+        PhysicsObject_estimate_aabb(phys_objects[sorted[0]], &phys_objects[sorted[0]]->box, dt);
+    }
 
-    for (size_t i = 1 ; i < phys_objects.size() ; i++)
+    for (size_t i = 1 ; i < phys_objects.size() ; )
     {
         if (i > max_so_far)
         {
             // We only need to compute the bounding boxes on the first pass.
-            PhysicsObject_estimate_aabb(phys_objects[sorted[i]], boxes[sorted[i]], dt);
+            if (calc)
+            {
+                PhysicsObject_estimate_aabb(phys_objects[sorted[i]], &phys_objects[sorted[i]]->box, dt);
+            }
 
             max_so_far = i;
         }
@@ -384,7 +390,7 @@ void Universe::sort_aabb(double dt)
         /// @todo Could the AABB comparisons be costly?
 
         // Compare to the previous one if we're not at the first one.
-        int c = Vector3_compare_aabbX(boxes[sorted[i]], boxes[sorted[i-1]]);
+        int c = Vector3_compare_aabbX(&phys_objects[sorted[i]]->box, &phys_objects[sorted[i-1]]->box);
 
         if (c < 0)
         {
@@ -393,12 +399,12 @@ void Universe::sort_aabb(double dt)
             sorted[i-1] = box_swap;
             
             // And then step back if we're not at the start.
-            i -= 2 * (i > 1);
+            i -= (i > 1);
         }
         else
         {
             // Jump back to before we started going backwards swapping.
-            i = max_so_far;
+            i = max_so_far + 1;
         }
     }
 }
@@ -460,8 +466,8 @@ void Universe::tick(double dt)
 #else
                     fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
-                    PhysicsObject_collision(obj1, obj2, phys_result.e, &phys_result.pce1);
-                    PhysicsObject_collision(obj2, obj1, phys_result.e, &phys_result.pce2);
+                    PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
+                    PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
 
                     if (obj1->type == PHYSOBJECT_SMART)
                     {
@@ -481,7 +487,7 @@ void Universe::tick(double dt)
 #else
     if (phys_objects.size() > 1)
     {
-        sort_aabb(dt);
+        sort_aabb(dt, true);
         get_collisions();
     }
 
@@ -519,8 +525,8 @@ void Universe::tick(double dt)
 #else
                 fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
-                PhysicsObject_collision(obj1, obj2, phys_result.e, &phys_result.pce1);
-                PhysicsObject_collision(obj2, obj1, phys_result.e, &phys_result.pce2);
+                PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
+                PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
 
                 if (obj1->type == PHYSOBJECT_SMART)
                 {
@@ -563,7 +569,7 @@ void Universe::tick(double dt)
 #else
                 fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
 #endif
-                PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, &phys_result.pce1);
+                PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, beam_result.t * dt, &phys_result.pce1);
                 /// @todo Smarty beam collision messages
                 /// @todo Beam collision messages
             }
@@ -576,6 +582,7 @@ void Universe::tick(double dt)
     {
         Beam_tick(beams[bi], dt);
     }
+
     if (expired.size() > 0)
     {
         LOCK(expire_lock);
@@ -657,7 +664,6 @@ void Universe::tick(double dt)
 
                     // Allocate and push back a bounding box, as well as index
                     // members to each of the sorting vectors.
-                    boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
                     sorted.push_back(phys_objects.size() - 1);
                     break;
                 }
@@ -674,7 +680,6 @@ void Universe::tick(double dt)
 
                     // Allocate and push back a bounding box, as well as index
                     // members to each of the sorting vectors.
-                    boxes.push_back((struct AABB*)malloc(sizeof(struct AABB)));
                     sorted.push_back(phys_objects.size() - 1);
                     break;
                 }

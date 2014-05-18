@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #define SIGN(x) (((x) < 0) ? -1 : (((x) > 0) ? 1 : 0))
-#define CHOP_CUTOFF 1e-50
+#define CHOP_CUTOFF 1e-8
 
 typedef struct Vector3 V3;
 
