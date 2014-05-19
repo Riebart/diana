@@ -260,7 +260,7 @@ void Vector3_apply_ypr(V3* forward, V3* up, V3* right, V3* angles)
 int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b)
 {
     double c;
-    
+
     c = a->l.x - b->l.x;
     if (!Vector3_almost_zeroS(c))
     {
@@ -301,7 +301,7 @@ int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b, int32_t d)
 int32_t Vector3_compare_aabbX(struct AABB* a, struct AABB* b)
 {
     double c;
-    
+
     c = a->l.x - b->l.x;
     if (!Vector3_almost_zeroS(c))
     {
@@ -316,7 +316,7 @@ int32_t Vector3_compare_aabbX(struct AABB* a, struct AABB* b)
 int32_t Vector3_compare_aabbY(struct AABB* a, struct AABB* b)
 {
     double c;
-    
+
     c = a->l.y - b->l.y;
     if (!Vector3_almost_zeroS(c))
     {
@@ -331,7 +331,7 @@ int32_t Vector3_compare_aabbY(struct AABB* a, struct AABB* b)
 int32_t Vector3_compare_aabbZ(struct AABB* a, struct AABB* b)
 {
     double c;
-    
+
     c = a->l.z - b->l.z;
     if (!Vector3_almost_zeroS(c))
     {
@@ -395,7 +395,7 @@ bool Vector3_intersect_interval(double al, double au, double bl, double bu)
     //     BBBBBBBBB.bu|
     //
     // So check to see if there are gaps in between au and bl, or bu and al
-    
+
     double d;
 
     // Case A: A before B

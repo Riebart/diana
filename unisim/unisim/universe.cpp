@@ -397,7 +397,7 @@ void Universe::sort_aabb(double dt, bool calc)
             box_swap = sorted[i];
             sorted[i] = sorted[i-1];
             sorted[i-1] = box_swap;
-            
+
             // And then step back if we're not at the start.
             i -= (i > 1);
         }
