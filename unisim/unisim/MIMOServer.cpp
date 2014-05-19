@@ -13,7 +13,7 @@
 #define UNLOCK(l) pthread_rwlock_unlock(&l)
 #endif
 
-/// @todo #ifdef between perror() and WSAGetLastErrorMessage()
+//! @todo #ifdef between perror() and WSAGetLastErrorMessage()
 
 // We can actually use Berkeley style sockets everywhere, just need to include the right stuff
 // http://en.wikipedia.org/wiki/Berkeley_sockets
@@ -39,8 +39,8 @@
 #define SOCKET int32_t
 #endif
 
-/// @todo Don't need to pass pointers, just the server which contains the other information.
-/// @todo Potentially move message parsing into here, because message handling will cause the socket to block.
+//! @todo Don't need to pass pointers, just the server which contains the other information.
+//! @todo Potentially move message parsing into here, because message handling will cause the socket to block.
 class SocketThread
 {
     friend class MIMOServer;

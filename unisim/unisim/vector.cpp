@@ -8,10 +8,10 @@
 
 typedef struct Vector3 V3;
 
-/// @todo Clarify some of these functions. In-place operations can be done by specifying
-/// return value as one of the inputs, assuming there is no interdependency. Ass explicit
-/// in-place options for all of these, and you can differentiate by signature.
-/// @todo standardize what allocates a vector and what doesn't. Maybe force no allocations?
+//! @todo Clarify some of these functions. In-place operations can be done by specifying
+//! return value as one of the inputs, assuming there is no interdependency. Ass explicit
+//! in-place options for all of these, and you can differentiate by signature.
+//! @todo standardize what allocates a vector and what doesn't. Maybe force no allocations?
 
 V3* Vector3_alloc(int32_t n)
 {
@@ -147,7 +147,7 @@ double Vector3_distance(V3* v1, V3* v2)
     return Vector3_length(&d);
 }
 
-/// Produce a vector that starts at 2 and goes to 1
+//! Produce a vector that starts at 2 and goes to 1
 void Vector3_ray(V3* out, V3* v1, V3* v2)
 {
     Vector3_subtract(out, v2, v1);
@@ -193,7 +193,7 @@ V3* Vector3_easy_look_at2(V3* forward, V3* up, V3* right, V3* look)
     V3 axis = {0, 0, 0};
     Vector3_cross(&axis, &diff, forward);
 
-    /// @TODO FINISH THIS
+    //! @TODO FINISH THIS
     return ret;
 }
 
@@ -256,7 +256,7 @@ void Vector3_apply_ypr(V3* forward, V3* up, V3* right, V3* angles)
     Vector3_rotate_around(up, forward, angles->z);
 }
 
-/// Compares two AABBs, and returns negative if the first comes before the second, positive if vice versa, and zero otherwise.
+//! Compares two AABBs, and returns negative if the first comes before the second, positive if vice versa, and zero otherwise.
 int32_t Vector3_compare_aabb(struct AABB* a, struct AABB* b)
 {
     double c;
@@ -417,7 +417,7 @@ bool Vector3_intersect_interval(double al, double au, double bl, double bu)
 
 bool Vector3_intersect_aabb(struct AABB* a, struct AABB* b)
 {
-    /// @todo This isn't correct, fix it.
+    //! @todo This isn't correct, fix it.
 
     // Since the primary use is going to be when a starts before b
     // First check to see if b->l is 'less than' a->u

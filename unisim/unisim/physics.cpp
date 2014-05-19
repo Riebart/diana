@@ -6,9 +6,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-/// Area of a sphere is 4 pi r^2
-/// Multiplying two angles to give a solid angle area results in sa=2 pi^2 square radians for a full sphere
-/// Converting that to are square length units means multiplying by sa*((2/pi) r^2)=c where sa=Solid Angle, c=cutoff
+//! Area of a sphere is 4 pi r^2
+//! Multiplying two angles to give a solid angle area results in sa=2 pi^2 square radians for a full sphere
+//! Converting that to are square length units means multiplying by sa*((2/pi) r^2)=c where sa=Solid Angle, c=cutoff
 #define BEAM_SOLID_ANGLE_FACTOR (2 / M_PI)
 #define GRAVITY_CUTOFF 0.01
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -20,7 +20,11 @@ typedef struct PhysicsObject PO;
 typedef struct SmartPhysicsObject SPO;
 typedef struct Vector3 V3;
 
-/// @todo implement grids, this ties into physics, but the properties need to be added here.
+//! @todo implement grids, this ties into physics, but the properties need to be added here.
+//! @todo Alternative, 128-bit integers as fixed point flaots as provided by MSCS intrinsics and GCC
+//! http://msdn.microsoft.com/en-us/library/windows/desktop/aa383711(v=vs.85).aspx
+//! GCC: __uint128_t and __int128_t
+//! Look back at the UniverseGenerator code, and see if we can resurrect some of it.
 
 bool is_big_enough(double m, double r)
 {
@@ -57,9 +61,9 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
     dt -= obj->t;
     obj->t = 0.0;
 
-    /// @todo Relativistic mass
+    //! @todo Relativistic mass
 
-    /// @todo Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
+    //! @todo Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
     obj->position.x += obj->velocity.x * dt + 0.5 * dt * dt * g->x;
     obj->position.y += obj->velocity.y * dt + 0.5 * dt * dt * g->y;
     obj->position.z += obj->velocity.z * dt + 0.5 * dt * dt * g->z;
@@ -73,7 +77,7 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
     Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
 }
 
-/// @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
+//! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
 void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, double dt)
 {
     // Currently we treat dt and forces as small enough that they can be neglected,
@@ -212,9 +216,9 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
     // p1 and p2 have been advanced in time to the instant that the touch occurs.
     // =====
 
-    /// @todo Relativistic kinetic energy and velocity composition. See below where we do elastic velocity composition.
-    /// @todo Angular velocity, which reqires location of impact and shape and stuff
-    /// @todo properly handle collision exiting
+    //! @todo Relativistic kinetic energy and velocity composition. See below where we do elastic velocity composition.
+    //! @todo Angular velocity, which reqires location of impact and shape and stuff
+    //! @todo properly handle collision exiting
 
     // collision normal: unit vector from points from obj1 to obj2
     V3 n;
@@ -246,7 +250,7 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
     Vector3_scale(&cr->pce1.n, vdn);
 
     // Set the tangential velocity to the original velocity minus the portion along the normal
-    /// @todo Check the numerical stability of this.
+    //! @todo Check the numerical stability of this.
     Vector3_subtract(&cr->pce1.t, &obj1->velocity, &cr->pce1.n);
 
     // This dot is negative if obj2 is moving towards obj1
@@ -265,7 +269,7 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
     Vector3_scale(&cr->pce2.n, vdn);
 
     // Set the tangential velocity to the original velocity minus the portion along the normal
-    /// @todo Check the numerical stability of this.
+    //! @todo Check the numerical stability of this.
     Vector3_subtract(&cr->pce2.t, &obj2->velocity, &cr->pce2.n);
 
     // Now we need the amount of energy transferred along the normal
@@ -296,7 +300,7 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
     Vector3_scale(&cr->pce2.n, vdn);
 
     // Now set the direction of original trajectory
-    /// @todo check the sign here.
+    //! @todo check the sign here.
     //cr->pce1.d = v;
     Vector3_subtract(&cr->pce1.d, &obj2->velocity, &obj1->velocity);
     Vector3_normalize(&cr->pce1.d);
@@ -384,8 +388,8 @@ void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
     }
 }
 
-/// @todo fix variable and argument names. They aren't types.
-/// @param args This describes the information about the thing that hit obj, that is other.
+//! @todo fix variable and argument names. They aren't types.
+//! @param args This describes the information about the thing that hit obj, that is other.
 void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, struct PhysCollisionEffect* effect)
 {
     switch(othert->type)
@@ -473,9 +477,9 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, do
 
 void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 {
-    /// @todo Take radius into account
-    /// @todo Add in proper occlusion
-    /// @todo Take into account how much of the object is in the beam's path.
+    //! @todo Take radius into account
+    //! @todo Add in proper occlusion
+    //! @todo Take into account how much of the object is in the beam's path.
 
     // Move the object position to a point32_t relative to the beam's origin.
     // Then scale the velocity by dt, and add it to the position to get the

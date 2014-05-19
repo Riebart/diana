@@ -8,12 +8,12 @@ struct Vector3
     double x, y, z;
 };
 
-/// Represents an axis-aligned bounding box
+//! Represents an axis-aligned bounding box
 struct AABB
 {
-    /// Lower coordinates
+    //! Lower coordinates
     struct Vector3 l;
-    /// Upper coordinates
+    //! Upper coordinates
     struct Vector3 u;
 };
 

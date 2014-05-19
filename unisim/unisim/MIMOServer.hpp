@@ -51,7 +51,7 @@ private:
     std::vector<int32_t> inputs;
     std::vector<int32_t> hangups;
     // Map client FDs to their asynchronous reader threads.
-    /// @todo Is this even necessary? Network input is serial anyway...
+    //! @todo Is this even necessary? Network input is serial anyway...
     std::map<int32_t, SocketThread*> threadmap;
 
     THREAD_T server_thread;

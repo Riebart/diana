@@ -13,11 +13,6 @@
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
-/// @todo Let's start talking about 128-bit fixed-point arithmetic for some stuff
-/// http://msdn.microsoft.com/en-us/library/windows/desktop/aa383711(v=vs.85).aspx
-/// GCC: __uint128_t and __int128_t
-/// Look back at the UniverseGenerator code, and see if we can resurrect some of it.
-
 bool running = true;
 Universe* u;
 std::vector<struct PhysicsObject*> objs;
@@ -25,6 +20,7 @@ std::vector<struct Beam*> beams;
 
 void sighandler(int32_t sig)
 {
+    fprintf(stderr, "Caught Ctrl+C, stopping.\n");
     running = false;
     u->stop_net();
     u->stop_sim();
@@ -243,8 +239,8 @@ void shifting()
 
     double mass = 1.0;
     double radius = 1.0;
-    double spacingX = 0.0;
-    double spacingY = 0.0;
+    double spacingX = 0.1;
+    double spacingY = 0.1;
     struct PhysicsObject* obj;
 
     for (int i = 0 ; i < num_rows ; i++)
@@ -354,8 +350,8 @@ int main(int32_t argc, char** argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT,  &sighandler);
 
-    u = new Universe(0.01, 0.05, 0.5, 5505, 1);
-    //u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
+    //u = new Universe(0.01, 0.05, 0.5, 5505, 1);
+    u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
 
     try
     {

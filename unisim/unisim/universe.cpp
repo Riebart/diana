@@ -139,7 +139,7 @@ void Universe_handle_message(int32_t c, void* arg)
     u->handle_message(c);
 }
 
-/// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+//! @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
 Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
     this->rate = rate;
@@ -356,7 +356,7 @@ void Universe::get_collisions()
     }
 }
 
-/// Get the next collision, as ordered by time
+//! Get the next collision, as ordered by time
 void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_result)
 {
 }
@@ -387,7 +387,7 @@ void Universe::sort_aabb(double dt, bool calc)
             max_so_far = i;
         }
 
-        /// @todo Could the AABB comparisons be costly?
+        //! @todo Could the AABB comparisons be costly?
 
         // Compare to the previous one if we're not at the first one.
         int c = Vector3_compare_aabbX(&phys_objects[sorted[i]]->box, &phys_objects[sorted[i-1]]->box);
@@ -417,16 +417,16 @@ void Universe::tick(double dt)
     // Are we OK with it getting data that is in the middle of being updated to?
     // This can be done single-threaded for now, and we'll thread it later.
 
-    /// @todo Think about something proper. Temporally ordered collisions, for one, 
-    /// and something smarter than an N choose 2 approach, such as Axis Aligned Bounding Boxes,
-    /// or Oriented Bounding Boxes. The former with gnome-sort turns it into O(NlogN+N) complexity
-    /// per pass, roughly, but for an almost sorted list, the sort is O(N) basically.
-    /// http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
-    /// http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
+    //! @todo Think about something proper. Temporally ordered collisions, for one, 
+    //! and something smarter than an N choose 2 approach, such as Axis Aligned Bounding Boxes,
+    //! or Oriented Bounding Boxes. The former with gnome-sort turns it into O(NlogN+N) complexity
+    //! per pass, roughly, but for an almost sorted list, the sort is O(N) basically.
+    //! http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
+    //! http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
 
-    /// @todo Allocate the result on the stack here and pass in a pointer.
-    /// @todo Multi-level collisoin detecitons in the tick.
-    /// @todo Have some concept of collision destruction criteria here.
+    //! @todo Allocate the result on the stack here and pass in a pointer.
+    //! @todo Multi-level collisoin detecitons in the tick.
+    //! @todo Have some concept of collision destruction criteria here.
     struct PhysCollisionResult phys_result;
     struct BeamCollisionResult beam_result;
 
@@ -460,7 +460,7 @@ void Universe::tick(double dt)
                 if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) || 
                     (phys_result.e > COLLISION_ENERGY_CUTOFF))
                 {
-                    /// @todo Messaging in the tick is going to be back for performance.
+                    //! @todo Messaging in the tick is going to be back for performance.
 #if _WIN64 || __x86_64__
                     fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
@@ -472,13 +472,13 @@ void Universe::tick(double dt)
                     if (obj1->type == PHYSOBJECT_SMART)
                     {
                         //SPO* s = (SPO*)obj1;
-                        /// @todo Smart phys collision messages
+                        //! @todo Smart phys collision messages
                     }
 
                     if (obj2->type == PHYSOBJECT_SMART)
                     {
                         //SPO* s = (SPO*)obj2;
-                        /// @todo Smart phys collision (other) messages
+                        //! @todo Smart phys collision (other) messages
                     }
                 }
             }
@@ -519,7 +519,7 @@ void Universe::tick(double dt)
             if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) || 
                 (phys_result.e > COLLISION_ENERGY_CUTOFF))
             {
-                /// @todo Messaging in the tick is going to be back for performance.
+                //! @todo Messaging in the tick is going to be back for performance.
 #if _WIN64 || __x86_64__
                 fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
@@ -531,13 +531,13 @@ void Universe::tick(double dt)
                 if (obj1->type == PHYSOBJECT_SMART)
                 {
                     //SPO* s = (SPO*)obj1;
-                    /// @todo Smart phys collision messages
+                    //! @todo Smart phys collision messages
                 }
 
                 if (obj2->type == PHYSOBJECT_SMART)
                 {
                     //SPO* s = (SPO*)obj2;
-                    /// @todo Smart phys collision (other) messages
+                    //! @todo Smart phys collision (other) messages
                 }
             }
         }
@@ -570,8 +570,8 @@ void Universe::tick(double dt)
                 fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
 #endif
                 PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, beam_result.t * dt, &phys_result.pce1);
-                /// @todo Smarty beam collision messages
-                /// @todo Beam collision messages
+                //! @todo Smarty beam collision messages
+                //! @todo Beam collision messages
             }
         }
     }
@@ -590,7 +590,7 @@ void Universe::tick(double dt)
         // First sort the expiry queue, which is just a vector of phys_ids
         // Then we can binary search our way as we iterate over the list of phys IDs.
         // That might have a big constant though
-        /// @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
+        //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
         bool backtrack = false;
         for (size_t i = 0 ; i < phys_objects.size() ; i++)
         {
@@ -670,7 +670,7 @@ void Universe::tick(double dt)
             case PHYSOBJECT_SMART:
                 {
                     SPO* obj = (SPO*)added[i];
-                    /// @todo Check to make sure this smarty adding is right.
+                    //! @todo Check to make sure this smarty adding is right.
                     smarties[obj->pobj.phys_id] = obj;
                     phys_objects.push_back(added[i]);
                     if (added[i]->emits_gravity)
