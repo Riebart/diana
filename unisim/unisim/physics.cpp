@@ -63,17 +63,17 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
 
     //! @todo Relativistic mass
 
-    //! @todo Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
+    // Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
     // Verlet integration performs the position incrementing accounting for second derivative
-    // (acceleration), but handles the velocity incrementing a little differently.
+    // (acceleration), but handles the velocity incrementing a little differently as it considers
+    // the acceleration in two consecutive frames.
+    //
+    // Since we don't have the acceleration (thrust) in the previous frame, this isn't
+    // something we can do, so we'll have to settle with something simpler.
 
     Vector3_fmad(&obj->position, dt, &obj->velocity);
     Vector3_fmad(&obj->position, 0.5 * dt * dt, g);
     Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
-
-    //obj->position.x += obj->velocity.x * dt + 0.5 * dt * dt * g->x;
-    //obj->position.y += obj->velocity.y * dt + 0.5 * dt * dt * g->y;
-    //obj->position.z += obj->velocity.z * dt + 0.5 * dt * dt * g->z;
 
     obj->velocity.x += dt * g->x;
     obj->velocity.y += dt * g->y;
@@ -225,7 +225,6 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
 
     //! @todo Relativistic kinetic energy and velocity composition. See below where we do elastic velocity composition.
     //! @todo Angular velocity, which reqires location of impact and shape and stuff
-    //! @todo properly handle collision exiting
 
     // collision normal: unit vector from points from obj1 to obj2
     V3 n;
@@ -238,46 +237,38 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
     // instability.
     // Collision tangential velocities are the parts that don't change in the collision
     // Take the velocity, then subtract off the part that is along the normal
-    double vdn;
     cr->e = 0.0;
 
     // This dot is positive if obj1 is moving towards obj2
-    vdn = Vector3_dot(&obj1->velocity, &n);
-
-    // If we're moving away from the other object, don't count the normal energy.
-    // This is what allows us to exit intersections unimpeded.
-    if (vdn > 0.0)
-    {
-        // Add the length along the normal to the output energy.
-        cr->e += 0.5 * vdn * vdn * obj1->mass;
-    }
-
-    // Set the normal component
-    cr->pce1.n = n;
-    Vector3_scale(&cr->pce1.n, vdn);
-
-    // Set the tangential velocity to the original velocity minus the portion along the normal
-    //! @todo Check the numerical stability of this.
-    Vector3_subtract(&cr->pce1.t, &obj1->velocity, &cr->pce1.n);
-
+    double vdn1 = Vector3_dot(&obj1->velocity, &n);
     // This dot is negative if obj2 is moving towards obj1
-    vdn = Vector3_dot(&obj2->velocity, &n);
+    double vdn2 = Vector3_dot(&obj2->velocity, &n);
+
+    // Early rejection: The total velocity along the normal should be net 'positive'.
+    // Sum these, paying attention to the signs in a way that will do this.
+    // vdn1 should be positive, and vdn2 should be negative, so set them both positive
+    // in the case of a 'proper' collision, which means that velocities away from a
+    // collision will move the value negative.
+    double c = vdn1 - vdn2;
+    if (Vector3_almost_zeroS(c) || (c < 0))
+    {
+        cr->t = -1.0;
+        return;
+    }
 
     // If we're moving away from the other object, don't count the normal energy.
     // This is what allows us to exit intersections unimpeded.
-    if (vdn < 0)
+    if (vdn1 > 0.0)
     {
         // Add the length along the normal to the output energy.
-        cr->e += 0.5 * vdn * vdn * obj2->mass;
+        cr->e += 0.5 * vdn1 * vdn1 * obj1->mass;
     }
 
-    // Set the normal component
-    cr->pce2.n = n;
-    Vector3_scale(&cr->pce2.n, vdn);
-
-    // Set the tangential velocity to the original velocity minus the portion along the normal
-    //! @todo Check the numerical stability of this.
-    Vector3_subtract(&cr->pce2.t, &obj2->velocity, &cr->pce2.n);
+    if (vdn2 < 0.0)
+    {
+        // Add the length along the normal to the output energy.
+        cr->e += 0.5 * vdn2 * vdn2 * obj2->mass;
+    }
 
     // Now we need the amount of energy transferred along the normal
     // This is where relativistic energy will come into play, which is related to
@@ -291,37 +282,46 @@ void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, d
         return;
     }
 
+    // Set the normal component
+    cr->pce1.n = n;
+    cr->pce2.n = n;
+    Vector3_scale(&cr->pce1.n, vdn1);
+    Vector3_scale(&cr->pce2.n, vdn2);
+
+    // Set the tangential velocity to the original velocity minus the portion along the normal
+    Vector3_subtract(&cr->pce1.t, &obj1->velocity, &cr->pce1.n);
+    Vector3_subtract(&cr->pce2.t, &obj2->velocity, &cr->pce2.n);
+
+    // Compute the positions of collision on the bounding sphere before the rest because we
+    // repurpose the n variable to store obj1's normal for use in computer obj2's post-collision
+    // normal.
+    // This position plus the direction can give rise to angular effects.
+    cr->pce1.p = n;
+    Vector3_scale(&cr->pce1.p, obj1->radius);
+    cr->pce2.p = n;
+    Vector3_scale(&cr->pce2.p, -obj2->radius);
+
     // Now do the elastic velocity composition a-la http://en.wikipedia.org/wiki/Elastic_collision
     // This is eventually where we'd implement relativistic velocity composition.
+
+    double mscale = 1.0 / (obj1->mass + obj2->mass);
     // Back up the first object's pre-impact velocity, because we'll need that to compute
     // the second object's velocity.
     n = cr->pce1.n;
-    vdn = 1 / (obj1->mass + obj2->mass);
 
     Vector3_scale(&cr->pce1.n, (obj1->mass - obj2->mass));
     Vector3_fmad(&cr->pce1.n, 2 * obj2->mass, &cr->pce2.n);
-    Vector3_scale(&cr->pce1.n, vdn);
+    Vector3_scale(&cr->pce1.n, mscale);
 
     Vector3_scale(&cr->pce2.n, (obj2->mass - obj1->mass));
-    Vector3_fmad(&cr->pce2.n, 2 * obj1->mass, &n);
-    Vector3_scale(&cr->pce2.n, vdn);
+    Vector3_fmad(&cr->pce2.n, 2 * obj1->mass, &n); // We use the backed-up velocity here, see the third argument to fmad()
+    Vector3_scale(&cr->pce2.n, mscale);
 
     // Now set the direction of original trajectory
-    //! @todo check the sign here.
-    //cr->pce1.d = v;
     Vector3_subtract(&cr->pce1.d, &obj2->velocity, &obj1->velocity);
     Vector3_normalize(&cr->pce1.d);
     cr->pce2.d = cr->pce1.d;
     Vector3_scale(&cr->pce2.d, -1);
-
-    // And the positions of collision.
-    // This plus the direction can give rise to angular effects.
-    cr->pce1.p = p2;
-    Vector3_fmad(&cr->pce1.p, -1, &p1);
-    Vector3_normalize(&cr->pce1.p);
-    cr->pce2.p = cr->pce1.p;
-    Vector3_scale(&cr->pce1.p, obj1->radius);
-    Vector3_scale(&cr->pce2.p, -1 * obj2->radius);
 }
 
 void PhysicsObject_resolve_damage(PO* obj, double energy)
