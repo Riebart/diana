@@ -64,9 +64,16 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
     //! @todo Relativistic mass
 
     //! @todo Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-    obj->position.x += obj->velocity.x * dt + 0.5 * dt * dt * g->x;
-    obj->position.y += obj->velocity.y * dt + 0.5 * dt * dt * g->y;
-    obj->position.z += obj->velocity.z * dt + 0.5 * dt * dt * g->z;
+    // Verlet integration performs the position incrementing accounting for second derivative
+    // (acceleration), but handles the velocity incrementing a little differently.
+
+    Vector3_fmad(&obj->position, dt, &obj->velocity);
+    Vector3_fmad(&obj->position, 0.5 * dt * dt, g);
+    Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
+
+    //obj->position.x += obj->velocity.x * dt + 0.5 * dt * dt * g->x;
+    //obj->position.y += obj->velocity.y * dt + 0.5 * dt * dt * g->y;
+    //obj->position.z += obj->velocity.z * dt + 0.5 * dt * dt * g->z;
 
     obj->velocity.x += dt * g->x;
     obj->velocity.y += dt * g->y;
