@@ -27,5496 +27,5567 @@
 
 namespace universe {
 
-// Internal implementation detail -- do not call these.
-void  protobuf_AddDesc_universe_2eproto();
-void protobuf_AssignDesc_universe_2eproto();
-void protobuf_ShutdownFile_universe_2eproto();
+	// Internal implementation detail -- do not call these.
+	void  protobuf_AddDesc_universe_2eproto();
+	void protobuf_AssignDesc_universe_2eproto();
+	void protobuf_ShutdownFile_universe_2eproto();
+
+	class MessageWrapper;
+	class VectorMsg;
+	class HelloMsg;
+	class PhysPropsMsg;
+	class GoodbyeMsg;
+	class CollisionMsg;
+	class SpawnMsg;
+	class VisProps;
+	class VisDataEnable;
+	class VisData;
+	class VisMetaData;
+	class VisMetaDataEnable;
+	class BeamMsg;
+	class ScanResultMsg;
+	class ScanQueryMsg;
+	class ScanRespMsg;
+	class DirectoryMsg;
+
+	enum MessageWrapper_MessageType {
+		MessageWrapper_MessageType_HELLO = 3,
+		MessageWrapper_MessageType_GOODBYE = 4,
+		MessageWrapper_MessageType_PHYSPROPS = 10,
+		MessageWrapper_MessageType_COLLISION = 11,
+		MessageWrapper_MessageType_SPAWN = 12,
+		MessageWrapper_MessageType_BEAM = 13,
+		MessageWrapper_MessageType_SCANRESULT = 14,
+		MessageWrapper_MessageType_SCANQUERY = 15,
+		MessageWrapper_MessageType_SCANRESP = 16,
+		MessageWrapper_MessageType_DIRECTORY = 17,
+		MessageWrapper_MessageType_VISPROPS = 100,
+		MessageWrapper_MessageType_VISDATAENABLE = 101,
+		MessageWrapper_MessageType_VISMETADATAENABLE = 102,
+		MessageWrapper_MessageType_VISMETADATA = 103,
+		MessageWrapper_MessageType_VISDATA = 104
+	};
+	bool MessageWrapper_MessageType_IsValid(int value);
+	const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MIN = MessageWrapper_MessageType_HELLO;
+	const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MAX = MessageWrapper_MessageType_VISDATA;
+	const int MessageWrapper_MessageType_MessageType_ARRAYSIZE = MessageWrapper_MessageType_MessageType_MAX + 1;
+
+	enum CollisionMsg_CollisionType {
+		CollisionMsg_CollisionType_PHYS_COLLISION = 1,
+		CollisionMsg_CollisionType_SCAN_COLLISION = 2,
+		CollisionMsg_CollisionType_WEAP_COLLISION = 3,
+		CollisionMsg_CollisionType_COMM_COLLISION = 4
+	};
+	bool CollisionMsg_CollisionType_IsValid(int value);
+	const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MIN = CollisionMsg_CollisionType_PHYS_COLLISION;
+	const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MAX = CollisionMsg_CollisionType_COMM_COLLISION;
+	const int CollisionMsg_CollisionType_CollisionType_ARRAYSIZE = CollisionMsg_CollisionType_CollisionType_MAX + 1;
+
+	enum BeamMsg_BeamType {
+		BeamMsg_BeamType_SCAN = 1,
+		BeamMsg_BeamType_WEAP = 2,
+		BeamMsg_BeamType_COMM = 3
+	};
+	bool BeamMsg_BeamType_IsValid(int value);
+	const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MIN = BeamMsg_BeamType_SCAN;
+	const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MAX = BeamMsg_BeamType_COMM;
+	const int BeamMsg_BeamType_BeamType_ARRAYSIZE = BeamMsg_BeamType_BeamType_MAX + 1;
+
+	// ===================================================================
+
+	class MessageWrapper : public ::google::protobuf::MessageLite {
+	public:
+		MessageWrapper();
+		virtual ~MessageWrapper();
+
+		MessageWrapper(const MessageWrapper& from);
+
+		inline MessageWrapper& operator=(const MessageWrapper& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const MessageWrapper& default_instance();
 
-class MessageWrapper;
-class VectorMsg;
-class HelloMsg;
-class PhysPropsMsg;
-class GoodbyeMsg;
-class CollisionMsg;
-class SpawnMsg;
-class VisProps;
-class VisDataEnable;
-class VisData;
-class VisMetaData;
-class VisMetaDataEnable;
-class BeamMsg;
-class ScanResultMsg;
-class ScanQueryMsg;
-class ScanRespMsg;
-class DirectoryMsg;
-
-enum MessageWrapper_MessageType {
-  MessageWrapper_MessageType_HELLO = 3,
-  MessageWrapper_MessageType_GOODBYE = 4,
-  MessageWrapper_MessageType_PHYSPROPS = 10,
-  MessageWrapper_MessageType_COLLISION = 11,
-  MessageWrapper_MessageType_SPAWN = 12,
-  MessageWrapper_MessageType_BEAM = 13,
-  MessageWrapper_MessageType_SCANRESULT = 14,
-  MessageWrapper_MessageType_SCANQUERY = 15,
-  MessageWrapper_MessageType_SCANRESP = 16,
-  MessageWrapper_MessageType_DIRECTORY = 17,
-  MessageWrapper_MessageType_VISPROPS = 100,
-  MessageWrapper_MessageType_VISDATAENABLE = 101,
-  MessageWrapper_MessageType_VISMETADATAENABLE = 102,
-  MessageWrapper_MessageType_VISMETADATA = 103,
-  MessageWrapper_MessageType_VISDATA = 104
-};
-bool MessageWrapper_MessageType_IsValid(int value);
-const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MIN = MessageWrapper_MessageType_HELLO;
-const MessageWrapper_MessageType MessageWrapper_MessageType_MessageType_MAX = MessageWrapper_MessageType_VISDATA;
-const int MessageWrapper_MessageType_MessageType_ARRAYSIZE = MessageWrapper_MessageType_MessageType_MAX + 1;
-
-enum CollisionMsg_CollisionType {
-  CollisionMsg_CollisionType_PHYS_COLLISION = 1,
-  CollisionMsg_CollisionType_SCAN_COLLISION = 2,
-  CollisionMsg_CollisionType_WEAP_COLLISION = 3,
-  CollisionMsg_CollisionType_COMM_COLLISION = 4
-};
-bool CollisionMsg_CollisionType_IsValid(int value);
-const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MIN = CollisionMsg_CollisionType_PHYS_COLLISION;
-const CollisionMsg_CollisionType CollisionMsg_CollisionType_CollisionType_MAX = CollisionMsg_CollisionType_COMM_COLLISION;
-const int CollisionMsg_CollisionType_CollisionType_ARRAYSIZE = CollisionMsg_CollisionType_CollisionType_MAX + 1;
-
-enum BeamMsg_BeamType {
-  BeamMsg_BeamType_SCAN = 1,
-  BeamMsg_BeamType_WEAP = 2,
-  BeamMsg_BeamType_COMM = 3
-};
-bool BeamMsg_BeamType_IsValid(int value);
-const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MIN = BeamMsg_BeamType_SCAN;
-const BeamMsg_BeamType BeamMsg_BeamType_BeamType_MAX = BeamMsg_BeamType_COMM;
-const int BeamMsg_BeamType_BeamType_ARRAYSIZE = BeamMsg_BeamType_BeamType_MAX + 1;
-
-// ===================================================================
-
-class MessageWrapper : public ::google::protobuf::MessageLite {
- public:
-  MessageWrapper();
-  virtual ~MessageWrapper();
-
-  MessageWrapper(const MessageWrapper& from);
-
-  inline MessageWrapper& operator=(const MessageWrapper& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const MessageWrapper& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const MessageWrapper* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(MessageWrapper* other);
-
-  // implements Message ----------------------------------------------
-
-  MessageWrapper* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const MessageWrapper& from);
-  void MergeFrom(const MessageWrapper& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef MessageWrapper_MessageType MessageType;
-  static const MessageType HELLO = MessageWrapper_MessageType_HELLO;
-  static const MessageType GOODBYE = MessageWrapper_MessageType_GOODBYE;
-  static const MessageType PHYSPROPS = MessageWrapper_MessageType_PHYSPROPS;
-  static const MessageType COLLISION = MessageWrapper_MessageType_COLLISION;
-  static const MessageType SPAWN = MessageWrapper_MessageType_SPAWN;
-  static const MessageType BEAM = MessageWrapper_MessageType_BEAM;
-  static const MessageType SCANRESULT = MessageWrapper_MessageType_SCANRESULT;
-  static const MessageType SCANQUERY = MessageWrapper_MessageType_SCANQUERY;
-  static const MessageType SCANRESP = MessageWrapper_MessageType_SCANRESP;
-  static const MessageType DIRECTORY = MessageWrapper_MessageType_DIRECTORY;
-  static const MessageType VISPROPS = MessageWrapper_MessageType_VISPROPS;
-  static const MessageType VISDATAENABLE = MessageWrapper_MessageType_VISDATAENABLE;
-  static const MessageType VISMETADATAENABLE = MessageWrapper_MessageType_VISMETADATAENABLE;
-  static const MessageType VISMETADATA = MessageWrapper_MessageType_VISMETADATA;
-  static const MessageType VISDATA = MessageWrapper_MessageType_VISDATA;
-  static inline bool MessageType_IsValid(int value) {
-    return MessageWrapper_MessageType_IsValid(value);
-  }
-  static const MessageType MessageType_MIN =
-    MessageWrapper_MessageType_MessageType_MIN;
-  static const MessageType MessageType_MAX =
-    MessageWrapper_MessageType_MessageType_MAX;
-  static const int MessageType_ARRAYSIZE =
-    MessageWrapper_MessageType_MessageType_ARRAYSIZE;
-
-  // accessors -------------------------------------------------------
-
-  // required .universe.MessageWrapper.MessageType messageType = 1;
-  inline bool has_messagetype() const;
-  inline void clear_messagetype();
-  static const int kMessageTypeFieldNumber = 1;
-  inline ::universe::MessageWrapper_MessageType messagetype() const;
-  inline void set_messagetype(::universe::MessageWrapper_MessageType value);
-
-  // optional uint64 objectID = 2;
-  inline bool has_objectid() const;
-  inline void clear_objectid();
-  static const int kObjectIDFieldNumber = 2;
-  inline ::google::protobuf::uint64 objectid() const;
-  inline void set_objectid(::google::protobuf::uint64 value);
-
-  // optional .universe.HelloMsg helloMsg = 3;
-  inline bool has_hellomsg() const;
-  inline void clear_hellomsg();
-  static const int kHelloMsgFieldNumber = 3;
-  inline const ::universe::HelloMsg& hellomsg() const;
-  inline ::universe::HelloMsg* mutable_hellomsg();
-  inline ::universe::HelloMsg* release_hellomsg();
-  inline void set_allocated_hellomsg(::universe::HelloMsg* hellomsg);
-
-  // optional .universe.GoodbyeMsg goodByeMsg = 4;
-  inline bool has_goodbyemsg() const;
-  inline void clear_goodbyemsg();
-  static const int kGoodByeMsgFieldNumber = 4;
-  inline const ::universe::GoodbyeMsg& goodbyemsg() const;
-  inline ::universe::GoodbyeMsg* mutable_goodbyemsg();
-  inline ::universe::GoodbyeMsg* release_goodbyemsg();
-  inline void set_allocated_goodbyemsg(::universe::GoodbyeMsg* goodbyemsg);
-
-  // optional .universe.PhysPropsMsg physPropsMsg = 10;
-  inline bool has_physpropsmsg() const;
-  inline void clear_physpropsmsg();
-  static const int kPhysPropsMsgFieldNumber = 10;
-  inline const ::universe::PhysPropsMsg& physpropsmsg() const;
-  inline ::universe::PhysPropsMsg* mutable_physpropsmsg();
-  inline ::universe::PhysPropsMsg* release_physpropsmsg();
-  inline void set_allocated_physpropsmsg(::universe::PhysPropsMsg* physpropsmsg);
-
-  // optional .universe.CollisionMsg collisionMsg = 11;
-  inline bool has_collisionmsg() const;
-  inline void clear_collisionmsg();
-  static const int kCollisionMsgFieldNumber = 11;
-  inline const ::universe::CollisionMsg& collisionmsg() const;
-  inline ::universe::CollisionMsg* mutable_collisionmsg();
-  inline ::universe::CollisionMsg* release_collisionmsg();
-  inline void set_allocated_collisionmsg(::universe::CollisionMsg* collisionmsg);
-
-  // optional .universe.SpawnMsg spawnMsg = 12;
-  inline bool has_spawnmsg() const;
-  inline void clear_spawnmsg();
-  static const int kSpawnMsgFieldNumber = 12;
-  inline const ::universe::SpawnMsg& spawnmsg() const;
-  inline ::universe::SpawnMsg* mutable_spawnmsg();
-  inline ::universe::SpawnMsg* release_spawnmsg();
-  inline void set_allocated_spawnmsg(::universe::SpawnMsg* spawnmsg);
-
-  // optional .universe.BeamMsg beamMsg = 13;
-  inline bool has_beammsg() const;
-  inline void clear_beammsg();
-  static const int kBeamMsgFieldNumber = 13;
-  inline const ::universe::BeamMsg& beammsg() const;
-  inline ::universe::BeamMsg* mutable_beammsg();
-  inline ::universe::BeamMsg* release_beammsg();
-  inline void set_allocated_beammsg(::universe::BeamMsg* beammsg);
-
-  // optional .universe.ScanResultMsg scanResultMsg = 14;
-  inline bool has_scanresultmsg() const;
-  inline void clear_scanresultmsg();
-  static const int kScanResultMsgFieldNumber = 14;
-  inline const ::universe::ScanResultMsg& scanresultmsg() const;
-  inline ::universe::ScanResultMsg* mutable_scanresultmsg();
-  inline ::universe::ScanResultMsg* release_scanresultmsg();
-  inline void set_allocated_scanresultmsg(::universe::ScanResultMsg* scanresultmsg);
-
-  // optional .universe.ScanQueryMsg scanQueryMsg = 15;
-  inline bool has_scanquerymsg() const;
-  inline void clear_scanquerymsg();
-  static const int kScanQueryMsgFieldNumber = 15;
-  inline const ::universe::ScanQueryMsg& scanquerymsg() const;
-  inline ::universe::ScanQueryMsg* mutable_scanquerymsg();
-  inline ::universe::ScanQueryMsg* release_scanquerymsg();
-  inline void set_allocated_scanquerymsg(::universe::ScanQueryMsg* scanquerymsg);
-
-  // optional .universe.ScanRespMsg scanRespMsg = 16;
-  inline bool has_scanrespmsg() const;
-  inline void clear_scanrespmsg();
-  static const int kScanRespMsgFieldNumber = 16;
-  inline const ::universe::ScanRespMsg& scanrespmsg() const;
-  inline ::universe::ScanRespMsg* mutable_scanrespmsg();
-  inline ::universe::ScanRespMsg* release_scanrespmsg();
-  inline void set_allocated_scanrespmsg(::universe::ScanRespMsg* scanrespmsg);
-
-  // optional .universe.DirectoryMsg directoryMsg = 17;
-  inline bool has_directorymsg() const;
-  inline void clear_directorymsg();
-  static const int kDirectoryMsgFieldNumber = 17;
-  inline const ::universe::DirectoryMsg& directorymsg() const;
-  inline ::universe::DirectoryMsg* mutable_directorymsg();
-  inline ::universe::DirectoryMsg* release_directorymsg();
-  inline void set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg);
-
-  // optional .universe.VisProps visProps = 100;
-  inline bool has_visprops() const;
-  inline void clear_visprops();
-  static const int kVisPropsFieldNumber = 100;
-  inline const ::universe::VisProps& visprops() const;
-  inline ::universe::VisProps* mutable_visprops();
-  inline ::universe::VisProps* release_visprops();
-  inline void set_allocated_visprops(::universe::VisProps* visprops);
-
-  // optional .universe.VisDataEnable visDataEnable = 101;
-  inline bool has_visdataenable() const;
-  inline void clear_visdataenable();
-  static const int kVisDataEnableFieldNumber = 101;
-  inline const ::universe::VisDataEnable& visdataenable() const;
-  inline ::universe::VisDataEnable* mutable_visdataenable();
-  inline ::universe::VisDataEnable* release_visdataenable();
-  inline void set_allocated_visdataenable(::universe::VisDataEnable* visdataenable);
-
-  // optional .universe.VisMetaDataEnable visMetaDataEnable = 102;
-  inline bool has_vismetadataenable() const;
-  inline void clear_vismetadataenable();
-  static const int kVisMetaDataEnableFieldNumber = 102;
-  inline const ::universe::VisMetaDataEnable& vismetadataenable() const;
-  inline ::universe::VisMetaDataEnable* mutable_vismetadataenable();
-  inline ::universe::VisMetaDataEnable* release_vismetadataenable();
-  inline void set_allocated_vismetadataenable(::universe::VisMetaDataEnable* vismetadataenable);
-
-  // optional .universe.VisMetaData visMetaData = 103;
-  inline bool has_vismetadata() const;
-  inline void clear_vismetadata();
-  static const int kVisMetaDataFieldNumber = 103;
-  inline const ::universe::VisMetaData& vismetadata() const;
-  inline ::universe::VisMetaData* mutable_vismetadata();
-  inline ::universe::VisMetaData* release_vismetadata();
-  inline void set_allocated_vismetadata(::universe::VisMetaData* vismetadata);
-
-  // optional .universe.VisData visData = 104;
-  inline bool has_visdata() const;
-  inline void clear_visdata();
-  static const int kVisDataFieldNumber = 104;
-  inline const ::universe::VisData& visdata() const;
-  inline ::universe::VisData* mutable_visdata();
-  inline ::universe::VisData* release_visdata();
-  inline void set_allocated_visdata(::universe::VisData* visdata);
-
-  // @@protoc_insertion_point(class_scope:universe.MessageWrapper)
- private:
-  inline void set_has_messagetype();
-  inline void clear_has_messagetype();
-  inline void set_has_objectid();
-  inline void clear_has_objectid();
-  inline void set_has_hellomsg();
-  inline void clear_has_hellomsg();
-  inline void set_has_goodbyemsg();
-  inline void clear_has_goodbyemsg();
-  inline void set_has_physpropsmsg();
-  inline void clear_has_physpropsmsg();
-  inline void set_has_collisionmsg();
-  inline void clear_has_collisionmsg();
-  inline void set_has_spawnmsg();
-  inline void clear_has_spawnmsg();
-  inline void set_has_beammsg();
-  inline void clear_has_beammsg();
-  inline void set_has_scanresultmsg();
-  inline void clear_has_scanresultmsg();
-  inline void set_has_scanquerymsg();
-  inline void clear_has_scanquerymsg();
-  inline void set_has_scanrespmsg();
-  inline void clear_has_scanrespmsg();
-  inline void set_has_directorymsg();
-  inline void clear_has_directorymsg();
-  inline void set_has_visprops();
-  inline void clear_has_visprops();
-  inline void set_has_visdataenable();
-  inline void clear_has_visdataenable();
-  inline void set_has_vismetadataenable();
-  inline void clear_has_vismetadataenable();
-  inline void set_has_vismetadata();
-  inline void clear_has_vismetadata();
-  inline void set_has_visdata();
-  inline void clear_has_visdata();
-
-  ::google::protobuf::uint64 objectid_;
-  ::universe::HelloMsg* hellomsg_;
-  ::universe::GoodbyeMsg* goodbyemsg_;
-  ::universe::PhysPropsMsg* physpropsmsg_;
-  ::universe::CollisionMsg* collisionmsg_;
-  ::universe::SpawnMsg* spawnmsg_;
-  ::universe::BeamMsg* beammsg_;
-  ::universe::ScanResultMsg* scanresultmsg_;
-  ::universe::ScanQueryMsg* scanquerymsg_;
-  ::universe::ScanRespMsg* scanrespmsg_;
-  ::universe::DirectoryMsg* directorymsg_;
-  ::universe::VisProps* visprops_;
-  ::universe::VisDataEnable* visdataenable_;
-  ::universe::VisMetaDataEnable* vismetadataenable_;
-  ::universe::VisMetaData* vismetadata_;
-  ::universe::VisData* visdata_;
-  int messagetype_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static MessageWrapper* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VectorMsg : public ::google::protobuf::MessageLite {
- public:
-  VectorMsg();
-  virtual ~VectorMsg();
-
-  VectorMsg(const VectorMsg& from);
-
-  inline VectorMsg& operator=(const VectorMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VectorMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VectorMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VectorMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  VectorMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VectorMsg& from);
-  void MergeFrom(const VectorMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required double x = 1;
-  inline bool has_x() const;
-  inline void clear_x();
-  static const int kXFieldNumber = 1;
-  inline double x() const;
-  inline void set_x(double value);
-
-  // required double y = 2;
-  inline bool has_y() const;
-  inline void clear_y();
-  static const int kYFieldNumber = 2;
-  inline double y() const;
-  inline void set_y(double value);
-
-  // required double z = 3;
-  inline bool has_z() const;
-  inline void clear_z();
-  static const int kZFieldNumber = 3;
-  inline double z() const;
-  inline void set_z(double value);
-
-  // @@protoc_insertion_point(class_scope:universe.VectorMsg)
- private:
-  inline void set_has_x();
-  inline void clear_has_x();
-  inline void set_has_y();
-  inline void clear_has_y();
-  inline void set_has_z();
-  inline void clear_has_z();
-
-  double x_;
-  double y_;
-  double z_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VectorMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class HelloMsg : public ::google::protobuf::MessageLite {
- public:
-  HelloMsg();
-  virtual ~HelloMsg();
-
-  HelloMsg(const HelloMsg& from);
-
-  inline HelloMsg& operator=(const HelloMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const HelloMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const HelloMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(HelloMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  HelloMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const HelloMsg& from);
-  void MergeFrom(const HelloMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "HELLO"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.HelloMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static HelloMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class PhysPropsMsg : public ::google::protobuf::MessageLite {
- public:
-  PhysPropsMsg();
-  virtual ~PhysPropsMsg();
-
-  PhysPropsMsg(const PhysPropsMsg& from);
-
-  inline PhysPropsMsg& operator=(const PhysPropsMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const PhysPropsMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const PhysPropsMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(PhysPropsMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  PhysPropsMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const PhysPropsMsg& from);
-  void MergeFrom(const PhysPropsMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "PHYSPROPS"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // optional double mass = 2;
-  inline bool has_mass() const;
-  inline void clear_mass();
-  static const int kMassFieldNumber = 2;
-  inline double mass() const;
-  inline void set_mass(double value);
-
-  // optional .universe.VectorMsg position = 3;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 3;
-  inline const ::universe::VectorMsg& position() const;
-  inline ::universe::VectorMsg* mutable_position();
-  inline ::universe::VectorMsg* release_position();
-  inline void set_allocated_position(::universe::VectorMsg* position);
-
-  // optional .universe.VectorMsg velocity = 4;
-  inline bool has_velocity() const;
-  inline void clear_velocity();
-  static const int kVelocityFieldNumber = 4;
-  inline const ::universe::VectorMsg& velocity() const;
-  inline ::universe::VectorMsg* mutable_velocity();
-  inline ::universe::VectorMsg* release_velocity();
-  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
-
-  // optional .universe.VectorMsg orientation = 5;
-  inline bool has_orientation() const;
-  inline void clear_orientation();
-  static const int kOrientationFieldNumber = 5;
-  inline const ::universe::VectorMsg& orientation() const;
-  inline ::universe::VectorMsg* mutable_orientation();
-  inline ::universe::VectorMsg* release_orientation();
-  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
-
-  // optional .universe.VectorMsg thrust = 6;
-  inline bool has_thrust() const;
-  inline void clear_thrust();
-  static const int kThrustFieldNumber = 6;
-  inline const ::universe::VectorMsg& thrust() const;
-  inline ::universe::VectorMsg* mutable_thrust();
-  inline ::universe::VectorMsg* release_thrust();
-  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
-
-  // optional double radius = 7;
-  inline bool has_radius() const;
-  inline void clear_radius();
-  static const int kRadiusFieldNumber = 7;
-  inline double radius() const;
-  inline void set_radius(double value);
-
-  // @@protoc_insertion_point(class_scope:universe.PhysPropsMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_mass();
-  inline void clear_has_mass();
-  inline void set_has_position();
-  inline void clear_has_position();
-  inline void set_has_velocity();
-  inline void clear_has_velocity();
-  inline void set_has_orientation();
-  inline void clear_has_orientation();
-  inline void set_has_thrust();
-  inline void clear_has_thrust();
-  inline void set_has_radius();
-  inline void clear_has_radius();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  double mass_;
-  ::universe::VectorMsg* position_;
-  ::universe::VectorMsg* velocity_;
-  ::universe::VectorMsg* orientation_;
-  ::universe::VectorMsg* thrust_;
-  double radius_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static PhysPropsMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class GoodbyeMsg : public ::google::protobuf::MessageLite {
- public:
-  GoodbyeMsg();
-  virtual ~GoodbyeMsg();
-
-  GoodbyeMsg(const GoodbyeMsg& from);
-
-  inline GoodbyeMsg& operator=(const GoodbyeMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const GoodbyeMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const GoodbyeMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(GoodbyeMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  GoodbyeMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const GoodbyeMsg& from);
-  void MergeFrom(const GoodbyeMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "GOODBYE"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.GoodbyeMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static GoodbyeMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CollisionMsg : public ::google::protobuf::MessageLite {
- public:
-  CollisionMsg();
-  virtual ~CollisionMsg();
-
-  CollisionMsg(const CollisionMsg& from);
-
-  inline CollisionMsg& operator=(const CollisionMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const CollisionMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const CollisionMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(CollisionMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  CollisionMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const CollisionMsg& from);
-  void MergeFrom(const CollisionMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef CollisionMsg_CollisionType CollisionType;
-  static const CollisionType PHYS_COLLISION = CollisionMsg_CollisionType_PHYS_COLLISION;
-  static const CollisionType SCAN_COLLISION = CollisionMsg_CollisionType_SCAN_COLLISION;
-  static const CollisionType WEAP_COLLISION = CollisionMsg_CollisionType_WEAP_COLLISION;
-  static const CollisionType COMM_COLLISION = CollisionMsg_CollisionType_COMM_COLLISION;
-  static inline bool CollisionType_IsValid(int value) {
-    return CollisionMsg_CollisionType_IsValid(value);
-  }
-  static const CollisionType CollisionType_MIN =
-    CollisionMsg_CollisionType_CollisionType_MIN;
-  static const CollisionType CollisionType_MAX =
-    CollisionMsg_CollisionType_CollisionType_MAX;
-  static const int CollisionType_ARRAYSIZE =
-    CollisionMsg_CollisionType_CollisionType_ARRAYSIZE;
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "COLLISION"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required .universe.VectorMsg position = 2;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 2;
-  inline const ::universe::VectorMsg& position() const;
-  inline ::universe::VectorMsg* mutable_position();
-  inline ::universe::VectorMsg* release_position();
-  inline void set_allocated_position(::universe::VectorMsg* position);
-
-  // required .universe.VectorMsg direction = 3;
-  inline bool has_direction() const;
-  inline void clear_direction();
-  static const int kDirectionFieldNumber = 3;
-  inline const ::universe::VectorMsg& direction() const;
-  inline ::universe::VectorMsg* mutable_direction();
-  inline ::universe::VectorMsg* release_direction();
-  inline void set_allocated_direction(::universe::VectorMsg* direction);
-
-  // required double energy = 4;
-  inline bool has_energy() const;
-  inline void clear_energy();
-  static const int kEnergyFieldNumber = 4;
-  inline double energy() const;
-  inline void set_energy(double value);
-
-  // required .universe.CollisionMsg.CollisionType collisionType = 5;
-  inline bool has_collisiontype() const;
-  inline void clear_collisiontype();
-  static const int kCollisionTypeFieldNumber = 5;
-  inline ::universe::CollisionMsg_CollisionType collisiontype() const;
-  inline void set_collisiontype(::universe::CollisionMsg_CollisionType value);
-
-  // optional string commString = 6;
-  inline bool has_commstring() const;
-  inline void clear_commstring();
-  static const int kCommStringFieldNumber = 6;
-  inline const ::std::string& commstring() const;
-  inline void set_commstring(const ::std::string& value);
-  inline void set_commstring(const char* value);
-  inline void set_commstring(const char* value, size_t size);
-  inline ::std::string* mutable_commstring();
-  inline ::std::string* release_commstring();
-  inline void set_allocated_commstring(::std::string* commstring);
-
-  // @@protoc_insertion_point(class_scope:universe.CollisionMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_position();
-  inline void clear_has_position();
-  inline void set_has_direction();
-  inline void clear_has_direction();
-  inline void set_has_energy();
-  inline void clear_has_energy();
-  inline void set_has_collisiontype();
-  inline void clear_has_collisiontype();
-  inline void set_has_commstring();
-  inline void clear_has_commstring();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  ::universe::VectorMsg* position_;
-  ::universe::VectorMsg* direction_;
-  double energy_;
-  ::std::string* commstring_;
-  int collisiontype_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static CollisionMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class SpawnMsg : public ::google::protobuf::MessageLite {
- public:
-  SpawnMsg();
-  virtual ~SpawnMsg();
-
-  SpawnMsg(const SpawnMsg& from);
-
-  inline SpawnMsg& operator=(const SpawnMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const SpawnMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const SpawnMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(SpawnMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  SpawnMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const SpawnMsg& from);
-  void MergeFrom(const SpawnMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "SPAWN"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required double mass = 2;
-  inline bool has_mass() const;
-  inline void clear_mass();
-  static const int kMassFieldNumber = 2;
-  inline double mass() const;
-  inline void set_mass(double value);
-
-  // required .universe.VectorMsg position = 3;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 3;
-  inline const ::universe::VectorMsg& position() const;
-  inline ::universe::VectorMsg* mutable_position();
-  inline ::universe::VectorMsg* release_position();
-  inline void set_allocated_position(::universe::VectorMsg* position);
-
-  // required .universe.VectorMsg velocity = 4;
-  inline bool has_velocity() const;
-  inline void clear_velocity();
-  static const int kVelocityFieldNumber = 4;
-  inline const ::universe::VectorMsg& velocity() const;
-  inline ::universe::VectorMsg* mutable_velocity();
-  inline ::universe::VectorMsg* release_velocity();
-  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
-
-  // required .universe.VectorMsg orientation = 5;
-  inline bool has_orientation() const;
-  inline void clear_orientation();
-  static const int kOrientationFieldNumber = 5;
-  inline const ::universe::VectorMsg& orientation() const;
-  inline ::universe::VectorMsg* mutable_orientation();
-  inline ::universe::VectorMsg* release_orientation();
-  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
-
-  // required .universe.VectorMsg thrust = 6;
-  inline bool has_thrust() const;
-  inline void clear_thrust();
-  static const int kThrustFieldNumber = 6;
-  inline const ::universe::VectorMsg& thrust() const;
-  inline ::universe::VectorMsg* mutable_thrust();
-  inline ::universe::VectorMsg* release_thrust();
-  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
-
-  // required double radius = 7;
-  inline bool has_radius() const;
-  inline void clear_radius();
-  static const int kRadiusFieldNumber = 7;
-  inline double radius() const;
-  inline void set_radius(double value);
-
-  // @@protoc_insertion_point(class_scope:universe.SpawnMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_mass();
-  inline void clear_has_mass();
-  inline void set_has_position();
-  inline void clear_has_position();
-  inline void set_has_velocity();
-  inline void clear_has_velocity();
-  inline void set_has_orientation();
-  inline void clear_has_orientation();
-  inline void set_has_thrust();
-  inline void clear_has_thrust();
-  inline void set_has_radius();
-  inline void clear_has_radius();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  double mass_;
-  ::universe::VectorMsg* position_;
-  ::universe::VectorMsg* velocity_;
-  ::universe::VectorMsg* orientation_;
-  ::universe::VectorMsg* thrust_;
-  double radius_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static SpawnMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VisProps : public ::google::protobuf::MessageLite {
- public:
-  VisProps();
-  virtual ~VisProps();
-
-  VisProps(const VisProps& from);
-
-  inline VisProps& operator=(const VisProps& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VisProps& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VisProps* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VisProps* other);
-
-  // implements Message ----------------------------------------------
-
-  VisProps* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VisProps& from);
-  void MergeFrom(const VisProps& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "VISPROPS"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.VisProps)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VisProps* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VisDataEnable : public ::google::protobuf::MessageLite {
- public:
-  VisDataEnable();
-  virtual ~VisDataEnable();
-
-  VisDataEnable(const VisDataEnable& from);
-
-  inline VisDataEnable& operator=(const VisDataEnable& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VisDataEnable& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VisDataEnable* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VisDataEnable* other);
-
-  // implements Message ----------------------------------------------
-
-  VisDataEnable* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VisDataEnable& from);
-  void MergeFrom(const VisDataEnable& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "VISDATAENABLE"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.VisDataEnable)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VisDataEnable* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VisData : public ::google::protobuf::MessageLite {
- public:
-  VisData();
-  virtual ~VisData();
-
-  VisData(const VisData& from);
-
-  inline VisData& operator=(const VisData& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VisData& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VisData* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VisData* other);
-
-  // implements Message ----------------------------------------------
-
-  VisData* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VisData& from);
-  void MergeFrom(const VisData& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "VISDATA"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.VisData)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VisData* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VisMetaData : public ::google::protobuf::MessageLite {
- public:
-  VisMetaData();
-  virtual ~VisMetaData();
-
-  VisMetaData(const VisMetaData& from);
-
-  inline VisMetaData& operator=(const VisMetaData& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VisMetaData& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VisMetaData* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VisMetaData* other);
-
-  // implements Message ----------------------------------------------
-
-  VisMetaData* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VisMetaData& from);
-  void MergeFrom(const VisMetaData& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "VISMETADATA"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.VisMetaData)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VisMetaData* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class VisMetaDataEnable : public ::google::protobuf::MessageLite {
- public:
-  VisMetaDataEnable();
-  virtual ~VisMetaDataEnable();
-
-  VisMetaDataEnable(const VisMetaDataEnable& from);
-
-  inline VisMetaDataEnable& operator=(const VisMetaDataEnable& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const VisMetaDataEnable& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const VisMetaDataEnable* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(VisMetaDataEnable* other);
-
-  // implements Message ----------------------------------------------
-
-  VisMetaDataEnable* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const VisMetaDataEnable& from);
-  void MergeFrom(const VisMetaDataEnable& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "VISMETADATAENABLE"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.VisMetaDataEnable)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static VisMetaDataEnable* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class BeamMsg : public ::google::protobuf::MessageLite {
- public:
-  BeamMsg();
-  virtual ~BeamMsg();
-
-  BeamMsg(const BeamMsg& from);
-
-  inline BeamMsg& operator=(const BeamMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const BeamMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const BeamMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(BeamMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  BeamMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const BeamMsg& from);
-  void MergeFrom(const BeamMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  typedef BeamMsg_BeamType BeamType;
-  static const BeamType SCAN = BeamMsg_BeamType_SCAN;
-  static const BeamType WEAP = BeamMsg_BeamType_WEAP;
-  static const BeamType COMM = BeamMsg_BeamType_COMM;
-  static inline bool BeamType_IsValid(int value) {
-    return BeamMsg_BeamType_IsValid(value);
-  }
-  static const BeamType BeamType_MIN =
-    BeamMsg_BeamType_BeamType_MIN;
-  static const BeamType BeamType_MAX =
-    BeamMsg_BeamType_BeamType_MAX;
-  static const int BeamType_ARRAYSIZE =
-    BeamMsg_BeamType_BeamType_ARRAYSIZE;
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "BEAM"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required .universe.VectorMsg origin = 2;
-  inline bool has_origin() const;
-  inline void clear_origin();
-  static const int kOriginFieldNumber = 2;
-  inline const ::universe::VectorMsg& origin() const;
-  inline ::universe::VectorMsg* mutable_origin();
-  inline ::universe::VectorMsg* release_origin();
-  inline void set_allocated_origin(::universe::VectorMsg* origin);
-
-  // required .universe.VectorMsg velocity = 3;
-  inline bool has_velocity() const;
-  inline void clear_velocity();
-  static const int kVelocityFieldNumber = 3;
-  inline const ::universe::VectorMsg& velocity() const;
-  inline ::universe::VectorMsg* mutable_velocity();
-  inline ::universe::VectorMsg* release_velocity();
-  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
-
-  // required .universe.VectorMsg up = 4;
-  inline bool has_up() const;
-  inline void clear_up();
-  static const int kUpFieldNumber = 4;
-  inline const ::universe::VectorMsg& up() const;
-  inline ::universe::VectorMsg* mutable_up();
-  inline ::universe::VectorMsg* release_up();
-  inline void set_allocated_up(::universe::VectorMsg* up);
-
-  // required double spread_h = 5;
-  inline bool has_spread_h() const;
-  inline void clear_spread_h();
-  static const int kSpreadHFieldNumber = 5;
-  inline double spread_h() const;
-  inline void set_spread_h(double value);
-
-  // required double spread_v = 6;
-  inline bool has_spread_v() const;
-  inline void clear_spread_v();
-  static const int kSpreadVFieldNumber = 6;
-  inline double spread_v() const;
-  inline void set_spread_v(double value);
-
-  // required double energy = 7;
-  inline bool has_energy() const;
-  inline void clear_energy();
-  static const int kEnergyFieldNumber = 7;
-  inline double energy() const;
-  inline void set_energy(double value);
-
-  // required .universe.BeamMsg.BeamType beamType = 8;
-  inline bool has_beamtype() const;
-  inline void clear_beamtype();
-  static const int kBeamTypeFieldNumber = 8;
-  inline ::universe::BeamMsg_BeamType beamtype() const;
-  inline void set_beamtype(::universe::BeamMsg_BeamType value);
-
-  // optional string commString = 9;
-  inline bool has_commstring() const;
-  inline void clear_commstring();
-  static const int kCommStringFieldNumber = 9;
-  inline const ::std::string& commstring() const;
-  inline void set_commstring(const ::std::string& value);
-  inline void set_commstring(const char* value);
-  inline void set_commstring(const char* value, size_t size);
-  inline ::std::string* mutable_commstring();
-  inline ::std::string* release_commstring();
-  inline void set_allocated_commstring(::std::string* commstring);
-
-  // @@protoc_insertion_point(class_scope:universe.BeamMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_origin();
-  inline void clear_has_origin();
-  inline void set_has_velocity();
-  inline void clear_has_velocity();
-  inline void set_has_up();
-  inline void clear_has_up();
-  inline void set_has_spread_h();
-  inline void clear_has_spread_h();
-  inline void set_has_spread_v();
-  inline void clear_has_spread_v();
-  inline void set_has_energy();
-  inline void clear_has_energy();
-  inline void set_has_beamtype();
-  inline void clear_has_beamtype();
-  inline void set_has_commstring();
-  inline void clear_has_commstring();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  ::universe::VectorMsg* origin_;
-  ::universe::VectorMsg* velocity_;
-  ::universe::VectorMsg* up_;
-  double spread_h_;
-  double spread_v_;
-  double energy_;
-  ::std::string* commstring_;
-  int beamtype_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static BeamMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ScanResultMsg : public ::google::protobuf::MessageLite {
- public:
-  ScanResultMsg();
-  virtual ~ScanResultMsg();
-
-  ScanResultMsg(const ScanResultMsg& from);
-
-  inline ScanResultMsg& operator=(const ScanResultMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const ScanResultMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const ScanResultMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(ScanResultMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  ScanResultMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const ScanResultMsg& from);
-  void MergeFrom(const ScanResultMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "SCANRESULT"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required double mass = 2;
-  inline bool has_mass() const;
-  inline void clear_mass();
-  static const int kMassFieldNumber = 2;
-  inline double mass() const;
-  inline void set_mass(double value);
-
-  // required .universe.VectorMsg position = 3;
-  inline bool has_position() const;
-  inline void clear_position();
-  static const int kPositionFieldNumber = 3;
-  inline const ::universe::VectorMsg& position() const;
-  inline ::universe::VectorMsg* mutable_position();
-  inline ::universe::VectorMsg* release_position();
-  inline void set_allocated_position(::universe::VectorMsg* position);
-
-  // required .universe.VectorMsg velocity = 4;
-  inline bool has_velocity() const;
-  inline void clear_velocity();
-  static const int kVelocityFieldNumber = 4;
-  inline const ::universe::VectorMsg& velocity() const;
-  inline ::universe::VectorMsg* mutable_velocity();
-  inline ::universe::VectorMsg* release_velocity();
-  inline void set_allocated_velocity(::universe::VectorMsg* velocity);
-
-  // required .universe.VectorMsg orientation = 5;
-  inline bool has_orientation() const;
-  inline void clear_orientation();
-  static const int kOrientationFieldNumber = 5;
-  inline const ::universe::VectorMsg& orientation() const;
-  inline ::universe::VectorMsg* mutable_orientation();
-  inline ::universe::VectorMsg* release_orientation();
-  inline void set_allocated_orientation(::universe::VectorMsg* orientation);
-
-  // required .universe.VectorMsg thrust = 6;
-  inline bool has_thrust() const;
-  inline void clear_thrust();
-  static const int kThrustFieldNumber = 6;
-  inline const ::universe::VectorMsg& thrust() const;
-  inline ::universe::VectorMsg* mutable_thrust();
-  inline ::universe::VectorMsg* release_thrust();
-  inline void set_allocated_thrust(::universe::VectorMsg* thrust);
-
-  // required double radius = 7;
-  inline bool has_radius() const;
-  inline void clear_radius();
-  static const int kRadiusFieldNumber = 7;
-  inline double radius() const;
-  inline void set_radius(double value);
-
-  // optional string extraParms = 8;
-  inline bool has_extraparms() const;
-  inline void clear_extraparms();
-  static const int kExtraParmsFieldNumber = 8;
-  inline const ::std::string& extraparms() const;
-  inline void set_extraparms(const ::std::string& value);
-  inline void set_extraparms(const char* value);
-  inline void set_extraparms(const char* value, size_t size);
-  inline ::std::string* mutable_extraparms();
-  inline ::std::string* release_extraparms();
-  inline void set_allocated_extraparms(::std::string* extraparms);
-
-  // @@protoc_insertion_point(class_scope:universe.ScanResultMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_mass();
-  inline void clear_has_mass();
-  inline void set_has_position();
-  inline void clear_has_position();
-  inline void set_has_velocity();
-  inline void clear_has_velocity();
-  inline void set_has_orientation();
-  inline void clear_has_orientation();
-  inline void set_has_thrust();
-  inline void clear_has_thrust();
-  inline void set_has_radius();
-  inline void clear_has_radius();
-  inline void set_has_extraparms();
-  inline void clear_has_extraparms();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  double mass_;
-  ::universe::VectorMsg* position_;
-  ::universe::VectorMsg* velocity_;
-  ::universe::VectorMsg* orientation_;
-  ::universe::VectorMsg* thrust_;
-  double radius_;
-  ::std::string* extraparms_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static ScanResultMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ScanQueryMsg : public ::google::protobuf::MessageLite {
- public:
-  ScanQueryMsg();
-  virtual ~ScanQueryMsg();
-
-  ScanQueryMsg(const ScanQueryMsg& from);
-
-  inline ScanQueryMsg& operator=(const ScanQueryMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const ScanQueryMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const ScanQueryMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(ScanQueryMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  ScanQueryMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const ScanQueryMsg& from);
-  void MergeFrom(const ScanQueryMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "SCANQUERY"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required int32 scanID = 2;
-  inline bool has_scanid() const;
-  inline void clear_scanid();
-  static const int kScanIDFieldNumber = 2;
-  inline ::google::protobuf::int32 scanid() const;
-  inline void set_scanid(::google::protobuf::int32 value);
-
-  // required double scanPower = 3;
-  inline bool has_scanpower() const;
-  inline void clear_scanpower();
-  static const int kScanPowerFieldNumber = 3;
-  inline double scanpower() const;
-  inline void set_scanpower(double value);
-
-  // required .universe.VectorMsg scanDir = 4;
-  inline bool has_scandir() const;
-  inline void clear_scandir();
-  static const int kScanDirFieldNumber = 4;
-  inline const ::universe::VectorMsg& scandir() const;
-  inline ::universe::VectorMsg* mutable_scandir();
-  inline ::universe::VectorMsg* release_scandir();
-  inline void set_allocated_scandir(::universe::VectorMsg* scandir);
-
-  // @@protoc_insertion_point(class_scope:universe.ScanQueryMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_scanid();
-  inline void clear_has_scanid();
-  inline void set_has_scanpower();
-  inline void clear_has_scanpower();
-  inline void set_has_scandir();
-  inline void clear_has_scandir();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  double scanpower_;
-  ::universe::VectorMsg* scandir_;
-  ::google::protobuf::int32 scanid_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static ScanQueryMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ScanRespMsg : public ::google::protobuf::MessageLite {
- public:
-  ScanRespMsg();
-  virtual ~ScanRespMsg();
-
-  ScanRespMsg(const ScanRespMsg& from);
-
-  inline ScanRespMsg& operator=(const ScanRespMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const ScanRespMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const ScanRespMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(ScanRespMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  ScanRespMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const ScanRespMsg& from);
-  void MergeFrom(const ScanRespMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "SCANRESP"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // required int32 scanID = 2;
-  inline bool has_scanid() const;
-  inline void clear_scanid();
-  static const int kScanIDFieldNumber = 2;
-  inline ::google::protobuf::int32 scanid() const;
-  inline void set_scanid(::google::protobuf::int32 value);
-
-  // required string parms = 3;
-  inline bool has_parms() const;
-  inline void clear_parms();
-  static const int kParmsFieldNumber = 3;
-  inline const ::std::string& parms() const;
-  inline void set_parms(const ::std::string& value);
-  inline void set_parms(const char* value);
-  inline void set_parms(const char* value, size_t size);
-  inline ::std::string* mutable_parms();
-  inline ::std::string* release_parms();
-  inline void set_allocated_parms(::std::string* parms);
-
-  // @@protoc_insertion_point(class_scope:universe.ScanRespMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_scanid();
-  inline void clear_has_scanid();
-  inline void set_has_parms();
-  inline void clear_has_parms();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-  ::std::string* parms_;
-  ::google::protobuf::int32 scanid_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static ScanRespMsg* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class DirectoryMsg : public ::google::protobuf::MessageLite {
- public:
-  DirectoryMsg();
-  virtual ~DirectoryMsg();
-
-  DirectoryMsg(const DirectoryMsg& from);
-
-  inline DirectoryMsg& operator=(const DirectoryMsg& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const DirectoryMsg& default_instance();
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  // Returns the internal default instance pointer. This function can
-  // return NULL thus should not be used by the user. This is intended
-  // for Protobuf internal code. Please use default_instance() declared
-  // above instead.
-  static inline const DirectoryMsg* internal_default_instance() {
-    return default_instance_;
-  }
-  #endif
-
-  void Swap(DirectoryMsg* other);
-
-  // implements Message ----------------------------------------------
-
-  DirectoryMsg* New() const;
-  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
-  void CopyFrom(const DirectoryMsg& from);
-  void MergeFrom(const DirectoryMsg& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::std::string GetTypeName() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional string name = 1 [default = "DIRECTORY"];
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 1;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // @@protoc_insertion_point(class_scope:universe.DirectoryMsg)
- private:
-  inline void set_has_name();
-  inline void clear_has_name();
-
-  ::std::string* name_;
-  static ::std::string* _default_name_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  friend void  protobuf_AddDesc_universe_2eproto_impl();
-  #else
-  friend void  protobuf_AddDesc_universe_2eproto();
-  #endif
-  friend void protobuf_AssignDesc_universe_2eproto();
-  friend void protobuf_ShutdownFile_universe_2eproto();
-
-  void InitAsDefaultInstance();
-  static DirectoryMsg* default_instance_;
-};
-// ===================================================================
-
-
-// ===================================================================
-
-// MessageWrapper
-
-// required .universe.MessageWrapper.MessageType messageType = 1;
-inline bool MessageWrapper::has_messagetype() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void MessageWrapper::set_has_messagetype() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void MessageWrapper::clear_has_messagetype() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void MessageWrapper::clear_messagetype() {
-  messagetype_ = 3;
-  clear_has_messagetype();
-}
-inline ::universe::MessageWrapper_MessageType MessageWrapper::messagetype() const {
-  return static_cast< ::universe::MessageWrapper_MessageType >(messagetype_);
-}
-inline void MessageWrapper::set_messagetype(::universe::MessageWrapper_MessageType value) {
-  assert(::universe::MessageWrapper_MessageType_IsValid(value));
-  set_has_messagetype();
-  messagetype_ = value;
-}
-
-// optional uint64 objectID = 2;
-inline bool MessageWrapper::has_objectid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void MessageWrapper::set_has_objectid() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void MessageWrapper::clear_has_objectid() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void MessageWrapper::clear_objectid() {
-  objectid_ = GOOGLE_ULONGLONG(0);
-  clear_has_objectid();
-}
-inline ::google::protobuf::uint64 MessageWrapper::objectid() const {
-  return objectid_;
-}
-inline void MessageWrapper::set_objectid(::google::protobuf::uint64 value) {
-  set_has_objectid();
-  objectid_ = value;
-}
-
-// optional .universe.HelloMsg helloMsg = 3;
-inline bool MessageWrapper::has_hellomsg() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void MessageWrapper::set_has_hellomsg() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void MessageWrapper::clear_has_hellomsg() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void MessageWrapper::clear_hellomsg() {
-  if (hellomsg_ != NULL) hellomsg_->::universe::HelloMsg::Clear();
-  clear_has_hellomsg();
-}
-inline const ::universe::HelloMsg& MessageWrapper::hellomsg() const {
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return hellomsg_ != NULL ? *hellomsg_ : *default_instance().hellomsg_;
-#else
-  return hellomsg_ != NULL ? *hellomsg_ : *default_instance_->hellomsg_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const MessageWrapper* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::HelloMsg* MessageWrapper::mutable_hellomsg() {
-  set_has_hellomsg();
-  if (hellomsg_ == NULL) hellomsg_ = new ::universe::HelloMsg;
-  return hellomsg_;
-}
-inline ::universe::HelloMsg* MessageWrapper::release_hellomsg() {
-  clear_has_hellomsg();
-  ::universe::HelloMsg* temp = hellomsg_;
-  hellomsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_hellomsg(::universe::HelloMsg* hellomsg) {
-  delete hellomsg_;
-  hellomsg_ = hellomsg;
-  if (hellomsg) {
-    set_has_hellomsg();
-  } else {
-    clear_has_hellomsg();
-  }
-}
 
-// optional .universe.GoodbyeMsg goodByeMsg = 4;
-inline bool MessageWrapper::has_goodbyemsg() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void MessageWrapper::set_has_goodbyemsg() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void MessageWrapper::clear_has_goodbyemsg() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void MessageWrapper::clear_goodbyemsg() {
-  if (goodbyemsg_ != NULL) goodbyemsg_->::universe::GoodbyeMsg::Clear();
-  clear_has_goodbyemsg();
-}
-inline const ::universe::GoodbyeMsg& MessageWrapper::goodbyemsg() const {
+		void Swap(MessageWrapper* other);
+
+		// implements Message ----------------------------------------------
+
+		MessageWrapper* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const MessageWrapper& from);
+		void MergeFrom(const MessageWrapper& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		typedef MessageWrapper_MessageType MessageType;
+		static const MessageType HELLO = MessageWrapper_MessageType_HELLO;
+		static const MessageType GOODBYE = MessageWrapper_MessageType_GOODBYE;
+		static const MessageType PHYSPROPS = MessageWrapper_MessageType_PHYSPROPS;
+		static const MessageType COLLISION = MessageWrapper_MessageType_COLLISION;
+		static const MessageType SPAWN = MessageWrapper_MessageType_SPAWN;
+		static const MessageType BEAM = MessageWrapper_MessageType_BEAM;
+		static const MessageType SCANRESULT = MessageWrapper_MessageType_SCANRESULT;
+		static const MessageType SCANQUERY = MessageWrapper_MessageType_SCANQUERY;
+		static const MessageType SCANRESP = MessageWrapper_MessageType_SCANRESP;
+		static const MessageType DIRECTORY = MessageWrapper_MessageType_DIRECTORY;
+		static const MessageType VISPROPS = MessageWrapper_MessageType_VISPROPS;
+		static const MessageType VISDATAENABLE = MessageWrapper_MessageType_VISDATAENABLE;
+		static const MessageType VISMETADATAENABLE = MessageWrapper_MessageType_VISMETADATAENABLE;
+		static const MessageType VISMETADATA = MessageWrapper_MessageType_VISMETADATA;
+		static const MessageType VISDATA = MessageWrapper_MessageType_VISDATA;
+		static inline bool MessageType_IsValid(int value) {
+			return MessageWrapper_MessageType_IsValid(value);
+		}
+		static const MessageType MessageType_MIN =
+			MessageWrapper_MessageType_MessageType_MIN;
+		static const MessageType MessageType_MAX =
+			MessageWrapper_MessageType_MessageType_MAX;
+		static const int MessageType_ARRAYSIZE =
+			MessageWrapper_MessageType_MessageType_ARRAYSIZE;
+
+		// accessors -------------------------------------------------------
+
+		// required .universe.MessageWrapper.MessageType messageType = 1;
+		inline bool has_messagetype() const;
+		inline void clear_messagetype();
+		static const int kMessageTypeFieldNumber = 1;
+		inline ::universe::MessageWrapper_MessageType messagetype() const;
+		inline void set_messagetype(::universe::MessageWrapper_MessageType value);
+
+		// optional uint64 objectID = 2;
+		inline bool has_objectid() const;
+		inline void clear_objectid();
+		static const int kObjectIDFieldNumber = 2;
+		inline ::google::protobuf::uint64 objectid() const;
+		inline void set_objectid(::google::protobuf::uint64 value);
+
+		// optional .universe.HelloMsg helloMsg = 3;
+		inline bool has_hellomsg() const;
+		inline void clear_hellomsg();
+		static const int kHelloMsgFieldNumber = 3;
+		inline const ::universe::HelloMsg& hellomsg() const;
+		inline ::universe::HelloMsg* mutable_hellomsg();
+		inline ::universe::HelloMsg* release_hellomsg();
+		inline void set_allocated_hellomsg(::universe::HelloMsg* hellomsg);
+
+		// optional .universe.GoodbyeMsg goodByeMsg = 4;
+		inline bool has_goodbyemsg() const;
+		inline void clear_goodbyemsg();
+		static const int kGoodByeMsgFieldNumber = 4;
+		inline const ::universe::GoodbyeMsg& goodbyemsg() const;
+		inline ::universe::GoodbyeMsg* mutable_goodbyemsg();
+		inline ::universe::GoodbyeMsg* release_goodbyemsg();
+		inline void set_allocated_goodbyemsg(::universe::GoodbyeMsg* goodbyemsg);
+
+		// optional .universe.PhysPropsMsg physPropsMsg = 10;
+		inline bool has_physpropsmsg() const;
+		inline void clear_physpropsmsg();
+		static const int kPhysPropsMsgFieldNumber = 10;
+		inline const ::universe::PhysPropsMsg& physpropsmsg() const;
+		inline ::universe::PhysPropsMsg* mutable_physpropsmsg();
+		inline ::universe::PhysPropsMsg* release_physpropsmsg();
+		inline void set_allocated_physpropsmsg(::universe::PhysPropsMsg* physpropsmsg);
+
+		// optional .universe.CollisionMsg collisionMsg = 11;
+		inline bool has_collisionmsg() const;
+		inline void clear_collisionmsg();
+		static const int kCollisionMsgFieldNumber = 11;
+		inline const ::universe::CollisionMsg& collisionmsg() const;
+		inline ::universe::CollisionMsg* mutable_collisionmsg();
+		inline ::universe::CollisionMsg* release_collisionmsg();
+		inline void set_allocated_collisionmsg(::universe::CollisionMsg* collisionmsg);
+
+		// optional .universe.SpawnMsg spawnMsg = 12;
+		inline bool has_spawnmsg() const;
+		inline void clear_spawnmsg();
+		static const int kSpawnMsgFieldNumber = 12;
+		inline const ::universe::SpawnMsg& spawnmsg() const;
+		inline ::universe::SpawnMsg* mutable_spawnmsg();
+		inline ::universe::SpawnMsg* release_spawnmsg();
+		inline void set_allocated_spawnmsg(::universe::SpawnMsg* spawnmsg);
+
+		// optional .universe.BeamMsg beamMsg = 13;
+		inline bool has_beammsg() const;
+		inline void clear_beammsg();
+		static const int kBeamMsgFieldNumber = 13;
+		inline const ::universe::BeamMsg& beammsg() const;
+		inline ::universe::BeamMsg* mutable_beammsg();
+		inline ::universe::BeamMsg* release_beammsg();
+		inline void set_allocated_beammsg(::universe::BeamMsg* beammsg);
+
+		// optional .universe.ScanResultMsg scanResultMsg = 14;
+		inline bool has_scanresultmsg() const;
+		inline void clear_scanresultmsg();
+		static const int kScanResultMsgFieldNumber = 14;
+		inline const ::universe::ScanResultMsg& scanresultmsg() const;
+		inline ::universe::ScanResultMsg* mutable_scanresultmsg();
+		inline ::universe::ScanResultMsg* release_scanresultmsg();
+		inline void set_allocated_scanresultmsg(::universe::ScanResultMsg* scanresultmsg);
+
+		// optional .universe.ScanQueryMsg scanQueryMsg = 15;
+		inline bool has_scanquerymsg() const;
+		inline void clear_scanquerymsg();
+		static const int kScanQueryMsgFieldNumber = 15;
+		inline const ::universe::ScanQueryMsg& scanquerymsg() const;
+		inline ::universe::ScanQueryMsg* mutable_scanquerymsg();
+		inline ::universe::ScanQueryMsg* release_scanquerymsg();
+		inline void set_allocated_scanquerymsg(::universe::ScanQueryMsg* scanquerymsg);
+
+		// optional .universe.ScanRespMsg scanRespMsg = 16;
+		inline bool has_scanrespmsg() const;
+		inline void clear_scanrespmsg();
+		static const int kScanRespMsgFieldNumber = 16;
+		inline const ::universe::ScanRespMsg& scanrespmsg() const;
+		inline ::universe::ScanRespMsg* mutable_scanrespmsg();
+		inline ::universe::ScanRespMsg* release_scanrespmsg();
+		inline void set_allocated_scanrespmsg(::universe::ScanRespMsg* scanrespmsg);
+
+		// optional .universe.DirectoryMsg directoryMsg = 17;
+		inline bool has_directorymsg() const;
+		inline void clear_directorymsg();
+		static const int kDirectoryMsgFieldNumber = 17;
+		inline const ::universe::DirectoryMsg& directorymsg() const;
+		inline ::universe::DirectoryMsg* mutable_directorymsg();
+		inline ::universe::DirectoryMsg* release_directorymsg();
+		inline void set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg);
+
+		// optional .universe.VisProps visProps = 100;
+		inline bool has_visprops() const;
+		inline void clear_visprops();
+		static const int kVisPropsFieldNumber = 100;
+		inline const ::universe::VisProps& visprops() const;
+		inline ::universe::VisProps* mutable_visprops();
+		inline ::universe::VisProps* release_visprops();
+		inline void set_allocated_visprops(::universe::VisProps* visprops);
+
+		// optional .universe.VisDataEnable visDataEnable = 101;
+		inline bool has_visdataenable() const;
+		inline void clear_visdataenable();
+		static const int kVisDataEnableFieldNumber = 101;
+		inline const ::universe::VisDataEnable& visdataenable() const;
+		inline ::universe::VisDataEnable* mutable_visdataenable();
+		inline ::universe::VisDataEnable* release_visdataenable();
+		inline void set_allocated_visdataenable(::universe::VisDataEnable* visdataenable);
+
+		// optional .universe.VisMetaDataEnable visMetaDataEnable = 102;
+		inline bool has_vismetadataenable() const;
+		inline void clear_vismetadataenable();
+		static const int kVisMetaDataEnableFieldNumber = 102;
+		inline const ::universe::VisMetaDataEnable& vismetadataenable() const;
+		inline ::universe::VisMetaDataEnable* mutable_vismetadataenable();
+		inline ::universe::VisMetaDataEnable* release_vismetadataenable();
+		inline void set_allocated_vismetadataenable(::universe::VisMetaDataEnable* vismetadataenable);
+
+		// optional .universe.VisMetaData visMetaData = 103;
+		inline bool has_vismetadata() const;
+		inline void clear_vismetadata();
+		static const int kVisMetaDataFieldNumber = 103;
+		inline const ::universe::VisMetaData& vismetadata() const;
+		inline ::universe::VisMetaData* mutable_vismetadata();
+		inline ::universe::VisMetaData* release_vismetadata();
+		inline void set_allocated_vismetadata(::universe::VisMetaData* vismetadata);
+
+		// optional .universe.VisData visData = 104;
+		inline bool has_visdata() const;
+		inline void clear_visdata();
+		static const int kVisDataFieldNumber = 104;
+		inline const ::universe::VisData& visdata() const;
+		inline ::universe::VisData* mutable_visdata();
+		inline ::universe::VisData* release_visdata();
+		inline void set_allocated_visdata(::universe::VisData* visdata);
+
+		// @@protoc_insertion_point(class_scope:universe.MessageWrapper)
+	private:
+		inline void set_has_messagetype();
+		inline void clear_has_messagetype();
+		inline void set_has_objectid();
+		inline void clear_has_objectid();
+		inline void set_has_hellomsg();
+		inline void clear_has_hellomsg();
+		inline void set_has_goodbyemsg();
+		inline void clear_has_goodbyemsg();
+		inline void set_has_physpropsmsg();
+		inline void clear_has_physpropsmsg();
+		inline void set_has_collisionmsg();
+		inline void clear_has_collisionmsg();
+		inline void set_has_spawnmsg();
+		inline void clear_has_spawnmsg();
+		inline void set_has_beammsg();
+		inline void clear_has_beammsg();
+		inline void set_has_scanresultmsg();
+		inline void clear_has_scanresultmsg();
+		inline void set_has_scanquerymsg();
+		inline void clear_has_scanquerymsg();
+		inline void set_has_scanrespmsg();
+		inline void clear_has_scanrespmsg();
+		inline void set_has_directorymsg();
+		inline void clear_has_directorymsg();
+		inline void set_has_visprops();
+		inline void clear_has_visprops();
+		inline void set_has_visdataenable();
+		inline void clear_has_visdataenable();
+		inline void set_has_vismetadataenable();
+		inline void clear_has_vismetadataenable();
+		inline void set_has_vismetadata();
+		inline void clear_has_vismetadata();
+		inline void set_has_visdata();
+		inline void clear_has_visdata();
+
+		::google::protobuf::uint64 objectid_;
+		::universe::HelloMsg* hellomsg_;
+		::universe::GoodbyeMsg* goodbyemsg_;
+		::universe::PhysPropsMsg* physpropsmsg_;
+		::universe::CollisionMsg* collisionmsg_;
+		::universe::SpawnMsg* spawnmsg_;
+		::universe::BeamMsg* beammsg_;
+		::universe::ScanResultMsg* scanresultmsg_;
+		::universe::ScanQueryMsg* scanquerymsg_;
+		::universe::ScanRespMsg* scanrespmsg_;
+		::universe::DirectoryMsg* directorymsg_;
+		::universe::VisProps* visprops_;
+		::universe::VisDataEnable* visdataenable_;
+		::universe::VisMetaDataEnable* vismetadataenable_;
+		::universe::VisMetaData* vismetadata_;
+		::universe::VisData* visdata_;
+		int messagetype_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(17 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance().goodbyemsg_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance_->goodbyemsg_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::GoodbyeMsg* MessageWrapper::mutable_goodbyemsg() {
-  set_has_goodbyemsg();
-  if (goodbyemsg_ == NULL) goodbyemsg_ = new ::universe::GoodbyeMsg;
-  return goodbyemsg_;
-}
-inline ::universe::GoodbyeMsg* MessageWrapper::release_goodbyemsg() {
-  clear_has_goodbyemsg();
-  ::universe::GoodbyeMsg* temp = goodbyemsg_;
-  goodbyemsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_goodbyemsg(::universe::GoodbyeMsg* goodbyemsg) {
-  delete goodbyemsg_;
-  goodbyemsg_ = goodbyemsg;
-  if (goodbyemsg) {
-    set_has_goodbyemsg();
-  } else {
-    clear_has_goodbyemsg();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.PhysPropsMsg physPropsMsg = 10;
-inline bool MessageWrapper::has_physpropsmsg() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void MessageWrapper::set_has_physpropsmsg() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void MessageWrapper::clear_has_physpropsmsg() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void MessageWrapper::clear_physpropsmsg() {
-  if (physpropsmsg_ != NULL) physpropsmsg_->::universe::PhysPropsMsg::Clear();
-  clear_has_physpropsmsg();
-}
-inline const ::universe::PhysPropsMsg& MessageWrapper::physpropsmsg() const {
+		void InitAsDefaultInstance();
+		static MessageWrapper* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VectorMsg : public ::google::protobuf::MessageLite {
+	public:
+		VectorMsg();
+		virtual ~VectorMsg();
+
+		VectorMsg(const VectorMsg& from);
+
+		inline VectorMsg& operator=(const VectorMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VectorMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance().physpropsmsg_;
-#else
-  return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance_->physpropsmsg_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VectorMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::PhysPropsMsg* MessageWrapper::mutable_physpropsmsg() {
-  set_has_physpropsmsg();
-  if (physpropsmsg_ == NULL) physpropsmsg_ = new ::universe::PhysPropsMsg;
-  return physpropsmsg_;
-}
-inline ::universe::PhysPropsMsg* MessageWrapper::release_physpropsmsg() {
-  clear_has_physpropsmsg();
-  ::universe::PhysPropsMsg* temp = physpropsmsg_;
-  physpropsmsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_physpropsmsg(::universe::PhysPropsMsg* physpropsmsg) {
-  delete physpropsmsg_;
-  physpropsmsg_ = physpropsmsg;
-  if (physpropsmsg) {
-    set_has_physpropsmsg();
-  } else {
-    clear_has_physpropsmsg();
-  }
-}
 
-// optional .universe.CollisionMsg collisionMsg = 11;
-inline bool MessageWrapper::has_collisionmsg() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void MessageWrapper::set_has_collisionmsg() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void MessageWrapper::clear_has_collisionmsg() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void MessageWrapper::clear_collisionmsg() {
-  if (collisionmsg_ != NULL) collisionmsg_->::universe::CollisionMsg::Clear();
-  clear_has_collisionmsg();
-}
-inline const ::universe::CollisionMsg& MessageWrapper::collisionmsg() const {
+		void Swap(VectorMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		VectorMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VectorMsg& from);
+		void MergeFrom(const VectorMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// required double x = 1;
+		inline bool has_x() const;
+		inline void clear_x();
+		static const int kXFieldNumber = 1;
+		inline double x() const;
+		inline void set_x(double value);
+
+		// required double y = 2;
+		inline bool has_y() const;
+		inline void clear_y();
+		static const int kYFieldNumber = 2;
+		inline double y() const;
+		inline void set_y(double value);
+
+		// required double z = 3;
+		inline bool has_z() const;
+		inline void clear_z();
+		static const int kZFieldNumber = 3;
+		inline double z() const;
+		inline void set_z(double value);
+
+		// @@protoc_insertion_point(class_scope:universe.VectorMsg)
+	private:
+		inline void set_has_x();
+		inline void clear_has_x();
+		inline void set_has_y();
+		inline void clear_has_y();
+		inline void set_has_z();
+		inline void clear_has_z();
+
+		double x_;
+		double y_;
+		double z_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance().collisionmsg_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance_->collisionmsg_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::CollisionMsg* MessageWrapper::mutable_collisionmsg() {
-  set_has_collisionmsg();
-  if (collisionmsg_ == NULL) collisionmsg_ = new ::universe::CollisionMsg;
-  return collisionmsg_;
-}
-inline ::universe::CollisionMsg* MessageWrapper::release_collisionmsg() {
-  clear_has_collisionmsg();
-  ::universe::CollisionMsg* temp = collisionmsg_;
-  collisionmsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_collisionmsg(::universe::CollisionMsg* collisionmsg) {
-  delete collisionmsg_;
-  collisionmsg_ = collisionmsg;
-  if (collisionmsg) {
-    set_has_collisionmsg();
-  } else {
-    clear_has_collisionmsg();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.SpawnMsg spawnMsg = 12;
-inline bool MessageWrapper::has_spawnmsg() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void MessageWrapper::set_has_spawnmsg() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void MessageWrapper::clear_has_spawnmsg() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void MessageWrapper::clear_spawnmsg() {
-  if (spawnmsg_ != NULL) spawnmsg_->::universe::SpawnMsg::Clear();
-  clear_has_spawnmsg();
-}
-inline const ::universe::SpawnMsg& MessageWrapper::spawnmsg() const {
+		void InitAsDefaultInstance();
+		static VectorMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class HelloMsg : public ::google::protobuf::MessageLite {
+	public:
+		HelloMsg();
+		virtual ~HelloMsg();
+
+		HelloMsg(const HelloMsg& from);
+
+		inline HelloMsg& operator=(const HelloMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const HelloMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance().spawnmsg_;
-#else
-  return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance_->spawnmsg_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const HelloMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::SpawnMsg* MessageWrapper::mutable_spawnmsg() {
-  set_has_spawnmsg();
-  if (spawnmsg_ == NULL) spawnmsg_ = new ::universe::SpawnMsg;
-  return spawnmsg_;
-}
-inline ::universe::SpawnMsg* MessageWrapper::release_spawnmsg() {
-  clear_has_spawnmsg();
-  ::universe::SpawnMsg* temp = spawnmsg_;
-  spawnmsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_spawnmsg(::universe::SpawnMsg* spawnmsg) {
-  delete spawnmsg_;
-  spawnmsg_ = spawnmsg;
-  if (spawnmsg) {
-    set_has_spawnmsg();
-  } else {
-    clear_has_spawnmsg();
-  }
-}
 
-// optional .universe.BeamMsg beamMsg = 13;
-inline bool MessageWrapper::has_beammsg() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void MessageWrapper::set_has_beammsg() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void MessageWrapper::clear_has_beammsg() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void MessageWrapper::clear_beammsg() {
-  if (beammsg_ != NULL) beammsg_->::universe::BeamMsg::Clear();
-  clear_has_beammsg();
-}
-inline const ::universe::BeamMsg& MessageWrapper::beammsg() const {
+		void Swap(HelloMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		HelloMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const HelloMsg& from);
+		void MergeFrom(const HelloMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "HELLO"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.HelloMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return beammsg_ != NULL ? *beammsg_ : *default_instance().beammsg_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return beammsg_ != NULL ? *beammsg_ : *default_instance_->beammsg_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::BeamMsg* MessageWrapper::mutable_beammsg() {
-  set_has_beammsg();
-  if (beammsg_ == NULL) beammsg_ = new ::universe::BeamMsg;
-  return beammsg_;
-}
-inline ::universe::BeamMsg* MessageWrapper::release_beammsg() {
-  clear_has_beammsg();
-  ::universe::BeamMsg* temp = beammsg_;
-  beammsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_beammsg(::universe::BeamMsg* beammsg) {
-  delete beammsg_;
-  beammsg_ = beammsg;
-  if (beammsg) {
-    set_has_beammsg();
-  } else {
-    clear_has_beammsg();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.ScanResultMsg scanResultMsg = 14;
-inline bool MessageWrapper::has_scanresultmsg() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
-}
-inline void MessageWrapper::set_has_scanresultmsg() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void MessageWrapper::clear_has_scanresultmsg() {
-  _has_bits_[0] &= ~0x00000100u;
-}
-inline void MessageWrapper::clear_scanresultmsg() {
-  if (scanresultmsg_ != NULL) scanresultmsg_->::universe::ScanResultMsg::Clear();
-  clear_has_scanresultmsg();
-}
-inline const ::universe::ScanResultMsg& MessageWrapper::scanresultmsg() const {
+		void InitAsDefaultInstance();
+		static HelloMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class PhysPropsMsg : public ::google::protobuf::MessageLite {
+	public:
+		PhysPropsMsg();
+		virtual ~PhysPropsMsg();
+
+		PhysPropsMsg(const PhysPropsMsg& from);
+
+		inline PhysPropsMsg& operator=(const PhysPropsMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const PhysPropsMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance().scanresultmsg_;
-#else
-  return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance_->scanresultmsg_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const PhysPropsMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::ScanResultMsg* MessageWrapper::mutable_scanresultmsg() {
-  set_has_scanresultmsg();
-  if (scanresultmsg_ == NULL) scanresultmsg_ = new ::universe::ScanResultMsg;
-  return scanresultmsg_;
-}
-inline ::universe::ScanResultMsg* MessageWrapper::release_scanresultmsg() {
-  clear_has_scanresultmsg();
-  ::universe::ScanResultMsg* temp = scanresultmsg_;
-  scanresultmsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_scanresultmsg(::universe::ScanResultMsg* scanresultmsg) {
-  delete scanresultmsg_;
-  scanresultmsg_ = scanresultmsg;
-  if (scanresultmsg) {
-    set_has_scanresultmsg();
-  } else {
-    clear_has_scanresultmsg();
-  }
-}
 
-// optional .universe.ScanQueryMsg scanQueryMsg = 15;
-inline bool MessageWrapper::has_scanquerymsg() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
-}
-inline void MessageWrapper::set_has_scanquerymsg() {
-  _has_bits_[0] |= 0x00000200u;
-}
-inline void MessageWrapper::clear_has_scanquerymsg() {
-  _has_bits_[0] &= ~0x00000200u;
-}
-inline void MessageWrapper::clear_scanquerymsg() {
-  if (scanquerymsg_ != NULL) scanquerymsg_->::universe::ScanQueryMsg::Clear();
-  clear_has_scanquerymsg();
-}
-inline const ::universe::ScanQueryMsg& MessageWrapper::scanquerymsg() const {
+		void Swap(PhysPropsMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		PhysPropsMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const PhysPropsMsg& from);
+		void MergeFrom(const PhysPropsMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "PHYSPROPS"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// optional double mass = 2;
+		inline bool has_mass() const;
+		inline void clear_mass();
+		static const int kMassFieldNumber = 2;
+		inline double mass() const;
+		inline void set_mass(double value);
+
+		// optional .universe.VectorMsg position = 3;
+		inline bool has_position() const;
+		inline void clear_position();
+		static const int kPositionFieldNumber = 3;
+		inline const ::universe::VectorMsg& position() const;
+		inline ::universe::VectorMsg* mutable_position();
+		inline ::universe::VectorMsg* release_position();
+		inline void set_allocated_position(::universe::VectorMsg* position);
+
+		// optional .universe.VectorMsg velocity = 4;
+		inline bool has_velocity() const;
+		inline void clear_velocity();
+		static const int kVelocityFieldNumber = 4;
+		inline const ::universe::VectorMsg& velocity() const;
+		inline ::universe::VectorMsg* mutable_velocity();
+		inline ::universe::VectorMsg* release_velocity();
+		inline void set_allocated_velocity(::universe::VectorMsg* velocity);
+
+		// optional .universe.VectorMsg orientation = 5;
+		inline bool has_orientation() const;
+		inline void clear_orientation();
+		static const int kOrientationFieldNumber = 5;
+		inline const ::universe::VectorMsg& orientation() const;
+		inline ::universe::VectorMsg* mutable_orientation();
+		inline ::universe::VectorMsg* release_orientation();
+		inline void set_allocated_orientation(::universe::VectorMsg* orientation);
+
+		// optional .universe.VectorMsg thrust = 6;
+		inline bool has_thrust() const;
+		inline void clear_thrust();
+		static const int kThrustFieldNumber = 6;
+		inline const ::universe::VectorMsg& thrust() const;
+		inline ::universe::VectorMsg* mutable_thrust();
+		inline ::universe::VectorMsg* release_thrust();
+		inline void set_allocated_thrust(::universe::VectorMsg* thrust);
+
+		// optional double radius = 7;
+		inline bool has_radius() const;
+		inline void clear_radius();
+		static const int kRadiusFieldNumber = 7;
+		inline double radius() const;
+		inline void set_radius(double value);
+
+		// @@protoc_insertion_point(class_scope:universe.PhysPropsMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_mass();
+		inline void clear_has_mass();
+		inline void set_has_position();
+		inline void clear_has_position();
+		inline void set_has_velocity();
+		inline void clear_has_velocity();
+		inline void set_has_orientation();
+		inline void clear_has_orientation();
+		inline void set_has_thrust();
+		inline void clear_has_thrust();
+		inline void set_has_radius();
+		inline void clear_has_radius();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		double mass_;
+		::universe::VectorMsg* position_;
+		::universe::VectorMsg* velocity_;
+		::universe::VectorMsg* orientation_;
+		::universe::VectorMsg* thrust_;
+		double radius_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance().scanquerymsg_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance_->scanquerymsg_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::ScanQueryMsg* MessageWrapper::mutable_scanquerymsg() {
-  set_has_scanquerymsg();
-  if (scanquerymsg_ == NULL) scanquerymsg_ = new ::universe::ScanQueryMsg;
-  return scanquerymsg_;
-}
-inline ::universe::ScanQueryMsg* MessageWrapper::release_scanquerymsg() {
-  clear_has_scanquerymsg();
-  ::universe::ScanQueryMsg* temp = scanquerymsg_;
-  scanquerymsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_scanquerymsg(::universe::ScanQueryMsg* scanquerymsg) {
-  delete scanquerymsg_;
-  scanquerymsg_ = scanquerymsg;
-  if (scanquerymsg) {
-    set_has_scanquerymsg();
-  } else {
-    clear_has_scanquerymsg();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.ScanRespMsg scanRespMsg = 16;
-inline bool MessageWrapper::has_scanrespmsg() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
-}
-inline void MessageWrapper::set_has_scanrespmsg() {
-  _has_bits_[0] |= 0x00000400u;
-}
-inline void MessageWrapper::clear_has_scanrespmsg() {
-  _has_bits_[0] &= ~0x00000400u;
-}
-inline void MessageWrapper::clear_scanrespmsg() {
-  if (scanrespmsg_ != NULL) scanrespmsg_->::universe::ScanRespMsg::Clear();
-  clear_has_scanrespmsg();
-}
-inline const ::universe::ScanRespMsg& MessageWrapper::scanrespmsg() const {
+		void InitAsDefaultInstance();
+		static PhysPropsMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class GoodbyeMsg : public ::google::protobuf::MessageLite {
+	public:
+		GoodbyeMsg();
+		virtual ~GoodbyeMsg();
+
+		GoodbyeMsg(const GoodbyeMsg& from);
+
+		inline GoodbyeMsg& operator=(const GoodbyeMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const GoodbyeMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance().scanrespmsg_;
-#else
-  return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance_->scanrespmsg_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const GoodbyeMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::ScanRespMsg* MessageWrapper::mutable_scanrespmsg() {
-  set_has_scanrespmsg();
-  if (scanrespmsg_ == NULL) scanrespmsg_ = new ::universe::ScanRespMsg;
-  return scanrespmsg_;
-}
-inline ::universe::ScanRespMsg* MessageWrapper::release_scanrespmsg() {
-  clear_has_scanrespmsg();
-  ::universe::ScanRespMsg* temp = scanrespmsg_;
-  scanrespmsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_scanrespmsg(::universe::ScanRespMsg* scanrespmsg) {
-  delete scanrespmsg_;
-  scanrespmsg_ = scanrespmsg;
-  if (scanrespmsg) {
-    set_has_scanrespmsg();
-  } else {
-    clear_has_scanrespmsg();
-  }
-}
 
-// optional .universe.DirectoryMsg directoryMsg = 17;
-inline bool MessageWrapper::has_directorymsg() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
-}
-inline void MessageWrapper::set_has_directorymsg() {
-  _has_bits_[0] |= 0x00000800u;
-}
-inline void MessageWrapper::clear_has_directorymsg() {
-  _has_bits_[0] &= ~0x00000800u;
-}
-inline void MessageWrapper::clear_directorymsg() {
-  if (directorymsg_ != NULL) directorymsg_->::universe::DirectoryMsg::Clear();
-  clear_has_directorymsg();
-}
-inline const ::universe::DirectoryMsg& MessageWrapper::directorymsg() const {
+		void Swap(GoodbyeMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		GoodbyeMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const GoodbyeMsg& from);
+		void MergeFrom(const GoodbyeMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "GOODBYE"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.GoodbyeMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return directorymsg_ != NULL ? *directorymsg_ : *default_instance().directorymsg_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return directorymsg_ != NULL ? *directorymsg_ : *default_instance_->directorymsg_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::DirectoryMsg* MessageWrapper::mutable_directorymsg() {
-  set_has_directorymsg();
-  if (directorymsg_ == NULL) directorymsg_ = new ::universe::DirectoryMsg;
-  return directorymsg_;
-}
-inline ::universe::DirectoryMsg* MessageWrapper::release_directorymsg() {
-  clear_has_directorymsg();
-  ::universe::DirectoryMsg* temp = directorymsg_;
-  directorymsg_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg) {
-  delete directorymsg_;
-  directorymsg_ = directorymsg;
-  if (directorymsg) {
-    set_has_directorymsg();
-  } else {
-    clear_has_directorymsg();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.VisProps visProps = 100;
-inline bool MessageWrapper::has_visprops() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
-}
-inline void MessageWrapper::set_has_visprops() {
-  _has_bits_[0] |= 0x00001000u;
-}
-inline void MessageWrapper::clear_has_visprops() {
-  _has_bits_[0] &= ~0x00001000u;
-}
-inline void MessageWrapper::clear_visprops() {
-  if (visprops_ != NULL) visprops_->::universe::VisProps::Clear();
-  clear_has_visprops();
-}
-inline const ::universe::VisProps& MessageWrapper::visprops() const {
+		void InitAsDefaultInstance();
+		static GoodbyeMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class CollisionMsg : public ::google::protobuf::MessageLite {
+	public:
+		CollisionMsg();
+		virtual ~CollisionMsg();
+
+		CollisionMsg(const CollisionMsg& from);
+
+		inline CollisionMsg& operator=(const CollisionMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const CollisionMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return visprops_ != NULL ? *visprops_ : *default_instance().visprops_;
-#else
-  return visprops_ != NULL ? *visprops_ : *default_instance_->visprops_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const CollisionMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VisProps* MessageWrapper::mutable_visprops() {
-  set_has_visprops();
-  if (visprops_ == NULL) visprops_ = new ::universe::VisProps;
-  return visprops_;
-}
-inline ::universe::VisProps* MessageWrapper::release_visprops() {
-  clear_has_visprops();
-  ::universe::VisProps* temp = visprops_;
-  visprops_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_visprops(::universe::VisProps* visprops) {
-  delete visprops_;
-  visprops_ = visprops;
-  if (visprops) {
-    set_has_visprops();
-  } else {
-    clear_has_visprops();
-  }
-}
 
-// optional .universe.VisDataEnable visDataEnable = 101;
-inline bool MessageWrapper::has_visdataenable() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
-}
-inline void MessageWrapper::set_has_visdataenable() {
-  _has_bits_[0] |= 0x00002000u;
-}
-inline void MessageWrapper::clear_has_visdataenable() {
-  _has_bits_[0] &= ~0x00002000u;
-}
-inline void MessageWrapper::clear_visdataenable() {
-  if (visdataenable_ != NULL) visdataenable_->::universe::VisDataEnable::Clear();
-  clear_has_visdataenable();
-}
-inline const ::universe::VisDataEnable& MessageWrapper::visdataenable() const {
+		void Swap(CollisionMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		CollisionMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const CollisionMsg& from);
+		void MergeFrom(const CollisionMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		typedef CollisionMsg_CollisionType CollisionType;
+		static const CollisionType PHYS_COLLISION = CollisionMsg_CollisionType_PHYS_COLLISION;
+		static const CollisionType SCAN_COLLISION = CollisionMsg_CollisionType_SCAN_COLLISION;
+		static const CollisionType WEAP_COLLISION = CollisionMsg_CollisionType_WEAP_COLLISION;
+		static const CollisionType COMM_COLLISION = CollisionMsg_CollisionType_COMM_COLLISION;
+		static inline bool CollisionType_IsValid(int value) {
+			return CollisionMsg_CollisionType_IsValid(value);
+		}
+		static const CollisionType CollisionType_MIN =
+			CollisionMsg_CollisionType_CollisionType_MIN;
+		static const CollisionType CollisionType_MAX =
+			CollisionMsg_CollisionType_CollisionType_MAX;
+		static const int CollisionType_ARRAYSIZE =
+			CollisionMsg_CollisionType_CollisionType_ARRAYSIZE;
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "COLLISION"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// required .universe.VectorMsg position = 2;
+		inline bool has_position() const;
+		inline void clear_position();
+		static const int kPositionFieldNumber = 2;
+		inline const ::universe::VectorMsg& position() const;
+		inline ::universe::VectorMsg* mutable_position();
+		inline ::universe::VectorMsg* release_position();
+		inline void set_allocated_position(::universe::VectorMsg* position);
+
+		// required .universe.VectorMsg direction = 3;
+		inline bool has_direction() const;
+		inline void clear_direction();
+		static const int kDirectionFieldNumber = 3;
+		inline const ::universe::VectorMsg& direction() const;
+		inline ::universe::VectorMsg* mutable_direction();
+		inline ::universe::VectorMsg* release_direction();
+		inline void set_allocated_direction(::universe::VectorMsg* direction);
+
+		// required double energy = 4;
+		inline bool has_energy() const;
+		inline void clear_energy();
+		static const int kEnergyFieldNumber = 4;
+		inline double energy() const;
+		inline void set_energy(double value);
+
+		// required .universe.CollisionMsg.CollisionType collisionType = 5;
+		inline bool has_collisiontype() const;
+		inline void clear_collisiontype();
+		static const int kCollisionTypeFieldNumber = 5;
+		inline ::universe::CollisionMsg_CollisionType collisiontype() const;
+		inline void set_collisiontype(::universe::CollisionMsg_CollisionType value);
+
+		// optional string commString = 6;
+		inline bool has_commstring() const;
+		inline void clear_commstring();
+		static const int kCommStringFieldNumber = 6;
+		inline const ::std::string& commstring() const;
+		inline void set_commstring(const ::std::string& value);
+		inline void set_commstring(const char* value);
+		inline void set_commstring(const char* value, size_t size);
+		inline ::std::string* mutable_commstring();
+		inline ::std::string* release_commstring();
+		inline void set_allocated_commstring(::std::string* commstring);
+
+		// @@protoc_insertion_point(class_scope:universe.CollisionMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_position();
+		inline void clear_has_position();
+		inline void set_has_direction();
+		inline void clear_has_direction();
+		inline void set_has_energy();
+		inline void clear_has_energy();
+		inline void set_has_collisiontype();
+		inline void clear_has_collisiontype();
+		inline void set_has_commstring();
+		inline void clear_has_commstring();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		::universe::VectorMsg* position_;
+		::universe::VectorMsg* direction_;
+		double energy_;
+		::std::string* commstring_;
+		int collisiontype_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return visdataenable_ != NULL ? *visdataenable_ : *default_instance().visdataenable_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return visdataenable_ != NULL ? *visdataenable_ : *default_instance_->visdataenable_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VisDataEnable* MessageWrapper::mutable_visdataenable() {
-  set_has_visdataenable();
-  if (visdataenable_ == NULL) visdataenable_ = new ::universe::VisDataEnable;
-  return visdataenable_;
-}
-inline ::universe::VisDataEnable* MessageWrapper::release_visdataenable() {
-  clear_has_visdataenable();
-  ::universe::VisDataEnable* temp = visdataenable_;
-  visdataenable_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_visdataenable(::universe::VisDataEnable* visdataenable) {
-  delete visdataenable_;
-  visdataenable_ = visdataenable;
-  if (visdataenable) {
-    set_has_visdataenable();
-  } else {
-    clear_has_visdataenable();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.VisMetaDataEnable visMetaDataEnable = 102;
-inline bool MessageWrapper::has_vismetadataenable() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
-}
-inline void MessageWrapper::set_has_vismetadataenable() {
-  _has_bits_[0] |= 0x00004000u;
-}
-inline void MessageWrapper::clear_has_vismetadataenable() {
-  _has_bits_[0] &= ~0x00004000u;
-}
-inline void MessageWrapper::clear_vismetadataenable() {
-  if (vismetadataenable_ != NULL) vismetadataenable_->::universe::VisMetaDataEnable::Clear();
-  clear_has_vismetadataenable();
-}
-inline const ::universe::VisMetaDataEnable& MessageWrapper::vismetadataenable() const {
+		void InitAsDefaultInstance();
+		static CollisionMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class SpawnMsg : public ::google::protobuf::MessageLite {
+	public:
+		SpawnMsg();
+		virtual ~SpawnMsg();
+
+		SpawnMsg(const SpawnMsg& from);
+
+		inline SpawnMsg& operator=(const SpawnMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const SpawnMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance().vismetadataenable_;
-#else
-  return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance_->vismetadataenable_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const SpawnMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VisMetaDataEnable* MessageWrapper::mutable_vismetadataenable() {
-  set_has_vismetadataenable();
-  if (vismetadataenable_ == NULL) vismetadataenable_ = new ::universe::VisMetaDataEnable;
-  return vismetadataenable_;
-}
-inline ::universe::VisMetaDataEnable* MessageWrapper::release_vismetadataenable() {
-  clear_has_vismetadataenable();
-  ::universe::VisMetaDataEnable* temp = vismetadataenable_;
-  vismetadataenable_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_vismetadataenable(::universe::VisMetaDataEnable* vismetadataenable) {
-  delete vismetadataenable_;
-  vismetadataenable_ = vismetadataenable;
-  if (vismetadataenable) {
-    set_has_vismetadataenable();
-  } else {
-    clear_has_vismetadataenable();
-  }
-}
 
-// optional .universe.VisMetaData visMetaData = 103;
-inline bool MessageWrapper::has_vismetadata() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
-}
-inline void MessageWrapper::set_has_vismetadata() {
-  _has_bits_[0] |= 0x00008000u;
-}
-inline void MessageWrapper::clear_has_vismetadata() {
-  _has_bits_[0] &= ~0x00008000u;
-}
-inline void MessageWrapper::clear_vismetadata() {
-  if (vismetadata_ != NULL) vismetadata_->::universe::VisMetaData::Clear();
-  clear_has_vismetadata();
-}
-inline const ::universe::VisMetaData& MessageWrapper::vismetadata() const {
+		void Swap(SpawnMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		SpawnMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const SpawnMsg& from);
+		void MergeFrom(const SpawnMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "SPAWN"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// required double mass = 2;
+		inline bool has_mass() const;
+		inline void clear_mass();
+		static const int kMassFieldNumber = 2;
+		inline double mass() const;
+		inline void set_mass(double value);
+
+		// required .universe.VectorMsg position = 3;
+		inline bool has_position() const;
+		inline void clear_position();
+		static const int kPositionFieldNumber = 3;
+		inline const ::universe::VectorMsg& position() const;
+		inline ::universe::VectorMsg* mutable_position();
+		inline ::universe::VectorMsg* release_position();
+		inline void set_allocated_position(::universe::VectorMsg* position);
+
+		// required .universe.VectorMsg velocity = 4;
+		inline bool has_velocity() const;
+		inline void clear_velocity();
+		static const int kVelocityFieldNumber = 4;
+		inline const ::universe::VectorMsg& velocity() const;
+		inline ::universe::VectorMsg* mutable_velocity();
+		inline ::universe::VectorMsg* release_velocity();
+		inline void set_allocated_velocity(::universe::VectorMsg* velocity);
+
+		// required .universe.VectorMsg orientation = 5;
+		inline bool has_orientation() const;
+		inline void clear_orientation();
+		static const int kOrientationFieldNumber = 5;
+		inline const ::universe::VectorMsg& orientation() const;
+		inline ::universe::VectorMsg* mutable_orientation();
+		inline ::universe::VectorMsg* release_orientation();
+		inline void set_allocated_orientation(::universe::VectorMsg* orientation);
+
+		// required .universe.VectorMsg thrust = 6;
+		inline bool has_thrust() const;
+		inline void clear_thrust();
+		static const int kThrustFieldNumber = 6;
+		inline const ::universe::VectorMsg& thrust() const;
+		inline ::universe::VectorMsg* mutable_thrust();
+		inline ::universe::VectorMsg* release_thrust();
+		inline void set_allocated_thrust(::universe::VectorMsg* thrust);
+
+		// required double radius = 7;
+		inline bool has_radius() const;
+		inline void clear_radius();
+		static const int kRadiusFieldNumber = 7;
+		inline double radius() const;
+		inline void set_radius(double value);
+
+		// @@protoc_insertion_point(class_scope:universe.SpawnMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_mass();
+		inline void clear_has_mass();
+		inline void set_has_position();
+		inline void clear_has_position();
+		inline void set_has_velocity();
+		inline void clear_has_velocity();
+		inline void set_has_orientation();
+		inline void clear_has_orientation();
+		inline void set_has_thrust();
+		inline void clear_has_thrust();
+		inline void set_has_radius();
+		inline void clear_has_radius();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		double mass_;
+		::universe::VectorMsg* position_;
+		::universe::VectorMsg* velocity_;
+		::universe::VectorMsg* orientation_;
+		::universe::VectorMsg* thrust_;
+		double radius_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return vismetadata_ != NULL ? *vismetadata_ : *default_instance().vismetadata_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return vismetadata_ != NULL ? *vismetadata_ : *default_instance_->vismetadata_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VisMetaData* MessageWrapper::mutable_vismetadata() {
-  set_has_vismetadata();
-  if (vismetadata_ == NULL) vismetadata_ = new ::universe::VisMetaData;
-  return vismetadata_;
-}
-inline ::universe::VisMetaData* MessageWrapper::release_vismetadata() {
-  clear_has_vismetadata();
-  ::universe::VisMetaData* temp = vismetadata_;
-  vismetadata_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_vismetadata(::universe::VisMetaData* vismetadata) {
-  delete vismetadata_;
-  vismetadata_ = vismetadata;
-  if (vismetadata) {
-    set_has_vismetadata();
-  } else {
-    clear_has_vismetadata();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.VisData visData = 104;
-inline bool MessageWrapper::has_visdata() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
-}
-inline void MessageWrapper::set_has_visdata() {
-  _has_bits_[0] |= 0x00010000u;
-}
-inline void MessageWrapper::clear_has_visdata() {
-  _has_bits_[0] &= ~0x00010000u;
-}
-inline void MessageWrapper::clear_visdata() {
-  if (visdata_ != NULL) visdata_->::universe::VisData::Clear();
-  clear_has_visdata();
-}
-inline const ::universe::VisData& MessageWrapper::visdata() const {
+		void InitAsDefaultInstance();
+		static SpawnMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VisProps : public ::google::protobuf::MessageLite {
+	public:
+		VisProps();
+		virtual ~VisProps();
+
+		VisProps(const VisProps& from);
+
+		inline VisProps& operator=(const VisProps& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VisProps& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return visdata_ != NULL ? *visdata_ : *default_instance().visdata_;
-#else
-  return visdata_ != NULL ? *visdata_ : *default_instance_->visdata_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VisProps* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VisData* MessageWrapper::mutable_visdata() {
-  set_has_visdata();
-  if (visdata_ == NULL) visdata_ = new ::universe::VisData;
-  return visdata_;
-}
-inline ::universe::VisData* MessageWrapper::release_visdata() {
-  clear_has_visdata();
-  ::universe::VisData* temp = visdata_;
-  visdata_ = NULL;
-  return temp;
-}
-inline void MessageWrapper::set_allocated_visdata(::universe::VisData* visdata) {
-  delete visdata_;
-  visdata_ = visdata;
-  if (visdata) {
-    set_has_visdata();
-  } else {
-    clear_has_visdata();
-  }
-}
 
-// -------------------------------------------------------------------
+		void Swap(VisProps* other);
 
-// VectorMsg
+		// implements Message ----------------------------------------------
 
-// required double x = 1;
-inline bool VectorMsg::has_x() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VectorMsg::set_has_x() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VectorMsg::clear_has_x() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VectorMsg::clear_x() {
-  x_ = 0;
-  clear_has_x();
-}
-inline double VectorMsg::x() const {
-  return x_;
-}
-inline void VectorMsg::set_x(double value) {
-  set_has_x();
-  x_ = value;
-}
+		VisProps* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VisProps& from);
+		void MergeFrom(const VisProps& from);
+		void Clear();
+		bool IsInitialized() const;
 
-// required double y = 2;
-inline bool VectorMsg::has_y() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void VectorMsg::set_has_y() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void VectorMsg::clear_has_y() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void VectorMsg::clear_y() {
-  y_ = 0;
-  clear_has_y();
-}
-inline double VectorMsg::y() const {
-  return y_;
-}
-inline void VectorMsg::set_y(double value) {
-  set_has_y();
-  y_ = value;
-}
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
 
-// required double z = 3;
-inline bool VectorMsg::has_z() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void VectorMsg::set_has_z() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void VectorMsg::clear_has_z() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void VectorMsg::clear_z() {
-  z_ = 0;
-  clear_has_z();
-}
-inline double VectorMsg::z() const {
-  return z_;
-}
-inline void VectorMsg::set_z(double value) {
-  set_has_z();
-  z_ = value;
-}
+		::std::string GetTypeName() const;
 
-// -------------------------------------------------------------------
+		// nested types ----------------------------------------------------
 
-// HelloMsg
+		// accessors -------------------------------------------------------
 
-// optional string name = 1 [default = "HELLO"];
-inline bool HelloMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void HelloMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void HelloMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void HelloMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& HelloMsg::name() const {
-  return *name_;
-}
-inline void HelloMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void HelloMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void HelloMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* HelloMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* HelloMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void HelloMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// optional string name = 1 [default = "VISPROPS"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
 
-// -------------------------------------------------------------------
+		// @@protoc_insertion_point(class_scope:universe.VisProps)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
 
-// PhysPropsMsg
+		::std::string* name_;
+		static ::std::string* _default_name_;
 
-// optional string name = 1 [default = "PHYSPROPS"];
-inline bool PhysPropsMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void PhysPropsMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void PhysPropsMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void PhysPropsMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& PhysPropsMsg::name() const {
-  return *name_;
-}
-inline void PhysPropsMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void PhysPropsMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void PhysPropsMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* PhysPropsMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* PhysPropsMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void PhysPropsMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
-// optional double mass = 2;
-inline bool PhysPropsMsg::has_mass() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void PhysPropsMsg::set_has_mass() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void PhysPropsMsg::clear_has_mass() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void PhysPropsMsg::clear_mass() {
-  mass_ = 0;
-  clear_has_mass();
-}
-inline double PhysPropsMsg::mass() const {
-  return mass_;
-}
-inline void PhysPropsMsg::set_mass(double value) {
-  set_has_mass();
-  mass_ = value;
-}
-
-// optional .universe.VectorMsg position = 3;
-inline bool PhysPropsMsg::has_position() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void PhysPropsMsg::set_has_position() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void PhysPropsMsg::clear_has_position() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void PhysPropsMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
-  clear_has_position();
-}
-inline const ::universe::VectorMsg& PhysPropsMsg::position() const {
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return position_ != NULL ? *position_ : *default_instance().position_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return position_ != NULL ? *position_ : *default_instance_->position_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* PhysPropsMsg::mutable_position() {
-  set_has_position();
-  if (position_ == NULL) position_ = new ::universe::VectorMsg;
-  return position_;
-}
-inline ::universe::VectorMsg* PhysPropsMsg::release_position() {
-  clear_has_position();
-  ::universe::VectorMsg* temp = position_;
-  position_ = NULL;
-  return temp;
-}
-inline void PhysPropsMsg::set_allocated_position(::universe::VectorMsg* position) {
-  delete position_;
-  position_ = position;
-  if (position) {
-    set_has_position();
-  } else {
-    clear_has_position();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.VectorMsg velocity = 4;
-inline bool PhysPropsMsg::has_velocity() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void PhysPropsMsg::set_has_velocity() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void PhysPropsMsg::clear_has_velocity() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void PhysPropsMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
-  clear_has_velocity();
-}
-inline const ::universe::VectorMsg& PhysPropsMsg::velocity() const {
+		void InitAsDefaultInstance();
+		static VisProps* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VisDataEnable : public ::google::protobuf::MessageLite {
+	public:
+		VisDataEnable();
+		virtual ~VisDataEnable();
+
+		VisDataEnable(const VisDataEnable& from);
+
+		inline VisDataEnable& operator=(const VisDataEnable& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VisDataEnable& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
-#else
-  return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VisDataEnable* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* PhysPropsMsg::mutable_velocity() {
-  set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
-  return velocity_;
-}
-inline ::universe::VectorMsg* PhysPropsMsg::release_velocity() {
-  clear_has_velocity();
-  ::universe::VectorMsg* temp = velocity_;
-  velocity_ = NULL;
-  return temp;
-}
-inline void PhysPropsMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
-  delete velocity_;
-  velocity_ = velocity;
-  if (velocity) {
-    set_has_velocity();
-  } else {
-    clear_has_velocity();
-  }
-}
 
-// optional .universe.VectorMsg orientation = 5;
-inline bool PhysPropsMsg::has_orientation() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void PhysPropsMsg::set_has_orientation() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void PhysPropsMsg::clear_has_orientation() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void PhysPropsMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
-  clear_has_orientation();
-}
-inline const ::universe::VectorMsg& PhysPropsMsg::orientation() const {
+		void Swap(VisDataEnable* other);
+
+		// implements Message ----------------------------------------------
+
+		VisDataEnable* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VisDataEnable& from);
+		void MergeFrom(const VisDataEnable& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "VISDATAENABLE"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.VisDataEnable)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* PhysPropsMsg::mutable_orientation() {
-  set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
-  return orientation_;
-}
-inline ::universe::VectorMsg* PhysPropsMsg::release_orientation() {
-  clear_has_orientation();
-  ::universe::VectorMsg* temp = orientation_;
-  orientation_ = NULL;
-  return temp;
-}
-inline void PhysPropsMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
-  delete orientation_;
-  orientation_ = orientation;
-  if (orientation) {
-    set_has_orientation();
-  } else {
-    clear_has_orientation();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// optional .universe.VectorMsg thrust = 6;
-inline bool PhysPropsMsg::has_thrust() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void PhysPropsMsg::set_has_thrust() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void PhysPropsMsg::clear_has_thrust() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void PhysPropsMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
-  clear_has_thrust();
-}
-inline const ::universe::VectorMsg& PhysPropsMsg::thrust() const {
+		void InitAsDefaultInstance();
+		static VisDataEnable* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VisData : public ::google::protobuf::MessageLite {
+	public:
+		VisData();
+		virtual ~VisData();
+
+		VisData(const VisData& from);
+
+		inline VisData& operator=(const VisData& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VisData& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
-#else
-  return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VisData* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* PhysPropsMsg::mutable_thrust() {
-  set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
-  return thrust_;
-}
-inline ::universe::VectorMsg* PhysPropsMsg::release_thrust() {
-  clear_has_thrust();
-  ::universe::VectorMsg* temp = thrust_;
-  thrust_ = NULL;
-  return temp;
-}
-inline void PhysPropsMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
-  delete thrust_;
-  thrust_ = thrust;
-  if (thrust) {
-    set_has_thrust();
-  } else {
-    clear_has_thrust();
-  }
-}
 
-// optional double radius = 7;
-inline bool PhysPropsMsg::has_radius() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void PhysPropsMsg::set_has_radius() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void PhysPropsMsg::clear_has_radius() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void PhysPropsMsg::clear_radius() {
-  radius_ = 0;
-  clear_has_radius();
-}
-inline double PhysPropsMsg::radius() const {
-  return radius_;
-}
-inline void PhysPropsMsg::set_radius(double value) {
-  set_has_radius();
-  radius_ = value;
-}
+		void Swap(VisData* other);
 
-// -------------------------------------------------------------------
+		// implements Message ----------------------------------------------
 
-// GoodbyeMsg
+		VisData* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VisData& from);
+		void MergeFrom(const VisData& from);
+		void Clear();
+		bool IsInitialized() const;
 
-// optional string name = 1 [default = "GOODBYE"];
-inline bool GoodbyeMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void GoodbyeMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void GoodbyeMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void GoodbyeMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& GoodbyeMsg::name() const {
-  return *name_;
-}
-inline void GoodbyeMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void GoodbyeMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void GoodbyeMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* GoodbyeMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* GoodbyeMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void GoodbyeMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
 
-// -------------------------------------------------------------------
+		::std::string GetTypeName() const;
 
-// CollisionMsg
+		// nested types ----------------------------------------------------
 
-// optional string name = 1 [default = "COLLISION"];
-inline bool CollisionMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void CollisionMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void CollisionMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void CollisionMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& CollisionMsg::name() const {
-  return *name_;
-}
-inline void CollisionMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void CollisionMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void CollisionMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* CollisionMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* CollisionMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void CollisionMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// accessors -------------------------------------------------------
 
-// required .universe.VectorMsg position = 2;
-inline bool CollisionMsg::has_position() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void CollisionMsg::set_has_position() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void CollisionMsg::clear_has_position() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void CollisionMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
-  clear_has_position();
-}
-inline const ::universe::VectorMsg& CollisionMsg::position() const {
+		// optional string name = 1 [default = "VISDATA"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.VisData)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return position_ != NULL ? *position_ : *default_instance().position_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return position_ != NULL ? *position_ : *default_instance_->position_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* CollisionMsg::mutable_position() {
-  set_has_position();
-  if (position_ == NULL) position_ = new ::universe::VectorMsg;
-  return position_;
-}
-inline ::universe::VectorMsg* CollisionMsg::release_position() {
-  clear_has_position();
-  ::universe::VectorMsg* temp = position_;
-  position_ = NULL;
-  return temp;
-}
-inline void CollisionMsg::set_allocated_position(::universe::VectorMsg* position) {
-  delete position_;
-  position_ = position;
-  if (position) {
-    set_has_position();
-  } else {
-    clear_has_position();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required .universe.VectorMsg direction = 3;
-inline bool CollisionMsg::has_direction() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void CollisionMsg::set_has_direction() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void CollisionMsg::clear_has_direction() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void CollisionMsg::clear_direction() {
-  if (direction_ != NULL) direction_->::universe::VectorMsg::Clear();
-  clear_has_direction();
-}
-inline const ::universe::VectorMsg& CollisionMsg::direction() const {
+		void InitAsDefaultInstance();
+		static VisData* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VisMetaData : public ::google::protobuf::MessageLite {
+	public:
+		VisMetaData();
+		virtual ~VisMetaData();
+
+		VisMetaData(const VisMetaData& from);
+
+		inline VisMetaData& operator=(const VisMetaData& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VisMetaData& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return direction_ != NULL ? *direction_ : *default_instance().direction_;
-#else
-  return direction_ != NULL ? *direction_ : *default_instance_->direction_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VisMetaData* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* CollisionMsg::mutable_direction() {
-  set_has_direction();
-  if (direction_ == NULL) direction_ = new ::universe::VectorMsg;
-  return direction_;
-}
-inline ::universe::VectorMsg* CollisionMsg::release_direction() {
-  clear_has_direction();
-  ::universe::VectorMsg* temp = direction_;
-  direction_ = NULL;
-  return temp;
-}
-inline void CollisionMsg::set_allocated_direction(::universe::VectorMsg* direction) {
-  delete direction_;
-  direction_ = direction;
-  if (direction) {
-    set_has_direction();
-  } else {
-    clear_has_direction();
-  }
-}
 
-// required double energy = 4;
-inline bool CollisionMsg::has_energy() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void CollisionMsg::set_has_energy() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void CollisionMsg::clear_has_energy() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void CollisionMsg::clear_energy() {
-  energy_ = 0;
-  clear_has_energy();
-}
-inline double CollisionMsg::energy() const {
-  return energy_;
-}
-inline void CollisionMsg::set_energy(double value) {
-  set_has_energy();
-  energy_ = value;
-}
+		void Swap(VisMetaData* other);
 
-// required .universe.CollisionMsg.CollisionType collisionType = 5;
-inline bool CollisionMsg::has_collisiontype() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void CollisionMsg::set_has_collisiontype() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void CollisionMsg::clear_has_collisiontype() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void CollisionMsg::clear_collisiontype() {
-  collisiontype_ = 1;
-  clear_has_collisiontype();
-}
-inline ::universe::CollisionMsg_CollisionType CollisionMsg::collisiontype() const {
-  return static_cast< ::universe::CollisionMsg_CollisionType >(collisiontype_);
-}
-inline void CollisionMsg::set_collisiontype(::universe::CollisionMsg_CollisionType value) {
-  assert(::universe::CollisionMsg_CollisionType_IsValid(value));
-  set_has_collisiontype();
-  collisiontype_ = value;
-}
+		// implements Message ----------------------------------------------
 
-// optional string commString = 6;
-inline bool CollisionMsg::has_commstring() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void CollisionMsg::set_has_commstring() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void CollisionMsg::clear_has_commstring() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void CollisionMsg::clear_commstring() {
-  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
-    commstring_->clear();
-  }
-  clear_has_commstring();
-}
-inline const ::std::string& CollisionMsg::commstring() const {
-  return *commstring_;
-}
-inline void CollisionMsg::set_commstring(const ::std::string& value) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(value);
-}
-inline void CollisionMsg::set_commstring(const char* value) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(value);
-}
-inline void CollisionMsg::set_commstring(const char* value, size_t size) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* CollisionMsg::mutable_commstring() {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  return commstring_;
-}
-inline ::std::string* CollisionMsg::release_commstring() {
-  clear_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = commstring_;
-    commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void CollisionMsg::set_allocated_commstring(::std::string* commstring) {
-  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
-    delete commstring_;
-  }
-  if (commstring) {
-    set_has_commstring();
-    commstring_ = commstring;
-  } else {
-    clear_has_commstring();
-    commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
+		VisMetaData* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VisMetaData& from);
+		void MergeFrom(const VisMetaData& from);
+		void Clear();
+		bool IsInitialized() const;
 
-// -------------------------------------------------------------------
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
 
-// SpawnMsg
+		::std::string GetTypeName() const;
 
-// optional string name = 1 [default = "SPAWN"];
-inline bool SpawnMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void SpawnMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void SpawnMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void SpawnMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& SpawnMsg::name() const {
-  return *name_;
-}
-inline void SpawnMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void SpawnMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void SpawnMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SpawnMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* SpawnMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void SpawnMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// nested types ----------------------------------------------------
 
-// required double mass = 2;
-inline bool SpawnMsg::has_mass() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SpawnMsg::set_has_mass() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SpawnMsg::clear_has_mass() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SpawnMsg::clear_mass() {
-  mass_ = 0;
-  clear_has_mass();
-}
-inline double SpawnMsg::mass() const {
-  return mass_;
-}
-inline void SpawnMsg::set_mass(double value) {
-  set_has_mass();
-  mass_ = value;
-}
+		// accessors -------------------------------------------------------
 
-// required .universe.VectorMsg position = 3;
-inline bool SpawnMsg::has_position() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void SpawnMsg::set_has_position() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void SpawnMsg::clear_has_position() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void SpawnMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
-  clear_has_position();
-}
-inline const ::universe::VectorMsg& SpawnMsg::position() const {
+		// optional string name = 1 [default = "VISMETADATA"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.VisMetaData)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return position_ != NULL ? *position_ : *default_instance().position_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return position_ != NULL ? *position_ : *default_instance_->position_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* SpawnMsg::mutable_position() {
-  set_has_position();
-  if (position_ == NULL) position_ = new ::universe::VectorMsg;
-  return position_;
-}
-inline ::universe::VectorMsg* SpawnMsg::release_position() {
-  clear_has_position();
-  ::universe::VectorMsg* temp = position_;
-  position_ = NULL;
-  return temp;
-}
-inline void SpawnMsg::set_allocated_position(::universe::VectorMsg* position) {
-  delete position_;
-  position_ = position;
-  if (position) {
-    set_has_position();
-  } else {
-    clear_has_position();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required .universe.VectorMsg velocity = 4;
-inline bool SpawnMsg::has_velocity() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void SpawnMsg::set_has_velocity() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void SpawnMsg::clear_has_velocity() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void SpawnMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
-  clear_has_velocity();
-}
-inline const ::universe::VectorMsg& SpawnMsg::velocity() const {
+		void InitAsDefaultInstance();
+		static VisMetaData* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class VisMetaDataEnable : public ::google::protobuf::MessageLite {
+	public:
+		VisMetaDataEnable();
+		virtual ~VisMetaDataEnable();
+
+		VisMetaDataEnable(const VisMetaDataEnable& from);
+
+		inline VisMetaDataEnable& operator=(const VisMetaDataEnable& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const VisMetaDataEnable& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
-#else
-  return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const VisMetaDataEnable* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* SpawnMsg::mutable_velocity() {
-  set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
-  return velocity_;
-}
-inline ::universe::VectorMsg* SpawnMsg::release_velocity() {
-  clear_has_velocity();
-  ::universe::VectorMsg* temp = velocity_;
-  velocity_ = NULL;
-  return temp;
-}
-inline void SpawnMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
-  delete velocity_;
-  velocity_ = velocity;
-  if (velocity) {
-    set_has_velocity();
-  } else {
-    clear_has_velocity();
-  }
-}
 
-// required .universe.VectorMsg orientation = 5;
-inline bool SpawnMsg::has_orientation() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void SpawnMsg::set_has_orientation() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void SpawnMsg::clear_has_orientation() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void SpawnMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
-  clear_has_orientation();
-}
-inline const ::universe::VectorMsg& SpawnMsg::orientation() const {
+		void Swap(VisMetaDataEnable* other);
+
+		// implements Message ----------------------------------------------
+
+		VisMetaDataEnable* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const VisMetaDataEnable& from);
+		void MergeFrom(const VisMetaDataEnable& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "VISMETADATAENABLE"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.VisMetaDataEnable)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* SpawnMsg::mutable_orientation() {
-  set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
-  return orientation_;
-}
-inline ::universe::VectorMsg* SpawnMsg::release_orientation() {
-  clear_has_orientation();
-  ::universe::VectorMsg* temp = orientation_;
-  orientation_ = NULL;
-  return temp;
-}
-inline void SpawnMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
-  delete orientation_;
-  orientation_ = orientation;
-  if (orientation) {
-    set_has_orientation();
-  } else {
-    clear_has_orientation();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required .universe.VectorMsg thrust = 6;
-inline bool SpawnMsg::has_thrust() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void SpawnMsg::set_has_thrust() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void SpawnMsg::clear_has_thrust() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void SpawnMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
-  clear_has_thrust();
-}
-inline const ::universe::VectorMsg& SpawnMsg::thrust() const {
+		void InitAsDefaultInstance();
+		static VisMetaDataEnable* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class BeamMsg : public ::google::protobuf::MessageLite {
+	public:
+		BeamMsg();
+		virtual ~BeamMsg();
+
+		BeamMsg(const BeamMsg& from);
+
+		inline BeamMsg& operator=(const BeamMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const BeamMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
-#else
-  return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const BeamMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* SpawnMsg::mutable_thrust() {
-  set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
-  return thrust_;
-}
-inline ::universe::VectorMsg* SpawnMsg::release_thrust() {
-  clear_has_thrust();
-  ::universe::VectorMsg* temp = thrust_;
-  thrust_ = NULL;
-  return temp;
-}
-inline void SpawnMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
-  delete thrust_;
-  thrust_ = thrust;
-  if (thrust) {
-    set_has_thrust();
-  } else {
-    clear_has_thrust();
-  }
-}
 
-// required double radius = 7;
-inline bool SpawnMsg::has_radius() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void SpawnMsg::set_has_radius() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void SpawnMsg::clear_has_radius() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void SpawnMsg::clear_radius() {
-  radius_ = 0;
-  clear_has_radius();
-}
-inline double SpawnMsg::radius() const {
-  return radius_;
-}
-inline void SpawnMsg::set_radius(double value) {
-  set_has_radius();
-  radius_ = value;
-}
+		void Swap(BeamMsg* other);
 
-// -------------------------------------------------------------------
+		// implements Message ----------------------------------------------
 
-// VisProps
+		BeamMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const BeamMsg& from);
+		void MergeFrom(const BeamMsg& from);
+		void Clear();
+		bool IsInitialized() const;
 
-// optional string name = 1 [default = "VISPROPS"];
-inline bool VisProps::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VisProps::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VisProps::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VisProps::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& VisProps::name() const {
-  return *name_;
-}
-inline void VisProps::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisProps::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisProps::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* VisProps::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* VisProps::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void VisProps::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
 
-// -------------------------------------------------------------------
+		::std::string GetTypeName() const;
 
-// VisDataEnable
+		// nested types ----------------------------------------------------
 
-// optional string name = 1 [default = "VISDATAENABLE"];
-inline bool VisDataEnable::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VisDataEnable::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VisDataEnable::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VisDataEnable::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& VisDataEnable::name() const {
-  return *name_;
-}
-inline void VisDataEnable::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisDataEnable::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisDataEnable::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* VisDataEnable::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* VisDataEnable::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void VisDataEnable::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		typedef BeamMsg_BeamType BeamType;
+		static const BeamType SCAN = BeamMsg_BeamType_SCAN;
+		static const BeamType WEAP = BeamMsg_BeamType_WEAP;
+		static const BeamType COMM = BeamMsg_BeamType_COMM;
+		static inline bool BeamType_IsValid(int value) {
+			return BeamMsg_BeamType_IsValid(value);
+		}
+		static const BeamType BeamType_MIN =
+			BeamMsg_BeamType_BeamType_MIN;
+		static const BeamType BeamType_MAX =
+			BeamMsg_BeamType_BeamType_MAX;
+		static const int BeamType_ARRAYSIZE =
+			BeamMsg_BeamType_BeamType_ARRAYSIZE;
 
-// -------------------------------------------------------------------
+		// accessors -------------------------------------------------------
 
-// VisData
+		// optional string name = 1 [default = "BEAM"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
 
-// optional string name = 1 [default = "VISDATA"];
-inline bool VisData::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VisData::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VisData::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VisData::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& VisData::name() const {
-  return *name_;
-}
-inline void VisData::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisData::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisData::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* VisData::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* VisData::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void VisData::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// required .universe.VectorMsg origin = 2;
+		inline bool has_origin() const;
+		inline void clear_origin();
+		static const int kOriginFieldNumber = 2;
+		inline const ::universe::VectorMsg& origin() const;
+		inline ::universe::VectorMsg* mutable_origin();
+		inline ::universe::VectorMsg* release_origin();
+		inline void set_allocated_origin(::universe::VectorMsg* origin);
 
-// -------------------------------------------------------------------
+		// required .universe.VectorMsg velocity = 3;
+		inline bool has_velocity() const;
+		inline void clear_velocity();
+		static const int kVelocityFieldNumber = 3;
+		inline const ::universe::VectorMsg& velocity() const;
+		inline ::universe::VectorMsg* mutable_velocity();
+		inline ::universe::VectorMsg* release_velocity();
+		inline void set_allocated_velocity(::universe::VectorMsg* velocity);
 
-// VisMetaData
+		// required .universe.VectorMsg up = 4;
+		inline bool has_up() const;
+		inline void clear_up();
+		static const int kUpFieldNumber = 4;
+		inline const ::universe::VectorMsg& up() const;
+		inline ::universe::VectorMsg* mutable_up();
+		inline ::universe::VectorMsg* release_up();
+		inline void set_allocated_up(::universe::VectorMsg* up);
 
-// optional string name = 1 [default = "VISMETADATA"];
-inline bool VisMetaData::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VisMetaData::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VisMetaData::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VisMetaData::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& VisMetaData::name() const {
-  return *name_;
-}
-inline void VisMetaData::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisMetaData::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisMetaData::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* VisMetaData::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* VisMetaData::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void VisMetaData::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// required double spread_h = 5;
+		inline bool has_spread_h() const;
+		inline void clear_spread_h();
+		static const int kSpreadHFieldNumber = 5;
+		inline double spread_h() const;
+		inline void set_spread_h(double value);
 
-// -------------------------------------------------------------------
+		// required double spread_v = 6;
+		inline bool has_spread_v() const;
+		inline void clear_spread_v();
+		static const int kSpreadVFieldNumber = 6;
+		inline double spread_v() const;
+		inline void set_spread_v(double value);
 
-// VisMetaDataEnable
+		// required double energy = 7;
+		inline bool has_energy() const;
+		inline void clear_energy();
+		static const int kEnergyFieldNumber = 7;
+		inline double energy() const;
+		inline void set_energy(double value);
 
-// optional string name = 1 [default = "VISMETADATAENABLE"];
-inline bool VisMetaDataEnable::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void VisMetaDataEnable::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void VisMetaDataEnable::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void VisMetaDataEnable::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& VisMetaDataEnable::name() const {
-  return *name_;
-}
-inline void VisMetaDataEnable::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisMetaDataEnable::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void VisMetaDataEnable::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* VisMetaDataEnable::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* VisMetaDataEnable::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void VisMetaDataEnable::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// required .universe.BeamMsg.BeamType beamType = 8;
+		inline bool has_beamtype() const;
+		inline void clear_beamtype();
+		static const int kBeamTypeFieldNumber = 8;
+		inline ::universe::BeamMsg_BeamType beamtype() const;
+		inline void set_beamtype(::universe::BeamMsg_BeamType value);
 
-// -------------------------------------------------------------------
+		// optional string commString = 9;
+		inline bool has_commstring() const;
+		inline void clear_commstring();
+		static const int kCommStringFieldNumber = 9;
+		inline const ::std::string& commstring() const;
+		inline void set_commstring(const ::std::string& value);
+		inline void set_commstring(const char* value);
+		inline void set_commstring(const char* value, size_t size);
+		inline ::std::string* mutable_commstring();
+		inline ::std::string* release_commstring();
+		inline void set_allocated_commstring(::std::string* commstring);
 
-// BeamMsg
+		// @@protoc_insertion_point(class_scope:universe.BeamMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_origin();
+		inline void clear_has_origin();
+		inline void set_has_velocity();
+		inline void clear_has_velocity();
+		inline void set_has_up();
+		inline void clear_has_up();
+		inline void set_has_spread_h();
+		inline void clear_has_spread_h();
+		inline void set_has_spread_v();
+		inline void clear_has_spread_v();
+		inline void set_has_energy();
+		inline void clear_has_energy();
+		inline void set_has_beamtype();
+		inline void clear_has_beamtype();
+		inline void set_has_commstring();
+		inline void clear_has_commstring();
 
-// optional string name = 1 [default = "BEAM"];
-inline bool BeamMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void BeamMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void BeamMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void BeamMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& BeamMsg::name() const {
-  return *name_;
-}
-inline void BeamMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void BeamMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void BeamMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* BeamMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* BeamMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void BeamMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		::universe::VectorMsg* origin_;
+		::universe::VectorMsg* velocity_;
+		::universe::VectorMsg* up_;
+		double spread_h_;
+		double spread_v_;
+		double energy_;
+		::std::string* commstring_;
+		int beamtype_;
 
-// required .universe.VectorMsg origin = 2;
-inline bool BeamMsg::has_origin() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void BeamMsg::set_has_origin() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void BeamMsg::clear_has_origin() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void BeamMsg::clear_origin() {
-  if (origin_ != NULL) origin_->::universe::VectorMsg::Clear();
-  clear_has_origin();
-}
-inline const ::universe::VectorMsg& BeamMsg::origin() const {
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(9 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return origin_ != NULL ? *origin_ : *default_instance().origin_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return origin_ != NULL ? *origin_ : *default_instance_->origin_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* BeamMsg::mutable_origin() {
-  set_has_origin();
-  if (origin_ == NULL) origin_ = new ::universe::VectorMsg;
-  return origin_;
-}
-inline ::universe::VectorMsg* BeamMsg::release_origin() {
-  clear_has_origin();
-  ::universe::VectorMsg* temp = origin_;
-  origin_ = NULL;
-  return temp;
-}
-inline void BeamMsg::set_allocated_origin(::universe::VectorMsg* origin) {
-  delete origin_;
-  origin_ = origin;
-  if (origin) {
-    set_has_origin();
-  } else {
-    clear_has_origin();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required .universe.VectorMsg velocity = 3;
-inline bool BeamMsg::has_velocity() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void BeamMsg::set_has_velocity() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void BeamMsg::clear_has_velocity() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void BeamMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
-  clear_has_velocity();
-}
-inline const ::universe::VectorMsg& BeamMsg::velocity() const {
+		void InitAsDefaultInstance();
+		static BeamMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class ScanResultMsg : public ::google::protobuf::MessageLite {
+	public:
+		ScanResultMsg();
+		virtual ~ScanResultMsg();
+
+		ScanResultMsg(const ScanResultMsg& from);
+
+		inline ScanResultMsg& operator=(const ScanResultMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const ScanResultMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
-#else
-  return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const ScanResultMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* BeamMsg::mutable_velocity() {
-  set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
-  return velocity_;
-}
-inline ::universe::VectorMsg* BeamMsg::release_velocity() {
-  clear_has_velocity();
-  ::universe::VectorMsg* temp = velocity_;
-  velocity_ = NULL;
-  return temp;
-}
-inline void BeamMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
-  delete velocity_;
-  velocity_ = velocity;
-  if (velocity) {
-    set_has_velocity();
-  } else {
-    clear_has_velocity();
-  }
-}
 
-// required .universe.VectorMsg up = 4;
-inline bool BeamMsg::has_up() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void BeamMsg::set_has_up() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void BeamMsg::clear_has_up() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void BeamMsg::clear_up() {
-  if (up_ != NULL) up_->::universe::VectorMsg::Clear();
-  clear_has_up();
-}
-inline const ::universe::VectorMsg& BeamMsg::up() const {
+		void Swap(ScanResultMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		ScanResultMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const ScanResultMsg& from);
+		void MergeFrom(const ScanResultMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "SCANRESULT"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// required double mass = 2;
+		inline bool has_mass() const;
+		inline void clear_mass();
+		static const int kMassFieldNumber = 2;
+		inline double mass() const;
+		inline void set_mass(double value);
+
+		// required .universe.VectorMsg position = 3;
+		inline bool has_position() const;
+		inline void clear_position();
+		static const int kPositionFieldNumber = 3;
+		inline const ::universe::VectorMsg& position() const;
+		inline ::universe::VectorMsg* mutable_position();
+		inline ::universe::VectorMsg* release_position();
+		inline void set_allocated_position(::universe::VectorMsg* position);
+
+		// required .universe.VectorMsg velocity = 4;
+		inline bool has_velocity() const;
+		inline void clear_velocity();
+		static const int kVelocityFieldNumber = 4;
+		inline const ::universe::VectorMsg& velocity() const;
+		inline ::universe::VectorMsg* mutable_velocity();
+		inline ::universe::VectorMsg* release_velocity();
+		inline void set_allocated_velocity(::universe::VectorMsg* velocity);
+
+		// required .universe.VectorMsg orientation = 5;
+		inline bool has_orientation() const;
+		inline void clear_orientation();
+		static const int kOrientationFieldNumber = 5;
+		inline const ::universe::VectorMsg& orientation() const;
+		inline ::universe::VectorMsg* mutable_orientation();
+		inline ::universe::VectorMsg* release_orientation();
+		inline void set_allocated_orientation(::universe::VectorMsg* orientation);
+
+		// required .universe.VectorMsg thrust = 6;
+		inline bool has_thrust() const;
+		inline void clear_thrust();
+		static const int kThrustFieldNumber = 6;
+		inline const ::universe::VectorMsg& thrust() const;
+		inline ::universe::VectorMsg* mutable_thrust();
+		inline ::universe::VectorMsg* release_thrust();
+		inline void set_allocated_thrust(::universe::VectorMsg* thrust);
+
+		// required double radius = 7;
+		inline bool has_radius() const;
+		inline void clear_radius();
+		static const int kRadiusFieldNumber = 7;
+		inline double radius() const;
+		inline void set_radius(double value);
+
+		// optional string extraParms = 8;
+		inline bool has_extraparms() const;
+		inline void clear_extraparms();
+		static const int kExtraParmsFieldNumber = 8;
+		inline const ::std::string& extraparms() const;
+		inline void set_extraparms(const ::std::string& value);
+		inline void set_extraparms(const char* value);
+		inline void set_extraparms(const char* value, size_t size);
+		inline ::std::string* mutable_extraparms();
+		inline ::std::string* release_extraparms();
+		inline void set_allocated_extraparms(::std::string* extraparms);
+
+		// @@protoc_insertion_point(class_scope:universe.ScanResultMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_mass();
+		inline void clear_has_mass();
+		inline void set_has_position();
+		inline void clear_has_position();
+		inline void set_has_velocity();
+		inline void clear_has_velocity();
+		inline void set_has_orientation();
+		inline void clear_has_orientation();
+		inline void set_has_thrust();
+		inline void clear_has_thrust();
+		inline void set_has_radius();
+		inline void clear_has_radius();
+		inline void set_has_extraparms();
+		inline void clear_has_extraparms();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		double mass_;
+		::universe::VectorMsg* position_;
+		::universe::VectorMsg* velocity_;
+		::universe::VectorMsg* orientation_;
+		::universe::VectorMsg* thrust_;
+		double radius_;
+		::std::string* extraparms_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return up_ != NULL ? *up_ : *default_instance().up_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return up_ != NULL ? *up_ : *default_instance_->up_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* BeamMsg::mutable_up() {
-  set_has_up();
-  if (up_ == NULL) up_ = new ::universe::VectorMsg;
-  return up_;
-}
-inline ::universe::VectorMsg* BeamMsg::release_up() {
-  clear_has_up();
-  ::universe::VectorMsg* temp = up_;
-  up_ = NULL;
-  return temp;
-}
-inline void BeamMsg::set_allocated_up(::universe::VectorMsg* up) {
-  delete up_;
-  up_ = up;
-  if (up) {
-    set_has_up();
-  } else {
-    clear_has_up();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required double spread_h = 5;
-inline bool BeamMsg::has_spread_h() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void BeamMsg::set_has_spread_h() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void BeamMsg::clear_has_spread_h() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void BeamMsg::clear_spread_h() {
-  spread_h_ = 0;
-  clear_has_spread_h();
-}
-inline double BeamMsg::spread_h() const {
-  return spread_h_;
-}
-inline void BeamMsg::set_spread_h(double value) {
-  set_has_spread_h();
-  spread_h_ = value;
-}
+		void InitAsDefaultInstance();
+		static ScanResultMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
 
-// required double spread_v = 6;
-inline bool BeamMsg::has_spread_v() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void BeamMsg::set_has_spread_v() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void BeamMsg::clear_has_spread_v() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void BeamMsg::clear_spread_v() {
-  spread_v_ = 0;
-  clear_has_spread_v();
-}
-inline double BeamMsg::spread_v() const {
-  return spread_v_;
-}
-inline void BeamMsg::set_spread_v(double value) {
-  set_has_spread_v();
-  spread_v_ = value;
-}
+	class ScanQueryMsg : public ::google::protobuf::MessageLite {
+	public:
+		ScanQueryMsg();
+		virtual ~ScanQueryMsg();
 
-// required double energy = 7;
-inline bool BeamMsg::has_energy() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void BeamMsg::set_has_energy() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void BeamMsg::clear_has_energy() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void BeamMsg::clear_energy() {
-  energy_ = 0;
-  clear_has_energy();
-}
-inline double BeamMsg::energy() const {
-  return energy_;
-}
-inline void BeamMsg::set_energy(double value) {
-  set_has_energy();
-  energy_ = value;
-}
+		ScanQueryMsg(const ScanQueryMsg& from);
 
-// required .universe.BeamMsg.BeamType beamType = 8;
-inline bool BeamMsg::has_beamtype() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void BeamMsg::set_has_beamtype() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void BeamMsg::clear_has_beamtype() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void BeamMsg::clear_beamtype() {
-  beamtype_ = 1;
-  clear_has_beamtype();
-}
-inline ::universe::BeamMsg_BeamType BeamMsg::beamtype() const {
-  return static_cast< ::universe::BeamMsg_BeamType >(beamtype_);
-}
-inline void BeamMsg::set_beamtype(::universe::BeamMsg_BeamType value) {
-  assert(::universe::BeamMsg_BeamType_IsValid(value));
-  set_has_beamtype();
-  beamtype_ = value;
-}
+		inline ScanQueryMsg& operator=(const ScanQueryMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
 
-// optional string commString = 9;
-inline bool BeamMsg::has_commstring() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
-}
-inline void BeamMsg::set_has_commstring() {
-  _has_bits_[0] |= 0x00000100u;
-}
-inline void BeamMsg::clear_has_commstring() {
-  _has_bits_[0] &= ~0x00000100u;
-}
-inline void BeamMsg::clear_commstring() {
-  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
-    commstring_->clear();
-  }
-  clear_has_commstring();
-}
-inline const ::std::string& BeamMsg::commstring() const {
-  return *commstring_;
-}
-inline void BeamMsg::set_commstring(const ::std::string& value) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(value);
-}
-inline void BeamMsg::set_commstring(const char* value) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(value);
-}
-inline void BeamMsg::set_commstring(const char* value, size_t size) {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  commstring_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* BeamMsg::mutable_commstring() {
-  set_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    commstring_ = new ::std::string;
-  }
-  return commstring_;
-}
-inline ::std::string* BeamMsg::release_commstring() {
-  clear_has_commstring();
-  if (commstring_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = commstring_;
-    commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void BeamMsg::set_allocated_commstring(::std::string* commstring) {
-  if (commstring_ != &::google::protobuf::internal::kEmptyString) {
-    delete commstring_;
-  }
-  if (commstring) {
-    set_has_commstring();
-    commstring_ = commstring;
-  } else {
-    clear_has_commstring();
-    commstring_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
+		static const ScanQueryMsg& default_instance();
 
-// -------------------------------------------------------------------
-
-// ScanResultMsg
-
-// optional string name = 1 [default = "SCANRESULT"];
-inline bool ScanResultMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ScanResultMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ScanResultMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ScanResultMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& ScanResultMsg::name() const {
-  return *name_;
-}
-inline void ScanResultMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanResultMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanResultMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ScanResultMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* ScanResultMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void ScanResultMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
-
-// required double mass = 2;
-inline bool ScanResultMsg::has_mass() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ScanResultMsg::set_has_mass() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ScanResultMsg::clear_has_mass() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ScanResultMsg::clear_mass() {
-  mass_ = 0;
-  clear_has_mass();
-}
-inline double ScanResultMsg::mass() const {
-  return mass_;
-}
-inline void ScanResultMsg::set_mass(double value) {
-  set_has_mass();
-  mass_ = value;
-}
-
-// required .universe.VectorMsg position = 3;
-inline bool ScanResultMsg::has_position() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ScanResultMsg::set_has_position() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ScanResultMsg::clear_has_position() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ScanResultMsg::clear_position() {
-  if (position_ != NULL) position_->::universe::VectorMsg::Clear();
-  clear_has_position();
-}
-inline const ::universe::VectorMsg& ScanResultMsg::position() const {
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return position_ != NULL ? *position_ : *default_instance().position_;
-#else
-  return position_ != NULL ? *position_ : *default_instance_->position_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const ScanQueryMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* ScanResultMsg::mutable_position() {
-  set_has_position();
-  if (position_ == NULL) position_ = new ::universe::VectorMsg;
-  return position_;
-}
-inline ::universe::VectorMsg* ScanResultMsg::release_position() {
-  clear_has_position();
-  ::universe::VectorMsg* temp = position_;
-  position_ = NULL;
-  return temp;
-}
-inline void ScanResultMsg::set_allocated_position(::universe::VectorMsg* position) {
-  delete position_;
-  position_ = position;
-  if (position) {
-    set_has_position();
-  } else {
-    clear_has_position();
-  }
-}
 
-// required .universe.VectorMsg velocity = 4;
-inline bool ScanResultMsg::has_velocity() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ScanResultMsg::set_has_velocity() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ScanResultMsg::clear_has_velocity() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ScanResultMsg::clear_velocity() {
-  if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
-  clear_has_velocity();
-}
-inline const ::universe::VectorMsg& ScanResultMsg::velocity() const {
+		void Swap(ScanQueryMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		ScanQueryMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const ScanQueryMsg& from);
+		void MergeFrom(const ScanQueryMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "SCANQUERY"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// required int32 scanID = 2;
+		inline bool has_scanid() const;
+		inline void clear_scanid();
+		static const int kScanIDFieldNumber = 2;
+		inline ::google::protobuf::int32 scanid() const;
+		inline void set_scanid(::google::protobuf::int32 value);
+
+		// required double scanPower = 3;
+		inline bool has_scanpower() const;
+		inline void clear_scanpower();
+		static const int kScanPowerFieldNumber = 3;
+		inline double scanpower() const;
+		inline void set_scanpower(double value);
+
+		// required .universe.VectorMsg scanDir = 4;
+		inline bool has_scandir() const;
+		inline void clear_scandir();
+		static const int kScanDirFieldNumber = 4;
+		inline const ::universe::VectorMsg& scandir() const;
+		inline ::universe::VectorMsg* mutable_scandir();
+		inline ::universe::VectorMsg* release_scandir();
+		inline void set_allocated_scandir(::universe::VectorMsg* scandir);
+
+		// @@protoc_insertion_point(class_scope:universe.ScanQueryMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_scanid();
+		inline void clear_has_scanid();
+		inline void set_has_scanpower();
+		inline void clear_has_scanpower();
+		inline void set_has_scandir();
+		inline void clear_has_scandir();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		double scanpower_;
+		::universe::VectorMsg* scandir_;
+		::google::protobuf::int32 scanid_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* ScanResultMsg::mutable_velocity() {
-  set_has_velocity();
-  if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
-  return velocity_;
-}
-inline ::universe::VectorMsg* ScanResultMsg::release_velocity() {
-  clear_has_velocity();
-  ::universe::VectorMsg* temp = velocity_;
-  velocity_ = NULL;
-  return temp;
-}
-inline void ScanResultMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
-  delete velocity_;
-  velocity_ = velocity;
-  if (velocity) {
-    set_has_velocity();
-  } else {
-    clear_has_velocity();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required .universe.VectorMsg orientation = 5;
-inline bool ScanResultMsg::has_orientation() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void ScanResultMsg::set_has_orientation() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void ScanResultMsg::clear_has_orientation() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void ScanResultMsg::clear_orientation() {
-  if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
-  clear_has_orientation();
-}
-inline const ::universe::VectorMsg& ScanResultMsg::orientation() const {
+		void InitAsDefaultInstance();
+		static ScanQueryMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
+
+	class ScanRespMsg : public ::google::protobuf::MessageLite {
+	public:
+		ScanRespMsg();
+		virtual ~ScanRespMsg();
+
+		ScanRespMsg(const ScanRespMsg& from);
+
+		inline ScanRespMsg& operator=(const ScanRespMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
+
+		static const ScanRespMsg& default_instance();
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
-#else
-  return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const ScanRespMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* ScanResultMsg::mutable_orientation() {
-  set_has_orientation();
-  if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
-  return orientation_;
-}
-inline ::universe::VectorMsg* ScanResultMsg::release_orientation() {
-  clear_has_orientation();
-  ::universe::VectorMsg* temp = orientation_;
-  orientation_ = NULL;
-  return temp;
-}
-inline void ScanResultMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
-  delete orientation_;
-  orientation_ = orientation;
-  if (orientation) {
-    set_has_orientation();
-  } else {
-    clear_has_orientation();
-  }
-}
 
-// required .universe.VectorMsg thrust = 6;
-inline bool ScanResultMsg::has_thrust() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
-}
-inline void ScanResultMsg::set_has_thrust() {
-  _has_bits_[0] |= 0x00000020u;
-}
-inline void ScanResultMsg::clear_has_thrust() {
-  _has_bits_[0] &= ~0x00000020u;
-}
-inline void ScanResultMsg::clear_thrust() {
-  if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
-  clear_has_thrust();
-}
-inline const ::universe::VectorMsg& ScanResultMsg::thrust() const {
+		void Swap(ScanRespMsg* other);
+
+		// implements Message ----------------------------------------------
+
+		ScanRespMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const ScanRespMsg& from);
+		void MergeFrom(const ScanRespMsg& from);
+		void Clear();
+		bool IsInitialized() const;
+
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
+
+		::std::string GetTypeName() const;
+
+		// nested types ----------------------------------------------------
+
+		// accessors -------------------------------------------------------
+
+		// optional string name = 1 [default = "SCANRESP"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// required int32 scanID = 2;
+		inline bool has_scanid() const;
+		inline void clear_scanid();
+		static const int kScanIDFieldNumber = 2;
+		inline ::google::protobuf::int32 scanid() const;
+		inline void set_scanid(::google::protobuf::int32 value);
+
+		// required string parms = 3;
+		inline bool has_parms() const;
+		inline void clear_parms();
+		static const int kParmsFieldNumber = 3;
+		inline const ::std::string& parms() const;
+		inline void set_parms(const ::std::string& value);
+		inline void set_parms(const char* value);
+		inline void set_parms(const char* value, size_t size);
+		inline ::std::string* mutable_parms();
+		inline ::std::string* release_parms();
+		inline void set_allocated_parms(::std::string* parms);
+
+		// @@protoc_insertion_point(class_scope:universe.ScanRespMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+		inline void set_has_scanid();
+		inline void clear_has_scanid();
+		inline void set_has_parms();
+		inline void clear_has_parms();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+		::std::string* parms_;
+		::google::protobuf::int32 scanid_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
 #else
-  return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+		friend void  protobuf_AddDesc_universe_2eproto();
 #endif
-}
-inline ::universe::VectorMsg* ScanResultMsg::mutable_thrust() {
-  set_has_thrust();
-  if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
-  return thrust_;
-}
-inline ::universe::VectorMsg* ScanResultMsg::release_thrust() {
-  clear_has_thrust();
-  ::universe::VectorMsg* temp = thrust_;
-  thrust_ = NULL;
-  return temp;
-}
-inline void ScanResultMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
-  delete thrust_;
-  thrust_ = thrust;
-  if (thrust) {
-    set_has_thrust();
-  } else {
-    clear_has_thrust();
-  }
-}
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
 
-// required double radius = 7;
-inline bool ScanResultMsg::has_radius() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
-}
-inline void ScanResultMsg::set_has_radius() {
-  _has_bits_[0] |= 0x00000040u;
-}
-inline void ScanResultMsg::clear_has_radius() {
-  _has_bits_[0] &= ~0x00000040u;
-}
-inline void ScanResultMsg::clear_radius() {
-  radius_ = 0;
-  clear_has_radius();
-}
-inline double ScanResultMsg::radius() const {
-  return radius_;
-}
-inline void ScanResultMsg::set_radius(double value) {
-  set_has_radius();
-  radius_ = value;
-}
+		void InitAsDefaultInstance();
+		static ScanRespMsg* default_instance_;
+	};
+	// -------------------------------------------------------------------
 
-// optional string extraParms = 8;
-inline bool ScanResultMsg::has_extraparms() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
-}
-inline void ScanResultMsg::set_has_extraparms() {
-  _has_bits_[0] |= 0x00000080u;
-}
-inline void ScanResultMsg::clear_has_extraparms() {
-  _has_bits_[0] &= ~0x00000080u;
-}
-inline void ScanResultMsg::clear_extraparms() {
-  if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
-    extraparms_->clear();
-  }
-  clear_has_extraparms();
-}
-inline const ::std::string& ScanResultMsg::extraparms() const {
-  return *extraparms_;
-}
-inline void ScanResultMsg::set_extraparms(const ::std::string& value) {
-  set_has_extraparms();
-  if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
-    extraparms_ = new ::std::string;
-  }
-  extraparms_->assign(value);
-}
-inline void ScanResultMsg::set_extraparms(const char* value) {
-  set_has_extraparms();
-  if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
-    extraparms_ = new ::std::string;
-  }
-  extraparms_->assign(value);
-}
-inline void ScanResultMsg::set_extraparms(const char* value, size_t size) {
-  set_has_extraparms();
-  if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
-    extraparms_ = new ::std::string;
-  }
-  extraparms_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ScanResultMsg::mutable_extraparms() {
-  set_has_extraparms();
-  if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
-    extraparms_ = new ::std::string;
-  }
-  return extraparms_;
-}
-inline ::std::string* ScanResultMsg::release_extraparms() {
-  clear_has_extraparms();
-  if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = extraparms_;
-    extraparms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void ScanResultMsg::set_allocated_extraparms(::std::string* extraparms) {
-  if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
-    delete extraparms_;
-  }
-  if (extraparms) {
-    set_has_extraparms();
-    extraparms_ = extraparms;
-  } else {
-    clear_has_extraparms();
-    extraparms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
+	class DirectoryMsg : public ::google::protobuf::MessageLite {
+	public:
+		DirectoryMsg();
+		virtual ~DirectoryMsg();
 
-// -------------------------------------------------------------------
+		DirectoryMsg(const DirectoryMsg& from);
 
-// ScanQueryMsg
+		inline DirectoryMsg& operator=(const DirectoryMsg& from) {
+			CopyFrom(from);
+			return *this;
+		}
 
-// optional string name = 1 [default = "SCANQUERY"];
-inline bool ScanQueryMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ScanQueryMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ScanQueryMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ScanQueryMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& ScanQueryMsg::name() const {
-  return *name_;
-}
-inline void ScanQueryMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanQueryMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanQueryMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ScanQueryMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* ScanQueryMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void ScanQueryMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		static const DirectoryMsg& default_instance();
 
-// required int32 scanID = 2;
-inline bool ScanQueryMsg::has_scanid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ScanQueryMsg::set_has_scanid() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ScanQueryMsg::clear_has_scanid() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ScanQueryMsg::clear_scanid() {
-  scanid_ = 0;
-  clear_has_scanid();
-}
-inline ::google::protobuf::int32 ScanQueryMsg::scanid() const {
-  return scanid_;
-}
-inline void ScanQueryMsg::set_scanid(::google::protobuf::int32 value) {
-  set_has_scanid();
-  scanid_ = value;
-}
-
-// required double scanPower = 3;
-inline bool ScanQueryMsg::has_scanpower() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ScanQueryMsg::set_has_scanpower() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ScanQueryMsg::clear_has_scanpower() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ScanQueryMsg::clear_scanpower() {
-  scanpower_ = 0;
-  clear_has_scanpower();
-}
-inline double ScanQueryMsg::scanpower() const {
-  return scanpower_;
-}
-inline void ScanQueryMsg::set_scanpower(double value) {
-  set_has_scanpower();
-  scanpower_ = value;
-}
-
-// required .universe.VectorMsg scanDir = 4;
-inline bool ScanQueryMsg::has_scandir() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void ScanQueryMsg::set_has_scandir() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void ScanQueryMsg::clear_has_scandir() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void ScanQueryMsg::clear_scandir() {
-  if (scandir_ != NULL) scandir_->::universe::VectorMsg::Clear();
-  clear_has_scandir();
-}
-inline const ::universe::VectorMsg& ScanQueryMsg::scandir() const {
 #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  return scandir_ != NULL ? *scandir_ : *default_instance().scandir_;
-#else
-  return scandir_ != NULL ? *scandir_ : *default_instance_->scandir_;
+		// Returns the internal default instance pointer. This function can
+		// return NULL thus should not be used by the user. This is intended
+		// for Protobuf internal code. Please use default_instance() declared
+		// above instead.
+		static inline const DirectoryMsg* internal_default_instance() {
+			return default_instance_;
+		}
 #endif
-}
-inline ::universe::VectorMsg* ScanQueryMsg::mutable_scandir() {
-  set_has_scandir();
-  if (scandir_ == NULL) scandir_ = new ::universe::VectorMsg;
-  return scandir_;
-}
-inline ::universe::VectorMsg* ScanQueryMsg::release_scandir() {
-  clear_has_scandir();
-  ::universe::VectorMsg* temp = scandir_;
-  scandir_ = NULL;
-  return temp;
-}
-inline void ScanQueryMsg::set_allocated_scandir(::universe::VectorMsg* scandir) {
-  delete scandir_;
-  scandir_ = scandir;
-  if (scandir) {
-    set_has_scandir();
-  } else {
-    clear_has_scandir();
-  }
-}
 
-// -------------------------------------------------------------------
+		void Swap(DirectoryMsg* other);
 
-// ScanRespMsg
+		// implements Message ----------------------------------------------
 
-// optional string name = 1 [default = "SCANRESP"];
-inline bool ScanRespMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void ScanRespMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void ScanRespMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void ScanRespMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& ScanRespMsg::name() const {
-  return *name_;
-}
-inline void ScanRespMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanRespMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void ScanRespMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ScanRespMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* ScanRespMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void ScanRespMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		DirectoryMsg* New() const;
+		void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
+		void CopyFrom(const DirectoryMsg& from);
+		void MergeFrom(const DirectoryMsg& from);
+		void Clear();
+		bool IsInitialized() const;
 
-// required int32 scanID = 2;
-inline bool ScanRespMsg::has_scanid() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void ScanRespMsg::set_has_scanid() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void ScanRespMsg::clear_has_scanid() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void ScanRespMsg::clear_scanid() {
-  scanid_ = 0;
-  clear_has_scanid();
-}
-inline ::google::protobuf::int32 ScanRespMsg::scanid() const {
-  return scanid_;
-}
-inline void ScanRespMsg::set_scanid(::google::protobuf::int32 value) {
-  set_has_scanid();
-  scanid_ = value;
-}
+		int ByteSize() const;
+		bool MergePartialFromCodedStream(
+			::google::protobuf::io::CodedInputStream* input);
+		void SerializeWithCachedSizes(
+			::google::protobuf::io::CodedOutputStream* output) const;
+		int GetCachedSize() const { return _cached_size_; }
+	private:
+		void SharedCtor();
+		void SharedDtor();
+		void SetCachedSize(int size) const;
+	public:
 
-// required string parms = 3;
-inline bool ScanRespMsg::has_parms() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void ScanRespMsg::set_has_parms() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void ScanRespMsg::clear_has_parms() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void ScanRespMsg::clear_parms() {
-  if (parms_ != &::google::protobuf::internal::kEmptyString) {
-    parms_->clear();
-  }
-  clear_has_parms();
-}
-inline const ::std::string& ScanRespMsg::parms() const {
-  return *parms_;
-}
-inline void ScanRespMsg::set_parms(const ::std::string& value) {
-  set_has_parms();
-  if (parms_ == &::google::protobuf::internal::kEmptyString) {
-    parms_ = new ::std::string;
-  }
-  parms_->assign(value);
-}
-inline void ScanRespMsg::set_parms(const char* value) {
-  set_has_parms();
-  if (parms_ == &::google::protobuf::internal::kEmptyString) {
-    parms_ = new ::std::string;
-  }
-  parms_->assign(value);
-}
-inline void ScanRespMsg::set_parms(const char* value, size_t size) {
-  set_has_parms();
-  if (parms_ == &::google::protobuf::internal::kEmptyString) {
-    parms_ = new ::std::string;
-  }
-  parms_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* ScanRespMsg::mutable_parms() {
-  set_has_parms();
-  if (parms_ == &::google::protobuf::internal::kEmptyString) {
-    parms_ = new ::std::string;
-  }
-  return parms_;
-}
-inline ::std::string* ScanRespMsg::release_parms() {
-  clear_has_parms();
-  if (parms_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = parms_;
-    parms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void ScanRespMsg::set_allocated_parms(::std::string* parms) {
-  if (parms_ != &::google::protobuf::internal::kEmptyString) {
-    delete parms_;
-  }
-  if (parms) {
-    set_has_parms();
-    parms_ = parms;
-  } else {
-    clear_has_parms();
-    parms_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
+		::std::string GetTypeName() const;
 
-// -------------------------------------------------------------------
+		// nested types ----------------------------------------------------
 
-// DirectoryMsg
+		// accessors -------------------------------------------------------
 
-// optional string name = 1 [default = "DIRECTORY"];
-inline bool DirectoryMsg::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void DirectoryMsg::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void DirectoryMsg::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void DirectoryMsg::clear_name() {
-  if (name_ != _default_name_) {
-    name_->assign(*_default_name_);
-  }
-  clear_has_name();
-}
-inline const ::std::string& DirectoryMsg::name() const {
-  return *name_;
-}
-inline void DirectoryMsg::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DirectoryMsg::set_name(const char* value) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void DirectoryMsg::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* DirectoryMsg::mutable_name() {
-  set_has_name();
-  if (name_ == _default_name_) {
-    name_ = new ::std::string(*_default_name_);
-  }
-  return name_;
-}
-inline ::std::string* DirectoryMsg::release_name() {
-  clear_has_name();
-  if (name_ == _default_name_) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(_default_name_);
-    return temp;
-  }
-}
-inline void DirectoryMsg::set_allocated_name(::std::string* name) {
-  if (name_ != _default_name_) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(_default_name_);
-  }
-}
+		// optional string name = 1 [default = "DIRECTORY"];
+		inline bool has_name() const;
+		inline void clear_name();
+		static const int kNameFieldNumber = 1;
+		inline const ::std::string& name() const;
+		inline void set_name(const ::std::string& value);
+		inline void set_name(const char* value);
+		inline void set_name(const char* value, size_t size);
+		inline ::std::string* mutable_name();
+		inline ::std::string* release_name();
+		inline void set_allocated_name(::std::string* name);
+
+		// @@protoc_insertion_point(class_scope:universe.DirectoryMsg)
+	private:
+		inline void set_has_name();
+		inline void clear_has_name();
+
+		::std::string* name_;
+		static ::std::string* _default_name_;
+
+		mutable int _cached_size_;
+		::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
+
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		friend void  protobuf_AddDesc_universe_2eproto_impl();
+#else
+		friend void  protobuf_AddDesc_universe_2eproto();
+#endif
+		friend void protobuf_AssignDesc_universe_2eproto();
+		friend void protobuf_ShutdownFile_universe_2eproto();
+
+		void InitAsDefaultInstance();
+		static DirectoryMsg* default_instance_;
+	};
+	// ===================================================================
 
 
-// @@protoc_insertion_point(namespace_scope)
+	// ===================================================================
+
+	// MessageWrapper
+
+	// required .universe.MessageWrapper.MessageType messageType = 1;
+	inline bool MessageWrapper::has_messagetype() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void MessageWrapper::set_has_messagetype() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void MessageWrapper::clear_has_messagetype() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void MessageWrapper::clear_messagetype() {
+		messagetype_ = 3;
+		clear_has_messagetype();
+	}
+	inline ::universe::MessageWrapper_MessageType MessageWrapper::messagetype() const {
+		return static_cast<::universe::MessageWrapper_MessageType>(messagetype_);
+	}
+	inline void MessageWrapper::set_messagetype(::universe::MessageWrapper_MessageType value) {
+		assert(::universe::MessageWrapper_MessageType_IsValid(value));
+		set_has_messagetype();
+		messagetype_ = value;
+	}
+
+	// optional uint64 objectID = 2;
+	inline bool MessageWrapper::has_objectid() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void MessageWrapper::set_has_objectid() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void MessageWrapper::clear_has_objectid() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void MessageWrapper::clear_objectid() {
+		objectid_ = GOOGLE_ULONGLONG(0);
+		clear_has_objectid();
+	}
+	inline ::google::protobuf::uint64 MessageWrapper::objectid() const {
+		return objectid_;
+	}
+	inline void MessageWrapper::set_objectid(::google::protobuf::uint64 value) {
+		set_has_objectid();
+		objectid_ = value;
+	}
+
+	// optional .universe.HelloMsg helloMsg = 3;
+	inline bool MessageWrapper::has_hellomsg() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void MessageWrapper::set_has_hellomsg() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void MessageWrapper::clear_has_hellomsg() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void MessageWrapper::clear_hellomsg() {
+		if (hellomsg_ != NULL) hellomsg_->::universe::HelloMsg::Clear();
+		clear_has_hellomsg();
+	}
+	inline const ::universe::HelloMsg& MessageWrapper::hellomsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return hellomsg_ != NULL ? *hellomsg_ : *default_instance().hellomsg_;
+#else
+		return hellomsg_ != NULL ? *hellomsg_ : *default_instance_->hellomsg_;
+#endif
+	}
+	inline ::universe::HelloMsg* MessageWrapper::mutable_hellomsg() {
+		set_has_hellomsg();
+		if (hellomsg_ == NULL) hellomsg_ = new ::universe::HelloMsg;
+		return hellomsg_;
+	}
+	inline ::universe::HelloMsg* MessageWrapper::release_hellomsg() {
+		clear_has_hellomsg();
+		::universe::HelloMsg* temp = hellomsg_;
+		hellomsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_hellomsg(::universe::HelloMsg* hellomsg) {
+		delete hellomsg_;
+		hellomsg_ = hellomsg;
+		if (hellomsg) {
+			set_has_hellomsg();
+		}
+		else {
+			clear_has_hellomsg();
+		}
+	}
+
+	// optional .universe.GoodbyeMsg goodByeMsg = 4;
+	inline bool MessageWrapper::has_goodbyemsg() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void MessageWrapper::set_has_goodbyemsg() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void MessageWrapper::clear_has_goodbyemsg() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void MessageWrapper::clear_goodbyemsg() {
+		if (goodbyemsg_ != NULL) goodbyemsg_->::universe::GoodbyeMsg::Clear();
+		clear_has_goodbyemsg();
+	}
+	inline const ::universe::GoodbyeMsg& MessageWrapper::goodbyemsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance().goodbyemsg_;
+#else
+		return goodbyemsg_ != NULL ? *goodbyemsg_ : *default_instance_->goodbyemsg_;
+#endif
+	}
+	inline ::universe::GoodbyeMsg* MessageWrapper::mutable_goodbyemsg() {
+		set_has_goodbyemsg();
+		if (goodbyemsg_ == NULL) goodbyemsg_ = new ::universe::GoodbyeMsg;
+		return goodbyemsg_;
+	}
+	inline ::universe::GoodbyeMsg* MessageWrapper::release_goodbyemsg() {
+		clear_has_goodbyemsg();
+		::universe::GoodbyeMsg* temp = goodbyemsg_;
+		goodbyemsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_goodbyemsg(::universe::GoodbyeMsg* goodbyemsg) {
+		delete goodbyemsg_;
+		goodbyemsg_ = goodbyemsg;
+		if (goodbyemsg) {
+			set_has_goodbyemsg();
+		}
+		else {
+			clear_has_goodbyemsg();
+		}
+	}
+
+	// optional .universe.PhysPropsMsg physPropsMsg = 10;
+	inline bool MessageWrapper::has_physpropsmsg() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void MessageWrapper::set_has_physpropsmsg() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void MessageWrapper::clear_has_physpropsmsg() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void MessageWrapper::clear_physpropsmsg() {
+		if (physpropsmsg_ != NULL) physpropsmsg_->::universe::PhysPropsMsg::Clear();
+		clear_has_physpropsmsg();
+	}
+	inline const ::universe::PhysPropsMsg& MessageWrapper::physpropsmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance().physpropsmsg_;
+#else
+		return physpropsmsg_ != NULL ? *physpropsmsg_ : *default_instance_->physpropsmsg_;
+#endif
+	}
+	inline ::universe::PhysPropsMsg* MessageWrapper::mutable_physpropsmsg() {
+		set_has_physpropsmsg();
+		if (physpropsmsg_ == NULL) physpropsmsg_ = new ::universe::PhysPropsMsg;
+		return physpropsmsg_;
+	}
+	inline ::universe::PhysPropsMsg* MessageWrapper::release_physpropsmsg() {
+		clear_has_physpropsmsg();
+		::universe::PhysPropsMsg* temp = physpropsmsg_;
+		physpropsmsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_physpropsmsg(::universe::PhysPropsMsg* physpropsmsg) {
+		delete physpropsmsg_;
+		physpropsmsg_ = physpropsmsg;
+		if (physpropsmsg) {
+			set_has_physpropsmsg();
+		}
+		else {
+			clear_has_physpropsmsg();
+		}
+	}
+
+	// optional .universe.CollisionMsg collisionMsg = 11;
+	inline bool MessageWrapper::has_collisionmsg() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void MessageWrapper::set_has_collisionmsg() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void MessageWrapper::clear_has_collisionmsg() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void MessageWrapper::clear_collisionmsg() {
+		if (collisionmsg_ != NULL) collisionmsg_->::universe::CollisionMsg::Clear();
+		clear_has_collisionmsg();
+	}
+	inline const ::universe::CollisionMsg& MessageWrapper::collisionmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance().collisionmsg_;
+#else
+		return collisionmsg_ != NULL ? *collisionmsg_ : *default_instance_->collisionmsg_;
+#endif
+	}
+	inline ::universe::CollisionMsg* MessageWrapper::mutable_collisionmsg() {
+		set_has_collisionmsg();
+		if (collisionmsg_ == NULL) collisionmsg_ = new ::universe::CollisionMsg;
+		return collisionmsg_;
+	}
+	inline ::universe::CollisionMsg* MessageWrapper::release_collisionmsg() {
+		clear_has_collisionmsg();
+		::universe::CollisionMsg* temp = collisionmsg_;
+		collisionmsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_collisionmsg(::universe::CollisionMsg* collisionmsg) {
+		delete collisionmsg_;
+		collisionmsg_ = collisionmsg;
+		if (collisionmsg) {
+			set_has_collisionmsg();
+		}
+		else {
+			clear_has_collisionmsg();
+		}
+	}
+
+	// optional .universe.SpawnMsg spawnMsg = 12;
+	inline bool MessageWrapper::has_spawnmsg() const {
+		return (_has_bits_[0] & 0x00000040u) != 0;
+	}
+	inline void MessageWrapper::set_has_spawnmsg() {
+		_has_bits_[0] |= 0x00000040u;
+	}
+	inline void MessageWrapper::clear_has_spawnmsg() {
+		_has_bits_[0] &= ~0x00000040u;
+	}
+	inline void MessageWrapper::clear_spawnmsg() {
+		if (spawnmsg_ != NULL) spawnmsg_->::universe::SpawnMsg::Clear();
+		clear_has_spawnmsg();
+	}
+	inline const ::universe::SpawnMsg& MessageWrapper::spawnmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance().spawnmsg_;
+#else
+		return spawnmsg_ != NULL ? *spawnmsg_ : *default_instance_->spawnmsg_;
+#endif
+	}
+	inline ::universe::SpawnMsg* MessageWrapper::mutable_spawnmsg() {
+		set_has_spawnmsg();
+		if (spawnmsg_ == NULL) spawnmsg_ = new ::universe::SpawnMsg;
+		return spawnmsg_;
+	}
+	inline ::universe::SpawnMsg* MessageWrapper::release_spawnmsg() {
+		clear_has_spawnmsg();
+		::universe::SpawnMsg* temp = spawnmsg_;
+		spawnmsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_spawnmsg(::universe::SpawnMsg* spawnmsg) {
+		delete spawnmsg_;
+		spawnmsg_ = spawnmsg;
+		if (spawnmsg) {
+			set_has_spawnmsg();
+		}
+		else {
+			clear_has_spawnmsg();
+		}
+	}
+
+	// optional .universe.BeamMsg beamMsg = 13;
+	inline bool MessageWrapper::has_beammsg() const {
+		return (_has_bits_[0] & 0x00000080u) != 0;
+	}
+	inline void MessageWrapper::set_has_beammsg() {
+		_has_bits_[0] |= 0x00000080u;
+	}
+	inline void MessageWrapper::clear_has_beammsg() {
+		_has_bits_[0] &= ~0x00000080u;
+	}
+	inline void MessageWrapper::clear_beammsg() {
+		if (beammsg_ != NULL) beammsg_->::universe::BeamMsg::Clear();
+		clear_has_beammsg();
+	}
+	inline const ::universe::BeamMsg& MessageWrapper::beammsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return beammsg_ != NULL ? *beammsg_ : *default_instance().beammsg_;
+#else
+		return beammsg_ != NULL ? *beammsg_ : *default_instance_->beammsg_;
+#endif
+	}
+	inline ::universe::BeamMsg* MessageWrapper::mutable_beammsg() {
+		set_has_beammsg();
+		if (beammsg_ == NULL) beammsg_ = new ::universe::BeamMsg;
+		return beammsg_;
+	}
+	inline ::universe::BeamMsg* MessageWrapper::release_beammsg() {
+		clear_has_beammsg();
+		::universe::BeamMsg* temp = beammsg_;
+		beammsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_beammsg(::universe::BeamMsg* beammsg) {
+		delete beammsg_;
+		beammsg_ = beammsg;
+		if (beammsg) {
+			set_has_beammsg();
+		}
+		else {
+			clear_has_beammsg();
+		}
+	}
+
+	// optional .universe.ScanResultMsg scanResultMsg = 14;
+	inline bool MessageWrapper::has_scanresultmsg() const {
+		return (_has_bits_[0] & 0x00000100u) != 0;
+	}
+	inline void MessageWrapper::set_has_scanresultmsg() {
+		_has_bits_[0] |= 0x00000100u;
+	}
+	inline void MessageWrapper::clear_has_scanresultmsg() {
+		_has_bits_[0] &= ~0x00000100u;
+	}
+	inline void MessageWrapper::clear_scanresultmsg() {
+		if (scanresultmsg_ != NULL) scanresultmsg_->::universe::ScanResultMsg::Clear();
+		clear_has_scanresultmsg();
+	}
+	inline const ::universe::ScanResultMsg& MessageWrapper::scanresultmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance().scanresultmsg_;
+#else
+		return scanresultmsg_ != NULL ? *scanresultmsg_ : *default_instance_->scanresultmsg_;
+#endif
+	}
+	inline ::universe::ScanResultMsg* MessageWrapper::mutable_scanresultmsg() {
+		set_has_scanresultmsg();
+		if (scanresultmsg_ == NULL) scanresultmsg_ = new ::universe::ScanResultMsg;
+		return scanresultmsg_;
+	}
+	inline ::universe::ScanResultMsg* MessageWrapper::release_scanresultmsg() {
+		clear_has_scanresultmsg();
+		::universe::ScanResultMsg* temp = scanresultmsg_;
+		scanresultmsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_scanresultmsg(::universe::ScanResultMsg* scanresultmsg) {
+		delete scanresultmsg_;
+		scanresultmsg_ = scanresultmsg;
+		if (scanresultmsg) {
+			set_has_scanresultmsg();
+		}
+		else {
+			clear_has_scanresultmsg();
+		}
+	}
+
+	// optional .universe.ScanQueryMsg scanQueryMsg = 15;
+	inline bool MessageWrapper::has_scanquerymsg() const {
+		return (_has_bits_[0] & 0x00000200u) != 0;
+	}
+	inline void MessageWrapper::set_has_scanquerymsg() {
+		_has_bits_[0] |= 0x00000200u;
+	}
+	inline void MessageWrapper::clear_has_scanquerymsg() {
+		_has_bits_[0] &= ~0x00000200u;
+	}
+	inline void MessageWrapper::clear_scanquerymsg() {
+		if (scanquerymsg_ != NULL) scanquerymsg_->::universe::ScanQueryMsg::Clear();
+		clear_has_scanquerymsg();
+	}
+	inline const ::universe::ScanQueryMsg& MessageWrapper::scanquerymsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance().scanquerymsg_;
+#else
+		return scanquerymsg_ != NULL ? *scanquerymsg_ : *default_instance_->scanquerymsg_;
+#endif
+	}
+	inline ::universe::ScanQueryMsg* MessageWrapper::mutable_scanquerymsg() {
+		set_has_scanquerymsg();
+		if (scanquerymsg_ == NULL) scanquerymsg_ = new ::universe::ScanQueryMsg;
+		return scanquerymsg_;
+	}
+	inline ::universe::ScanQueryMsg* MessageWrapper::release_scanquerymsg() {
+		clear_has_scanquerymsg();
+		::universe::ScanQueryMsg* temp = scanquerymsg_;
+		scanquerymsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_scanquerymsg(::universe::ScanQueryMsg* scanquerymsg) {
+		delete scanquerymsg_;
+		scanquerymsg_ = scanquerymsg;
+		if (scanquerymsg) {
+			set_has_scanquerymsg();
+		}
+		else {
+			clear_has_scanquerymsg();
+		}
+	}
+
+	// optional .universe.ScanRespMsg scanRespMsg = 16;
+	inline bool MessageWrapper::has_scanrespmsg() const {
+		return (_has_bits_[0] & 0x00000400u) != 0;
+	}
+	inline void MessageWrapper::set_has_scanrespmsg() {
+		_has_bits_[0] |= 0x00000400u;
+	}
+	inline void MessageWrapper::clear_has_scanrespmsg() {
+		_has_bits_[0] &= ~0x00000400u;
+	}
+	inline void MessageWrapper::clear_scanrespmsg() {
+		if (scanrespmsg_ != NULL) scanrespmsg_->::universe::ScanRespMsg::Clear();
+		clear_has_scanrespmsg();
+	}
+	inline const ::universe::ScanRespMsg& MessageWrapper::scanrespmsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance().scanrespmsg_;
+#else
+		return scanrespmsg_ != NULL ? *scanrespmsg_ : *default_instance_->scanrespmsg_;
+#endif
+	}
+	inline ::universe::ScanRespMsg* MessageWrapper::mutable_scanrespmsg() {
+		set_has_scanrespmsg();
+		if (scanrespmsg_ == NULL) scanrespmsg_ = new ::universe::ScanRespMsg;
+		return scanrespmsg_;
+	}
+	inline ::universe::ScanRespMsg* MessageWrapper::release_scanrespmsg() {
+		clear_has_scanrespmsg();
+		::universe::ScanRespMsg* temp = scanrespmsg_;
+		scanrespmsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_scanrespmsg(::universe::ScanRespMsg* scanrespmsg) {
+		delete scanrespmsg_;
+		scanrespmsg_ = scanrespmsg;
+		if (scanrespmsg) {
+			set_has_scanrespmsg();
+		}
+		else {
+			clear_has_scanrespmsg();
+		}
+	}
+
+	// optional .universe.DirectoryMsg directoryMsg = 17;
+	inline bool MessageWrapper::has_directorymsg() const {
+		return (_has_bits_[0] & 0x00000800u) != 0;
+	}
+	inline void MessageWrapper::set_has_directorymsg() {
+		_has_bits_[0] |= 0x00000800u;
+	}
+	inline void MessageWrapper::clear_has_directorymsg() {
+		_has_bits_[0] &= ~0x00000800u;
+	}
+	inline void MessageWrapper::clear_directorymsg() {
+		if (directorymsg_ != NULL) directorymsg_->::universe::DirectoryMsg::Clear();
+		clear_has_directorymsg();
+	}
+	inline const ::universe::DirectoryMsg& MessageWrapper::directorymsg() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return directorymsg_ != NULL ? *directorymsg_ : *default_instance().directorymsg_;
+#else
+		return directorymsg_ != NULL ? *directorymsg_ : *default_instance_->directorymsg_;
+#endif
+	}
+	inline ::universe::DirectoryMsg* MessageWrapper::mutable_directorymsg() {
+		set_has_directorymsg();
+		if (directorymsg_ == NULL) directorymsg_ = new ::universe::DirectoryMsg;
+		return directorymsg_;
+	}
+	inline ::universe::DirectoryMsg* MessageWrapper::release_directorymsg() {
+		clear_has_directorymsg();
+		::universe::DirectoryMsg* temp = directorymsg_;
+		directorymsg_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_directorymsg(::universe::DirectoryMsg* directorymsg) {
+		delete directorymsg_;
+		directorymsg_ = directorymsg;
+		if (directorymsg) {
+			set_has_directorymsg();
+		}
+		else {
+			clear_has_directorymsg();
+		}
+	}
+
+	// optional .universe.VisProps visProps = 100;
+	inline bool MessageWrapper::has_visprops() const {
+		return (_has_bits_[0] & 0x00001000u) != 0;
+	}
+	inline void MessageWrapper::set_has_visprops() {
+		_has_bits_[0] |= 0x00001000u;
+	}
+	inline void MessageWrapper::clear_has_visprops() {
+		_has_bits_[0] &= ~0x00001000u;
+	}
+	inline void MessageWrapper::clear_visprops() {
+		if (visprops_ != NULL) visprops_->::universe::VisProps::Clear();
+		clear_has_visprops();
+	}
+	inline const ::universe::VisProps& MessageWrapper::visprops() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return visprops_ != NULL ? *visprops_ : *default_instance().visprops_;
+#else
+		return visprops_ != NULL ? *visprops_ : *default_instance_->visprops_;
+#endif
+	}
+	inline ::universe::VisProps* MessageWrapper::mutable_visprops() {
+		set_has_visprops();
+		if (visprops_ == NULL) visprops_ = new ::universe::VisProps;
+		return visprops_;
+	}
+	inline ::universe::VisProps* MessageWrapper::release_visprops() {
+		clear_has_visprops();
+		::universe::VisProps* temp = visprops_;
+		visprops_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_visprops(::universe::VisProps* visprops) {
+		delete visprops_;
+		visprops_ = visprops;
+		if (visprops) {
+			set_has_visprops();
+		}
+		else {
+			clear_has_visprops();
+		}
+	}
+
+	// optional .universe.VisDataEnable visDataEnable = 101;
+	inline bool MessageWrapper::has_visdataenable() const {
+		return (_has_bits_[0] & 0x00002000u) != 0;
+	}
+	inline void MessageWrapper::set_has_visdataenable() {
+		_has_bits_[0] |= 0x00002000u;
+	}
+	inline void MessageWrapper::clear_has_visdataenable() {
+		_has_bits_[0] &= ~0x00002000u;
+	}
+	inline void MessageWrapper::clear_visdataenable() {
+		if (visdataenable_ != NULL) visdataenable_->::universe::VisDataEnable::Clear();
+		clear_has_visdataenable();
+	}
+	inline const ::universe::VisDataEnable& MessageWrapper::visdataenable() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return visdataenable_ != NULL ? *visdataenable_ : *default_instance().visdataenable_;
+#else
+		return visdataenable_ != NULL ? *visdataenable_ : *default_instance_->visdataenable_;
+#endif
+	}
+	inline ::universe::VisDataEnable* MessageWrapper::mutable_visdataenable() {
+		set_has_visdataenable();
+		if (visdataenable_ == NULL) visdataenable_ = new ::universe::VisDataEnable;
+		return visdataenable_;
+	}
+	inline ::universe::VisDataEnable* MessageWrapper::release_visdataenable() {
+		clear_has_visdataenable();
+		::universe::VisDataEnable* temp = visdataenable_;
+		visdataenable_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_visdataenable(::universe::VisDataEnable* visdataenable) {
+		delete visdataenable_;
+		visdataenable_ = visdataenable;
+		if (visdataenable) {
+			set_has_visdataenable();
+		}
+		else {
+			clear_has_visdataenable();
+		}
+	}
+
+	// optional .universe.VisMetaDataEnable visMetaDataEnable = 102;
+	inline bool MessageWrapper::has_vismetadataenable() const {
+		return (_has_bits_[0] & 0x00004000u) != 0;
+	}
+	inline void MessageWrapper::set_has_vismetadataenable() {
+		_has_bits_[0] |= 0x00004000u;
+	}
+	inline void MessageWrapper::clear_has_vismetadataenable() {
+		_has_bits_[0] &= ~0x00004000u;
+	}
+	inline void MessageWrapper::clear_vismetadataenable() {
+		if (vismetadataenable_ != NULL) vismetadataenable_->::universe::VisMetaDataEnable::Clear();
+		clear_has_vismetadataenable();
+	}
+	inline const ::universe::VisMetaDataEnable& MessageWrapper::vismetadataenable() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance().vismetadataenable_;
+#else
+		return vismetadataenable_ != NULL ? *vismetadataenable_ : *default_instance_->vismetadataenable_;
+#endif
+	}
+	inline ::universe::VisMetaDataEnable* MessageWrapper::mutable_vismetadataenable() {
+		set_has_vismetadataenable();
+		if (vismetadataenable_ == NULL) vismetadataenable_ = new ::universe::VisMetaDataEnable;
+		return vismetadataenable_;
+	}
+	inline ::universe::VisMetaDataEnable* MessageWrapper::release_vismetadataenable() {
+		clear_has_vismetadataenable();
+		::universe::VisMetaDataEnable* temp = vismetadataenable_;
+		vismetadataenable_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_vismetadataenable(::universe::VisMetaDataEnable* vismetadataenable) {
+		delete vismetadataenable_;
+		vismetadataenable_ = vismetadataenable;
+		if (vismetadataenable) {
+			set_has_vismetadataenable();
+		}
+		else {
+			clear_has_vismetadataenable();
+		}
+	}
+
+	// optional .universe.VisMetaData visMetaData = 103;
+	inline bool MessageWrapper::has_vismetadata() const {
+		return (_has_bits_[0] & 0x00008000u) != 0;
+	}
+	inline void MessageWrapper::set_has_vismetadata() {
+		_has_bits_[0] |= 0x00008000u;
+	}
+	inline void MessageWrapper::clear_has_vismetadata() {
+		_has_bits_[0] &= ~0x00008000u;
+	}
+	inline void MessageWrapper::clear_vismetadata() {
+		if (vismetadata_ != NULL) vismetadata_->::universe::VisMetaData::Clear();
+		clear_has_vismetadata();
+	}
+	inline const ::universe::VisMetaData& MessageWrapper::vismetadata() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return vismetadata_ != NULL ? *vismetadata_ : *default_instance().vismetadata_;
+#else
+		return vismetadata_ != NULL ? *vismetadata_ : *default_instance_->vismetadata_;
+#endif
+	}
+	inline ::universe::VisMetaData* MessageWrapper::mutable_vismetadata() {
+		set_has_vismetadata();
+		if (vismetadata_ == NULL) vismetadata_ = new ::universe::VisMetaData;
+		return vismetadata_;
+	}
+	inline ::universe::VisMetaData* MessageWrapper::release_vismetadata() {
+		clear_has_vismetadata();
+		::universe::VisMetaData* temp = vismetadata_;
+		vismetadata_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_vismetadata(::universe::VisMetaData* vismetadata) {
+		delete vismetadata_;
+		vismetadata_ = vismetadata;
+		if (vismetadata) {
+			set_has_vismetadata();
+		}
+		else {
+			clear_has_vismetadata();
+		}
+	}
+
+	// optional .universe.VisData visData = 104;
+	inline bool MessageWrapper::has_visdata() const {
+		return (_has_bits_[0] & 0x00010000u) != 0;
+	}
+	inline void MessageWrapper::set_has_visdata() {
+		_has_bits_[0] |= 0x00010000u;
+	}
+	inline void MessageWrapper::clear_has_visdata() {
+		_has_bits_[0] &= ~0x00010000u;
+	}
+	inline void MessageWrapper::clear_visdata() {
+		if (visdata_ != NULL) visdata_->::universe::VisData::Clear();
+		clear_has_visdata();
+	}
+	inline const ::universe::VisData& MessageWrapper::visdata() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return visdata_ != NULL ? *visdata_ : *default_instance().visdata_;
+#else
+		return visdata_ != NULL ? *visdata_ : *default_instance_->visdata_;
+#endif
+	}
+	inline ::universe::VisData* MessageWrapper::mutable_visdata() {
+		set_has_visdata();
+		if (visdata_ == NULL) visdata_ = new ::universe::VisData;
+		return visdata_;
+	}
+	inline ::universe::VisData* MessageWrapper::release_visdata() {
+		clear_has_visdata();
+		::universe::VisData* temp = visdata_;
+		visdata_ = NULL;
+		return temp;
+	}
+	inline void MessageWrapper::set_allocated_visdata(::universe::VisData* visdata) {
+		delete visdata_;
+		visdata_ = visdata;
+		if (visdata) {
+			set_has_visdata();
+		}
+		else {
+			clear_has_visdata();
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// VectorMsg
+
+	// required double x = 1;
+	inline bool VectorMsg::has_x() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VectorMsg::set_has_x() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VectorMsg::clear_has_x() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VectorMsg::clear_x() {
+		x_ = 0;
+		clear_has_x();
+	}
+	inline double VectorMsg::x() const {
+		return x_;
+	}
+	inline void VectorMsg::set_x(double value) {
+		set_has_x();
+		x_ = value;
+	}
+
+	// required double y = 2;
+	inline bool VectorMsg::has_y() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void VectorMsg::set_has_y() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void VectorMsg::clear_has_y() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void VectorMsg::clear_y() {
+		y_ = 0;
+		clear_has_y();
+	}
+	inline double VectorMsg::y() const {
+		return y_;
+	}
+	inline void VectorMsg::set_y(double value) {
+		set_has_y();
+		y_ = value;
+	}
+
+	// required double z = 3;
+	inline bool VectorMsg::has_z() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void VectorMsg::set_has_z() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void VectorMsg::clear_has_z() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void VectorMsg::clear_z() {
+		z_ = 0;
+		clear_has_z();
+	}
+	inline double VectorMsg::z() const {
+		return z_;
+	}
+	inline void VectorMsg::set_z(double value) {
+		set_has_z();
+		z_ = value;
+	}
+
+	// -------------------------------------------------------------------
+
+	// HelloMsg
+
+	// optional string name = 1 [default = "HELLO"];
+	inline bool HelloMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void HelloMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void HelloMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void HelloMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& HelloMsg::name() const {
+		return *name_;
+	}
+	inline void HelloMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void HelloMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void HelloMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* HelloMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* HelloMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void HelloMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// PhysPropsMsg
+
+	// optional string name = 1 [default = "PHYSPROPS"];
+	inline bool PhysPropsMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void PhysPropsMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void PhysPropsMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& PhysPropsMsg::name() const {
+		return *name_;
+	}
+	inline void PhysPropsMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void PhysPropsMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void PhysPropsMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* PhysPropsMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* PhysPropsMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void PhysPropsMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// optional double mass = 2;
+	inline bool PhysPropsMsg::has_mass() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_mass() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void PhysPropsMsg::clear_has_mass() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void PhysPropsMsg::clear_mass() {
+		mass_ = 0;
+		clear_has_mass();
+	}
+	inline double PhysPropsMsg::mass() const {
+		return mass_;
+	}
+	inline void PhysPropsMsg::set_mass(double value) {
+		set_has_mass();
+		mass_ = value;
+	}
+
+	// optional .universe.VectorMsg position = 3;
+	inline bool PhysPropsMsg::has_position() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_position() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void PhysPropsMsg::clear_has_position() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void PhysPropsMsg::clear_position() {
+		if (position_ != NULL) position_->::universe::VectorMsg::Clear();
+		clear_has_position();
+	}
+	inline const ::universe::VectorMsg& PhysPropsMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return position_ != NULL ? *position_ : *default_instance().position_;
+#else
+		return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::mutable_position() {
+		set_has_position();
+		if (position_ == NULL) position_ = new ::universe::VectorMsg;
+		return position_;
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::release_position() {
+		clear_has_position();
+		::universe::VectorMsg* temp = position_;
+		position_ = NULL;
+		return temp;
+	}
+	inline void PhysPropsMsg::set_allocated_position(::universe::VectorMsg* position) {
+		delete position_;
+		position_ = position;
+		if (position) {
+			set_has_position();
+		}
+		else {
+			clear_has_position();
+		}
+	}
+
+	// optional .universe.VectorMsg velocity = 4;
+	inline bool PhysPropsMsg::has_velocity() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_velocity() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void PhysPropsMsg::clear_has_velocity() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void PhysPropsMsg::clear_velocity() {
+		if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
+		clear_has_velocity();
+	}
+	inline const ::universe::VectorMsg& PhysPropsMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
+		return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::mutable_velocity() {
+		set_has_velocity();
+		if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
+		return velocity_;
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::release_velocity() {
+		clear_has_velocity();
+		::universe::VectorMsg* temp = velocity_;
+		velocity_ = NULL;
+		return temp;
+	}
+	inline void PhysPropsMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
+		delete velocity_;
+		velocity_ = velocity;
+		if (velocity) {
+			set_has_velocity();
+		}
+		else {
+			clear_has_velocity();
+		}
+	}
+
+	// optional .universe.VectorMsg orientation = 5;
+	inline bool PhysPropsMsg::has_orientation() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_orientation() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void PhysPropsMsg::clear_has_orientation() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void PhysPropsMsg::clear_orientation() {
+		if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
+		clear_has_orientation();
+	}
+	inline const ::universe::VectorMsg& PhysPropsMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
+		return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::mutable_orientation() {
+		set_has_orientation();
+		if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
+		return orientation_;
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::release_orientation() {
+		clear_has_orientation();
+		::universe::VectorMsg* temp = orientation_;
+		orientation_ = NULL;
+		return temp;
+	}
+	inline void PhysPropsMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
+		delete orientation_;
+		orientation_ = orientation;
+		if (orientation) {
+			set_has_orientation();
+		}
+		else {
+			clear_has_orientation();
+		}
+	}
+
+	// optional .universe.VectorMsg thrust = 6;
+	inline bool PhysPropsMsg::has_thrust() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_thrust() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void PhysPropsMsg::clear_has_thrust() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void PhysPropsMsg::clear_thrust() {
+		if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
+		clear_has_thrust();
+	}
+	inline const ::universe::VectorMsg& PhysPropsMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
+		return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::mutable_thrust() {
+		set_has_thrust();
+		if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
+		return thrust_;
+	}
+	inline ::universe::VectorMsg* PhysPropsMsg::release_thrust() {
+		clear_has_thrust();
+		::universe::VectorMsg* temp = thrust_;
+		thrust_ = NULL;
+		return temp;
+	}
+	inline void PhysPropsMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
+		delete thrust_;
+		thrust_ = thrust;
+		if (thrust) {
+			set_has_thrust();
+		}
+		else {
+			clear_has_thrust();
+		}
+	}
+
+	// optional double radius = 7;
+	inline bool PhysPropsMsg::has_radius() const {
+		return (_has_bits_[0] & 0x00000040u) != 0;
+	}
+	inline void PhysPropsMsg::set_has_radius() {
+		_has_bits_[0] |= 0x00000040u;
+	}
+	inline void PhysPropsMsg::clear_has_radius() {
+		_has_bits_[0] &= ~0x00000040u;
+	}
+	inline void PhysPropsMsg::clear_radius() {
+		radius_ = 0;
+		clear_has_radius();
+	}
+	inline double PhysPropsMsg::radius() const {
+		return radius_;
+	}
+	inline void PhysPropsMsg::set_radius(double value) {
+		set_has_radius();
+		radius_ = value;
+	}
+
+	// -------------------------------------------------------------------
+
+	// GoodbyeMsg
+
+	// optional string name = 1 [default = "GOODBYE"];
+	inline bool GoodbyeMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void GoodbyeMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void GoodbyeMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void GoodbyeMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& GoodbyeMsg::name() const {
+		return *name_;
+	}
+	inline void GoodbyeMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void GoodbyeMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void GoodbyeMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* GoodbyeMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* GoodbyeMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void GoodbyeMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// CollisionMsg
+
+	// optional string name = 1 [default = "COLLISION"];
+	inline bool CollisionMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void CollisionMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void CollisionMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void CollisionMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& CollisionMsg::name() const {
+		return *name_;
+	}
+	inline void CollisionMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void CollisionMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void CollisionMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* CollisionMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* CollisionMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void CollisionMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required .universe.VectorMsg position = 2;
+	inline bool CollisionMsg::has_position() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void CollisionMsg::set_has_position() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void CollisionMsg::clear_has_position() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void CollisionMsg::clear_position() {
+		if (position_ != NULL) position_->::universe::VectorMsg::Clear();
+		clear_has_position();
+	}
+	inline const ::universe::VectorMsg& CollisionMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return position_ != NULL ? *position_ : *default_instance().position_;
+#else
+		return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
+	}
+	inline ::universe::VectorMsg* CollisionMsg::mutable_position() {
+		set_has_position();
+		if (position_ == NULL) position_ = new ::universe::VectorMsg;
+		return position_;
+	}
+	inline ::universe::VectorMsg* CollisionMsg::release_position() {
+		clear_has_position();
+		::universe::VectorMsg* temp = position_;
+		position_ = NULL;
+		return temp;
+	}
+	inline void CollisionMsg::set_allocated_position(::universe::VectorMsg* position) {
+		delete position_;
+		position_ = position;
+		if (position) {
+			set_has_position();
+		}
+		else {
+			clear_has_position();
+		}
+	}
+
+	// required .universe.VectorMsg direction = 3;
+	inline bool CollisionMsg::has_direction() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void CollisionMsg::set_has_direction() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void CollisionMsg::clear_has_direction() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void CollisionMsg::clear_direction() {
+		if (direction_ != NULL) direction_->::universe::VectorMsg::Clear();
+		clear_has_direction();
+	}
+	inline const ::universe::VectorMsg& CollisionMsg::direction() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return direction_ != NULL ? *direction_ : *default_instance().direction_;
+#else
+		return direction_ != NULL ? *direction_ : *default_instance_->direction_;
+#endif
+	}
+	inline ::universe::VectorMsg* CollisionMsg::mutable_direction() {
+		set_has_direction();
+		if (direction_ == NULL) direction_ = new ::universe::VectorMsg;
+		return direction_;
+	}
+	inline ::universe::VectorMsg* CollisionMsg::release_direction() {
+		clear_has_direction();
+		::universe::VectorMsg* temp = direction_;
+		direction_ = NULL;
+		return temp;
+	}
+	inline void CollisionMsg::set_allocated_direction(::universe::VectorMsg* direction) {
+		delete direction_;
+		direction_ = direction;
+		if (direction) {
+			set_has_direction();
+		}
+		else {
+			clear_has_direction();
+		}
+	}
+
+	// required double energy = 4;
+	inline bool CollisionMsg::has_energy() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void CollisionMsg::set_has_energy() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void CollisionMsg::clear_has_energy() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void CollisionMsg::clear_energy() {
+		energy_ = 0;
+		clear_has_energy();
+	}
+	inline double CollisionMsg::energy() const {
+		return energy_;
+	}
+	inline void CollisionMsg::set_energy(double value) {
+		set_has_energy();
+		energy_ = value;
+	}
+
+	// required .universe.CollisionMsg.CollisionType collisionType = 5;
+	inline bool CollisionMsg::has_collisiontype() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void CollisionMsg::set_has_collisiontype() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void CollisionMsg::clear_has_collisiontype() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void CollisionMsg::clear_collisiontype() {
+		collisiontype_ = 1;
+		clear_has_collisiontype();
+	}
+	inline ::universe::CollisionMsg_CollisionType CollisionMsg::collisiontype() const {
+		return static_cast<::universe::CollisionMsg_CollisionType>(collisiontype_);
+	}
+	inline void CollisionMsg::set_collisiontype(::universe::CollisionMsg_CollisionType value) {
+		assert(::universe::CollisionMsg_CollisionType_IsValid(value));
+		set_has_collisiontype();
+		collisiontype_ = value;
+	}
+
+	// optional string commString = 6;
+	inline bool CollisionMsg::has_commstring() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void CollisionMsg::set_has_commstring() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void CollisionMsg::clear_has_commstring() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void CollisionMsg::clear_commstring() {
+		if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+			commstring_->clear();
+		}
+		clear_has_commstring();
+	}
+	inline const ::std::string& CollisionMsg::commstring() const {
+		return *commstring_;
+	}
+	inline void CollisionMsg::set_commstring(const ::std::string& value) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(value);
+	}
+	inline void CollisionMsg::set_commstring(const char* value) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(value);
+	}
+	inline void CollisionMsg::set_commstring(const char* value, size_t size) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* CollisionMsg::mutable_commstring() {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		return commstring_;
+	}
+	inline ::std::string* CollisionMsg::release_commstring() {
+		clear_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = commstring_;
+			commstring_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+			return temp;
+		}
+	}
+	inline void CollisionMsg::set_allocated_commstring(::std::string* commstring) {
+		if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+			delete commstring_;
+		}
+		if (commstring) {
+			set_has_commstring();
+			commstring_ = commstring;
+		}
+		else {
+			clear_has_commstring();
+			commstring_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// SpawnMsg
+
+	// optional string name = 1 [default = "SPAWN"];
+	inline bool SpawnMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void SpawnMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void SpawnMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void SpawnMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& SpawnMsg::name() const {
+		return *name_;
+	}
+	inline void SpawnMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void SpawnMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void SpawnMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* SpawnMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* SpawnMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void SpawnMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required double mass = 2;
+	inline bool SpawnMsg::has_mass() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void SpawnMsg::set_has_mass() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void SpawnMsg::clear_has_mass() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void SpawnMsg::clear_mass() {
+		mass_ = 0;
+		clear_has_mass();
+	}
+	inline double SpawnMsg::mass() const {
+		return mass_;
+	}
+	inline void SpawnMsg::set_mass(double value) {
+		set_has_mass();
+		mass_ = value;
+	}
+
+	// required .universe.VectorMsg position = 3;
+	inline bool SpawnMsg::has_position() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void SpawnMsg::set_has_position() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void SpawnMsg::clear_has_position() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void SpawnMsg::clear_position() {
+		if (position_ != NULL) position_->::universe::VectorMsg::Clear();
+		clear_has_position();
+	}
+	inline const ::universe::VectorMsg& SpawnMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return position_ != NULL ? *position_ : *default_instance().position_;
+#else
+		return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
+	}
+	inline ::universe::VectorMsg* SpawnMsg::mutable_position() {
+		set_has_position();
+		if (position_ == NULL) position_ = new ::universe::VectorMsg;
+		return position_;
+	}
+	inline ::universe::VectorMsg* SpawnMsg::release_position() {
+		clear_has_position();
+		::universe::VectorMsg* temp = position_;
+		position_ = NULL;
+		return temp;
+	}
+	inline void SpawnMsg::set_allocated_position(::universe::VectorMsg* position) {
+		delete position_;
+		position_ = position;
+		if (position) {
+			set_has_position();
+		}
+		else {
+			clear_has_position();
+		}
+	}
+
+	// required .universe.VectorMsg velocity = 4;
+	inline bool SpawnMsg::has_velocity() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void SpawnMsg::set_has_velocity() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void SpawnMsg::clear_has_velocity() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void SpawnMsg::clear_velocity() {
+		if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
+		clear_has_velocity();
+	}
+	inline const ::universe::VectorMsg& SpawnMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
+		return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
+	}
+	inline ::universe::VectorMsg* SpawnMsg::mutable_velocity() {
+		set_has_velocity();
+		if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
+		return velocity_;
+	}
+	inline ::universe::VectorMsg* SpawnMsg::release_velocity() {
+		clear_has_velocity();
+		::universe::VectorMsg* temp = velocity_;
+		velocity_ = NULL;
+		return temp;
+	}
+	inline void SpawnMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
+		delete velocity_;
+		velocity_ = velocity;
+		if (velocity) {
+			set_has_velocity();
+		}
+		else {
+			clear_has_velocity();
+		}
+	}
+
+	// required .universe.VectorMsg orientation = 5;
+	inline bool SpawnMsg::has_orientation() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void SpawnMsg::set_has_orientation() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void SpawnMsg::clear_has_orientation() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void SpawnMsg::clear_orientation() {
+		if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
+		clear_has_orientation();
+	}
+	inline const ::universe::VectorMsg& SpawnMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
+		return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
+	}
+	inline ::universe::VectorMsg* SpawnMsg::mutable_orientation() {
+		set_has_orientation();
+		if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
+		return orientation_;
+	}
+	inline ::universe::VectorMsg* SpawnMsg::release_orientation() {
+		clear_has_orientation();
+		::universe::VectorMsg* temp = orientation_;
+		orientation_ = NULL;
+		return temp;
+	}
+	inline void SpawnMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
+		delete orientation_;
+		orientation_ = orientation;
+		if (orientation) {
+			set_has_orientation();
+		}
+		else {
+			clear_has_orientation();
+		}
+	}
+
+	// required .universe.VectorMsg thrust = 6;
+	inline bool SpawnMsg::has_thrust() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void SpawnMsg::set_has_thrust() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void SpawnMsg::clear_has_thrust() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void SpawnMsg::clear_thrust() {
+		if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
+		clear_has_thrust();
+	}
+	inline const ::universe::VectorMsg& SpawnMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
+		return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
+	}
+	inline ::universe::VectorMsg* SpawnMsg::mutable_thrust() {
+		set_has_thrust();
+		if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
+		return thrust_;
+	}
+	inline ::universe::VectorMsg* SpawnMsg::release_thrust() {
+		clear_has_thrust();
+		::universe::VectorMsg* temp = thrust_;
+		thrust_ = NULL;
+		return temp;
+	}
+	inline void SpawnMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
+		delete thrust_;
+		thrust_ = thrust;
+		if (thrust) {
+			set_has_thrust();
+		}
+		else {
+			clear_has_thrust();
+		}
+	}
+
+	// required double radius = 7;
+	inline bool SpawnMsg::has_radius() const {
+		return (_has_bits_[0] & 0x00000040u) != 0;
+	}
+	inline void SpawnMsg::set_has_radius() {
+		_has_bits_[0] |= 0x00000040u;
+	}
+	inline void SpawnMsg::clear_has_radius() {
+		_has_bits_[0] &= ~0x00000040u;
+	}
+	inline void SpawnMsg::clear_radius() {
+		radius_ = 0;
+		clear_has_radius();
+	}
+	inline double SpawnMsg::radius() const {
+		return radius_;
+	}
+	inline void SpawnMsg::set_radius(double value) {
+		set_has_radius();
+		radius_ = value;
+	}
+
+	// -------------------------------------------------------------------
+
+	// VisProps
+
+	// optional string name = 1 [default = "VISPROPS"];
+	inline bool VisProps::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VisProps::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VisProps::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VisProps::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& VisProps::name() const {
+		return *name_;
+	}
+	inline void VisProps::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisProps::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisProps::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* VisProps::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* VisProps::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void VisProps::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// VisDataEnable
+
+	// optional string name = 1 [default = "VISDATAENABLE"];
+	inline bool VisDataEnable::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VisDataEnable::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VisDataEnable::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VisDataEnable::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& VisDataEnable::name() const {
+		return *name_;
+	}
+	inline void VisDataEnable::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisDataEnable::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisDataEnable::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* VisDataEnable::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* VisDataEnable::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void VisDataEnable::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// VisData
+
+	// optional string name = 1 [default = "VISDATA"];
+	inline bool VisData::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VisData::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VisData::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VisData::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& VisData::name() const {
+		return *name_;
+	}
+	inline void VisData::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisData::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisData::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* VisData::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* VisData::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void VisData::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// VisMetaData
+
+	// optional string name = 1 [default = "VISMETADATA"];
+	inline bool VisMetaData::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VisMetaData::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VisMetaData::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VisMetaData::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& VisMetaData::name() const {
+		return *name_;
+	}
+	inline void VisMetaData::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisMetaData::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisMetaData::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* VisMetaData::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* VisMetaData::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void VisMetaData::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// VisMetaDataEnable
+
+	// optional string name = 1 [default = "VISMETADATAENABLE"];
+	inline bool VisMetaDataEnable::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void VisMetaDataEnable::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void VisMetaDataEnable::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void VisMetaDataEnable::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& VisMetaDataEnable::name() const {
+		return *name_;
+	}
+	inline void VisMetaDataEnable::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisMetaDataEnable::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void VisMetaDataEnable::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* VisMetaDataEnable::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* VisMetaDataEnable::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void VisMetaDataEnable::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// BeamMsg
+
+	// optional string name = 1 [default = "BEAM"];
+	inline bool BeamMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void BeamMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void BeamMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void BeamMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& BeamMsg::name() const {
+		return *name_;
+	}
+	inline void BeamMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void BeamMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void BeamMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* BeamMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* BeamMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void BeamMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required .universe.VectorMsg origin = 2;
+	inline bool BeamMsg::has_origin() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void BeamMsg::set_has_origin() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void BeamMsg::clear_has_origin() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void BeamMsg::clear_origin() {
+		if (origin_ != NULL) origin_->::universe::VectorMsg::Clear();
+		clear_has_origin();
+	}
+	inline const ::universe::VectorMsg& BeamMsg::origin() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return origin_ != NULL ? *origin_ : *default_instance().origin_;
+#else
+		return origin_ != NULL ? *origin_ : *default_instance_->origin_;
+#endif
+	}
+	inline ::universe::VectorMsg* BeamMsg::mutable_origin() {
+		set_has_origin();
+		if (origin_ == NULL) origin_ = new ::universe::VectorMsg;
+		return origin_;
+	}
+	inline ::universe::VectorMsg* BeamMsg::release_origin() {
+		clear_has_origin();
+		::universe::VectorMsg* temp = origin_;
+		origin_ = NULL;
+		return temp;
+	}
+	inline void BeamMsg::set_allocated_origin(::universe::VectorMsg* origin) {
+		delete origin_;
+		origin_ = origin;
+		if (origin) {
+			set_has_origin();
+		}
+		else {
+			clear_has_origin();
+		}
+	}
+
+	// required .universe.VectorMsg velocity = 3;
+	inline bool BeamMsg::has_velocity() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void BeamMsg::set_has_velocity() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void BeamMsg::clear_has_velocity() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void BeamMsg::clear_velocity() {
+		if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
+		clear_has_velocity();
+	}
+	inline const ::universe::VectorMsg& BeamMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
+		return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
+	}
+	inline ::universe::VectorMsg* BeamMsg::mutable_velocity() {
+		set_has_velocity();
+		if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
+		return velocity_;
+	}
+	inline ::universe::VectorMsg* BeamMsg::release_velocity() {
+		clear_has_velocity();
+		::universe::VectorMsg* temp = velocity_;
+		velocity_ = NULL;
+		return temp;
+	}
+	inline void BeamMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
+		delete velocity_;
+		velocity_ = velocity;
+		if (velocity) {
+			set_has_velocity();
+		}
+		else {
+			clear_has_velocity();
+		}
+	}
+
+	// required .universe.VectorMsg up = 4;
+	inline bool BeamMsg::has_up() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void BeamMsg::set_has_up() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void BeamMsg::clear_has_up() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void BeamMsg::clear_up() {
+		if (up_ != NULL) up_->::universe::VectorMsg::Clear();
+		clear_has_up();
+	}
+	inline const ::universe::VectorMsg& BeamMsg::up() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return up_ != NULL ? *up_ : *default_instance().up_;
+#else
+		return up_ != NULL ? *up_ : *default_instance_->up_;
+#endif
+	}
+	inline ::universe::VectorMsg* BeamMsg::mutable_up() {
+		set_has_up();
+		if (up_ == NULL) up_ = new ::universe::VectorMsg;
+		return up_;
+	}
+	inline ::universe::VectorMsg* BeamMsg::release_up() {
+		clear_has_up();
+		::universe::VectorMsg* temp = up_;
+		up_ = NULL;
+		return temp;
+	}
+	inline void BeamMsg::set_allocated_up(::universe::VectorMsg* up) {
+		delete up_;
+		up_ = up;
+		if (up) {
+			set_has_up();
+		}
+		else {
+			clear_has_up();
+		}
+	}
+
+	// required double spread_h = 5;
+	inline bool BeamMsg::has_spread_h() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void BeamMsg::set_has_spread_h() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void BeamMsg::clear_has_spread_h() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void BeamMsg::clear_spread_h() {
+		spread_h_ = 0;
+		clear_has_spread_h();
+	}
+	inline double BeamMsg::spread_h() const {
+		return spread_h_;
+	}
+	inline void BeamMsg::set_spread_h(double value) {
+		set_has_spread_h();
+		spread_h_ = value;
+	}
+
+	// required double spread_v = 6;
+	inline bool BeamMsg::has_spread_v() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void BeamMsg::set_has_spread_v() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void BeamMsg::clear_has_spread_v() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void BeamMsg::clear_spread_v() {
+		spread_v_ = 0;
+		clear_has_spread_v();
+	}
+	inline double BeamMsg::spread_v() const {
+		return spread_v_;
+	}
+	inline void BeamMsg::set_spread_v(double value) {
+		set_has_spread_v();
+		spread_v_ = value;
+	}
+
+	// required double energy = 7;
+	inline bool BeamMsg::has_energy() const {
+		return (_has_bits_[0] & 0x00000040u) != 0;
+	}
+	inline void BeamMsg::set_has_energy() {
+		_has_bits_[0] |= 0x00000040u;
+	}
+	inline void BeamMsg::clear_has_energy() {
+		_has_bits_[0] &= ~0x00000040u;
+	}
+	inline void BeamMsg::clear_energy() {
+		energy_ = 0;
+		clear_has_energy();
+	}
+	inline double BeamMsg::energy() const {
+		return energy_;
+	}
+	inline void BeamMsg::set_energy(double value) {
+		set_has_energy();
+		energy_ = value;
+	}
+
+	// required .universe.BeamMsg.BeamType beamType = 8;
+	inline bool BeamMsg::has_beamtype() const {
+		return (_has_bits_[0] & 0x00000080u) != 0;
+	}
+	inline void BeamMsg::set_has_beamtype() {
+		_has_bits_[0] |= 0x00000080u;
+	}
+	inline void BeamMsg::clear_has_beamtype() {
+		_has_bits_[0] &= ~0x00000080u;
+	}
+	inline void BeamMsg::clear_beamtype() {
+		beamtype_ = 1;
+		clear_has_beamtype();
+	}
+	inline ::universe::BeamMsg_BeamType BeamMsg::beamtype() const {
+		return static_cast<::universe::BeamMsg_BeamType>(beamtype_);
+	}
+	inline void BeamMsg::set_beamtype(::universe::BeamMsg_BeamType value) {
+		assert(::universe::BeamMsg_BeamType_IsValid(value));
+		set_has_beamtype();
+		beamtype_ = value;
+	}
+
+	// optional string commString = 9;
+	inline bool BeamMsg::has_commstring() const {
+		return (_has_bits_[0] & 0x00000100u) != 0;
+	}
+	inline void BeamMsg::set_has_commstring() {
+		_has_bits_[0] |= 0x00000100u;
+	}
+	inline void BeamMsg::clear_has_commstring() {
+		_has_bits_[0] &= ~0x00000100u;
+	}
+	inline void BeamMsg::clear_commstring() {
+		if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+			commstring_->clear();
+		}
+		clear_has_commstring();
+	}
+	inline const ::std::string& BeamMsg::commstring() const {
+		return *commstring_;
+	}
+	inline void BeamMsg::set_commstring(const ::std::string& value) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(value);
+	}
+	inline void BeamMsg::set_commstring(const char* value) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(value);
+	}
+	inline void BeamMsg::set_commstring(const char* value, size_t size) {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		commstring_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* BeamMsg::mutable_commstring() {
+		set_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			commstring_ = new ::std::string;
+		}
+		return commstring_;
+	}
+	inline ::std::string* BeamMsg::release_commstring() {
+		clear_has_commstring();
+		if (commstring_ == &::google::protobuf::internal::kEmptyString) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = commstring_;
+			commstring_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+			return temp;
+		}
+	}
+	inline void BeamMsg::set_allocated_commstring(::std::string* commstring) {
+		if (commstring_ != &::google::protobuf::internal::kEmptyString) {
+			delete commstring_;
+		}
+		if (commstring) {
+			set_has_commstring();
+			commstring_ = commstring;
+		}
+		else {
+			clear_has_commstring();
+			commstring_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// ScanResultMsg
+
+	// optional string name = 1 [default = "SCANRESULT"];
+	inline bool ScanResultMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void ScanResultMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void ScanResultMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void ScanResultMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& ScanResultMsg::name() const {
+		return *name_;
+	}
+	inline void ScanResultMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanResultMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanResultMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* ScanResultMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* ScanResultMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void ScanResultMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required double mass = 2;
+	inline bool ScanResultMsg::has_mass() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void ScanResultMsg::set_has_mass() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void ScanResultMsg::clear_has_mass() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void ScanResultMsg::clear_mass() {
+		mass_ = 0;
+		clear_has_mass();
+	}
+	inline double ScanResultMsg::mass() const {
+		return mass_;
+	}
+	inline void ScanResultMsg::set_mass(double value) {
+		set_has_mass();
+		mass_ = value;
+	}
+
+	// required .universe.VectorMsg position = 3;
+	inline bool ScanResultMsg::has_position() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void ScanResultMsg::set_has_position() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void ScanResultMsg::clear_has_position() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void ScanResultMsg::clear_position() {
+		if (position_ != NULL) position_->::universe::VectorMsg::Clear();
+		clear_has_position();
+	}
+	inline const ::universe::VectorMsg& ScanResultMsg::position() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return position_ != NULL ? *position_ : *default_instance().position_;
+#else
+		return position_ != NULL ? *position_ : *default_instance_->position_;
+#endif
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::mutable_position() {
+		set_has_position();
+		if (position_ == NULL) position_ = new ::universe::VectorMsg;
+		return position_;
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::release_position() {
+		clear_has_position();
+		::universe::VectorMsg* temp = position_;
+		position_ = NULL;
+		return temp;
+	}
+	inline void ScanResultMsg::set_allocated_position(::universe::VectorMsg* position) {
+		delete position_;
+		position_ = position;
+		if (position) {
+			set_has_position();
+		}
+		else {
+			clear_has_position();
+		}
+	}
+
+	// required .universe.VectorMsg velocity = 4;
+	inline bool ScanResultMsg::has_velocity() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void ScanResultMsg::set_has_velocity() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void ScanResultMsg::clear_has_velocity() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void ScanResultMsg::clear_velocity() {
+		if (velocity_ != NULL) velocity_->::universe::VectorMsg::Clear();
+		clear_has_velocity();
+	}
+	inline const ::universe::VectorMsg& ScanResultMsg::velocity() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return velocity_ != NULL ? *velocity_ : *default_instance().velocity_;
+#else
+		return velocity_ != NULL ? *velocity_ : *default_instance_->velocity_;
+#endif
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::mutable_velocity() {
+		set_has_velocity();
+		if (velocity_ == NULL) velocity_ = new ::universe::VectorMsg;
+		return velocity_;
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::release_velocity() {
+		clear_has_velocity();
+		::universe::VectorMsg* temp = velocity_;
+		velocity_ = NULL;
+		return temp;
+	}
+	inline void ScanResultMsg::set_allocated_velocity(::universe::VectorMsg* velocity) {
+		delete velocity_;
+		velocity_ = velocity;
+		if (velocity) {
+			set_has_velocity();
+		}
+		else {
+			clear_has_velocity();
+		}
+	}
+
+	// required .universe.VectorMsg orientation = 5;
+	inline bool ScanResultMsg::has_orientation() const {
+		return (_has_bits_[0] & 0x00000010u) != 0;
+	}
+	inline void ScanResultMsg::set_has_orientation() {
+		_has_bits_[0] |= 0x00000010u;
+	}
+	inline void ScanResultMsg::clear_has_orientation() {
+		_has_bits_[0] &= ~0x00000010u;
+	}
+	inline void ScanResultMsg::clear_orientation() {
+		if (orientation_ != NULL) orientation_->::universe::VectorMsg::Clear();
+		clear_has_orientation();
+	}
+	inline const ::universe::VectorMsg& ScanResultMsg::orientation() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return orientation_ != NULL ? *orientation_ : *default_instance().orientation_;
+#else
+		return orientation_ != NULL ? *orientation_ : *default_instance_->orientation_;
+#endif
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::mutable_orientation() {
+		set_has_orientation();
+		if (orientation_ == NULL) orientation_ = new ::universe::VectorMsg;
+		return orientation_;
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::release_orientation() {
+		clear_has_orientation();
+		::universe::VectorMsg* temp = orientation_;
+		orientation_ = NULL;
+		return temp;
+	}
+	inline void ScanResultMsg::set_allocated_orientation(::universe::VectorMsg* orientation) {
+		delete orientation_;
+		orientation_ = orientation;
+		if (orientation) {
+			set_has_orientation();
+		}
+		else {
+			clear_has_orientation();
+		}
+	}
+
+	// required .universe.VectorMsg thrust = 6;
+	inline bool ScanResultMsg::has_thrust() const {
+		return (_has_bits_[0] & 0x00000020u) != 0;
+	}
+	inline void ScanResultMsg::set_has_thrust() {
+		_has_bits_[0] |= 0x00000020u;
+	}
+	inline void ScanResultMsg::clear_has_thrust() {
+		_has_bits_[0] &= ~0x00000020u;
+	}
+	inline void ScanResultMsg::clear_thrust() {
+		if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
+		clear_has_thrust();
+	}
+	inline const ::universe::VectorMsg& ScanResultMsg::thrust() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return thrust_ != NULL ? *thrust_ : *default_instance().thrust_;
+#else
+		return thrust_ != NULL ? *thrust_ : *default_instance_->thrust_;
+#endif
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::mutable_thrust() {
+		set_has_thrust();
+		if (thrust_ == NULL) thrust_ = new ::universe::VectorMsg;
+		return thrust_;
+	}
+	inline ::universe::VectorMsg* ScanResultMsg::release_thrust() {
+		clear_has_thrust();
+		::universe::VectorMsg* temp = thrust_;
+		thrust_ = NULL;
+		return temp;
+	}
+	inline void ScanResultMsg::set_allocated_thrust(::universe::VectorMsg* thrust) {
+		delete thrust_;
+		thrust_ = thrust;
+		if (thrust) {
+			set_has_thrust();
+		}
+		else {
+			clear_has_thrust();
+		}
+	}
+
+	// required double radius = 7;
+	inline bool ScanResultMsg::has_radius() const {
+		return (_has_bits_[0] & 0x00000040u) != 0;
+	}
+	inline void ScanResultMsg::set_has_radius() {
+		_has_bits_[0] |= 0x00000040u;
+	}
+	inline void ScanResultMsg::clear_has_radius() {
+		_has_bits_[0] &= ~0x00000040u;
+	}
+	inline void ScanResultMsg::clear_radius() {
+		radius_ = 0;
+		clear_has_radius();
+	}
+	inline double ScanResultMsg::radius() const {
+		return radius_;
+	}
+	inline void ScanResultMsg::set_radius(double value) {
+		set_has_radius();
+		radius_ = value;
+	}
+
+	// optional string extraParms = 8;
+	inline bool ScanResultMsg::has_extraparms() const {
+		return (_has_bits_[0] & 0x00000080u) != 0;
+	}
+	inline void ScanResultMsg::set_has_extraparms() {
+		_has_bits_[0] |= 0x00000080u;
+	}
+	inline void ScanResultMsg::clear_has_extraparms() {
+		_has_bits_[0] &= ~0x00000080u;
+	}
+	inline void ScanResultMsg::clear_extraparms() {
+		if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
+			extraparms_->clear();
+		}
+		clear_has_extraparms();
+	}
+	inline const ::std::string& ScanResultMsg::extraparms() const {
+		return *extraparms_;
+	}
+	inline void ScanResultMsg::set_extraparms(const ::std::string& value) {
+		set_has_extraparms();
+		if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
+			extraparms_ = new ::std::string;
+		}
+		extraparms_->assign(value);
+	}
+	inline void ScanResultMsg::set_extraparms(const char* value) {
+		set_has_extraparms();
+		if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
+			extraparms_ = new ::std::string;
+		}
+		extraparms_->assign(value);
+	}
+	inline void ScanResultMsg::set_extraparms(const char* value, size_t size) {
+		set_has_extraparms();
+		if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
+			extraparms_ = new ::std::string;
+		}
+		extraparms_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* ScanResultMsg::mutable_extraparms() {
+		set_has_extraparms();
+		if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
+			extraparms_ = new ::std::string;
+		}
+		return extraparms_;
+	}
+	inline ::std::string* ScanResultMsg::release_extraparms() {
+		clear_has_extraparms();
+		if (extraparms_ == &::google::protobuf::internal::kEmptyString) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = extraparms_;
+			extraparms_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+			return temp;
+		}
+	}
+	inline void ScanResultMsg::set_allocated_extraparms(::std::string* extraparms) {
+		if (extraparms_ != &::google::protobuf::internal::kEmptyString) {
+			delete extraparms_;
+		}
+		if (extraparms) {
+			set_has_extraparms();
+			extraparms_ = extraparms;
+		}
+		else {
+			clear_has_extraparms();
+			extraparms_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// ScanQueryMsg
+
+	// optional string name = 1 [default = "SCANQUERY"];
+	inline bool ScanQueryMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void ScanQueryMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void ScanQueryMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void ScanQueryMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& ScanQueryMsg::name() const {
+		return *name_;
+	}
+	inline void ScanQueryMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanQueryMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanQueryMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* ScanQueryMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* ScanQueryMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void ScanQueryMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required int32 scanID = 2;
+	inline bool ScanQueryMsg::has_scanid() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void ScanQueryMsg::set_has_scanid() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void ScanQueryMsg::clear_has_scanid() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void ScanQueryMsg::clear_scanid() {
+		scanid_ = 0;
+		clear_has_scanid();
+	}
+	inline ::google::protobuf::int32 ScanQueryMsg::scanid() const {
+		return scanid_;
+	}
+	inline void ScanQueryMsg::set_scanid(::google::protobuf::int32 value) {
+		set_has_scanid();
+		scanid_ = value;
+	}
+
+	// required double scanPower = 3;
+	inline bool ScanQueryMsg::has_scanpower() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void ScanQueryMsg::set_has_scanpower() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void ScanQueryMsg::clear_has_scanpower() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void ScanQueryMsg::clear_scanpower() {
+		scanpower_ = 0;
+		clear_has_scanpower();
+	}
+	inline double ScanQueryMsg::scanpower() const {
+		return scanpower_;
+	}
+	inline void ScanQueryMsg::set_scanpower(double value) {
+		set_has_scanpower();
+		scanpower_ = value;
+	}
+
+	// required .universe.VectorMsg scanDir = 4;
+	inline bool ScanQueryMsg::has_scandir() const {
+		return (_has_bits_[0] & 0x00000008u) != 0;
+	}
+	inline void ScanQueryMsg::set_has_scandir() {
+		_has_bits_[0] |= 0x00000008u;
+	}
+	inline void ScanQueryMsg::clear_has_scandir() {
+		_has_bits_[0] &= ~0x00000008u;
+	}
+	inline void ScanQueryMsg::clear_scandir() {
+		if (scandir_ != NULL) scandir_->::universe::VectorMsg::Clear();
+		clear_has_scandir();
+	}
+	inline const ::universe::VectorMsg& ScanQueryMsg::scandir() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+		return scandir_ != NULL ? *scandir_ : *default_instance().scandir_;
+#else
+		return scandir_ != NULL ? *scandir_ : *default_instance_->scandir_;
+#endif
+	}
+	inline ::universe::VectorMsg* ScanQueryMsg::mutable_scandir() {
+		set_has_scandir();
+		if (scandir_ == NULL) scandir_ = new ::universe::VectorMsg;
+		return scandir_;
+	}
+	inline ::universe::VectorMsg* ScanQueryMsg::release_scandir() {
+		clear_has_scandir();
+		::universe::VectorMsg* temp = scandir_;
+		scandir_ = NULL;
+		return temp;
+	}
+	inline void ScanQueryMsg::set_allocated_scandir(::universe::VectorMsg* scandir) {
+		delete scandir_;
+		scandir_ = scandir;
+		if (scandir) {
+			set_has_scandir();
+		}
+		else {
+			clear_has_scandir();
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// ScanRespMsg
+
+	// optional string name = 1 [default = "SCANRESP"];
+	inline bool ScanRespMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void ScanRespMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void ScanRespMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void ScanRespMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& ScanRespMsg::name() const {
+		return *name_;
+	}
+	inline void ScanRespMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanRespMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void ScanRespMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* ScanRespMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* ScanRespMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void ScanRespMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+	// required int32 scanID = 2;
+	inline bool ScanRespMsg::has_scanid() const {
+		return (_has_bits_[0] & 0x00000002u) != 0;
+	}
+	inline void ScanRespMsg::set_has_scanid() {
+		_has_bits_[0] |= 0x00000002u;
+	}
+	inline void ScanRespMsg::clear_has_scanid() {
+		_has_bits_[0] &= ~0x00000002u;
+	}
+	inline void ScanRespMsg::clear_scanid() {
+		scanid_ = 0;
+		clear_has_scanid();
+	}
+	inline ::google::protobuf::int32 ScanRespMsg::scanid() const {
+		return scanid_;
+	}
+	inline void ScanRespMsg::set_scanid(::google::protobuf::int32 value) {
+		set_has_scanid();
+		scanid_ = value;
+	}
+
+	// required string parms = 3;
+	inline bool ScanRespMsg::has_parms() const {
+		return (_has_bits_[0] & 0x00000004u) != 0;
+	}
+	inline void ScanRespMsg::set_has_parms() {
+		_has_bits_[0] |= 0x00000004u;
+	}
+	inline void ScanRespMsg::clear_has_parms() {
+		_has_bits_[0] &= ~0x00000004u;
+	}
+	inline void ScanRespMsg::clear_parms() {
+		if (parms_ != &::google::protobuf::internal::kEmptyString) {
+			parms_->clear();
+		}
+		clear_has_parms();
+	}
+	inline const ::std::string& ScanRespMsg::parms() const {
+		return *parms_;
+	}
+	inline void ScanRespMsg::set_parms(const ::std::string& value) {
+		set_has_parms();
+		if (parms_ == &::google::protobuf::internal::kEmptyString) {
+			parms_ = new ::std::string;
+		}
+		parms_->assign(value);
+	}
+	inline void ScanRespMsg::set_parms(const char* value) {
+		set_has_parms();
+		if (parms_ == &::google::protobuf::internal::kEmptyString) {
+			parms_ = new ::std::string;
+		}
+		parms_->assign(value);
+	}
+	inline void ScanRespMsg::set_parms(const char* value, size_t size) {
+		set_has_parms();
+		if (parms_ == &::google::protobuf::internal::kEmptyString) {
+			parms_ = new ::std::string;
+		}
+		parms_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* ScanRespMsg::mutable_parms() {
+		set_has_parms();
+		if (parms_ == &::google::protobuf::internal::kEmptyString) {
+			parms_ = new ::std::string;
+		}
+		return parms_;
+	}
+	inline ::std::string* ScanRespMsg::release_parms() {
+		clear_has_parms();
+		if (parms_ == &::google::protobuf::internal::kEmptyString) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = parms_;
+			parms_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+			return temp;
+		}
+	}
+	inline void ScanRespMsg::set_allocated_parms(::std::string* parms) {
+		if (parms_ != &::google::protobuf::internal::kEmptyString) {
+			delete parms_;
+		}
+		if (parms) {
+			set_has_parms();
+			parms_ = parms;
+		}
+		else {
+			clear_has_parms();
+			parms_ = const_cast<::std::string*>(&::google::protobuf::internal::kEmptyString);
+		}
+	}
+
+	// -------------------------------------------------------------------
+
+	// DirectoryMsg
+
+	// optional string name = 1 [default = "DIRECTORY"];
+	inline bool DirectoryMsg::has_name() const {
+		return (_has_bits_[0] & 0x00000001u) != 0;
+	}
+	inline void DirectoryMsg::set_has_name() {
+		_has_bits_[0] |= 0x00000001u;
+	}
+	inline void DirectoryMsg::clear_has_name() {
+		_has_bits_[0] &= ~0x00000001u;
+	}
+	inline void DirectoryMsg::clear_name() {
+		if (name_ != _default_name_) {
+			name_->assign(*_default_name_);
+		}
+		clear_has_name();
+	}
+	inline const ::std::string& DirectoryMsg::name() const {
+		return *name_;
+	}
+	inline void DirectoryMsg::set_name(const ::std::string& value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void DirectoryMsg::set_name(const char* value) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(value);
+	}
+	inline void DirectoryMsg::set_name(const char* value, size_t size) {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string;
+		}
+		name_->assign(reinterpret_cast<const char*>(value), size);
+	}
+	inline ::std::string* DirectoryMsg::mutable_name() {
+		set_has_name();
+		if (name_ == _default_name_) {
+			name_ = new ::std::string(*_default_name_);
+		}
+		return name_;
+	}
+	inline ::std::string* DirectoryMsg::release_name() {
+		clear_has_name();
+		if (name_ == _default_name_) {
+			return NULL;
+		}
+		else {
+			::std::string* temp = name_;
+			name_ = const_cast<::std::string*>(_default_name_);
+			return temp;
+		}
+	}
+	inline void DirectoryMsg::set_allocated_name(::std::string* name) {
+		if (name_ != _default_name_) {
+			delete name_;
+		}
+		if (name) {
+			set_has_name();
+			name_ = name;
+		}
+		else {
+			clear_has_name();
+			name_ = const_cast<::std::string*>(_default_name_);
+		}
+	}
+
+
+	// @@protoc_insertion_point(namespace_scope)
 
 }  // namespace universe
 

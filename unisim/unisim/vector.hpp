@@ -5,19 +5,19 @@
 
 struct Vector3
 {
-    double x, y, z;
+	double x, y, z;
 };
 
 //! Represents an axis-aligned bounding box
 struct AABB
 {
-    //! Lower coordinates
-    struct Vector3 l;
-    //! Upper coordinates
-    struct Vector3 u;
+	//! Lower coordinates
+	struct Vector3 l;
+	//! Upper coordinates
+	struct Vector3 u;
 };
 
-struct Vector3* Vector3_alloc(int32_t n  = 1);
+struct Vector3* Vector3_alloc(int32_t n = 1);
 struct Vector3* Vector3_clone(struct Vector3* v);
 
 void Vector3_init(struct Vector3* v, double x, double y, double z);
