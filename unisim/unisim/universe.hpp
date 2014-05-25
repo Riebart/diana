@@ -93,6 +93,7 @@ class Universe
 	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
     friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
+    friend void* thread_check_collisions(void* argsV);
 
 public:
 	Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
@@ -140,7 +141,7 @@ private:
 	void broadcast_vis_data();
 	void tick(double dt);
 	void sort_aabb(double dt, bool calc);
-	void get_collisions();
+	//void get_collisions();
 	void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
 	void handle_message(int32_t c);
 	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
@@ -172,6 +173,22 @@ private:
 	std::map<uint64_t, uint64_t> queries;
 	std::vector<int32_t> vis_clients;
 
+    //! Structure holding the arguments for the threaded checking of collisions
+    struct phys_args
+    {
+        // Universe to check
+        Universe* u;
+        // Position in the sorted list to start at, 0-based
+        uint32_t offset;
+        // Amount to move along the sorted list after processing.
+        uint32_t stride;
+        // Time tick to use for real collision testing.
+        double dt;
+    };
+
+    struct phys_args* phys_worker_args;
+
+    //! @todo Move these threaded operations onto the scheduler, let it handle the asynchronous stuff
 	THREAD_T sim_thread;
 	THREAD_T vis_thread;
 	LOCK_T add_lock;

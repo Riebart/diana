@@ -282,9 +282,6 @@ void collision_exit()
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
 	struct Vector3 velocity = { 0.0, 0.0, 0.0 };
 
-	int num_per_row = 100; // 2x+1 = actual number per row
-	int num_rows = 25;
-
 	double mass = 1.0;
 	double radius = 1.0;
 	double spacingX = 0.1;
@@ -383,18 +380,18 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-	u = new Universe(0.001, 0.05, 0.5, 5505, 1);
-	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 1, 1.0, false);
+	//u = new Universe(0.001, 0.05, 0.5, 5505, 3);
+	u = new Universe(1e-6, 1e-6, 0.5, 5505, 2, 1.0, false);
 
 	try
 	{
 		//pool_rack();
 		//simple_collision();
 		//fast_collision();
-		//shifting();
+		shifting();
 		//collision_exit();
 
-		beam_collision();
+		//beam_collision();
 		//beam_multi_collision();
 
 		print_positions();

@@ -22,10 +22,7 @@
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
-// For performance comparisons, I'm leaving both codepaths in here.
-// Define this to use the old O(N^2) one.
-// In practice, for more than 
-//#define FULL_PAIRWISE_COLLISIONS
+const int MIN_OBJECTS_PER_THREAD = 500;
 
 typedef struct Beam B;
 typedef PhysicsObjectType POT;
@@ -146,8 +143,6 @@ void Universe_handle_message(int32_t c, void* arg)
 //! @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
 Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
-    sched = new libodb::Scheduler(num_threads);
-
 	this->rate = rate;
 
 	if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
@@ -156,6 +151,18 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
 		min_frametime = ABSOLUTE_MIN_FRAMETIME;
 		max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
 	}
+
+    this->num_threads = num_threads;
+    sched = new libodb::Scheduler(num_threads);
+
+    phys_worker_args = (struct phys_args*)malloc(num_threads * sizeof(struct phys_args));
+    for (int i = 0; i < num_threads; i++)
+    {
+        phys_worker_args[i].u = this;
+        phys_worker_args[i].offset = i;
+        phys_worker_args[i].stride = num_threads;
+        phys_worker_args[i].dt = 0.0;
+    }
 
 	this->min_frametime = min_frametime;
 	this->max_frametime = max_frametime;
@@ -294,66 +301,128 @@ void Universe::get_grav_pull(V3* g, PO* obj)
 	}
 }
 
-void Universe::get_collisions()
+void check_collision(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt)
 {
-	struct AABB* a;
-	struct AABB* b;
+    struct PhysCollisionResult phys_result;
 
-	for (size_t i = 0; i < sorted.size() - 1; i++)
-	{
-		// In order for a full intersection to be possible, there has to be intersection
-		// of the AABBs in all three dimensions. The sorted list contains the objects'
-		//
-		// AABBs sorted by their lowest coordinate in the X dimensions.
-		// We can test for potential intersections, first pruning by intersection along
-		// the X axis.
-		//
-		// First test to see if the X projects intersect. If they do, then test the others.
+    // Return from a phys-phys collision is
+    //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
+    // t is in [0,1] and indicates when in the interval the collision happened
+    // energy is obvious.
+    // d1 is the direction obj2 was travelling relative to obj1 whe they collided
+    // p1 is a vector from obj1's position to the collision sport on its bounding ball.
+    PhysicsObject_collide(&phys_result, obj1, obj2, dt);
 
-		a = &phys_objects[sorted[i]]->box;
-		for (size_t j = i + 1; j < sorted.size(); j++)
-		{
-			b = &phys_objects[sorted[j]]->box;
+    if (phys_result.t >= 0.0)
+    {
+        // By comparing the energy to a cutoff, this will help prevent
+        // spurious collision notifications due to physics time step
+        // increments and temporary object intersection.
 
-			double d;
-			d = a->u.x - b->l.x;
+        // Total energy involved. Both objects 'absorb' the same amount
+        // of energy from an 'impact effect' perspective, and that is in
+        // the 'e' field of the collision result.
 
-			// This is to text if they intersect/touch in X
-			// It's simpler here, because we have a guarantee (thanks to sorting)
-			// about the relative positions of the lower endpoints of the intervals so
-			// we don't need to worry about those here.
-			if (Vector3_almost_zeroS(d) || (d > 0))
-			{
-				// Now do a full test on the Y axis.
-				if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
-				{
-					continue;
-				}
+        if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
+            (phys_result.e > COLLISION_ENERGY_CUTOFF))
+        {
+            //! @todo Messaging in the tick is going to be back for performance.
+#if _WIN64 || __x86_64__
+            fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#else
+            fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#endif
+            PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
+            PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
 
-				// And then a full test on Z
-				if (!Vector3_intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
-				{
-					continue;
-				}
+            if (obj1->type == PHYSOBJECT_SMART)
+            {
+                //SPO* s = (SPO*)obj1;
+                //! @todo Smart phys collision messages
+            }
 
-				// If we succeeded on both, count this as a potential collision for
-				// honest-to-goodness testing.
-				potentials.push_back(phys_objects[sorted[i]]);
-				potentials.push_back(phys_objects[sorted[j]]);
-			}
-			else
-			{
-				// If we fail that X comparison, we know that we will fail for every object
-				// 'after', so we can bail on the loop.
-				break;
-			}
-		}
-	}
+            if (obj2->type == PHYSOBJECT_SMART)
+            {
+                //SPO* s = (SPO*)obj2;
+                //! @todo Smart phys collision (other) messages
+            }
+        }
+    }
 }
 
 //! Get the next collision, as ordered by time
 void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_result)
 {
+}
+
+void* thread_check_collisions(void* argsV)
+{
+    struct Universe::phys_args* args = (struct Universe::phys_args*)argsV;
+    Universe* u = args->u;
+
+    struct AABB* a;
+    struct AABB* b;
+
+    size_t end = args->offset + args->stride;
+    end = MIN(end, u->sorted.size() - 1);
+
+    //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
+    for (size_t i = args->offset; i < end; i++)
+    {
+        // In order for a full intersection to be possible, there has to be intersection
+        // of the AABBs in all three dimensions. The sorted list contains the objects'
+        //
+        // AABBs sorted by their lowest coordinate in the X dimensions.
+        // We can test for potential intersections, first pruning by intersection along
+        // the X axis.
+        //
+        // First test to see if the X projections intersect. If they do, then test the others.
+
+        a = &u->phys_objects[u->sorted[i]]->box;
+        for (size_t j = i + 1; j < u->sorted.size(); j++)
+        {
+            b = &u->phys_objects[u->sorted[j]]->box;
+
+            double d;
+            d = a->u.x - b->l.x;
+
+            // This is to text if they intersect/touch in X
+            // It's simpler here, because we have a guarantee (thanks to sorting)
+            // about the relative positions of the lower endpoints of the intervals so
+            // we don't need to worry about those here.
+            if (Vector3_almost_zeroS(d) || (d > 0))
+            {
+                // Now do a full test on the Y axis.
+                if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
+                {
+                    continue;
+                }
+
+                // And then a full test on Z
+                if (!Vector3_intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
+                {
+                    continue;
+                }
+
+                // If we succeeded on both, count this as a potential collision for
+                // honest-to-goodness testing.
+                check_collision(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[i]], args->dt);
+            }
+            else
+            {
+                // If we fail that X comparison, we know that we will fail for every object
+                // 'after', so we can bail on the loop.
+                break;
+            }
+        }
+    }
+
+    if (end == (u->sorted.size() - 1))
+    {
+        u->phys_done = true;
+    }
+
+    return NULL;
 }
 
 void Universe::sort_aabb(double dt, bool calc)
@@ -402,55 +471,6 @@ void Universe::sort_aabb(double dt, bool calc)
 			i = max_so_far + 1;
 		}
 	}
-}
-
-void check_collision(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt)
-{
-    struct PhysCollisionResult phys_result;
-
-    // Return from a phys-phys collision is
-    //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
-    // t is in [0,1] and indicates when in the interval the collision happened
-    // energy is obvious.
-    // d1 is the direction obj2 was travelling relative to obj1 whe they collided
-    // p1 is a vector from obj1's position to the collision sport on its bounding ball.
-    PhysicsObject_collide(&phys_result, obj1, obj2, dt);
-
-    if (phys_result.t >= 0.0)
-    {
-        // By comparing the energy to a cutoff, this will help prevent
-        // spurious collision notifications due to physics time step
-        // increments and temporary object intersection.
-
-        // Total energy involved. Both objects 'absorb' the same amount
-        // of energy from an 'impact effect' perspective, and that is in
-        // the 'e' field of the collision result.
-
-        if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
-            (phys_result.e > COLLISION_ENERGY_CUTOFF))
-        {
-            //! @todo Messaging in the tick is going to be back for performance.
-#if _WIN64 || __x86_64__
-            fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#else
-            fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#endif
-            PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
-            PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
-
-            if (obj1->type == PHYSOBJECT_SMART)
-            {
-                //SPO* s = (SPO*)obj1;
-                //! @todo Smart phys collision messages
-            }
-
-            if (obj2->type == PHYSOBJECT_SMART)
-            {
-                //SPO* s = (SPO*)obj2;
-                //! @todo Smart phys collision (other) messages
-            }
-        }
-    }
 }
 
 void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
@@ -504,79 +524,32 @@ void Universe::tick(double dt)
 
 	//! @todo Multi-level collisoin detecitons in the tick.
 	//! @todo Have some concept of collision destruction criteria here.
-	struct PhysCollisionResult phys_result;
 
-#ifdef FULL_PAIRWISE_COLLISIONS
-	for (size_t i = 0 ; i < phys_objects.size() ; i++)
-	{
-		struct PhysicsObject* obj1 = phys_objects[i];
-
-		for (size_t j = i + 1 ; j < phys_objects.size() ; j++)
-		{
-			struct PhysicsObject* obj2 = phys_objects[j];
-
-			// Return from a phys-phys collision is
-			//    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
-			// t is in [0,1] and indicates when in the interval the collision happened
-			// energy is obvious.
-			// d1 is the direction obj2 was travelling relative to obj1 whe they collided
-			// p1 is a vector from obj1's position to the collision sport on its bounding ball.
-			PhysicsObject_collide(&phys_result, obj1, obj2, dt);
-
-			if (phys_result.t >= 0.0)
-			{
-				// By comparing the energy to a cutoff, this will help prevent
-				// spurious collision notifications due to physics time step
-				// increments and temporary object intersection.
-
-				// Total energy involved. Both objects 'absorb' the same amount
-				// of energy from an 'impact effect' perspective, and that is in
-				// the 'e' field of the collision result.
-
-				if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) || 
-					(phys_result.e > COLLISION_ENERGY_CUTOFF))
-				{
-					//! @todo Messaging in the tick is going to be back for performance.
-#if _WIN64 || __x86_64__
-					fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#else
-					fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#endif
-					PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
-					PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
-
-					if (obj1->type == PHYSOBJECT_SMART)
-					{
-						//SPO* s = (SPO*)obj1;
-						//! @todo Smart phys collision messages
-					}
-
-					if (obj2->type == PHYSOBJECT_SMART)
-					{
-						//SPO* s = (SPO*)obj2;
-						//! @todo Smart phys collision (other) messages
-					}
-				}
-			}
-		}
-	}
-#else
 	if (phys_objects.size() > 1)
 	{
 		sort_aabb(dt, true);
-		get_collisions();
-	}
 
-	while (potentials.size() > 0)
-	{
-		struct PhysicsObject* obj1 = potentials.back();
-		potentials.pop_back();
-		struct PhysicsObject* obj2 = potentials.back();
-		potentials.pop_back();
+        //phys_worker_args[0].offset = 0;
+        //phys_worker_args[0].stride = phys_objects.size();
+        //phys_worker_args[0].dt = dt;
+        //thread_check_collisions(&phys_worker_args[0]);
 
-        check_collision(this, obj1, obj2, dt);
+        int n = phys_objects.size() / MIN_OBJECTS_PER_THREAD;
+        n = MIN(num_threads, n);
+
+        // If we're using more than 1 thread, try to split them evenly.
+        int d = phys_objects.size() / n;
+        
+        for (int i = 0; i < n; i++)
+        {
+            phys_worker_args[i].offset = i * d;
+            phys_worker_args[i].stride = d;
+            phys_worker_args[i].dt = dt;
+            sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
+        }
+
+        sched->spin_until_done();
 	}
-#endif
 
 	// Now tick along each object
 	for (size_t i = 0; i < phys_objects.size(); i++)
