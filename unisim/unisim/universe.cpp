@@ -146,6 +146,8 @@ void Universe_handle_message(int32_t c, void* arg)
 //! @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
 Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
+    sched = new libodb::Scheduler(num_threads);
+
 	this->rate = rate;
 
 	if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
@@ -179,6 +181,7 @@ Universe::~Universe()
 {
 	stop_net();
 	stop_sim();
+    delete sched;
 }
 
 void Universe::start_net()
@@ -401,6 +404,89 @@ void Universe::sort_aabb(double dt, bool calc)
 	}
 }
 
+void check_collision(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt)
+{
+    struct PhysCollisionResult phys_result;
+
+    // Return from a phys-phys collision is
+    //    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
+    // t is in [0,1] and indicates when in the interval the collision happened
+    // energy is obvious.
+    // d1 is the direction obj2 was travelling relative to obj1 whe they collided
+    // p1 is a vector from obj1's position to the collision sport on its bounding ball.
+    PhysicsObject_collide(&phys_result, obj1, obj2, dt);
+
+    if (phys_result.t >= 0.0)
+    {
+        // By comparing the energy to a cutoff, this will help prevent
+        // spurious collision notifications due to physics time step
+        // increments and temporary object intersection.
+
+        // Total energy involved. Both objects 'absorb' the same amount
+        // of energy from an 'impact effect' perspective, and that is in
+        // the 'e' field of the collision result.
+
+        if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
+            (phys_result.e > COLLISION_ENERGY_CUTOFF))
+        {
+            //! @todo Messaging in the tick is going to be back for performance.
+#if _WIN64 || __x86_64__
+            fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#else
+            fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#endif
+            PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
+            PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
+
+            if (obj1->type == PHYSOBJECT_SMART)
+            {
+                //SPO* s = (SPO*)obj1;
+                //! @todo Smart phys collision messages
+            }
+
+            if (obj2->type == PHYSOBJECT_SMART)
+            {
+                //SPO* s = (SPO*)obj2;
+                //! @todo Smart phys collision (other) messages
+            }
+        }
+    }
+}
+
+void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
+{
+    V3 g = { 0.0, 0.0, 0.0 };
+    struct BeamCollisionResult beam_result;
+    struct PhysCollisionResult phys_result;
+
+    u->get_grav_pull(&g, o);
+    PhysicsObject_tick(o, &g, dt);
+
+    struct Beam* b;
+
+    for (size_t bi = 0; bi < u->beams.size(); bi++)
+    {
+        b = u->beams[bi];
+        Beam_collide(&beam_result, u->beams[bi], o, dt);
+
+        if (beam_result.t >= 0.0)
+        {
+            phys_result.pce1.d = beam_result.d;
+            phys_result.pce1.p = beam_result.p;
+
+#if _WIN64 || __x86_64__
+            fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", u->beams[bi]->phys_id, o->phys_id, beam_result.e);
+#else
+            fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", u->beams[bi]->phys_id, o->phys_id, beam_result.e);
+#endif
+            PhysicsObject_collision(o, (PO*)u->beams[bi], beam_result.e, beam_result.t * dt, &phys_result.pce1);
+
+            //! @todo Smarty beam collision messages
+            //! @todo Beam collision messages
+        }
+    }
+}
+
 void Universe::tick(double dt)
 {
 	LOCK(phys_lock);
@@ -416,11 +502,9 @@ void Universe::tick(double dt)
 	//! http://en.wikipedia.org/wiki/Hyperplane_separation_theorem
 	//! http://www.gamasutra.com/view/feature/3190/advanced_collision_detection_.php
 
-	//! @todo Allocate the result on the stack here and pass in a pointer.
 	//! @todo Multi-level collisoin detecitons in the tick.
 	//! @todo Have some concept of collision destruction criteria here.
 	struct PhysCollisionResult phys_result;
-	struct BeamCollisionResult beam_result;
 
 #ifdef FULL_PAIRWISE_COLLISIONS
 	for (size_t i = 0 ; i < phys_objects.size() ; i++)
@@ -490,82 +574,14 @@ void Universe::tick(double dt)
 		struct PhysicsObject* obj2 = potentials.back();
 		potentials.pop_back();
 
-		// Return from a phys-phys collision is
-		//    [t, [e1, e2], [obj1  collision data], [obj2 collision data]]
-		// t is in [0,1] and indicates when in the interval the collision happened
-		// energy is obvious.
-		// d1 is the direction obj2 was travelling relative to obj1 whe they collided
-		// p1 is a vector from obj1's position to the collision sport on its bounding ball.
-		PhysicsObject_collide(&phys_result, obj1, obj2, dt);
-
-		if (phys_result.t >= 0.0)
-		{
-			// By comparing the energy to a cutoff, this will help prevent
-			// spurious collision notifications due to physics time step
-			// increments and temporary object intersection.
-
-			// Total energy involved. Both objects 'absorb' the same amount
-			// of energy from an 'impact effect' perspective, and that is in
-			// the 'e' field of the collision result.
-
-			if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
-				(phys_result.e > COLLISION_ENERGY_CUTOFF))
-			{
-				//! @todo Messaging in the tick is going to be back for performance.
-#if _WIN64 || __x86_64__
-				fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#else
-				fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#endif
-				PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
-				PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
-
-				if (obj1->type == PHYSOBJECT_SMART)
-				{
-					//SPO* s = (SPO*)obj1;
-					//! @todo Smart phys collision messages
-				}
-
-				if (obj2->type == PHYSOBJECT_SMART)
-				{
-					//SPO* s = (SPO*)obj2;
-					//! @todo Smart phys collision (other) messages
-				}
-			}
-		}
+        check_collision(this, obj1, obj2, dt);
 	}
 #endif
 
 	// Now tick along each object
-	V3 g;
 	for (size_t i = 0; i < phys_objects.size(); i++)
 	{
-		g.x = 0.0;
-		g.y = 0.0;
-		g.z = 0.0;
-
-		get_grav_pull(&g, phys_objects[i]);
-		PhysicsObject_tick(phys_objects[i], &g, dt);
-
-		for (size_t bi = 0; bi < beams.size(); bi++)
-		{
-			Beam_collide(&beam_result, beams[bi], phys_objects[i], dt);
-
-			if (beam_result.t >= 0.0)
-			{
-				phys_result.pce1.d = beam_result.d;
-				phys_result.pce1.p = beam_result.p;
-
-#if _WIN64 || __x86_64__
-				fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
-#else
-				fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", beams[bi]->phys_id, phys_objects[i]->phys_id, beam_result.e);
-#endif
-				PhysicsObject_collision(phys_objects[i], (PO*)beams[bi], beam_result.e, beam_result.t * dt, &phys_result.pce1);
-				//! @todo Smarty beam collision messages
-				//! @todo Beam collision messages
-			}
-		}
+        obj_tick(this, phys_objects[i], dt);
 	}
 
 	// Now tick along each beam while we're here because we won't be

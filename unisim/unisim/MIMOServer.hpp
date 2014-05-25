@@ -8,12 +8,12 @@
 #ifdef WIN32
 #include <thread>
 #include <mutex>
-#define LOCK_T std::mutex
-#define THREAD_T std::thread
+typedef std::mutex LOCK_T;
+typedef std::thread THREAD_T;
 #else
 #include <pthread.h>
-#define LOCK_T pthread_rwlock_t
-#define THREAD_T pthread_t
+typedef pthread_rwlock_t LOCK_T;
+typedef pthread_t THREAD_T;
 #endif
 
 class SocketThread;

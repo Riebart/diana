@@ -447,6 +447,7 @@ void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Univers
 
 void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type)
 {
+    beam->phys_id = 0;
 	beam->universe = universe;
 	beam->origin = *origin;
 	beam->direction = *direction;

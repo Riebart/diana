@@ -9,27 +9,27 @@
 #include <map>
 #include <vector>
 
-//! @todo Should we be using typedefs instead of #defines here?
-
 #ifdef CPP11THREADS
 // GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
 #include <atomic>
 #include <thread>
 #include <mutex>
 
-#define LOCK_T std::mutex
-#define THREAD_T std::thread
-#define ATOMIC_T std::atomic_uint64_t
+typedef std::mutex LOCK_T;
+typedef std::thread THREAD_T;
+typedef std::atomic_uint64_t ATOMIC_T;
 #else
 #include <pthread.h>
-#define LOCK_T pthread_rwlock_t
-#define THREAD_T pthread_t
-#define ATOMIC_T uint64_t
+typedef pthread_rwlock_t LOCK_T;
+typedef pthread_t THREAD_T;
+typedef uint64_t ATOMIC_T;
 #endif
 
 #include "vector.hpp"
 #include "physics.hpp"
 #include "MIMOServer.hpp"
+
+#include "scheduler.hpp"
 
 #include "../../protocols/universe.pb.h"
 
@@ -92,6 +92,8 @@ class Universe
 	friend void Universe_handle_message(int32_t c, void* arg);
 	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
+    friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
+
 public:
 	Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
 	~Universe();
@@ -144,6 +146,7 @@ private:
 	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
 	MIMOServer* net;
+    libodb::Scheduler* sched;
 
 	std::map<uint64_t, struct SmartPhysicsObject*> smarties;
 	std::vector<struct PhysicsObject*> attractors;

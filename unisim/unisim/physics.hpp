@@ -66,7 +66,8 @@ struct PhysicsObject
 };
 
 //! @note The pack() pragmas here actually improve performance under Release MSVS2012 x64 by a very consistent 6%
-#pragma pack(1)
+//! @note But unpacking them is a reliable way to get the fields ordered right?
+
 //! A smart physics object which is a physics object that ties back to a ship or other object over a socket.
 struct SmartPhysicsObject
 {
@@ -87,9 +88,7 @@ struct SmartPhysicsObject
 	//    //! Does this exist in the world (UNUSED)
 	//    exists;
 };
-#pragma pack()
 
-#pragma pack(1)
 //! A beam as it exists in the universe
 struct Beam
 {
@@ -109,7 +108,6 @@ struct Beam
 		distance_travelled,
 		max_distance;
 };
-#pragma pack()
 
 //! The structure that holds the effects on one object in a two-object physical collision
 struct PhysCollisionEffect
