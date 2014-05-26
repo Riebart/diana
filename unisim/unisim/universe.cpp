@@ -417,11 +417,6 @@ void* thread_check_collisions(void* argsV)
         }
     }
 
-    if (end == (u->sorted.size() - 1))
-    {
-        u->phys_done = true;
-    }
-
     return NULL;
 }
 
