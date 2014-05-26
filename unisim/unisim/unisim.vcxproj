@@ -69,18 +69,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(MSBuildProjectDirectory);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath)</IncludePath>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(MSBuildProjectDirectory);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(MSBuildProjectDirectory);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(MSBuildProjectDirectory);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -97,6 +105,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libodb/$(Platform)/$(Configuration)/libodb.lib;google/$(Platform)/$(Configuration)/libprotobuf-lite.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Command>echo</Command>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\libodb\$(Platform)\$(Configuration)\libodb.dll $(OutDir)</Command>
+      <Message>Copy libodb DLL into output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,6 +133,19 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libodb/$(Platform)/$(Configuration)/libodb.lib;google/$(Platform)/$(Configuration)/libprotobuf-lite.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>true</TreatOutputAsContent>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\libodb\$(Platform)\$(Configuration)\libodb.dll $(OutDir)</Command>
+      <Message>Copy libodb DLL into output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -133,6 +166,19 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libodb/$(Platform)/$(Configuration)/libodb.lib;google/$(Platform)/$(Configuration)/libprotobuf-lite.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>true</TreatOutputAsContent>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\libodb\$(Platform)\$(Configuration)\libodb.dll $(OutDir)</Command>
+      <Message>Copy libodb DLL into output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,6 +199,19 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libodb/$(Platform)/$(Configuration)/libodb.lib;google/$(Platform)/$(Configuration)/libprotobuf-lite.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
+      <TreatOutputAsContent>true</TreatOutputAsContent>
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>copy $(ProjectDir)\libodb\$(Platform)\$(Configuration)\libodb.dll $(OutDir)</Command>
+      <Message>Copy libodb DLL into output directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\protocols\universe.pb.cc" />
