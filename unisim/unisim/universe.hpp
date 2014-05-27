@@ -94,6 +94,7 @@ class Universe
 
     friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
     friend void* thread_check_collisions(void* argsV);
+    friend void check_collision_loop(void* argsV);
 
 public:
 	Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
@@ -176,14 +177,16 @@ private:
     //! Structure holding the arguments for the threaded checking of collisions
     struct phys_args
     {
-        // Universe to check
+        //! Universe to check
         Universe* u;
-        // Position in the sorted list to start at, 0-based
+        //! Position in the sorted list to start at, 0-based
         uint32_t offset;
-        // Amount to move along the sorted list after processing.
+        //! Amount to move along the sorted list after processing.
         uint32_t stride;
-        // Time tick to use for real collision testing.
+        //! Time tick to use for real collision testing.
         double dt;
+        //! Whether or not this worker has finished its work
+        volatile bool done;
     };
 
     struct phys_args* phys_worker_args;
@@ -215,7 +218,7 @@ private:
 	//! The time spent sending out the last VISDATA blast.
 	double vis_frametime;
 	//! Total number of physics ticks so far.
-	uint64_t num_ticks;
+	volatile uint64_t num_ticks;
 
 	int32_t num_threads;
 	bool paused;
