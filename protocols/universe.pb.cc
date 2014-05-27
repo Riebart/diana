@@ -1017,6 +1017,9 @@ void MessageWrapper::CopyFrom(const MessageWrapper& from) {
 bool MessageWrapper::IsInitialized() const {
   if ((_has_bits_[0] & 0x00000001) != 0x00000001) return false;
 
+  if (has_hellomsg()) {
+    if (!this->hellomsg().IsInitialized()) return false;
+  }
   if (has_physpropsmsg()) {
     if (!this->physpropsmsg().IsInitialized()) return false;
   }
@@ -1307,6 +1310,7 @@ void VectorMsg::Swap(VectorMsg* other) {
 ::std::string* HelloMsg::_default_name_ = NULL;
 #ifndef _MSC_VER
 const int HelloMsg::kNameFieldNumber;
+const int HelloMsg::kTmpIDFieldNumber;
 #endif  // !_MSC_VER
 
 HelloMsg::HelloMsg()
@@ -1326,6 +1330,7 @@ HelloMsg::HelloMsg(const HelloMsg& from)
 void HelloMsg::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(_default_name_);
+  tmpid_ = GOOGLE_ULONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -1372,6 +1377,7 @@ void HelloMsg::Clear() {
         name_->assign(*_default_name_);
       }
     }
+    tmpid_ = GOOGLE_ULONGLONG(0);
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -1388,6 +1394,22 @@ bool HelloMsg::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(16)) goto parse_tmpID;
+        break;
+      }
+
+      // required uint64 tmpID = 2;
+      case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_tmpID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &tmpid_)));
+          set_has_tmpid();
         } else {
           goto handle_uninterpreted;
         }
@@ -1418,6 +1440,11 @@ void HelloMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
+  // required uint64 tmpID = 2;
+  if (has_tmpid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->tmpid(), output);
+  }
+
 }
 
 int HelloMsg::ByteSize() const {
@@ -1429,6 +1456,13 @@ int HelloMsg::ByteSize() const {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->name());
+    }
+
+    // required uint64 tmpID = 2;
+    if (has_tmpid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->tmpid());
     }
 
   }
@@ -1449,6 +1483,9 @@ void HelloMsg::MergeFrom(const HelloMsg& from) {
     if (from.has_name()) {
       set_name(from.name());
     }
+    if (from.has_tmpid()) {
+      set_tmpid(from.tmpid());
+    }
   }
 }
 
@@ -1459,6 +1496,7 @@ void HelloMsg::CopyFrom(const HelloMsg& from) {
 }
 
 bool HelloMsg::IsInitialized() const {
+  if ((_has_bits_[0] & 0x00000002) != 0x00000002) return false;
 
   return true;
 }
@@ -1466,6 +1504,7 @@ bool HelloMsg::IsInitialized() const {
 void HelloMsg::Swap(HelloMsg* other) {
   if (other != this) {
     std::swap(name_, other->name_);
+    std::swap(tmpid_, other->tmpid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     std::swap(_cached_size_, other->_cached_size_);
   }
@@ -2479,6 +2518,8 @@ void CollisionMsg::Swap(CollisionMsg* other) {
 ::std::string* SpawnMsg::_default_name_ = NULL;
 #ifndef _MSC_VER
 const int SpawnMsg::kNameFieldNumber;
+const int SpawnMsg::kTmpIDFieldNumber;
+const int SpawnMsg::kParentIDFieldNumber;
 const int SpawnMsg::kMassFieldNumber;
 const int SpawnMsg::kPositionFieldNumber;
 const int SpawnMsg::kVelocityFieldNumber;
@@ -2528,6 +2569,8 @@ SpawnMsg::SpawnMsg(const SpawnMsg& from)
 void SpawnMsg::SharedCtor() {
   _cached_size_ = 0;
   name_ = const_cast< ::std::string*>(_default_name_);
+  tmpid_ = GOOGLE_ULONGLONG(0);
+  parentid_ = GOOGLE_ULONGLONG(0);
   mass_ = 0;
   position_ = NULL;
   velocity_ = NULL;
@@ -2584,6 +2627,8 @@ void SpawnMsg::Clear() {
         name_->assign(*_default_name_);
       }
     }
+    tmpid_ = GOOGLE_ULONGLONG(0);
+    parentid_ = GOOGLE_ULONGLONG(0);
     mass_ = 0;
     if (has_position()) {
       if (position_ != NULL) position_->::universe::VectorMsg::Clear();
@@ -2597,6 +2642,8 @@ void SpawnMsg::Clear() {
     if (has_thrust()) {
       if (thrust_ != NULL) thrust_->::universe::VectorMsg::Clear();
     }
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     radius_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -2617,12 +2664,44 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_mass;
+        if (input->ExpectTag(16)) goto parse_tmpID;
         break;
       }
 
-      // required double mass = 2;
+      // required uint64 tmpID = 2;
       case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_tmpID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &tmpid_)));
+          set_has_tmpid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(24)) goto parse_parentID;
+        break;
+      }
+
+      // required uint64 parentID = 3;
+      case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_parentID:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
+                 input, &parentid_)));
+          set_has_parentid();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(33)) goto parse_mass;
+        break;
+      }
+
+      // required double mass = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_mass:
@@ -2633,12 +2712,12 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_position;
+        if (input->ExpectTag(42)) goto parse_position;
         break;
       }
 
-      // required .universe.VectorMsg position = 3;
-      case 3: {
+      // required .universe.VectorMsg position = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_position:
@@ -2647,12 +2726,12 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_velocity;
+        if (input->ExpectTag(50)) goto parse_velocity;
         break;
       }
 
-      // required .universe.VectorMsg velocity = 4;
-      case 4: {
+      // required .universe.VectorMsg velocity = 6;
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_velocity:
@@ -2661,12 +2740,12 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(42)) goto parse_orientation;
+        if (input->ExpectTag(58)) goto parse_orientation;
         break;
       }
 
-      // required .universe.VectorMsg orientation = 5;
-      case 5: {
+      // required .universe.VectorMsg orientation = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_orientation:
@@ -2675,12 +2754,12 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(50)) goto parse_thrust;
+        if (input->ExpectTag(66)) goto parse_thrust;
         break;
       }
 
-      // required .universe.VectorMsg thrust = 6;
-      case 6: {
+      // required .universe.VectorMsg thrust = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_thrust:
@@ -2689,12 +2768,12 @@ bool SpawnMsg::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(57)) goto parse_radius;
+        if (input->ExpectTag(73)) goto parse_radius;
         break;
       }
 
-      // required double radius = 7;
-      case 7: {
+      // required double radius = 9;
+      case 9: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
          parse_radius:
@@ -2732,38 +2811,48 @@ void SpawnMsg::SerializeWithCachedSizes(
       1, this->name(), output);
   }
 
-  // required double mass = 2;
-  if (has_mass()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->mass(), output);
+  // required uint64 tmpID = 2;
+  if (has_tmpid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(2, this->tmpid(), output);
   }
 
-  // required .universe.VectorMsg position = 3;
+  // required uint64 parentID = 3;
+  if (has_parentid()) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->parentid(), output);
+  }
+
+  // required double mass = 4;
+  if (has_mass()) {
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(4, this->mass(), output);
+  }
+
+  // required .universe.VectorMsg position = 5;
   if (has_position()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      3, this->position(), output);
+      5, this->position(), output);
   }
 
-  // required .universe.VectorMsg velocity = 4;
+  // required .universe.VectorMsg velocity = 6;
   if (has_velocity()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      4, this->velocity(), output);
+      6, this->velocity(), output);
   }
 
-  // required .universe.VectorMsg orientation = 5;
+  // required .universe.VectorMsg orientation = 7;
   if (has_orientation()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      5, this->orientation(), output);
+      7, this->orientation(), output);
   }
 
-  // required .universe.VectorMsg thrust = 6;
+  // required .universe.VectorMsg thrust = 8;
   if (has_thrust()) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      6, this->thrust(), output);
+      8, this->thrust(), output);
   }
 
-  // required double radius = 7;
+  // required double radius = 9;
   if (has_radius()) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->radius(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDouble(9, this->radius(), output);
   }
 
 }
@@ -2779,40 +2868,56 @@ int SpawnMsg::ByteSize() const {
           this->name());
     }
 
-    // required double mass = 2;
+    // required uint64 tmpID = 2;
+    if (has_tmpid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->tmpid());
+    }
+
+    // required uint64 parentID = 3;
+    if (has_parentid()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
+          this->parentid());
+    }
+
+    // required double mass = 4;
     if (has_mass()) {
       total_size += 1 + 8;
     }
 
-    // required .universe.VectorMsg position = 3;
+    // required .universe.VectorMsg position = 5;
     if (has_position()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->position());
     }
 
-    // required .universe.VectorMsg velocity = 4;
+    // required .universe.VectorMsg velocity = 6;
     if (has_velocity()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->velocity());
     }
 
-    // required .universe.VectorMsg orientation = 5;
+    // required .universe.VectorMsg orientation = 7;
     if (has_orientation()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->orientation());
     }
 
-    // required .universe.VectorMsg thrust = 6;
+    // required .universe.VectorMsg thrust = 8;
     if (has_thrust()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
           this->thrust());
     }
 
-    // required double radius = 7;
+  }
+  if (_has_bits_[8 / 32] & (0xffu << (8 % 32))) {
+    // required double radius = 9;
     if (has_radius()) {
       total_size += 1 + 8;
     }
@@ -2835,6 +2940,12 @@ void SpawnMsg::MergeFrom(const SpawnMsg& from) {
     if (from.has_name()) {
       set_name(from.name());
     }
+    if (from.has_tmpid()) {
+      set_tmpid(from.tmpid());
+    }
+    if (from.has_parentid()) {
+      set_parentid(from.parentid());
+    }
     if (from.has_mass()) {
       set_mass(from.mass());
     }
@@ -2850,6 +2961,8 @@ void SpawnMsg::MergeFrom(const SpawnMsg& from) {
     if (from.has_thrust()) {
       mutable_thrust()->::universe::VectorMsg::MergeFrom(from.thrust());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_radius()) {
       set_radius(from.radius());
     }
@@ -2863,7 +2976,7 @@ void SpawnMsg::CopyFrom(const SpawnMsg& from) {
 }
 
 bool SpawnMsg::IsInitialized() const {
-  if ((_has_bits_[0] & 0x0000007e) != 0x0000007e) return false;
+  if ((_has_bits_[0] & 0x000001fe) != 0x000001fe) return false;
 
   if (has_position()) {
     if (!this->position().IsInitialized()) return false;
@@ -2883,6 +2996,8 @@ bool SpawnMsg::IsInitialized() const {
 void SpawnMsg::Swap(SpawnMsg* other) {
   if (other != this) {
     std::swap(name_, other->name_);
+    std::swap(tmpid_, other->tmpid_);
+    std::swap(parentid_, other->parentid_);
     std::swap(mass_, other->mass_);
     std::swap(position_, other->position_);
     std::swap(velocity_, other->velocity_);

@@ -14,7 +14,7 @@
 #define LOCK(l) pthread_rwlock_wrlock(&l)
 #define UNLOCK(l) pthread_rwlock_unlock(&l)
 #define THREAD_CREATE(t, f, a) pthread_create(&t, NULL, &f, a)
-#define THREAD_JOIN(t) pthread_join(t)
+#define THREAD_JOIN(t) pthread_join(t, NULL)
 #endif
 
 #define COLLISION_ENERGY_CUTOFF 1e-9
@@ -506,7 +506,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     for (size_t bi = 0; bi < u->beams.size(); bi++)
     {
         b = u->beams[bi];
-        Beam_collide(&beam_result, u->beams[bi], o, dt);
+        Beam_collide(&beam_result, b, o, dt);
 
         if (beam_result.t >= 0.0)
         {
@@ -514,11 +514,11 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
             phys_result.pce1.p = beam_result.p;
 
 #if _WIN64 || __x86_64__
-            fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", u->beams[bi]->phys_id, o->phys_id, beam_result.e);
+            fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
-            fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", u->beams[bi]->phys_id, o->phys_id, beam_result.e);
+            fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
-            PhysicsObject_collision(o, (PO*)u->beams[bi], beam_result.e, beam_result.t * dt, &phys_result.pce1);
+            PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1);
 
             //! @todo Smarty beam collision messages
             //! @todo Beam collision messages

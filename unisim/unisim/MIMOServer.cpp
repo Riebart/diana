@@ -14,7 +14,7 @@
 #define LOCK(l) pthread_rwlock_wrlock(&l)
 #define UNLOCK(l) pthread_rwlock_unlock(&l)
 #define THREAD_CREATE(t, f, a) pthread_create(&t, NULL, &f, a)
-#define THREAD_JOIN(t) pthread_join(t)
+#define THREAD_JOIN(t) pthread_join(t, NULL)
 #endif
 
 //! @todo #ifdef between perror() and WSAGetLastErrorMessage()

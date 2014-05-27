@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
@@ -284,8 +285,6 @@ void collision_exit()
 
 	double mass = 1.0;
 	double radius = 1.0;
-	double spacingX = 0.1;
-	double spacingY = 0.1;
 	struct PhysicsObject* obj;
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
@@ -381,7 +380,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGINT, &sighandler);
 
 	//u = new Universe(0.001, 0.05, 0.5, 5505, 3);
-	u = new Universe(1e-6, 1e-6, 0.5, 5505, 6, 1.0, false);
+	u = new Universe(1e-6, 1e-6, 0.5, 5505, 3, 1.0, false);
 
 	try
 	{
