@@ -153,7 +153,7 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     }
 
     this->num_threads = num_threads;
-    sched = new libodb::Scheduler(this->num_threads);
+    sched = new libodb::Scheduler(this->num_threads - 1);
 
     phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
     for (int i = 0; i < this->num_threads; i++)
@@ -548,11 +548,6 @@ void Universe::tick(double dt)
     {
         sort_aabb(dt, true);
 
-        //phys_worker_args[0].offset = 0;
-        //phys_worker_args[0].stride = phys_objects.size();
-        //phys_worker_args[0].dt = dt;
-        //thread_check_collisions(&phys_worker_args[0]);
-
         int n = phys_objects.size() / MIN_OBJECTS_PER_THREAD;
         n = MAX(0, MIN(num_threads - 1, n));
 
@@ -572,35 +567,14 @@ void Universe::tick(double dt)
         phys_worker_args[n].offset = n * d;
         phys_worker_args[n].stride = d;
         phys_worker_args[n].dt = dt;
-        phys_worker_args[n].done = false;
         check_collision_loop(&phys_worker_args[n]);
-        phys_worker_args[n].done = true;
 
-        //for (int i = 0; i < n; i++)
-        //{
-        //    phys_worker_args[i].dt = dt;
-        //    sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
-        //    phys_worker_args[i].done = false;
-        //}
-
-        //// Save one work unit for this thread, so it isn't just sitting doing nothing useful.
-        //phys_worker_args[n].dt = dt;
-        //phys_worker_args[n].done = false;
-        //check_collision_loop(&phys_worker_args[n]);
-        //phys_worker_args[n].done = true;
-
-        bool alldone = false;
-        while (!alldone)
+        // Wait for the workers to report that they are done.
+        // This depends on the volatility of their 'done' variable. We don't need
+        // atomicity, but we need it to break cache.
+        for (int i = 0; i < n; i++)
         {
-            alldone = true;
-            for (int i = 0; i < num_threads; i++)
-            {
-                if (!phys_worker_args[i].done)
-                {
-                    alldone = false;
-                    break;
-                }
-            }
+            while (!phys_worker_args[i].done) {}
         }
     }
 
