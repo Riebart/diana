@@ -380,7 +380,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGINT, &sighandler);
 
 	//u = new Universe(0.001, 0.05, 0.5, 5505, 3);
-	u = new Universe(1e-6, 1e-6, 0.5, 5505, 3, 1.0, false);
+	u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
 	{
@@ -393,7 +393,7 @@ int main(int32_t argc, char** argv)
 		//beam_collision();
 		//beam_multi_collision();
 
-		print_positions();
+		//print_positions();
 
 		u->start_net();
 		u->start_sim();
@@ -406,6 +406,7 @@ int main(int32_t argc, char** argv)
 		std::chrono::seconds dura(1);
 #endif
 
+        fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
 		while (running)
 		{
 			u->get_frametime(frametimes);

@@ -71,7 +71,7 @@ struct PhysicsObject
 //! A smart physics object which is a physics object that ties back to a ship or other object over a socket.
 struct SmartPhysicsObject
 {
-	//! Physical object that forms teh base of the object
+	//! Physical object that forms the base of the object
 	struct PhysicsObject pobj;
 	//!// OSim ID (UNUSED)
 	//uint64_t osim_id,
