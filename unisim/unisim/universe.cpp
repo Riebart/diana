@@ -449,7 +449,7 @@ void Universe::sort_aabb(double dt, bool calc)
     // Employs gnome sort to sort the lists, computing the bounding boxes along the way
     // http://en.wikipedia.org/wiki/Gnome_sort
 
-    uint64_t box_swap;
+    size_t box_swap;
     size_t max_so_far = 0;
 
     if (calc)
@@ -548,11 +548,11 @@ void Universe::tick(double dt)
     {
         sort_aabb(dt, true);
 
-        int n = phys_objects.size() / MIN_OBJECTS_PER_THREAD;
+        int32_t n = (int32_t)(phys_objects.size() / MIN_OBJECTS_PER_THREAD);
         n = MAX(0, MIN(num_threads - 1, n));
 
         // If we're using more than 1 thread, try to split them evenly.
-        int d = phys_objects.size() / (n + 1);
+        int32_t d = (int32_t)(phys_objects.size() / (n + 1));
 
         for (int i = 0; i < n; i++)
         {

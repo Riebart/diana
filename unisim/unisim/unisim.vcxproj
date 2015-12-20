@@ -216,7 +216,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\protocols\universe.pb.cc" />
     <ClCompile Include="MIMOServer.cpp" />
     <ClCompile Include="physics.cpp" />
     <ClCompile Include="unisim.cpp" />
@@ -224,7 +223,6 @@
     <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\protocols\universe.pb.h" />
     <ClInclude Include="MIMOServer.hpp" />
     <ClInclude Include="physics.hpp" />
     <ClInclude Include="universe.hpp" />

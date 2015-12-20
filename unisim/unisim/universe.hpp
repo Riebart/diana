@@ -31,8 +31,6 @@ typedef uint64_t ATOMIC_T;
 
 #include "scheduler.hpp"
 
-#include "../../protocols/universe.pb.h"
-
 //! Contains the code that handles physics simulation and communicating via smart objects
 //!
 //! The basic idea here is that the universe is filled with PhysicsObjects,
