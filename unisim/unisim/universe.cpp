@@ -1,4 +1,5 @@
 #include "universe.hpp"
+#include "bson.hpp"
 
 #include <stdio.h>
 
