@@ -373,9 +373,11 @@ void check_packing()
 		(uint64_t)&b.max_distance - (uint64_t)&b);
 }
 
+#include "bson.hpp"
+
 int main(int32_t argc, char** argv)
 {
-	signal(SIGABRT, &sighandler);
+    signal(SIGABRT, &sighandler);
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 

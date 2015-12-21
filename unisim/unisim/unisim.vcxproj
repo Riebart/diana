@@ -223,6 +223,7 @@
     <ClCompile Include="vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bson.hpp" />
     <ClInclude Include="MIMOServer.hpp" />
     <ClInclude Include="physics.hpp" />
     <ClInclude Include="universe.hpp" />
