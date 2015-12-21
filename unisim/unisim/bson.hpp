@@ -47,7 +47,7 @@ public:
     {
         EndOfDocument, Double, String, SubDocument, Array, Binary, Deprecatedx06, ObjectId,
         Boolean, UTCDateTime, Null, Regex, DBPointer, JavaScript, Deprecatedx0E,
-        JavaScriptWScope, Int32, MongoTimeStamp, Int64, MinKey = 0xFF, MaxKey = 0x7F
+        JavaScriptWScope, Int32, MongoTimeStamp, Int64, MinKey = (int8_t)0xFF, MaxKey = 0x7F
     };
 
     BSONReader(char* _msg)
@@ -60,7 +60,7 @@ public:
     struct Element get_next_element()
     {
         // Return a sentinel -1 type when we reach the end of the message
-        if (pos >= len)
+        if ((int32_t)pos >= len)
         {
             el.type = -1;
             return el;
