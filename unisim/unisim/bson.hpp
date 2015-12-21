@@ -167,11 +167,6 @@ private:
     }
 };
 
-#define OOM() (throw "Out of memory you twat");
-#define SAFE_MALLOC(t, x, n)  { (x) = reinterpret_cast<t>(malloc((n))); if (!(x)) OOM(); } (void)0
-#define SAFE_CALLOC(t, x, n, m) { (x) = reinterpret_cast<t>(calloc((n), (m))); if (!(x)) OOM(); } (void)0
-#define SAFE_REALLOC(t, x_old, x_new, n) { (x_new) = reinterpret_cast<t>(realloc((x_old), (n))); if (!(x_new)) OOM(); } (void)0
-
 class BSONWriter
 {
 public:
@@ -179,7 +174,11 @@ public:
     {
         // Allocate enough memory for the length starting field.
         // Each time we push something, we will realloc the block a bit bigger.
-        SAFE_CALLOC(uint8_t*, out, 4, 1);
+        out = (uint8_t*)calloc(1, 4);
+        if (out == NULL)
+        {
+            throw "OOM you twat";
+        }
 
         is_array = -1;
         pos = 4;
@@ -395,7 +394,11 @@ public:
 protected:
     BSONWriter(BSONWriter* _parent, int32_t _is_array = -1)
     {
-        SAFE_CALLOC(uint8_t*, out, 4, 1);
+        out = (uint8_t*)calloc(1, 4);
+        if (out == NULL)
+        {
+            throw "OOM you twat";
+        }
 
         is_array = _is_array;
         pos = 4;
@@ -413,9 +416,15 @@ private:
 
     void enlarge(int32_t nbytes)
     {
-        uint8_t* out_new;
-        SAFE_REALLOC(uint8_t*, out, out_new, pos + nbytes);
-        out = out_new;
+        uint8_t* out_new = (uint8_t*)realloc(out, pos + nbytes);
+        if (out_new == NULL)
+        {
+            throw "OOM you twat";
+        }
+        else
+        {
+            out = out_new;
+        }
     }
 
     char* print_array_name()
