@@ -43,21 +43,6 @@ void pool_rack()
 
 	int num_rows = 5;
 
-	// This loop produces a trangle of balls that points down the negative y axis.
-	// That is, the 'head' ball is further negative than the 'back' of the rack.
-	//
-	// Mathematica code.
-	// numRows = 5;
-	// radius = 1;
-	// balls = Reap[For[i = 0, i < numRows, i++,
-	//    For[j = 0, j <= i, j++,
-	//    x = (i - 2 j) radius;
-	//    y = Sqrt[3]/2 (1 + 2 i) radius;
-	//    Sow[Circle[{x, y}, radius]]
-	//    ]
-	//    ]][[2]][[1]];
-	// Graphics[balls]
-
 	struct PhysicsObject* obj;
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };

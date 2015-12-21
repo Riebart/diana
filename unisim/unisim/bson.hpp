@@ -417,7 +417,7 @@ private:
 
     void enlarge(size_t nbytes)
     {
-        uint8_t* out_new = (uint8_t*)realloc(out, pos + nbytes);
+        uint8_t* out_new = (uint8_t*)realloc(out, (size_t)(pos + nbytes));
         if (out_new == NULL)
         {
             throw "OOM you twat";
