@@ -2,6 +2,7 @@
 #define UNIVERSE_HPP
 
 #include <stdint.h>
+#include <stdlib.h>
 
 //! @todo We should probably namespace all of this at some point.
 
