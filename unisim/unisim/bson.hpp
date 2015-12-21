@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Partial implementation of bson that is self-contained and simple, both implementation
 // and API.
