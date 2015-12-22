@@ -43,6 +43,16 @@
 #define SOCKET int32_t
 #endif
 
+size_t MIMOServer::socket_read(int fd, void* buf, size_t count)
+{
+    return 0;
+}
+
+size_t MIMOServer::socket_write(int fd, void* buf, size_t count)
+{
+    return 0;
+}
+
 //! @todo Don't need to pass pointers, just the server which contains the other information.
 //! @todo Potentially move message parsing into here, because message handling will cause the socket to block.
 class SocketThread

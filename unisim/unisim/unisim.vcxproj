@@ -216,6 +216,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="messaging.cpp" />
     <ClCompile Include="MIMOServer.cpp" />
     <ClCompile Include="physics.cpp" />
     <ClCompile Include="unisim.cpp" />
@@ -224,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bson.hpp" />
+    <ClInclude Include="messaging.hpp" />
     <ClInclude Include="MIMOServer.hpp" />
     <ClInclude Include="physics.hpp" />
     <ClInclude Include="universe.hpp" />

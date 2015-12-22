@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 // Partial implementation of bson that is self-contained and simple, both implementation
 // and API.
@@ -19,6 +20,7 @@
 //
 // See: http://bsonspec.org/spec.html and http://bsonspec.org/faq.html
 
+// Implements an element-by-element BSON reader that ingests a pointer to a byte-array.
 class BSONReader
 {
 public:
@@ -187,6 +189,37 @@ public:
         parent = NULL;
     }
 
+    bool push_bool(bool v)
+    {
+        return push_bool("", v);
+    }
+
+    bool push_bool(char* name, bool v)
+    {
+        if (child != NULL)
+        {
+            return child->push_bool(name, v);
+        }
+        else
+        {
+            name = (is_array != -1 ? print_array_name() : name);
+            int32_t name_len = (int32_t)(strlen(name) + 1);
+            enlarge(1 + name_len + 1);
+            out[pos] = BSONReader::ElementTypes::Boolean;
+            pos += 1;
+            memcpy(out + pos, name, name_len);
+            pos += name_len;
+            *(bool*)(out + pos) = v;
+            pos += 1;
+            return true;
+        }
+    }
+
+    bool push_int32(int32_t v)
+    {
+        return push_int32("", v);
+    }
+    
     bool push_int32(char* name, int32_t v)
     {
         if (child != NULL)
@@ -208,6 +241,11 @@ public:
         }
     }
 
+    bool push_int64(int64_t v)
+    {
+        return push_int64("", v);
+    }
+    
     bool push_int64(char* name, int64_t v, int8_t type = BSONReader::ElementTypes::Int64)
     {
         if (child != NULL)
@@ -238,6 +276,11 @@ public:
         }
     }
 
+    bool push_double(double v)
+    {
+        return push_double("", v);
+    }
+    
     bool push_double(char* name, double v)
     {
         if (child != NULL)
@@ -259,6 +302,11 @@ public:
         }
     }
 
+    bool push_string(char* v)
+    {
+        return push_string("", v);
+    }
+    
     bool push_string(char* name, char* v, size_t len = -1, int8_t type = BSONReader::ElementTypes::String)
     {
         if (child != NULL)
@@ -320,7 +368,12 @@ public:
         }
     }
 
-    int32_t push_array(char* name)
+    bool push_array()
+    {
+        return push_array("");
+    }
+    
+    bool push_array(char* name)
     {
         if (child != NULL)
         {
@@ -337,11 +390,16 @@ public:
             pos += name_len;
 
             child = new BSONWriter(this, 0);
-            return 0;
+            return true;
         }
     }
 
-    int32_t push_subdoc(char* name)
+    bool push_subdoc()
+    {
+        return push_subdoc("");
+    }
+    
+    bool push_subdoc(char* name)
     {
         if (child != NULL)
         {
@@ -358,7 +416,7 @@ public:
             pos += name_len;
 
             child = new BSONWriter(this);
-            return 0;
+            return true;
         }
     }
 

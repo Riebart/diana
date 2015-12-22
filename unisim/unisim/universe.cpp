@@ -1,5 +1,5 @@
 #include "universe.hpp"
-#include "bson.hpp"
+#include "messaging.hpp"
 
 #include <stdio.h>
 
@@ -18,6 +18,7 @@
 #define THREAD_JOIN(t) pthread_join(t, NULL)
 #endif
 
+#define GRAVITATIONAL_CONSTANT  6.67384e-11
 #define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -33,7 +34,7 @@ typedef struct Vector3 V3;
 
 void gravity(V3* out, PO* big, PO* small)
 {
-    double m = 6.67384e-11 * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
+    double m = GRAVITATIONAL_CONSTANT * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
     Vector3_ray(out, &small->position, &big->position);
     Vector3_scale(out, m);
 }
@@ -141,7 +142,18 @@ void Universe_handle_message(int32_t c, void* arg)
     u->handle_message(c);
 }
 
-//! @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+/// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+/// @in min_frametime Minimum time in the simulation between physics ticks, regardles of the real wall clock time of a physics tick.
+///    If this is set to a value lower than the wall-clock time of a physics tick, then the simulation thread will fully utilize the available CPU resources.
+///    To achieve a sense of throttling, set this to a value above the typical wall-clock time to cause the simulation thread to sleep between ticks.
+/// @in max_frametime Maximum time allowed to pass by in the simulation in a single tick.
+///    If this is less than the wall clock time, it will result in a perceived slowdown of the simulation.
+/// @in min_vis_frametime The minimum time between visualization updates, reduces load on the physics server.
+/// @in port TCP port to listen on when start_net() is called.
+/// @in num_threads Number of threads to use for collision detection, no more than 4 is recommended (there's no gains at that point)
+/// @in rate Multiplier used to scale the time-tick in the simulation. Most useful in conjunction with realtime.
+/// @in realtime If set to true, then the simulation attempts to pass in real time, with physics ticks sleeping to match wall-clock time if necessary.
+/// The constructor to initialize a universe for physics simulation.
 Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
     this->rate = rate;
@@ -194,6 +206,7 @@ Universe::~Universe()
     }
 
     sched->block_until_done();
+    free(phys_worker_args);
 
     stop_net();
     stop_sim();
@@ -297,7 +310,20 @@ void Universe::hangup_objects(int32_t c)
 
 void Universe::handle_message(int32_t c)
 {
-    throw "Universe::handle_message";
+    BSONMessage* msg = BSONMessage::ReadMessage(c);
+    switch (msg->msg_type)
+    {
+    case BSONMessage::MessageTypes::VisualDataEnable:
+        break;
+    case BSONMessage::MessageTypes::Spawn:
+        break;
+    case BSONMessage::MessageTypes::ScanResponse:
+        break;
+    case BSONMessage::MessageTypes::Hello:
+        break;
+    default:
+        throw "Universe::UnrecognizedMessageType";
+    }
 }
 
 void Universe::get_grav_pull(V3* g, PO* obj)
@@ -335,7 +361,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
         if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
             (phys_result.e > COLLISION_ENERGY_CUTOFF))
         {
-            //! @todo Messaging in the tick is going to be back for performance.
+            //! @todo Messaging in the tick is going to be bad for performance.
 #if _WIN64 || __x86_64__
             fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
@@ -343,6 +369,10 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
 #endif
             PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
             PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
+
+            //! @todo This should probably be done asynchronously, out of the physics code,
+            //! But I don't think, in general, this will cause much of a problem for a 60hz
+            //! physics refresh rate.
 
             if (obj1->type == PHYSOBJECT_SMART)
             {
@@ -414,7 +444,8 @@ void check_collision_loop(void* argsV)
                 }
 
                 // If we succeeded on both, count this as a potential collision for
-                // honest-to-goodness testing.
+                // honest-to-goodness testing and hand it off to bounding-ball testing
+                // followed by collision effect calculation.
                 check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[i]], args->dt);
             }
             else
@@ -499,9 +530,6 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     struct BeamCollisionResult beam_result;
     struct PhysCollisionResult phys_result;
 
-    u->get_grav_pull(&g, o);
-    PhysicsObject_tick(o, &g, dt);
-
     struct Beam* b;
 
     for (size_t bi = 0; bi < u->beams.size(); bi++)
@@ -525,6 +553,9 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
             //! @todo Beam collision messages
         }
     }
+
+    u->get_grav_pull(&g, o);
+    PhysicsObject_tick(o, &g, dt);
 }
 
 void Universe::tick(double dt)
@@ -544,6 +575,7 @@ void Universe::tick(double dt)
 
     //! @todo Multi-level collisoin detecitons in the tick.
     //! @todo Have some concept of collision destruction criteria here.
+    //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
 
     if (phys_objects.size() > 1)
     {
@@ -553,6 +585,8 @@ void Universe::tick(double dt)
         n = MAX(0, MIN(num_threads - 1, n));
 
         // If we're using more than 1 thread, try to split them evenly.
+        // Note that this clamps (rounds) down in absolute value, so we'll have extra slack
+        // that we'll need to pick up at the end.
         int32_t d = (int32_t)(phys_objects.size() / (n + 1));
 
         for (int i = 0; i < n; i++)
@@ -566,7 +600,9 @@ void Universe::tick(double dt)
 
         // Save one work unit for this thread, so it isn't just sitting doing nothing useful.
         phys_worker_args[n].offset = n * d;
-        phys_worker_args[n].stride = d;
+        // Also note that it has to pick up slack objcts not accounted for by the other threads
+        // There's at most num_threads-1 such slack, so it isn't going to affect computation time a lot.
+        phys_worker_args[n].stride = phys_objects.size() - (n * d);
         phys_worker_args[n].dt = dt;
         check_collision_loop(&phys_worker_args[n]);
 
@@ -620,6 +656,12 @@ void Universe::tick(double dt)
                         {
                             if (beams[k]->phys_id == expired[j])
                             {
+                                if (beams[k]->scan_target != NULL)
+                                {
+                                    // Remember, we cloned the object we're interested in into the scan_target
+                                    // to prevent a use-after-free, so free that here.
+                                    free(beams[k]->scan_target);
+                                }
                                 beams.erase(beams.begin() + k);
                                 break;
                             }
@@ -643,10 +685,10 @@ void Universe::tick(double dt)
                                 }
                             }
                         }
-
-                        phys_objects.erase(phys_objects.begin() + i);
-                        backtrack = true;
                     }
+                    free(phys_objects[i]);
+                    phys_objects.erase(phys_objects.begin() + i);
+                    backtrack = true;
                     continue;
                 }
             }

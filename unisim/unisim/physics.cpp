@@ -395,6 +395,38 @@ void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
 	}
 }
 
+PO* PhysicsObject_clone(PO* obj)
+{
+    PO* ret = NULL;
+    switch (obj->type)
+    {
+    case PHYSOBJECT:
+    {
+        ret = (PO*)malloc(sizeof(PO));
+        *ret = *obj;
+        break;
+    }
+    case PHYSOBJECT_SMART:
+    {
+        ret = (PO*)malloc(sizeof(SPO));
+        *(SPO*)ret = *(SPO*)obj;
+        break;
+    }
+    case BEAM_COMM:
+    case BEAM_WEAP:
+    case BEAM_SCAN:
+    {
+        ret = (PO*)malloc(sizeof(B));
+        *(B*)ret = *(B*)obj;
+    }
+    default:
+    {
+        break;
+    }
+    }
+    return ret;
+}
+
 //! @todo fix variable and argument names. They aren't types.
 //! @param args This describes the information about the thing that hit obj, that is other.
 void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, struct PhysCollisionEffect* effect)
@@ -421,10 +453,18 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, str
 		Beam* other = (Beam*)othert;
 		Beam* res = Beam_make_return_beam(other, energy, &effect->p, BEAM_SCANRESULT);
 		res->type = BEAM_SCANRESULT;
-		res->scan_target = obj;
+        //! @warn There's a use-after-free bug sitting right here. Should duplicate the object, so that the original
+        // can expire safely before the scan result gets back to someone.
+		res->scan_target = PhysicsObject_clone(obj);
 		obj->universe->add_object((PO*)res);
 		break;
 	}
+    case BEAM_COMM:
+    {
+        // Note that COMM beams have no physical effect on the world, so don't have a case here.
+        // This exists just for clarity and as a reminder.
+        break;
+    }
 	default:
 	{
 		break;
@@ -460,6 +500,7 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V
 	beam->area_factor = area_factor;
 	beam->energy = energy;
 	beam->type = type;
+    beam->scan_target = NULL;
 
 	beam->distance_travelled = 0;
 	beam->max_distance = sqrt(energy / (area_factor * 1e-10));

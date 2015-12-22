@@ -8,6 +8,11 @@ struct Vector3
 	double x, y, z;
 };
 
+struct Vector4
+{
+    double w, x, y, z;
+};
+
 //! Represents an axis-aligned bounding box
 struct AABB
 {
