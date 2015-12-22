@@ -166,8 +166,8 @@ namespace Diana2DClient
         {
             bytes = new MemoryStream();
             bw = new BinaryWriter(bytes);
+            bw.Write((Int32)0);
             this.is_array = is_array;
-            pos = 4;
             child = null;
         }
 
@@ -310,8 +310,8 @@ namespace Diana2DClient
                 name = (is_array != -1 ? PrintArrayName() : name);
                 bw.Write((byte)BSONReader.ElementType.Binary);
                 WriteCString(name);
-                bw.Write(subtype);
                 bw.Write((Int32)v.Length);
+                bw.Write(subtype);
                 bw.Write(v);
                 return true;
             }
@@ -353,7 +353,7 @@ namespace Diana2DClient
             else
             {
                 name = (is_array != -1 ? PrintArrayName() : name);
-                bw.Write((byte)BSONReader.ElementType.Array);
+                bw.Write((byte)BSONReader.ElementType.SubDocument);
                 WriteCString(name);
 
                 child = new BSONWriter();
@@ -361,10 +361,61 @@ namespace Diana2DClient
             }
         }
 
+        public byte[] PushEnd()
+        {
+            if (child != null)
+            {
+                byte[] child_bytes = child.PushEnd();
+                if (child_bytes != null)
+                {
+                    bw.Write(child_bytes);
+                    child = null;
+                }
+                return null;
+            }
+            else
+            {
+                bw.Write((byte)0);
+                bw.Seek(0, SeekOrigin.Begin);
+                bw.Write((Int32)bytes.Length);
+                return bytes.ToArray();
+            }
+        }
+
         BSONWriter child;
-        int pos;
         int is_array;
         MemoryStream bytes;
         BinaryWriter bw;
     }
 }
+
+//// f30000000461727200a90000000530000900000000537472756e676f757408310001103200f6ffffff123300cce32320fdffffff013400bbbdd7d9df7cdb3d04350038000000083000001031009cffffff12320000b21184170000000133005a62d7d718e774690534000a0000000053747261696768747570000336003400000005610004000000006273747210693300fa0500000862000001640047e51aaeab44e93f1269360001f05a2b17ffffff00000164626c00333333333333144010693332005000000012693634000010a5d4e800000008626c6e000005737472000d00000000537472696e6779737472696e6700
+//// {'arr': ['Strungout', True, -10, -12345678900, 1e-10, [False, -100, 101000000000, 1e+200, 'Straightup'], {'a': 'bstr', 'i3': 1530, 'b': False, 'd': 0.7896326447, 'i6': -999999999999}], 'dbl': 5.05, 'i32': 80, 'i64': 1000000000000, 'bln': False, 'str': 'Stringystring'}
+//BSONWriter bw = new BSONWriter();
+//bw.PushArray("arr");
+//bw.PushBinary(Encoding.ASCII.GetBytes("Strungout".ToCharArray()));
+//bw.PushBool(true);
+//bw.PushInt32(-10);
+//bw.PushInt64(-12345678900);
+//bw.PushDouble(1e-10);
+//bw.PushArray();
+//bw.PushBool(false);
+//bw.PushInt32(-100);
+//bw.PushInt64(101000000000);
+//bw.PushDouble(1e200);
+//bw.PushBinary(Encoding.ASCII.GetBytes("Straightup".ToCharArray()));
+//bw.PushEnd();
+//bw.PushSubdoc();
+//bw.PushBinary("a", Encoding.ASCII.GetBytes("bstr".ToCharArray()));
+//bw.PushInt32("i3", 1530);
+//bw.PushBool("b", false);
+//bw.PushDouble("d", 0.7896326447);
+//bw.PushInt64("i6", -999999999999);
+//bw.PushEnd();
+//bw.PushEnd();
+//bw.PushDouble("dbl", 5.05);
+//bw.PushInt32("i32", 80);
+//bw.PushInt64("i64", 1000000000000);
+//bw.PushBool("bln", false);
+//bw.PushBinary("str", Encoding.ASCII.GetBytes("Stringystring".ToCharArray()));
+//byte[] bytes = bw.PushEnd();
