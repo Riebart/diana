@@ -315,7 +315,7 @@ public:
         {
             if (len < 0)
             {
-                len = strlen(v) + 1;
+                len = strlen(v);
             }
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
@@ -523,4 +523,12 @@ private:
 //    printf("%02x", out[i]);
 //}
 //printf("\n");
+//return 0;
+//BSONWriter bw;
+//bw.push_string("This is a string.");
+//uint8_t* bytes = bw.push_end();
+//for (int i = 0; i < *(int32_t*)bytes; i++)
+//{
+//    printf("%d\n", bytes[i]);
+//}
 //return 0;

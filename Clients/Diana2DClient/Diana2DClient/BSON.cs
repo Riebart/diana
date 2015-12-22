@@ -242,11 +242,19 @@ namespace Diana2DClient
             }
             else
             {
-                name = (is_array != -1 ? PrintArrayName() : name);
-                bw.Write((byte)type);
-                WriteCString(name);
-                bw.Write(v);
-                return true;
+                switch (type)
+                {
+                    case BSONReader.ElementType.Int64:
+                    case BSONReader.ElementType.UTCDateTime:
+                    case BSONReader.ElementType.MongoTimeStamp:
+                        name = (is_array != -1 ? PrintArrayName() : name);
+                        bw.Write((byte)type);
+                        WriteCString(name);
+                        bw.Write(v);
+                        return true;
+                    default:
+                        return false;
+                }
             }
         }
 
@@ -276,7 +284,7 @@ namespace Diana2DClient
             return PushString("", v);
         }
 
-        public bool PushString(String name, String v)
+        public bool PushString(String name, String v, BSONReader.ElementType type = BSONReader.ElementType.String)
         {
             if (child != null)
             {
@@ -284,13 +292,22 @@ namespace Diana2DClient
             }
             else
             {
-                name = (is_array != -1 ? PrintArrayName() : name);
-                byte[] str_bytes = Encoding.Unicode.GetBytes(v.ToCharArray());
-                bw.Write((byte)BSONReader.ElementType.String);
-                WriteCString(name);
-                bw.Write((Int32)(str_bytes.Length));
-                bw.Write(str_bytes);
-                return true;
+                switch (type)
+                {
+                    case BSONReader.ElementType.String:
+                    case BSONReader.ElementType.JavaScript:
+                    case BSONReader.ElementType.Deprecatedx0E:
+                        name = (is_array != -1 ? PrintArrayName() : name);
+                        byte[] str_bytes = Encoding.UTF8.GetBytes(v.ToCharArray());
+                        bw.Write((byte)BSONReader.ElementType.String);
+                        WriteCString(name);
+                        bw.Write((Int32)(str_bytes.Length) + 1); // Plus the 0x00 tail.
+                        bw.Write(str_bytes);
+                        bw.Write((byte)0);
+                        return true;
+                    default:
+                        return false;
+                }
             }
         }
 
@@ -419,3 +436,6 @@ namespace Diana2DClient
 //bw.PushBool("bln", false);
 //bw.PushBinary("str", Encoding.ASCII.GetBytes("Stringystring".ToCharArray()));
 //byte[] bytes = bw.PushEnd();
+//bw = new BSONWriter();
+//bw.PushString("This is a string.");
+//bytes = bw.PushEnd();
