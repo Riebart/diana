@@ -337,6 +337,8 @@ void Universe::handle_message(int32_t c)
     default:
         throw "Universe::UnrecognizedMessageType";
     }
+
+    delete msg_base;
 }
 
 void Universe::get_grav_pull(V3* g, PO* obj)

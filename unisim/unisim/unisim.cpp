@@ -369,10 +369,10 @@ int main(int32_t argc, char** argv)
 
 	try
 	{
-		//pool_rack();
+		pool_rack();
 		//simple_collision();
 		//fast_collision();
-		shifting();
+		//shifting();
 		//collision_exit();
 
 		//beam_collision();

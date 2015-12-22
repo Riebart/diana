@@ -2,33 +2,32 @@
 #include "bson.hpp"
 #include "MIMOServer.hpp"
 
-void BSONMessage::ReadIDs()
-{
-    server_id = ReadInt64();
-    client_id = ReadInt64();
-}
+// There's some boilerplate stuff that happens for ever send, so here's the bookends that do it.
+#define SEND_PROLOGUE() BSONWriter bw; bw.push_int64(server_id); bw.push_int64(client_id);
+#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, bytes, *(int32_t*)bytes);
 
-double BSONMessage::ReadDouble()
+double ReadDouble(BSONReader* br)
 {
     return br->get_next_element().dbl_val;
 }
 
-bool BSONMessage::ReadBool()
+bool ReadBool(BSONReader* br)
 {
     return br->get_next_element().bln_val;
 }
 
-int32_t BSONMessage::ReadInt32()
+int32_t ReadInt32(BSONReader* br)
 {
     return br->get_next_element().i32_val;
 }
 
-int64_t BSONMessage::ReadInt64()
+int64_t ReadInt64(BSONReader* br)
 {
     return br->get_next_element().i64_val;
 }
 
-void BSONMessage::ReadString(char* dst, int32_t dstlen)
+//! @todo Support things other than C strings
+void ReadString(BSONReader* br, char* dst, int32_t dstlen)
 {
     struct BSONReader::Element el;
     el = br->get_next_element();
@@ -36,7 +35,8 @@ void BSONMessage::ReadString(char* dst, int32_t dstlen)
     memcpy(dst, el.str_val, copy_len);
 }
 
-char* BSONMessage::ReadString()
+//! @todo Support things other than C strings
+char* ReadString(BSONReader* br)
 {
     struct BSONReader::Element el;
     el = br->get_next_element();
@@ -45,7 +45,7 @@ char* BSONMessage::ReadString()
     return ret;
 }
 
-struct Vector3 BSONMessage::ReadVector3()
+struct Vector3 ReadVector3(BSONReader* br)
 {
     return Vector3{
         br->get_next_element().dbl_val,
@@ -54,7 +54,14 @@ struct Vector3 BSONMessage::ReadVector3()
     };
 }
 
-struct Vector4 BSONMessage::ReadVector4()
+void PushVector3(BSONWriter* bw, struct Vector3* v)
+{
+    bw->push_double(v->x);
+    bw->push_double(v->y);
+    bw->push_double(v->z);
+}
+
+struct Vector4 ReadVector4(BSONReader* br)
 {
     return Vector4{
         br->get_next_element().dbl_val,
@@ -64,17 +71,22 @@ struct Vector4 BSONMessage::ReadVector4()
     };
 }
 
-BSONMessage::BSONMessage(BSONReader* _br, MessageType _msg_type)
+void PushVector4(BSONWriter* bw, struct Vector4* v)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
+    bw->push_double(v->w);
+    bw->push_double(v->x);
+    bw->push_double(v->y);
+    bw->push_double(v->z);
 }
 
-BSONMessage::~BSONMessage()
+BSONMessage::BSONMessage(BSONReader* _br, MessageType _msg_type)
 {
     // Note that we don't have to delete the BSONReader, since it's
     // being allocated (probably on the stack) outside of this class.
+    this->br = _br;
+    this->msg_type = _msg_type;
+    server_id = ReadInt64(_br);
+    client_id = ReadInt64(_br);
 }
 
 BSONMessage* BSONMessage::ReadMessage(int sock)
@@ -161,15 +173,36 @@ HelloMsg::HelloMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _m
     // This is just a token SYN, for ID establishing on both sides.
 }
 
+size_t HelloMsg::send(int sock)
+{    
+    SEND_PROLOGUE();
+    SEND_EPILOGUE();
+}
+
 PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    obj_type = ReadString();
-    mass = ReadDouble();
-    position = ReadVector3();
-    velocity = ReadVector3();
-    orientation = ReadVector4();
-    thrust = ReadVector3();
-    radius = ReadDouble();
+    obj_type = ReadString(br);
+    mass = ReadDouble(br);
+    position = ReadVector3(br);
+    velocity = ReadVector3(br);
+    orientation = ReadVector4(br);
+    thrust = ReadVector3(br);
+    radius = ReadDouble(br);
+}
+
+size_t PhysicalPropertiesMsg::send(int sock)
+{
+    SEND_PROLOGUE();
+    
+    bw.push_string(obj_type);
+    bw.push_double(mass);
+    PushVector3(&bw, &position);
+    PushVector3(&bw, &velocity);
+    PushVector4(&bw, &orientation);
+    PushVector3(&bw, &thrust);
+    bw.push_double(radius);
+    
+    SEND_EPILOGUE();
 }
 
 PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
@@ -184,12 +217,12 @@ VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type)
 
 VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    enabled = ReadBool();
+    enabled = ReadBool(br);
 }
 
 VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    enabled = ReadBool();
+    enabled = ReadBool(br);
 }
 
 VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
@@ -199,24 +232,24 @@ VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : B
 
 VisualDataMsg::VisualDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    phys_id = ReadInt64();
-    radius = ReadDouble();
-    position = ReadVector3();
-    orientation = ReadVector4();
+    phys_id = ReadInt64(br);
+    radius = ReadDouble(br);
+    position = ReadVector3(br);
+    orientation = ReadVector4(br);
 }
 
 BeamMsg::BeamMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    origin = ReadVector3();
-    velocity = ReadVector3();
-    up = ReadVector3();
-    spread_h = ReadDouble();
-    spread_v = ReadDouble();
-    energy = ReadDouble();
-    ReadString(type, 4);
+    origin = ReadVector3(br);
+    velocity = ReadVector3(br);
+    up = ReadVector3(br);
+    spread_h = ReadDouble(br);
+    spread_v = ReadDouble(br);
+    energy = ReadDouble(br);
+    ReadString(br, type, 4);
     if (strcmp(type, "COMM") == 0)
     {
-        msg = ReadString();
+        msg = ReadString(br);
     }
     else
     {
@@ -234,13 +267,13 @@ BeamMsg::~BeamMsg()
 
 CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    position = ReadVector3();
-    direction = ReadVector3();
-    energy = ReadDouble();
-    ReadString(type, 4);
+    position = ReadVector3(br);
+    direction = ReadVector3(br);
+    energy = ReadDouble(br);
+    ReadString(br, type, 4);
     if (strcmp(type, "COMM") == 0)
     {
-        msg = ReadString();
+        msg = ReadString(br);
     }
     else
     {
@@ -258,13 +291,13 @@ CollisionMsg::~CollisionMsg()
 
 SpawnMsg::SpawnMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    obj_type = ReadString();
-    mass = ReadDouble();
-    position = ReadVector3();
-    velocity = ReadVector3();
-    orientation = ReadVector4();
-    thrust = ReadVector3();
-    radius = ReadDouble();
+    obj_type = ReadString(br);
+    mass = ReadDouble(br);
+    position = ReadVector3(br);
+    velocity = ReadVector3(br);
+    orientation = ReadVector4(br);
+    thrust = ReadVector3(br);
+    radius = ReadDouble(br);
 }
 
 SpawnMsg::~SpawnMsg()
@@ -274,14 +307,14 @@ SpawnMsg::~SpawnMsg()
 
 ScanResultMsg::ScanResultMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    obj_type = ReadString();
-    mass = ReadDouble();
-    position = ReadVector3();
-    velocity = ReadVector3();
-    orientation = ReadVector4();
-    thrust = ReadVector3();
-    radius = ReadDouble();
-    data = ReadString();
+    obj_type = ReadString(br);
+    mass = ReadDouble(br);
+    position = ReadVector3(br);
+    velocity = ReadVector3(br);
+    orientation = ReadVector4(br);
+    thrust = ReadVector3(br);
+    radius = ReadDouble(br);
+    data = ReadString(br);
 }
 
 ScanResultMsg::~ScanResultMsg()
@@ -292,15 +325,15 @@ ScanResultMsg::~ScanResultMsg()
 
 ScanQueryMsg::ScanQueryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    scan_id = ReadInt64();
-    energy = ReadDouble();
-    direction = ReadVector3();
+    scan_id = ReadInt64(br);
+    energy = ReadDouble(br);
+    direction = ReadVector3(br);
 }
 
 ScanResponseMsg::ScanResponseMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    scan_id = ReadInt64();
-    data = ReadString();
+    scan_id = ReadInt64(br);
+    data = ReadString(br);
 }
 
 ScanResponseMsg::~ScanResponseMsg()
@@ -315,12 +348,12 @@ GoodbyeMsg::GoodbyeMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br
 
 DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    item_type = ReadString();
-    item_count = ReadInt64();
+    item_type = ReadString(br);
+    item_count = ReadInt64(br);
     items = (char**)malloc((size_t)(item_count * sizeof(char*)));
     for (int i = 0; i < item_count; i++)
     {
-        items[i] = ReadString();
+        items[i] = ReadString(br);
     }
 }
 
@@ -335,7 +368,7 @@ DirectoryMsg::~DirectoryMsg()
 
 NameMsg::NameMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    name = ReadString();
+    name = ReadString(br);
 }
 
 NameMsg::~NameMsg()
@@ -345,7 +378,7 @@ NameMsg::~NameMsg()
 
 ReadyMsg::ReadyMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    ready = ReadBool();
+    ready = ReadBool(br);
 }
 
 ThrustMsg::ThrustMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)

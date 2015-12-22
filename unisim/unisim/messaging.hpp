@@ -11,8 +11,6 @@ class BSONReader;
 class BSONMessage
 {
 public:
-    static BSONMessage* ReadMessage(int sock);
-
     enum MessageType
     {
         Hello, PhysicalProperties, VisualProperties, VisualDataEnable,
@@ -26,30 +24,18 @@ public:
     int64_t server_id;
     int64_t client_id;
 
+    static BSONMessage* ReadMessage(int sock);
+
 protected:
-    double ReadDouble();
-    bool ReadBool();
-    int32_t ReadInt32();
-    int64_t ReadInt64();
-    struct Vector3 ReadVector3();
-    struct Vector4 ReadVector4();
-
-    //! @todo Support things other than C-strings
-    void ReadString(char* dst, int32_t dstlen);
-    char* ReadString();
-
-    void ReadIDs();
-
-    BSONMessage(BSONReader* _br, MessageType _msg_type);
-    ~BSONMessage();
-
     BSONReader* br;
+    BSONMessage(BSONReader* _br, MessageType _msg_type);
 };
 
 class HelloMsg : public BSONMessage
 {
 public:
     HelloMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class PhysicalPropertiesMsg : public BSONMessage
@@ -57,6 +43,7 @@ class PhysicalPropertiesMsg : public BSONMessage
 public:
     PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type);
     ~PhysicalPropertiesMsg();
+    size_t send(int sock);
 
     char* obj_type;
     double mass, radius;
