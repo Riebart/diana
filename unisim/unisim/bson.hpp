@@ -24,12 +24,21 @@
 class BSONReader
 {
 public:
+    enum ElementType
+    {
+        EndOfDocument = 0, Double = 1, String = 2, SubDocument = 3, Array = 4,
+        Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
+        Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
+        JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
+        MinKey = (int8_t)0xFF, MaxKey = 0x7F
+    };
+
     // Every element is returned in this structure, with the type field and the relevant
     // value member filled. Other values that don't map to the type are not guaranteed to
     // have any reasonable values.
     struct Element
     {
-        int8_t type;
+        ElementType type;
         int8_t subtype;
         char* name;
 
@@ -45,13 +54,6 @@ public:
         int32_t  str_len;
     };
 
-    enum ElementTypes
-    {
-        EndOfDocument, Double, String, SubDocument, Array, Binary, Deprecatedx06, ObjectId,
-        Boolean, UTCDateTime, Null, Regex, DBPointer, JavaScript, Deprecatedx0E,
-        JavaScriptWScope, Int32, MongoTimeStamp, Int64, MinKey = (int8_t)0xFF, MaxKey = 0x7F
-    };
-
     BSONReader(char* _msg)
     {
         this->msg = _msg;
@@ -61,18 +63,18 @@ public:
 
     struct Element get_next_element()
     {
-        // Return a sentinel -1 type when we reach the end of the message
+        // Return a sentinel MinKey type when we reach the end of the message
         if ((int32_t)pos >= len)
         {
-            el.type = -1;
+            el.type = ElementType::MinKey;
             return el;
         }
 
-        el.type = *(int8_t*)(msg + pos);
+        el.type = *(ElementType*)(msg + pos);
         pos += 1;
 
         // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
-        if (el.type == ElementTypes::EndOfDocument)
+        if (el.type == ElementType::EndOfDocument)
         {
             return el;
         }
@@ -80,33 +82,33 @@ public:
         {
             // Otherwise, read the name.
             el.name = msg + pos;
-            pos += cstring_end();
+            pos += strlen(msg + pos) + 1;;
         }
 
         // Switch on the element types.
         switch (el.type)
         {
-        case ElementTypes::Double:
+        case ElementType::Double:
             el.dbl_val = *(double*)(msg + pos);
             pos += 8;
             break;
 
-        case ElementTypes::String:
-        case ElementTypes::JavaScript:
-        case ElementTypes::Deprecatedx0E:
+        case ElementType::String:
+        case ElementType::JavaScript:
+        case ElementType::Deprecatedx0E:
             el.str_len = *(int32_t*)(msg + pos);
             pos += 4;
             el.str_val = msg + pos;
             pos += el.str_len;
             break;
 
-        case ElementTypes::SubDocument:
-        case ElementTypes::Array:
+        case ElementType::SubDocument:
+        case ElementType::Array:
             // Just eat the 'length' field for the subdocument, we don't care.
             pos += 4;
             break;
 
-        case ElementTypes::Binary:
+        case ElementType::Binary:
             el.bin_len = *(int32_t*)(msg + pos);
             pos += 4;
             el.subtype = *(int8_t*)(msg + pos);
@@ -115,37 +117,41 @@ public:
             pos += el.bin_len;
             break;
 
-        case ElementTypes::Deprecatedx06:
-        case ElementTypes::Null:
-        case ElementTypes::MinKey:
-        case ElementTypes::MaxKey:
+        case ElementType::Deprecatedx06:
+        case ElementType::Null:
+        case ElementType::MinKey:
+        case ElementType::MaxKey:
             break;
 
-        case ElementTypes::ObjectId:
+        case ElementType::ObjectId:
             el.bin_len = 12;
             el.bin_val = (uint8_t*)(msg + pos);
             pos += 12;
+            break;
 
-        case ElementTypes::Boolean:
+        case ElementType::Boolean:
             el.bln_val = *(bool*)(msg + pos);
             pos += 1;
             break;
 
-        case ElementTypes::Regex:
-            pos += cstring_end();
-            pos += cstring_end();
+        case ElementType::Regex:
+            pos += strlen(msg + pos) + 1;
+            pos += strlen(msg + pos) + 1;
             break;
 
-        case ElementTypes::UTCDateTime:
-        case ElementTypes::MongoTimeStamp:
-        case ElementTypes::Int64:
+        case ElementType::UTCDateTime:
+        case ElementType::MongoTimeStamp:
+        case ElementType::Int64:
             el.i64_val = *(int64_t*)(msg + pos);
             pos += 8;
             break;
 
-        case ElementTypes::Int32:
+        case ElementType::Int32:
             el.i32_val = *(int32_t*)(msg + pos);
             pos += 4;
+            break;
+        default:
+            throw "UnrecognizedType";
             break;
         }
 
@@ -161,19 +167,12 @@ private:
     BSONReader()
     {
     }
-
-    int32_t cstring_end()
-    {
-        int i = 0;
-        for (; msg[pos + i] != 0; i++) {}
-        return i + 1;
-    }
 };
 
 class BSONWriter
 {
 public:
-    BSONWriter()
+    BSONWriter(int32_t _is_array = -1)
     {
         // Allocate enough memory for the length starting field.
         // Each time we push something, we will realloc the block a bit bigger.
@@ -183,10 +182,9 @@ public:
             throw "OOM you twat";
         }
 
-        is_array = -1;
+        is_array = _is_array;
         pos = 4;
         child = NULL;
-        parent = NULL;
     }
 
     bool push_bool(bool v)
@@ -205,7 +203,7 @@ public:
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 1);
-            out[pos] = BSONReader::ElementTypes::Boolean;
+            out[pos] = BSONReader::ElementType::Boolean;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
@@ -231,7 +229,7 @@ public:
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 4);
-            out[pos] = BSONReader::ElementTypes::Int32;
+            out[pos] = BSONReader::ElementType::Int32;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
@@ -246,7 +244,7 @@ public:
         return push_int64("", v);
     }
     
-    bool push_int64(char* name, int64_t v, int8_t type = BSONReader::ElementTypes::Int64)
+    bool push_int64(char* name, int64_t v, int8_t type = BSONReader::ElementType::Int64)
     {
         if (child != NULL)
         {
@@ -259,9 +257,9 @@ public:
 
             switch (type)
             {
-            case BSONReader::ElementTypes::Int64:
-            case BSONReader::ElementTypes::UTCDateTime:
-            case BSONReader::ElementTypes::MongoTimeStamp:
+            case BSONReader::ElementType::Int64:
+            case BSONReader::ElementType::UTCDateTime:
+            case BSONReader::ElementType::MongoTimeStamp:
                 enlarge(1 + name_len + 8);
                 out[pos] = type;
                 pos += 1;
@@ -292,7 +290,7 @@ public:
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 8);
-            out[pos] = BSONReader::ElementTypes::Double;
+            out[pos] = BSONReader::ElementType::Double;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
@@ -307,7 +305,7 @@ public:
         return push_string("", v);
     }
     
-    bool push_string(char* name, char* v, size_t len = -1, int8_t type = BSONReader::ElementTypes::String)
+    bool push_string(char* name, char* v, int32_t len = -1, int8_t type = BSONReader::ElementType::String)
     {
         if (child != NULL)
         {
@@ -317,16 +315,16 @@ public:
         {
             if (len < 0)
             {
-                len = strlen(v);
+                len = strlen(v) + 1;
             }
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
 
             switch (type)
             {
-            case BSONReader::ElementTypes::String:
-            case BSONReader::ElementTypes::JavaScript:
-            case BSONReader::ElementTypes::Deprecatedx0E:
+            case BSONReader::ElementType::String:
+            case BSONReader::ElementType::JavaScript:
+            case BSONReader::ElementType::Deprecatedx0E:
                 enlarge(1 + name_len + 4 + len + 1); // Type, name, str_len, string, 0x00
                 out[pos] = type;
                 pos += 1;
@@ -345,6 +343,11 @@ public:
         }
     }
 
+    bool push_binary(uint8_t* bin, int32_t len)
+    {
+        return push_binary("", bin, len);
+    }
+
     bool push_binary(char* name, uint8_t* bin, int32_t len, uint8_t subtype = 0)
     {
         if (child != NULL)
@@ -355,11 +358,13 @@ public:
         {
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
-            enlarge(1 + name_len + 1 + len); // Type, name, subtype, length
-            out[pos] = BSONReader::ElementTypes::Binary;
+            enlarge(1 + name_len + 4 + 1 + len); // Type, name, length, subtype, data
+            out[pos] = BSONReader::ElementType::Binary;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
+            *(int32_t*)(out + pos) = len;
+            pos += 4;
             *(uint8_t*)(out + pos) = subtype;
             pos += 1;
             memcpy(out + pos, bin, len);
@@ -384,12 +389,12 @@ public:
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len);
-            out[pos] = BSONReader::ElementTypes::Array;
+            out[pos] = BSONReader::ElementType::Array;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
 
-            child = new BSONWriter(this, 0);
+            child = new BSONWriter(0);
             return true;
         }
     }
@@ -410,12 +415,12 @@ public:
             name = (is_array != -1 ? print_array_name() : name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len);
-            out[pos] = BSONReader::ElementTypes::SubDocument;
+            out[pos] = BSONReader::ElementType::SubDocument;
             pos += 1;
             memcpy(out + pos, name, name_len);
             pos += name_len;
 
-            child = new BSONWriter(this);
+            child = new BSONWriter();
             return true;
         }
     }
@@ -450,20 +455,6 @@ public:
     {
         free(out);
     }
-protected:
-    BSONWriter(BSONWriter* _parent, int32_t _is_array = -1)
-    {
-        out = (uint8_t*)calloc(1, 4);
-        if (out == NULL)
-        {
-            throw "OOM you twat";
-        }
-
-        is_array = _is_array;
-        pos = 4;
-        child = NULL;
-        parent = _parent;
-    }
 
 private:
     uint8_t* out;
@@ -471,7 +462,6 @@ private:
     char array_name[10];
     uint64_t pos;
     BSONWriter* child;
-    BSONWriter* parent;
 
     void enlarge(size_t nbytes)
     {
@@ -496,3 +486,41 @@ private:
 };
 
 #endif
+
+//// f30000000461727200a90000000530000900000000537472756e676f757408310001103200f6ffffff123300cce32320fdffffff013400bbbdd7d9df7cdb3d04350038000000083000001031009cffffff12320000b21184170000000133005a62d7d718e774690534000a0000000053747261696768747570000336003400000005610004000000006273747210693300fa0500000862000001640047e51aaeab44e93f1269360001f05a2b17ffffff00000164626c00333333333333144010693332005000000012693634000010a5d4e800000008626c6e000005737472000d00000000537472696e6779737472696e6700
+//// {'arr': ['Strungout', True, -10, -12345678900, 1e-10, [False, -100, 101000000000, 1e+200, 'Straightup'], {'a': 'bstr', 'i3': 1530, 'b': False, 'd': 0.7896326447, 'i6': -999999999999}], 'dbl': 5.05, 'i32': 80, 'i64': 1000000000000, 'bln': False, 'str': 'Stringystring'}
+//// The Python bson library doesn't output strings as strings, but as binary tyoe 0 arrays.
+//BSONWriter bw;
+//bw.push_array("arr");
+//bw.push_binary((uint8_t*)"Strungout", 9);
+//bw.push_bool(true);
+//bw.push_int32(-10);
+//bw.push_int64(-12345678900);
+//bw.push_double(1e-10);
+//bw.push_array();
+//bw.push_bool(false);
+//bw.push_int32(-100);
+//bw.push_int64(101000000000);
+//bw.push_double(1e200);
+//bw.push_binary((uint8_t*)"Straightup", 10);
+//bw.push_end();
+//bw.push_subdoc();
+//bw.push_binary("a", (uint8_t*)"bstr", 4);
+//bw.push_int32("i3", 1530);
+//bw.push_bool("b", false);
+//bw.push_double("d", 0.7896326447);
+//bw.push_int64("i6", -999999999999);
+//bw.push_end();
+//bw.push_end();
+//bw.push_double("dbl", 5.05);
+//bw.push_int32("i32", 80);
+//bw.push_int64("i64", 1000000000000);
+//bw.push_bool("bln", false);
+//bw.push_binary("str", (uint8_t*)"Stringystring", 13);
+//uint8_t* out = bw.push_end();
+//for (int i = 0; i < *(int32_t*)out; i++)
+//{
+//    printf("%02x", out[i]);
+//}
+//printf("\n");
+//return 0;

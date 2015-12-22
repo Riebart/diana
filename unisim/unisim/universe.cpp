@@ -592,7 +592,7 @@ void Universe::tick(double dt)
     //! @todo Have some concept of collision destruction criteria here.
     //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
 
-    if (phys_objects.size() > 1)
+    if ((phys_objects.size() > 1) && false)
     {
         sort_aabb(dt, true);
 

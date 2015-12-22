@@ -13,11 +13,11 @@ class BSONMessage
 public:
     enum MessageType
     {
-        Hello, PhysicalProperties, VisualProperties, VisualDataEnable,
-        VisualMetaDataEnable, VisualMetaData, VisualData, Beam, Collision,
-        Spawn, ScanResult, ScanQuery, ScanResponse, Goodbye,
-        Directory, Name, Ready, Thrust, Velocity,
-        Jump, InfoUpdate, RequestUpdate
+        Reservedx00 = 0, Hello = 1, PhysicalProperties = 2, VisualProperties = 3, VisualDataEnable = 4,
+        VisualMetaDataEnable = 5, VisualMetaData = 6, VisualData = 7, Beam = 8, Collision = 9,
+        Spawn = 10, ScanResult = 11, ScanQuery = 12, ScanResponse = 13, Goodbye = 14,
+        Directory = 15, Name = 16, Ready = 17, Thrust = 18, Velocity = 19, Jump = 20, 
+        InfoUpdate = 21, RequestUpdate = 22
     };
 
     MessageType msg_type;
