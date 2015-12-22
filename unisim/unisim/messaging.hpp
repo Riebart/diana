@@ -25,6 +25,7 @@ public:
     int64_t client_id;
 
     static BSONMessage* ReadMessage(int sock);
+    BSONMessage() { }
 
 protected:
     BSONReader* br;
@@ -34,6 +35,7 @@ protected:
 class HelloMsg : public BSONMessage
 {
 public:
+    HelloMsg() { }
     HelloMsg(BSONReader* _br, MessageType _msg_type);
     size_t send(int sock);
 };
@@ -41,6 +43,7 @@ public:
 class PhysicalPropertiesMsg : public BSONMessage
 {
 public:
+    PhysicalPropertiesMsg() { }
     PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type);
     ~PhysicalPropertiesMsg();
     size_t send(int sock);
@@ -54,13 +57,17 @@ public:
 class VisualPropertiesMsg : public BSONMessage
 {
 public:
+    VisualPropertiesMsg() { }
     VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class VisualDataEnableMsg : public BSONMessage
 {
 public:
+    VisualDataEnableMsg() { }
     VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 
     bool enabled;
 };
@@ -68,7 +75,9 @@ public:
 class VisualMetaDataEnableMsg : public BSONMessage
 {
 public:
+    VisualMetaDataEnableMsg() { }
     VisualMetaDataEnableMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 
     bool enabled;
 };
@@ -76,13 +85,17 @@ public:
 class VisualMetaDataMsg : public BSONMessage
 {
 public:
+    VisualMetaDataMsg() { }
     VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class VisualDataMsg : public BSONMessage
 {
 public:
+    VisualDataMsg() { }
     VisualDataMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 
     int64_t phys_id;
     double radius;
@@ -93,10 +106,12 @@ public:
 class BeamMsg : public BSONMessage
 {
 public:
+    BeamMsg() { }
     BeamMsg(BSONReader* _br, MessageType _msg_type);
     ~BeamMsg();
+    size_t send(int sock);
 
-    char type[4];
+    char beam_type[5];
     char* msg;
     double spread_h, spread_v, energy;
     struct Vector3 origin, velocity, up;
@@ -105,10 +120,12 @@ public:
 class CollisionMsg : public BSONMessage
 {
 public:
+    CollisionMsg() { }
     CollisionMsg(BSONReader* _br, MessageType _msg_type);
     ~CollisionMsg();
+    size_t send(int sock);
 
-    char type[4];
+    char coll_type[5];
     char* msg;
     double energy;
     struct Vector3 position, direction;
@@ -117,8 +134,10 @@ public:
 class SpawnMsg : public BSONMessage
 {
 public:
+    SpawnMsg() { }
     SpawnMsg(BSONReader* _br, MessageType _msg_type);
     ~SpawnMsg();
+    size_t send(int sock);
 
     char* obj_type;
     double mass, radius;
@@ -129,8 +148,10 @@ public:
 class ScanResultMsg : public BSONMessage
 {
 public:
+    ScanResultMsg() { }
     ScanResultMsg(BSONReader* _br, MessageType _msg_type);
     ~ScanResultMsg();
+    size_t send(int sock);
 
     char* obj_type;
     char* data;
@@ -142,7 +163,9 @@ public:
 class ScanQueryMsg : public BSONMessage
 {
 public:
+    ScanQueryMsg() { }
     ScanQueryMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 
     int64_t scan_id;
     double energy;
@@ -152,8 +175,10 @@ public:
 class ScanResponseMsg : public BSONMessage
 {
 public:
+    ScanResponseMsg() { }
     ScanResponseMsg(BSONReader* _br, MessageType _msg_type);
     ~ScanResponseMsg();
+    size_t send(int sock);
 
     char* data;
     int64_t scan_id;
@@ -162,14 +187,18 @@ public:
 class GoodbyeMsg : public BSONMessage
 {
 public:
+    GoodbyeMsg() { }
     GoodbyeMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class DirectoryMsg : public BSONMessage
 {
 public:
+    DirectoryMsg() { }
     DirectoryMsg(BSONReader* _br, MessageType _msg_type);
     ~DirectoryMsg();
+    size_t send(int sock);
 
     int64_t item_count;
     char* item_type;
@@ -179,8 +208,10 @@ public:
 class NameMsg : public BSONMessage
 {
 public:
+    NameMsg() { }
     NameMsg(BSONReader* _br, MessageType _msg_type);
     ~NameMsg();
+    size_t send(int sock);
 
     char* name;
 };
@@ -188,7 +219,9 @@ public:
 class ReadyMsg : public BSONMessage
 {
 public:
+    ReadyMsg() { }
     ReadyMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 
     bool ready;
 };
@@ -196,31 +229,41 @@ public:
 class ThrustMsg : public BSONMessage
 {
 public:
+    ThrustMsg() { }
     ThrustMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class VelocityMsg : public BSONMessage
 {
 public:
+    VelocityMsg() { }
     VelocityMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class JumpMsg : public BSONMessage
 {
 public:
+    JumpMsg() { }
     JumpMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class InfoUpdateMsg : public BSONMessage
 {
 public:
+    InfoUpdateMsg() { }
     InfoUpdateMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 class RequestUpdateMsg : public BSONMessage
 {
 public:
+    RequestUpdateMsg() { }
     RequestUpdateMsg(BSONReader* _br, MessageType _msg_type);
+    size_t send(int sock);
 };
 
 #endif
