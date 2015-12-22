@@ -2,11 +2,6 @@
 #include "bson.hpp"
 #include "MIMOServer.hpp"
 
-#define READ_EPILOGUE() { if }
-#define SEND_INTRO() BSONWriter bw; bw.push_int32(server_id); bw.push_int32(client_id);
-#define PUSH_VECTOR3(bw, vec) { bw.push_double(vec.x); bw.push_double(vec.y); bw.push_double(vec.z); }
-#define PUSH_VECTOR4(bw, vec) { bw.push_double(vec.w); bw.push_double(vec.x); bw.push_double(vec.y); bw.push_double(vec.z); }
-
 void BSONMessage::ReadIDs()
 {
     server_id = ReadInt64();
@@ -69,6 +64,13 @@ struct Vector4 BSONMessage::ReadVector4()
     };
 }
 
+BSONMessage::BSONMessage(BSONReader* _br, MessageType _msg_type)
+{
+    this->br = _br;
+    this->msg_type = _msg_type;
+    ReadIDs();
+}
+
 BSONMessage::~BSONMessage()
 {
     // Note that we don't have to delete the BSONReader, since it's
@@ -101,77 +103,66 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
     }
     else
     {
-        switch (el.i32_val)
+        MessageType mt = (MessageType)el.i32_val;
+        switch (mt)
         {
-        case MessageTypes::Hello:
-            return new HelloMsg(&br, el.i32_val);
-        case MessageTypes::PhysicalProperties:
-            return new PhysicalPropertiesMsg(&br, el.i32_val);
-        case MessageTypes::VisualProperties:
-            return new VisualPropertiesMsg(&br, el.i32_val);
-        case MessageTypes::VisualDataEnable:
-            return new VisualDataEnableMsg(&br, el.i32_val);
-        case MessageTypes::VisualMetaDataEnable:
-            return new VisualMetaDataEnableMsg(&br, el.i32_val);
-        case MessageTypes::VisualMetaData:
-            return new VisualMetaDataMsg(&br, el.i32_val);
-        case MessageTypes::VisualData:
-            return new VisualDataMsg(&br, el.i32_val);
-        case MessageTypes::Beam:
-            return new BeamMsg(&br, el.i32_val);
-        case MessageTypes::Collision:
-            return new CollisionMsg(&br, el.i32_val);
-        case MessageTypes::Spawn:
-            return new SpawnMsg(&br, el.i32_val);
-        case MessageTypes::ScanResult:
-            return new ScanResultMsg(&br, el.i32_val);
-        case MessageTypes::ScanQuery:
-            return new ScanQueryMsg(&br, el.i32_val);
-        case MessageTypes::ScanResponse:
-            return new ScanResponseMsg(&br, el.i32_val);
-        case MessageTypes::Goodbye:
-            return new GoodbyeMsg(&br, el.i32_val);
-        case MessageTypes::Directory:
-            return new DirectoryMsg(&br, el.i32_val);
-        case MessageTypes::Name:
-            return new NameMsg(&br, el.i32_val);
-        case MessageTypes::Ready:
-            return new ReadyMsg(&br, el.i32_val);
-        case MessageTypes::Thrust:
-            return new ThrustMsg(&br, el.i32_val);
-        case MessageTypes::Velocity:
-            return new VelocityMsg(&br, el.i32_val);
-        case MessageTypes::Jump:
-            return new JumpMsg(&br, el.i32_val);
-        case MessageTypes::InfoUpdate:
-            return new InfoUpdateMsg(&br, el.i32_val);
-        case MessageTypes::RequestUpdate:
-            return new RequestUpdateMsg(&br, el.i32_val);
+        case MessageType::Hello:
+            return new HelloMsg(&br, mt);
+        case MessageType::PhysicalProperties:
+            return new PhysicalPropertiesMsg(&br, mt);
+        case MessageType::VisualProperties:
+            return new VisualPropertiesMsg(&br, mt);
+        case MessageType::VisualDataEnable:
+            return new VisualDataEnableMsg(&br, mt);
+        case MessageType::VisualMetaDataEnable:
+            return new VisualMetaDataEnableMsg(&br, mt);
+        case MessageType::VisualMetaData:
+            return new VisualMetaDataMsg(&br, mt);
+        case MessageType::VisualData:
+            return new VisualDataMsg(&br, mt);
+        case MessageType::Beam:
+            return new BeamMsg(&br, mt);
+        case MessageType::Collision:
+            return new CollisionMsg(&br, mt);
+        case MessageType::Spawn:
+            return new SpawnMsg(&br, mt);
+        case MessageType::ScanResult:
+            return new ScanResultMsg(&br, mt);
+        case MessageType::ScanQuery:
+            return new ScanQueryMsg(&br, mt);
+        case MessageType::ScanResponse:
+            return new ScanResponseMsg(&br, mt);
+        case MessageType::Goodbye:
+            return new GoodbyeMsg(&br, mt);
+        case MessageType::Directory:
+            return new DirectoryMsg(&br, mt);
+        case MessageType::Name:
+            return new NameMsg(&br, mt);
+        case MessageType::Ready:
+            return new ReadyMsg(&br, mt);
+        case MessageType::Thrust:
+            return new ThrustMsg(&br, mt);
+        case MessageType::Velocity:
+            return new VelocityMsg(&br, mt);
+        case MessageType::Jump:
+            return new JumpMsg(&br, mt);
+        case MessageType::InfoUpdate:
+            return new InfoUpdateMsg(&br, mt);
+        case MessageType::RequestUpdate:
+            return new RequestUpdateMsg(&br, mt);
         default:
             return NULL;
         }
     }
 }
 
-HelloMsg::HelloMsg(BSONReader* _br, int32_t _msg_type)
+HelloMsg::HelloMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     // This is just a token SYN, for ID establishing on both sides.
 }
 
-uint8_t* HelloMsg::send(int32_t server_id, int32_t client_id)
+PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    SEND_INTRO();
-    return bw.push_end();
-}
-
-PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, int32_t _msg_type)
-{
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     obj_type = ReadString();
     mass = ReadDouble();
     position = ReadVector3();
@@ -181,107 +172,41 @@ PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, int32_t _msg_type)
     radius = ReadDouble();
 }
 
-//uint8_t* PhysicalPropertiesMsg::send(int32_t client_id, struct PhysicsObject* obj, struct PhysicsObject* ref)
-//{
-//}
-
-uint8_t* PhysicalPropertiesMsg::send(int32_t server_id, int32_t client_id, char* obj_type,
-    double mass,
-struct Vector3 position,
-struct Vector3 velocity,
-struct Vector4 orientation,
-struct Vector3 thrust,
-    double radius)
-{
-    SEND_INTRO();
-    bw.push_string(obj_type);
-    bw.push_double(mass);
-    PUSH_VECTOR3(bw, position);
-    PUSH_VECTOR3(bw, velocity);
-    PUSH_VECTOR4(bw, orientation);
-    PUSH_VECTOR3(bw, thrust);
-    bw.push_double(radius);
-    return bw.push_end();
-}
-
 PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
 {
     free(obj_type);
 }
 
-VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, int32_t _msg_type)
+VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, int32_t _msg_type)
+VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     enabled = ReadBool();
 }
 
-uint8_t* VisualDataEnableMsg::send(int32_t server_id, int32_t client_id, bool enabled)
+VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    SEND_INTRO();
-    bw.push_bool(enabled);
-    return bw.push_end();
-}
-
-VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br, int32_t _msg_type)
-{
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     enabled = ReadBool();
 }
 
-uint8_t* VisualMetaDataEnableMsg::send(int32_t server_id, int32_t client_id, bool enabled)
+VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    SEND_INTRO();
-    bw.push_bool(enabled);
-    return bw.push_end();
-}
-
-VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, int32_t _msg_type)
-{
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-VisualDataMsg::VisualDataMsg(BSONReader* _br, int32_t _msg_type)
+VisualDataMsg::VisualDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     phys_id = ReadInt64();
     radius = ReadDouble();
     position = ReadVector3();
     orientation = ReadVector4();
 }
 
-uint8_t* VisualDataMsg::send(int32_t server_id, int32_t client_id, int64_t phys_id, double radius,
-struct Vector3 position, struct Vector4 orientation)
+BeamMsg::BeamMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    SEND_INTRO();
-    bw.push_int64(phys_id);
-    bw.push_double(radius);
-    PUSH_VECTOR3(bw, position);
-    PUSH_VECTOR4(bw, orientation);
-    return bw.push_end();
-}
-
-BeamMsg::BeamMsg(BSONReader* _br, int32_t _msg_type)
-{
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     origin = ReadVector3();
     velocity = ReadVector3();
     up = ReadVector3();
@@ -307,11 +232,8 @@ BeamMsg::~BeamMsg()
     }
 }
 
-CollisionMsg::CollisionMsg(BSONReader* _br, int32_t _msg_type)
+CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     position = ReadVector3();
     direction = ReadVector3();
     energy = ReadDouble();
@@ -334,11 +256,8 @@ CollisionMsg::~CollisionMsg()
     }
 }
 
-SpawnMsg::SpawnMsg(BSONReader* _br, int32_t _msg_type)
+SpawnMsg::SpawnMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     obj_type = ReadString();
     mass = ReadDouble();
     position = ReadVector3();
@@ -353,11 +272,8 @@ SpawnMsg::~SpawnMsg()
     free(obj_type);
 }
 
-ScanResultMsg::ScanResultMsg(BSONReader* _br, int32_t _msg_type)
+ScanResultMsg::ScanResultMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     obj_type = ReadString();
     mass = ReadDouble();
     position = ReadVector3();
@@ -374,21 +290,15 @@ ScanResultMsg::~ScanResultMsg()
     free(data);
 }
 
-ScanQueryMsg::ScanQueryMsg(BSONReader* _br, int32_t _msg_type)
+ScanQueryMsg::ScanQueryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     scan_id = ReadInt64();
     energy = ReadDouble();
     direction = ReadVector3();
 }
 
-ScanResponseMsg::ScanResponseMsg(BSONReader* _br, int32_t _msg_type)
+ScanResponseMsg::ScanResponseMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     scan_id = ReadInt64();
     data = ReadString();
 }
@@ -398,19 +308,13 @@ ScanResponseMsg::~ScanResponseMsg()
     free(data);
 }
 
-GoodbyeMsg::GoodbyeMsg(BSONReader* _br, int32_t _msg_type)
+GoodbyeMsg::GoodbyeMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     // A generic FIN, indicating a smarty is disconnecting, or otherwise leaving.
 }
 
-DirectoryMsg::DirectoryMsg(BSONReader* _br, int32_t _msg_type)
+DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     item_type = ReadString();
     item_count = ReadInt64();
     items = (char**)malloc((size_t)(item_count * sizeof(char*)));
@@ -429,11 +333,8 @@ DirectoryMsg::~DirectoryMsg()
     free(items);
 }
 
-NameMsg::NameMsg(BSONReader* _br, int32_t _msg_type)
+NameMsg::NameMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     name = ReadString();
 }
 
@@ -442,50 +343,32 @@ NameMsg::~NameMsg()
     free(name);
 }
 
-ReadyMsg::ReadyMsg(BSONReader* _br, int32_t _msg_type)
+ReadyMsg::ReadyMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     ready = ReadBool();
 }
 
-ThrustMsg::ThrustMsg(BSONReader* _br, int32_t _msg_type)
+ThrustMsg::ThrustMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-VelocityMsg::VelocityMsg(BSONReader* _br, int32_t _msg_type)
+VelocityMsg::VelocityMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-JumpMsg::JumpMsg(BSONReader* _br, int32_t _msg_type)
+JumpMsg::JumpMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br, int32_t _msg_type)
+InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }
 
-RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br, int32_t _msg_type)
+RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    this->br = _br;
-    this->msg_type = _msg_type;
-    ReadIDs();
     throw "NotImplemented";
 }

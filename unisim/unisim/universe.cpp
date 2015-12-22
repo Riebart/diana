@@ -310,17 +310,30 @@ void Universe::hangup_objects(int32_t c)
 
 void Universe::handle_message(int32_t c)
 {
-    BSONMessage* msg = BSONMessage::ReadMessage(c);
-    switch (msg->msg_type)
+    BSONMessage* msg_base = BSONMessage::ReadMessage(c);
+
+    switch (msg_base->msg_type)
     {
-    case BSONMessage::MessageTypes::VisualDataEnable:
+    case BSONMessage::MessageType::VisualDataEnable:
+    {
+        VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
         break;
-    case BSONMessage::MessageTypes::Spawn:
+    }
+    case BSONMessage::MessageType::Spawn:
+    {
+        SpawnMsg* msg = (SpawnMsg*)msg_base;
         break;
-    case BSONMessage::MessageTypes::ScanResponse:
+    }
+    case BSONMessage::MessageType::ScanResponse:
+    {
+        ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
         break;
-    case BSONMessage::MessageTypes::Hello:
+    }
+    case BSONMessage::MessageType::Hello:
+    {
+        HelloMsg* msg = (HelloMsg*)msg_base;
         break;
+    }
     default:
         throw "Universe::UnrecognizedMessageType";
     }
@@ -406,7 +419,7 @@ void check_collision_loop(void* argsV)
     end = MIN(end, u->sorted.size() - 1);
 
     for (size_t i = args->offset; i < end; i++)
-    //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
+        //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
     {
         // In order for a full intersection to be possible, there has to be intersection
         // of the AABBs in all three dimensions. The sorted list contains the objects'

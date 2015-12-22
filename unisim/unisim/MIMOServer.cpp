@@ -45,11 +45,13 @@
 
 size_t MIMOServer::socket_read(int fd, void* buf, size_t count)
 {
+    throw "NotImplemented";
     return 0;
 }
 
 size_t MIMOServer::socket_write(int fd, void* buf, size_t count)
 {
+    throw "NotImplemented";
     return 0;
 }
 
