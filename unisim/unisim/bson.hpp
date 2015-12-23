@@ -513,7 +513,11 @@ private:
     char* print_array_name()
     {
         // Windows notes that sprintf_s is available.
+#ifdef WIN32
+        sprintf_s(array_name, "%d", is_array);
+#else
         sprintf(array_name, "%d", is_array);
+#endif
         is_array += 1;
         return array_name;
     }

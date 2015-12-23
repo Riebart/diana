@@ -132,7 +132,7 @@ public:
 	void add_object(struct Beam* beam);
 
 	//! Queue an object for expiry in the next physics tick.
-	void expire(uint64_t phys_id);
+	void expire(int64_t phys_id);
 
 	//! Expire all objects in the universe associated with the given client.
 	void hangup_objects(int32_t c);
@@ -141,7 +141,7 @@ public:
 	void update_attractor(struct PhysicsObject* obj, bool calculate);
 
 private:
-	uint64_t get_id();
+	int64_t get_id();
 	void broadcast_vis_data();
 	void tick(double dt);
 	void sort_aabb(double dt, bool calc);
@@ -166,11 +166,11 @@ private:
 	MIMOServer* net;
     libodb::Scheduler* sched;
 
-	std::map<uint64_t, struct SmartPhysicsObject*> smarties;
+	std::map<int64_t, struct SmartPhysicsObject*> smarties;
 	std::vector<struct PhysicsObject*> attractors;
 	std::vector<struct PhysicsObject*> phys_objects;
 	std::vector<struct Beam*> beams;
-	std::vector<uint64_t> expired;
+	std::vector<int64_t> expired;
 	std::vector<struct PhysicsObject*> added;
 
 	//! Hold a re-arranged list of indices that sort the physics objects by
@@ -187,7 +187,7 @@ private:
 	//! this structure. When the query result message comes back, the original
 	//! collision information is retrieved, the SCANRESULT beam is built and
 	//! added to the universe.
-	std::map<uint64_t, uint64_t> queries;
+	std::map<int64_t, int64_t> queries;
 
     //! Structure holding the arguments for the threaded checking of collisions
     struct phys_args

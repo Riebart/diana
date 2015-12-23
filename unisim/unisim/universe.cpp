@@ -334,7 +334,7 @@ double Universe::total_sim_time()
     return total_time;
 }
 
-uint64_t Universe::get_id()
+int64_t Universe::get_id()
 {
 #ifdef CPP11THREADS
     uint64_t r = total_objs.fetch_add(1);
@@ -358,7 +358,7 @@ void Universe::add_object(B* beam)
     add_object((PO*)beam);
 }
 
-void Universe::expire(uint64_t phys_id)
+void Universe::expire(int64_t phys_id)
 {
     LOCK(expire_lock);
     expired.push_back(phys_id);
@@ -368,7 +368,7 @@ void Universe::expire(uint64_t phys_id)
 void Universe::hangup_objects(int32_t c)
 {
     LOCK(expire_lock);
-    std::map<uint64_t, struct SmartPhysicsObject*>::iterator it;
+    std::map<int64_t, struct SmartPhysicsObject*>::iterator it;
 
     for (it = smarties.begin(); it != smarties.end(); ++it)
     {
