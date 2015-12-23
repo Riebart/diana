@@ -622,7 +622,7 @@ void check_collision_loop(void* argsV)
                 // If we succeeded on both, count this as a potential collision for
                 // honest-to-goodness testing and hand it off to bounding-ball testing
                 // followed by collision effect calculation.
-                check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[i]], args->dt);
+                check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[j]], args->dt);
             }
             else
             {

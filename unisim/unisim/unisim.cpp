@@ -46,7 +46,7 @@ void pool_rack()
 	struct PhysicsObject* obj;
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
-	struct Vector3 velocity = { 0.0, -1.0, 0.0 };
+	struct Vector3 velocity = { 0.0, -0.1, 0.0 };
 
 	double C = 1;
 	double y_scale = sqrt(3) / 2;
@@ -69,7 +69,7 @@ void pool_rack()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	position.x = 0.0;
-	position.y = 10.0;
+	position.y = 5.0;
 	position.z = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
 	u->add_object(obj);
@@ -85,17 +85,17 @@ void simple_collision()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
-	position.x = 0.0;
+	position.x = 10;
 	position.y = 0.0;
-	velocity.x = -5.0;
+	velocity.x = -1.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
 	u->add_object(obj);
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
-	position.x = -20;
+	position.x = -1.0;
 	position.y = 0.0;
-	velocity.x = -1.0;
+	velocity.x = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
 	u->add_object(obj);
 }
@@ -364,7 +364,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-	u = new Universe(0.001, 0.05, 0.5, 5505, 3);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, true);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
