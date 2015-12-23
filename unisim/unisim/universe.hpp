@@ -157,7 +157,6 @@ private:
         int64_t phys_id;
     };
 
-    BSONWriter visdata_bw;
     VisualDataMsg visdata_msg;
 
     // Register a socket to receive VisData messages.

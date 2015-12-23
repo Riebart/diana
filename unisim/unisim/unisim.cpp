@@ -46,11 +46,11 @@ void pool_rack()
 	struct PhysicsObject* obj;
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
-	struct Vector3 velocity = { 0.0, -25, 0.0 };
+	struct Vector3 velocity = { 0.0, -1.0, 0.0 };
 
 	double C = 1;
 	double y_scale = sqrt(3) / 2;
-	double y_offset = 100;
+	double y_offset = 0.0;
 
 	for (int i = 0; i < num_rows; i++)
 	{
@@ -364,8 +364,8 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-	//u = new Universe(0.001, 0.05, 0.5, 5505, 3);
-	u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
+	u = new Universe(0.001, 0.05, 0.5, 5505, 3);
+	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
 	{

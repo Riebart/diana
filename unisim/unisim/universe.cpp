@@ -413,8 +413,51 @@ void Universe::broadcast_vis_data()
         return;
     }
 
-    LOCK(vis_lock);
+    struct vis_client vc;
+    PO* o;
+    PO* ro;
     
+    LOCK(vis_lock);
+    for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
+    {
+        vc = *it;
+        visdata_msg.client_id = vc.client_id;
+        ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
+        bool disconnect = false;
+        
+        for (size_t i = 0; i < phys_objects.size(); i++)
+        {
+            o = phys_objects[i];
+            visdata_msg.server_id = o->phys_id;
+            visdata_msg.radius = o->radius;
+            visdata_msg.phys_id = o->phys_id;
+            visdata_msg.position = o->position;
+            
+            if (ro != NULL)
+            {
+                Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
+            }
+            
+            visdata_msg.orientation.w = o->forward.x;
+            visdata_msg.orientation.x = o->forward.y;
+            visdata_msg.orientation.y = o->up.x;
+            visdata_msg.orientation.z = o->up.y;
+            int64_t nbytes = visdata_msg.send(vc.socket);
+            
+            if (nbytes < 0)
+            {
+                vis_clients.erase(it);
+                printf("Client %d erased due to failed network send");
+                disconnect = true;
+                break;
+            }
+        }
+
+        if (!disconnect)
+        {
+            it++;
+        }
+    }
     UNLOCK(vis_lock);
 }
 
@@ -710,7 +753,7 @@ void Universe::tick(double dt)
     //! @todo Have some concept of collision destruction criteria here.
     //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
 
-    if ((phys_objects.size() > 1) && false)
+    if (phys_objects.size() > 1)
     {
         sort_aabb(dt, true);
 

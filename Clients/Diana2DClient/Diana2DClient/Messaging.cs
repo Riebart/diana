@@ -51,7 +51,7 @@ namespace Diana2DClient
             BSONReader br = new BSONReader(buf);
             BSONReader.Element el = br.GetNextElement();
 
-            if ((el.type != BSONReader.ElementType.Int32) || (el.str_val != "MsgType"))
+            if ((el.type != BSONReader.ElementType.Int32) || (el.name != "MsgType"))
             {
                 return null;
             }

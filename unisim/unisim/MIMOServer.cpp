@@ -51,7 +51,7 @@ int64_t MIMOServer::socket_read(int fd, char* buf, int64_t count)
     {
         //! @todo Maybe use recvmsg()?
         // Try to wait for all of the data, if possible.
-        curbytes = recv(fd, buf, (int)count, MSG_WAITALL);
+        curbytes = recv(fd, buf + (size_t)nbytes, (int)(count - nbytes), MSG_WAITALL);
         if (curbytes == -1)
         {
             // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
@@ -66,8 +66,22 @@ int64_t MIMOServer::socket_read(int fd, char* buf, int64_t count)
 
 int64_t MIMOServer::socket_write(int fd, char* buf, int64_t count)
 {
-    throw "NotImplemented";
-    return 0;
+    int64_t nbytes = 0;
+    int64_t curbytes;
+
+    while (nbytes < count)
+    {
+        curbytes = send(fd, buf + (size_t)nbytes, (int)(count - nbytes), 0);
+        if (curbytes == -1)
+        {
+            // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
+            nbytes *= -1;
+            break;
+        }
+        nbytes += curbytes;
+    }
+
+    return nbytes;
 }
 
 //! @todo Don't need to pass pointers, just the server which contains the other information.
