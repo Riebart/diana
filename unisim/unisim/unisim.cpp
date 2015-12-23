@@ -69,7 +69,7 @@ void pool_rack()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	position.x = 0.0;
-	position.y = 5.0;
+	position.y = objs[0]->position.y + cue_ball_radius;
 	position.z = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
 	u->add_object(obj);
@@ -364,7 +364,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, true);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, false);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try

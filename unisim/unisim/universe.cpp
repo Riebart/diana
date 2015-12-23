@@ -852,6 +852,7 @@ void Universe::tick(double dt)
 
                         if (phys_objects[i]->emits_gravity)
                         {
+                            // This is nicer to read than the iterator in the for loop method.
                             for (size_t k = 0; k < attractors.size(); k++)
                             {
                                 if (attractors[k]->phys_id == expired[j])
@@ -869,6 +870,13 @@ void Universe::tick(double dt)
                 }
             }
         }
+
+        sorted.resize(phys_objects.size());
+        for (size_t i = 1; i < phys_objects.size(); i++)
+        {
+            sorted[i - 1] = i;
+        }
+
         expired.clear();
         UNLOCK(expire_lock);
     }
