@@ -74,8 +74,8 @@ namespace Diana2DClient
         void SocketReader(object arg)
         {
             Smarty smarty = (Smarty)arg;
-            int srv_id = -1;
-            int client_id = -1;
+            Int64 srv_id = -1;
+            Int64 client_id = -1;
 
             if (smarty != null)
             {
@@ -143,8 +143,17 @@ namespace Diana2DClient
 
                 if (msg != null)
                 {
-                    if ((msg.id == -1) || ((updateList.Count > 0) &&
-                        (msg.id < updateList[updateList.Count - 1].id)))
+                    bool found = false;
+                    foreach (VisDataMessage m in updateList)
+                    {
+                        if (m.id == msg.id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found)
                     {
                         lock (bufferList)
                         {
@@ -182,76 +191,75 @@ namespace Diana2DClient
         {
             if (painting)
             {
-                List<VisDataMessage> tmp;
-
-                g.Clear(Color.LightGray);
-
-                int border = 0;
-                int canvasWidth = this.ClientSize.Width / 2 - border;
-                int canvasHeight = this.ClientSize.Height / 2 - border;
-
-                double xExtent, yExtent;
-
-                if (this.ClientSize.Width < this.ClientSize.Height)
-                {
-                    xExtent = minExtent;
-                    yExtent = ((this.ClientSize.Height * 1.0 / this.ClientSize.Width) * minExtent);
-                }
-                else
-                {
-                    xExtent = ((this.ClientSize.Width * 1.0 / this.ClientSize.Height) * minExtent);
-                    yExtent = minExtent;
-                }
-
-                if (moving)
-                {
-                    Point cursorPos = this.PointToClient(Cursor.Position);
-
-                    focusX = centreX - 2 * (mouseDownX - cursorPos.X) * (xExtent / this.ClientSize.Width);
-                    focusY = centreY - 2 * (mouseDownY - cursorPos.Y) * (yExtent / this.ClientSize.Height);
-                }
-                else
-                {
-                    focusX = centreX;
-                    focusY = centreY;
-                }
-
-                lblViewCoords.Text = "(" + (int)(focusX - xExtent) + "," + (int)(focusX + xExtent) + ") , (" + (int)(focusY - yExtent) + "," + (int)(focusY + yExtent) + ")";
-
-                foreach (VisDataMessage v in drawList)
-                {
-                    if (v.id == -1)
-                    {
-                        continue;
-                    }
-
-                    double rX = Math.Max(1.0, canvasWidth * v.radius / xExtent);
-                    double rY = Math.Max(1.0, canvasHeight * v.radius / yExtent);
-                    double x = (1 + (focusX - v.pX) / xExtent) * canvasWidth + border - rX;
-                    double y = (1 + (focusY - v.pY) / yExtent) * canvasHeight + border - rY;
-
-                    // Do some basic clipping testing.
-                    if ((x + 2 * rX < 0) || (x - 2 * rX > this.ClientSize.Width))
-                        continue;
-
-                    if ((y + 2 * rY < 0) || (y - 2 * rY > this.ClientSize.Height))
-                        continue;
-
-                    g.DrawEllipse(pen, (float)x, (float)y, 2 * (float)rX, 2 * (float)rY);
-                }
-
-                this.lblNumMessages.Text = "" + numSwaps;
-                //numSwaps = 0;
-
                 if (newData)
                 {
                     lock (bufferList)
                     {
+                        List<VisDataMessage> tmp;
                         tmp = bufferList;
                         bufferList = drawList;
                         drawList = tmp;
                         newData = false;
                     }
+
+                    g.Clear(Color.LightGray);
+
+                    int border = 0;
+                    int canvasWidth = this.ClientSize.Width / 2 - border;
+                    int canvasHeight = this.ClientSize.Height / 2 - border;
+
+                    double xExtent, yExtent;
+
+                    if (this.ClientSize.Width < this.ClientSize.Height)
+                    {
+                        xExtent = minExtent;
+                        yExtent = ((this.ClientSize.Height * 1.0 / this.ClientSize.Width) * minExtent);
+                    }
+                    else
+                    {
+                        xExtent = ((this.ClientSize.Width * 1.0 / this.ClientSize.Height) * minExtent);
+                        yExtent = minExtent;
+                    }
+
+                    if (moving)
+                    {
+                        Point cursorPos = this.PointToClient(Cursor.Position);
+
+                        focusX = centreX - 2 * (mouseDownX - cursorPos.X) * (xExtent / this.ClientSize.Width);
+                        focusY = centreY - 2 * (mouseDownY - cursorPos.Y) * (yExtent / this.ClientSize.Height);
+                    }
+                    else
+                    {
+                        focusX = centreX;
+                        focusY = centreY;
+                    }
+
+                    lblViewCoords.Text = "(" + (int)(focusX - xExtent) + "," + (int)(focusX + xExtent) + ") , (" + (int)(focusY - yExtent) + "," + (int)(focusY + yExtent) + ")";
+
+                    foreach (VisDataMessage v in drawList)
+                    {
+                        if (v.id == -1)
+                        {
+                            continue;
+                        }
+
+                        double rX = Math.Max(1.0, canvasWidth * v.radius / xExtent);
+                        double rY = Math.Max(1.0, canvasHeight * v.radius / yExtent);
+                        double x = (1 + (focusX - v.position.X) / xExtent) * canvasWidth + border - rX;
+                        double y = (1 + (focusY - v.position.Y) / yExtent) * canvasHeight + border - rY;
+
+                        // Do some basic clipping testing.
+                        if ((x + 2 * rX < 0) || (x - 2 * rX > this.ClientSize.Width))
+                            continue;
+
+                        if ((y + 2 * rY < 0) || (y - 2 * rY > this.ClientSize.Height))
+                            continue;
+
+                        g.DrawEllipse(pen, (float)x, (float)y, 2 * (float)rX, 2 * (float)rY);
+                    }
+
+                    this.lblNumMessages.Text = "" + numSwaps;
+                    //numSwaps = 0;
                 }
             }
         }

@@ -8,123 +8,110 @@ namespace Diana2DClient
 {
     class Message
     {
-        internal int osim_id;
-        internal int client_id;
-
-        static Dictionary<string, Func<string[], Message>> messageMap = new Dictionary<string, Func<string[], Message>>()
+        public enum MessageType : int
         {
-            { "VISDATA", VisDataMessage.Build },
-            { "HELLO", HelloMessage.Build },
-            { "GOODBYE", GoodbyeMessage.Build },
-            { "DIRECTORY", DirectoryMessage.Build },
-            { "NAME", NameMessage.Build },
-            { "READY", ReadyMessage.Build }
+            Reservedx00 = 0, Hello = 1, PhysicalProperties = 2, VisualProperties = 3, VisualDataEnable = 4,
+            VisualMetaDataEnable = 5, VisualMetaData = 6, VisualData = 7, Beam = 8, Collision = 9,
+            Spawn = 10, ScanResult = 11, ScanQuery = 12, ScanResponse = 13, Goodbye = 14,
+            Directory = 15, Name = 16, Ready = 17, Thrust = 18, Velocity = 19, Jump = 20,
+            InfoUpdate = 21, RequestUpdate = 22
+        };
+
+        internal Int64 osim_id;
+        internal Int64 client_id;
+
+        static Dictionary<MessageType, Func<BSONReader, Message>> messageMap = new Dictionary<MessageType, Func<BSONReader, Message>>()
+        {
+            { MessageType.VisualData, VisDataMessage.Build },
+            { MessageType.Hello, HelloMessage.Build },
+            { MessageType.Goodbye, GoodbyeMessage.Build },
+            { MessageType.Directory, DirectoryMessage.Build },
+            { MessageType.Name, NameMessage.Build },
+            { MessageType.Ready, ReadyMessage.Build }
         };
 
         internal static Message GetMessage(Stream s)
         {
-            byte[] buf = new byte[10];
-            int numRead = -1;
-
+            byte[] buf = new byte[4];
+            
             try
             {
-                numRead = 0;
-                while (numRead < 10)
-                {
-                    numRead += s.Read(buf, numRead, 10 - numRead);
-                }
+                s.Read(buf, 0, 4);
             }
             catch (System.IO.IOException)
             {
                 return null;
             }
+            
+            Int32 msg_len = BitConverter.ToInt32(buf, 0);
+            buf = new byte[msg_len];
+            s.Read(buf, 4, msg_len - 4);
+            Array.Copy(BitConverter.GetBytes(msg_len), 0, buf, 0, 4);
 
-            if (numRead == 0)
+            BSONReader br = new BSONReader(buf);
+            BSONReader.Element el = br.GetNextElement();
+
+            if ((el.type != BSONReader.ElementType.Int32) || (el.name != "MsgType"))
             {
                 return null;
             }
-
-            int numBytes = int.Parse(System.Text.Encoding.Default.GetString(buf));
-
-            buf = new byte[numBytes];
-            try
-            {
-                numRead = 0;
-                while (numRead < numBytes)
-                {
-                    numRead += s.Read(buf, numRead, numBytes - numRead);
-                }
-            }
-            catch (System.IO.IOException)
-            {
-                return null;
-            }
-
-            if (numRead == 0)
-            {
-                return null;
-            }
-
-            string[] msg = System.Text.Encoding.Default.GetString(buf).Split(new char[] { '\n' });
-            Message msgObj = Message.messageMap[msg[2]](msg);
-
-            return msgObj;
+            
+            return messageMap[(MessageType)el.i32_val](br);
         }
-
-        internal static bool SendMessage(Stream s, string msg)
+        
+        internal static bool SendMessage(Stream s, byte[] msg)
         {
-            string full_msg = msg.Length.ToString("000000000") + "\n" + msg;
-            byte[] bytes = System.Text.Encoding.ASCII.GetBytes(full_msg);
-            s.Write(bytes, 0, bytes.Length);
+            s.Write(msg, 0, msg.Length);
             s.Flush();
-
             return true;
         }
     }
 
     class VisDataEnableMessage : Message
     {
-        internal static bool Send(Stream s, int osim_id, int client_id, bool enable)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, bool enable)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                (client_id != -1 ? client_id + "\n" : "\n") + "VISDATAENABLE\n" + (enable ? 1 : 0) + "\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.VisualDataEnable);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            bw.Push(enable);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
     class VisDataMessage : Message
     {
         static byte[] buffer = new byte[4096];
-        public int id;
-        public double radius, pX, pY, pZ, oFX, oFY, oUX, oUY;
+        public Int64 id;
+        public double radius;
+        public Vector3D position;
+        public Vector4D orientation;
 
-        internal VisDataMessage(string[] msg)
+        internal VisDataMessage(BSONReader br)
         {
-            if (msg[3] == "-1")
-            {
-                Init(-1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-            }
-            else
-            {
-                Init(int.Parse(msg[3]), double.Parse(msg[4]), double.Parse(msg[5]), double.Parse(msg[6]), double.Parse(msg[7]), double.Parse(msg[8]), double.Parse(msg[9]), double.Parse(msg[10]), double.Parse(msg[10]));
-            }
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
+            id = br.GetNextElement().i64_val;
+            radius = br.GetNextElement().dbl_val;
+
+            position = new Vector3D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
+            
+            orientation = new Vector4D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new VisDataMessage(msg);
-        }
-
-        void Init(int id, double radius, double pX, double pY, double pZ, double oFX, double oFY, double oUX, double oUY)
-        {
-            this.id = id;
-            this.radius = radius;
-            this.pX = pX;
-            this.pY = pY;
-            this.pZ = pZ;
-            this.oFX = oFX;
-            this.oFY = oFY;
-            this.oUX = oUX;
-            this.oUY = oUY;
+            return new VisDataMessage(br);
         }
 
         internal static bool Send(Stream s)
@@ -135,86 +122,93 @@ namespace Diana2DClient
 
     class HelloMessage : Message
     {
-        internal HelloMessage(string[] msg)
+        internal HelloMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new HelloMessage(msg);
+            return new HelloMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                                          (client_id != -1 ? client_id + "\n" : "\n") + "HELLO\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.Hello);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
     class GoodbyeMessage : Message
     {
-        internal GoodbyeMessage(string[] msg)
+        internal GoodbyeMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new GoodbyeMessage(msg);
+            return new GoodbyeMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                              (client_id != -1 ? client_id + "\n" : "\n") + "GOODBYE\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.Goodbye);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
     class DirectoryMessage : Message
     {
+        string item_type;
         bool is_ships;
-        internal int[] ids;
+        internal Int64[] ids;
         internal string[] names;
 
-        internal DirectoryMessage(string[] msg)
+        internal DirectoryMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
+            item_type = br.GetNextElement().str_val;
+            is_ships = item_type.Equals("SHIP");
+            Int64 item_count = br.GetNextElement().i64_val;
+            ids = new Int64[item_count];
+            names = new string[item_count];
 
-            is_ships = (msg[3] == "SHIP");
-            ids = new int[(msg.Length - 4) / 2];
-            names = new string[(msg.Length - 4) / 2];
-
-            for (int i = 4; i < msg.Length - (msg.Length % 2); i += 2)
+            for (int i = 0; i < item_count; i++)
             {
-                ids[(i - 4) / 2] = int.Parse(msg[i]);
-                names[(i - 4) / 2] = msg[i + 1];
+                ids[i] = br.GetNextElement().i64_val;
+                names[i] = br.GetNextElement().str_val;
+                
             }
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new DirectoryMessage(msg);
+            return new DirectoryMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id, string type, int[] ids, string[] names)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string type, Int64[] ids, string[] names)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append((osim_id != -1 ? osim_id + "\n" : "\n") +
-                              (client_id != -1 ? client_id + "\n" : "\n") + "DIRECTORY\n" + type + "\n");
-
-            if ((ids != null) && (names != null))
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.Directory);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            bw.Push(type);
+            for (int i = 0; i < ids.Length; i++)
             {
-                for (int i = 0; i < ids.Length; i++)
-                {
-                    sb.Append(ids[i] + "\n" + names[i] + "\n");
-                }
+                bw.Push(ids[i]);
+                bw.Push(names[i]);
             }
-
-            return Message.SendMessage(s, sb.ToString());
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
@@ -222,22 +216,26 @@ namespace Diana2DClient
     {
         string name;
 
-        internal NameMessage(string[] msg)
+        internal NameMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
-            name = msg[3];
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
+            name = br.GetNextElement().str_val;
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new NameMessage(msg);
+            return new NameMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id, string name)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string name)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                                          (client_id != -1 ? client_id + "\n" : "\n") + "NAME\n" + name + "\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.Name);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            bw.Push(name);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
@@ -245,94 +243,105 @@ namespace Diana2DClient
     {
         bool ready;
 
-        internal ReadyMessage(string[] msg)
+        internal ReadyMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
-            ready = (msg[3] == "1" ? true : false);
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
+            ready = br.GetNextElement().bln_val;
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new ReadyMessage(msg);
+            return new ReadyMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id, bool ready)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, bool ready)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                (client_id != -1 ? client_id + "\n" : "\n") + "READY\n" + (ready ? "1" : "0") + "\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.Name);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            bw.Push(ready);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 
     class PhysicalPropertiesMessage : Message
     {
-        string objectType;
+        string object_type;
         double mass, radius;
-        Vector3D position, velocity, thrust, orientation;
+        Vector3D position, velocity, thrust;
+        Vector4D orientation;
 
-        internal PhysicalPropertiesMessage(string[] msg)
+        internal PhysicalPropertiesMessage(BSONReader br)
         {
-            osim_id = (msg[0] == "" ? -1 : int.Parse(msg[0]));
-            client_id = (msg[1] == "" ? -1 : int.Parse(msg[1]));
-            objectType = msg[3];
+            osim_id = br.GetNextElement().i64_val;
+            client_id = br.GetNextElement().i64_val;
+            object_type = br.GetNextElement().str_val;
+            mass = br.GetNextElement().dbl_val;
 
-            mass = (msg[4] == "" ? double.NaN : double.Parse(msg[4]));
+            position = new Vector3D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
 
-            if (msg[5] == "")
-            {
-                position = null;
-            }
-            else
-            {
-                position = new Vector3D(double.Parse(msg[5]), double.Parse(msg[6]), double.Parse(msg[7]));
-            }
+            velocity = new Vector3D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
 
-            if (msg[5] == "")
-            {
-                velocity = null;
-            }
-            else
-            {
-                velocity = new Vector3D(double.Parse(msg[8]), double.Parse(msg[9]), double.Parse(msg[10]));
-            }
+            thrust = new Vector3D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
 
-            if (msg[5] == "")
-            {
-                orientation = null;
-            }
-            else
-            {
-                orientation = new Vector3D(double.Parse(msg[11]), double.Parse(msg[12]), double.Parse(msg[13]));
-            }
+            orientation = new Vector4D(
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val,
+                br.GetNextElement().dbl_val
+                );
 
-            if (msg[5] == "")
-            {
-                thrust = null;
-            }
-            else
-            {
-                thrust = new Vector3D(double.Parse(msg[14]), double.Parse(msg[15]), double.Parse(msg[16]));
-            }
-
-            radius = (msg[16] == "" ? double.NaN : double.Parse(msg[17]));
+            radius = br.GetNextElement().dbl_val;
         }
 
-        internal static Message Build(string[] msg)
+        internal static Message Build(BSONReader br)
         {
-            return new PhysicalPropertiesMessage(msg);
+            return new PhysicalPropertiesMessage(br);
         }
 
-        internal static bool Send(Stream s, int osim_id, int client_id, string object_type, double mass, double radius,
-                                  Vector3D position, Vector3D velocity, Vector3D orientation, Vector3D thrust)
+        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string object_type, double mass, double radius,
+                                  Vector3D position, Vector3D velocity, Vector4D orientation, Vector3D thrust)
         {
-            return Message.SendMessage(s, (osim_id != -1 ? osim_id + "\n" : "\n") +
-                (client_id != -1 ? client_id + "\n" : "\n") + "PHYSPROPS\n" + object_type + "\n" +
-                (double.IsNaN(mass) ? "" : mass.ToString()) + "\n" +
-                (position == null ? "\n\n\n" : position.X + "\n" + position.Y + "\n" + position.Z + "\n") +
-                (velocity == null ? "\n\n\n" : velocity.X + "\n" + velocity.Y + "\n" + velocity.Z + "\n") +
-                (orientation == null ? "\n\n\n" : orientation.X + "\n" + orientation.Y + "\n" + orientation.Z + "\n") +
-                (thrust == null ? "\n\n\n" : thrust.X + "\n" + thrust.Y + "\n" + thrust.Z + "\n") +
-                (double.IsNaN(radius) ? "" : radius.ToString()) + "\n");
+            BSONWriter bw = new BSONWriter();
+            bw.Push("MsgType", (Int32)Message.MessageType.PhysicalProperties);
+            bw.Push(osim_id);
+            bw.Push(client_id);
+            bw.Push(object_type);
+            bw.Push(mass);
+
+            bw.Push(position.X);
+            bw.Push(position.Y);
+            bw.Push(position.Z);
+
+            bw.Push(velocity.X);
+            bw.Push(velocity.Y);
+            bw.Push(velocity.Z);
+
+            bw.Push(orientation.W);
+            bw.Push(orientation.X);
+            bw.Push(orientation.Y);
+            bw.Push(orientation.Z);
+
+            bw.Push(thrust.X);
+            bw.Push(thrust.Y);
+            bw.Push(thrust.Z);
+
+            bw.Push(radius);
+            return Message.SendMessage(s, bw.PushEnd());
         }
     }
 }

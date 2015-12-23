@@ -13,8 +13,8 @@ namespace Diana2DClient
     {
         TcpClient client;
         Stream s;
-        internal int osim_id;
-        internal int client_id;
+        internal Int64 osim_id;
+        internal Int64 client_id;
 
         public Smarty()
         {
@@ -45,15 +45,15 @@ namespace Diana2DClient
             return true;
         }
 
-        internal int CaptainNewShip(int id, string name)
+        internal Int64 CaptainNewShip(Int64 id, string name)
         {
-            DirectoryMessage.Send(s, osim_id, client_id, "CLASS", new int[] { id }, new string[] { name });
+            DirectoryMessage.Send(s, osim_id, client_id, "CLASS", new Int64[] { id }, new string[] { name });
             Message helloBack = Message.GetMessage(s);
             osim_id = helloBack.osim_id;
             return osim_id;
         }
 
-        internal void ListShips(out int[] ids, out string[] names)
+        internal void ListShips(out Int64[] ids, out string[] names)
         {
             DirectoryMessage.Send(s, osim_id, client_id, "SHIP", null, null);
             DirectoryMessage dmsg = (DirectoryMessage)Message.GetMessage(s);
@@ -62,7 +62,7 @@ namespace Diana2DClient
             names = dmsg.names;
         }
 
-        internal void ListClasses(out int[] ids, out string[] names)
+        internal void ListClasses(out Int64[] ids, out string[] names)
         {
             DirectoryMessage.Send(s, osim_id, client_id, "CLASS", null, null);
             DirectoryMessage dmsg = (DirectoryMessage)Message.GetMessage(s);
@@ -89,9 +89,9 @@ namespace Diana2DClient
             NameMessage.Send(s, osim_id, client_id, name);
         }
 
-        internal int JoinShip(int id, string name)
+        internal Int64 JoinShip(Int64 id, string name)
         {
-            DirectoryMessage.Send(s, osim_id, client_id, "SHIP", new int[] { id }, new string[] { name });
+            DirectoryMessage.Send(s, osim_id, client_id, "SHIP", new Int64[] { id }, new string[] { name });
             Message helloBack = Message.GetMessage(s);
             osim_id = helloBack.osim_id;
             return osim_id;
@@ -140,7 +140,7 @@ namespace Diana2DClient
             return (IPEndPoint)client.Client.RemoteEndPoint;
         }
 
-        internal int GetConnection(out TcpClient client, out Stream s)
+        internal Int64 GetConnection(out TcpClient client, out Stream s)
         {
             client = new TcpClient();
             client.ReceiveTimeout = 1000;
@@ -150,12 +150,12 @@ namespace Diana2DClient
             HelloMessage.Send(s, -1, -1);
             Message helloback = (HelloMessage)Message.GetMessage(s);
 
-            int visClientID = helloback.client_id;
+            Int64 visClientID = helloback.client_id;
 
             return visClientID;
         }
 
-        internal void Disconnect(TcpClient client, Stream s, int clientID)
+        internal void Disconnect(TcpClient client, Stream s, Int64 clientID)
         {
             GoodbyeMessage.Send(s, osim_id, clientID);
             s.Flush();
@@ -163,14 +163,14 @@ namespace Diana2DClient
             client.Close();
         }
 
-        internal int ConnectToVisData(Stream s)
+        internal Int64 ConnectToVisData(Stream s)
         {
             HelloMessage.Send(s, -1, -1);
             Message helloback = (HelloMessage)Message.GetMessage(s);
 
-            int visClientID = helloback.client_id;
+            Int64 visClientID = helloback.client_id;
 
-            DirectoryMessage.Send(s, -1, visClientID, "SHIP", new int[] { osim_id }, new string[] { "" });
+            DirectoryMessage.Send(s, -1, visClientID, "SHIP", new Int64[] { osim_id }, new string[] { "" });
             Message.GetMessage(s); // Eat up the hello that comes back.
             VisDataEnableMessage.Send(s, osim_id, visClientID, true);
 

@@ -260,4 +260,73 @@ namespace Diana2DClient
 
         #endregion
     }
+
+    public class Vector4D
+    {
+        public static Vector4D Zero = new Vector4D(0, 0, 0, 0);
+
+        /// <summary>
+        /// Retrieves or sets the w component of a 4-D vector
+        /// </summary>
+        public double W
+        {
+            get { return W; }
+            set { W = value; }
+        }
+        
+        /// <summary>
+        /// Retrieves or sets the x component of a 4-D vector
+        /// </summary>
+        public double X
+        {
+            get { return x; }
+            set { x = value; }
+        }
+
+        /// <summary>
+        /// Retrieves or sets the y component of a 4-D vector
+        /// </summary>
+        public double Y
+        {
+            get { return y; }
+            set { y = value; }
+        }
+
+        /// <summary>
+        /// Retrieves or sets the z component of a 4-D vector
+        /// </summary>
+        public double Z
+        {
+            get { return z; }
+            set { z = value; }
+        }
+
+        double w;
+        double x;
+        double y;
+        double z;
+
+        /// <summary>
+        /// Default argument-free constructor.
+        /// </summary>
+        public Vector4D()
+        {
+        }
+
+        /// <summary>
+        /// Construct a double-precision 4-D vector from three coordiantes.
+        /// </summary>
+        /// <param name="w">W coordinate</param>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordiante</param>
+        /// <param name="z">Z coordinate</param>
+        public Vector4D(double w, double x, double y, double z)
+        {
+            this.w = w;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+    }
 }

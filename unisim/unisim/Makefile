@@ -1,10 +1,9 @@
 CXX=g++
-# Note that there aren't 32-bit protobuf libraries included, so building on 32-bit platforms won't work.
-INCLUDE_DIR=-I . -I libodb/src/include -I google/protobuf
-CFLAGS=-O3 -Wall -g -pthread -fopenmp
-FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp ../../protocols/universe.pb.cc
+INCLUDE_DIR=-I . -I libodb/src/include
+CFLAGS=-O3 -Wall -g -pthread -fopenmp -std=c++11
+FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp
 EXT_LIBS=-lodb -Llibodb/linux-x64
-EXT_ST_LIBS=google/linux-x64/libprotobuf-lite.a
+EXT_ST_LIBS=
 
 all: unisim-bin
 

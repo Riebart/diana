@@ -1,6 +1,7 @@
 #ifndef MIMOSERVER_HPP
 #define MIMOSERVER_HPP
 
+//! @todo These can probably be moved to the cpp file, and just have prototypes here.
 #include <map>
 #include <vector>
 #include <stdint.h>
@@ -33,6 +34,10 @@ public:
 	void start();
 	void stop();
 	void hungup(int32_t c);
+
+    // Also provide a few convenience socket reading functions
+    static int64_t socket_read(int fd, char* buf, int64_t count);
+    static int64_t socket_write(int fd, char* buf, int64_t count);
 
 private:
 	void hangup(int32_t c);

@@ -1,6 +1,8 @@
 #include "universe.hpp"
+#include "messaging.hpp"
 
 #include <stdio.h>
+#include <algorithm>
 
 #ifdef CPP11THREADS
 #include <chrono>
@@ -17,6 +19,7 @@
 #define THREAD_JOIN(t) pthread_join(t, NULL)
 #endif
 
+#define GRAVITATIONAL_CONSTANT  6.67384e-11
 #define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -32,7 +35,7 @@ typedef struct Vector3 V3;
 
 void gravity(V3* out, PO* big, PO* small)
 {
-    double m = 6.67384e-11 * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
+    double m = GRAVITATIONAL_CONSTANT * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
     Vector3_ray(out, &small->position, &big->position);
     Vector3_scale(out, m);
 }
@@ -128,6 +131,65 @@ void* sim(void* uV)
     return NULL;
 }
 
+void* vis_data_thread(void* argV)
+{
+    Universe* u = (Universe*)argV;
+
+#ifdef CPP11THREADS
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    std::chrono::duration<double> elapsed;
+#else
+    struct timeb start, end;
+#endif
+    
+    while (u->running)
+    {
+        // If we're paused, then just sleep. We're not picky on how long we sleep for.
+        // Sleep for max_frametime time so that we're responsive to unpausing, but not
+        // waking up too often.
+        if (u->visdata_paused)
+        {
+#ifdef CPP11THREADS
+            std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+#else
+            usleep((uint32_t)(1000000 * u->max_frametime));
+#endif
+            continue;
+        }
+
+#ifdef CPP11THREADS
+        start = std::chrono::high_resolution_clock::now();
+        u->broadcast_vis_data();
+        end = std::chrono::high_resolution_clock::now();
+
+        elapsed = end - start;
+        double e = elapsed.count();
+#else
+        ftime(&start);
+        u->broadcast_vis_data();
+        ftime(&end);
+        double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
+        
+        // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
+        if (e < u->min_vis_frametime)
+        {
+#ifdef CPP11THREADS
+            std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_vis_frametime - e))));
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            e = elapsed.count();
+#else
+            usleep((uint32_t)(1000000 * (u->min_vis_frametime - e)));
+            ftime(&end);
+            e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
+        }
+    }
+
+    return NULL;
+}
+
 void Universe_hangup_objects(int32_t c, void* arg)
 {
     Universe* u = (Universe*)arg;
@@ -140,7 +202,18 @@ void Universe_handle_message(int32_t c, void* arg)
     u->handle_message(c);
 }
 
-//! @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+/// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
+/// @in min_frametime Minimum time in the simulation between physics ticks, regardles of the real wall clock time of a physics tick.
+///    If this is set to a value lower than the wall-clock time of a physics tick, then the simulation thread will fully utilize the available CPU resources.
+///    To achieve a sense of throttling, set this to a value above the typical wall-clock time to cause the simulation thread to sleep between ticks.
+/// @in max_frametime Maximum time allowed to pass by in the simulation in a single tick.
+///    If this is less than the wall clock time, it will result in a perceived slowdown of the simulation.
+/// @in min_vis_frametime The minimum time between visualization updates, reduces load on the physics server.
+/// @in port TCP port to listen on when start_net() is called.
+/// @in num_threads Number of threads to use for collision detection, no more than 4 is recommended (there's no gains at that point)
+/// @in rate Multiplier used to scale the time-tick in the simulation. Most useful in conjunction with realtime.
+/// @in realtime If set to true, then the simulation attempts to pass in real time, with physics ticks sleeping to match wall-clock time if necessary.
+/// The constructor to initialize a universe for physics simulation.
 Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
 {
     this->rate = rate;
@@ -182,6 +255,10 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     num_ticks = 0;
     total_objs = 1;
 
+    paused = true;
+    visdata_paused = true;
+    running = false;
+
     net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, port);
 }
 
@@ -193,6 +270,7 @@ Universe::~Universe()
     }
 
     sched->block_until_done();
+    free(phys_worker_args);
 
     stop_net();
     stop_sim();
@@ -215,7 +293,9 @@ void Universe::start_sim()
     {
         running = true;
         paused = false;
+        visdata_paused = false;
         THREAD_CREATE(sim_thread, sim, (void*)this);
+        THREAD_CREATE(vis_thread, vis_data_thread, (void*)this);
     }
 }
 
@@ -224,10 +304,16 @@ void Universe::pause_sim()
     paused = true;
 }
 
+void Universe::pause_visdata()
+{
+    visdata_paused = true;
+}
+
 void Universe::stop_sim()
 {
     running = false;
     THREAD_JOIN(sim_thread);
+    THREAD_JOIN(vis_thread);
 }
 
 void Universe::get_frametime(double* out)
@@ -294,9 +380,126 @@ void Universe::hangup_objects(int32_t c)
     UNLOCK(expire_lock);
 }
 
+void Universe::register_vis_client(struct vis_client vc, bool enabled)
+{
+    //! @todo Remove the linear searches here
+    LOCK(vis_lock);
+    
+    // Try to find the one we're looking for.
+    std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc,
+        [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
+
+    bool found = (vis_clients.size() == 0 ? false : (memcmp(&vc, &*it, sizeof(struct vis_client)) == 0));
+    
+    if (enabled && !found)
+    {
+        // If we find it, push it onto the back and re-sort the list.
+        vis_clients.push_back(vc);
+        std::sort(vis_clients.begin(), vis_clients.end(),
+            [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
+    }
+    else if (!enabled && found)
+    {
+        vis_clients.erase(it);
+    }
+    UNLOCK(vis_lock);
+}
+
+void Universe::broadcast_vis_data()
+{
+    //! @todo Should we acquire a physics lock here? Maybe, maybe not?
+    if (vis_clients.size() == 0)
+    {
+        return;
+    }
+
+    struct vis_client vc;
+    PO* o;
+    PO* ro;
+    
+    LOCK(vis_lock);
+    for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
+    {
+        vc = *it;
+        visdata_msg.client_id = vc.client_id;
+        ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
+        bool disconnect = false;
+        
+        for (size_t i = 0; i < phys_objects.size(); i++)
+        {
+            o = phys_objects[i];
+            visdata_msg.server_id = o->phys_id;
+            visdata_msg.radius = o->radius;
+            visdata_msg.phys_id = o->phys_id;
+            visdata_msg.position = o->position;
+            
+            if (ro != NULL)
+            {
+                Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
+            }
+            
+            visdata_msg.orientation.w = o->forward.x;
+            visdata_msg.orientation.x = o->forward.y;
+            visdata_msg.orientation.y = o->up.x;
+            visdata_msg.orientation.z = o->up.y;
+            int64_t nbytes = visdata_msg.send(vc.socket);
+            
+            if (nbytes < 0)
+            {
+                vis_clients.erase(it);
+                printf("Client %d erased due to failed network send");
+                disconnect = true;
+                break;
+            }
+        }
+
+        if (!disconnect)
+        {
+            it++;
+        }
+    }
+    UNLOCK(vis_lock);
+}
+
 void Universe::handle_message(int32_t c)
 {
-    throw "Universe::handle_message";
+    BSONMessage* msg_base = BSONMessage::ReadMessage(c);
+
+    printf("Received message of type %d from client %d\n", msg_base->msg_type, c);
+
+    switch (msg_base->msg_type)
+    {
+    case BSONMessage::MessageType::VisualDataEnable:
+    {
+        VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
+        printf("Client %d %s for VisData\n", c, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
+        struct vis_client vc;
+        vc.socket = c;
+        vc.client_id = msg->client_id;
+        vc.phys_id = msg->server_id;
+        register_vis_client(vc, msg->enabled);
+        break;
+    }
+    case BSONMessage::MessageType::Spawn:
+    {
+        SpawnMsg* msg = (SpawnMsg*)msg_base;
+        break;
+    }
+    case BSONMessage::MessageType::ScanResponse:
+    {
+        ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
+        break;
+    }
+    case BSONMessage::MessageType::Hello:
+    {
+        HelloMsg* msg = (HelloMsg*)msg_base;
+        break;
+    }
+    default:
+        throw "Universe::UnrecognizedMessageType";
+    }
+
+    delete msg_base;
 }
 
 void Universe::get_grav_pull(V3* g, PO* obj)
@@ -334,7 +537,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
         if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
             (phys_result.e > COLLISION_ENERGY_CUTOFF))
         {
-            //! @todo Messaging in the tick is going to be back for performance.
+            //! @todo Messaging in the tick is going to be bad for performance.
 #if _WIN64 || __x86_64__
             fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
@@ -342,6 +545,10 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
 #endif
             PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
             PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
+
+            //! @todo This should probably be done asynchronously, out of the physics code,
+            //! But I don't think, in general, this will cause much of a problem for a 60hz
+            //! physics refresh rate.
 
             if (obj1->type == PHYSOBJECT_SMART)
             {
@@ -375,7 +582,7 @@ void check_collision_loop(void* argsV)
     end = MIN(end, u->sorted.size() - 1);
 
     for (size_t i = args->offset; i < end; i++)
-    //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
+        //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
     {
         // In order for a full intersection to be possible, there has to be intersection
         // of the AABBs in all three dimensions. The sorted list contains the objects'
@@ -413,8 +620,9 @@ void check_collision_loop(void* argsV)
                 }
 
                 // If we succeeded on both, count this as a potential collision for
-                // honest-to-goodness testing.
-                check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[i]], args->dt);
+                // honest-to-goodness testing and hand it off to bounding-ball testing
+                // followed by collision effect calculation.
+                check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[j]], args->dt);
             }
             else
             {
@@ -449,7 +657,7 @@ void Universe::sort_aabb(double dt, bool calc)
     // Employs gnome sort to sort the lists, computing the bounding boxes along the way
     // http://en.wikipedia.org/wiki/Gnome_sort
 
-    uint64_t box_swap;
+    size_t box_swap;
     size_t max_so_far = 0;
 
     if (calc)
@@ -498,9 +706,6 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     struct BeamCollisionResult beam_result;
     struct PhysCollisionResult phys_result;
 
-    u->get_grav_pull(&g, o);
-    PhysicsObject_tick(o, &g, dt);
-
     struct Beam* b;
 
     for (size_t bi = 0; bi < u->beams.size(); bi++)
@@ -524,6 +729,9 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
             //! @todo Beam collision messages
         }
     }
+
+    u->get_grav_pull(&g, o);
+    PhysicsObject_tick(o, &g, dt);
 }
 
 void Universe::tick(double dt)
@@ -543,16 +751,19 @@ void Universe::tick(double dt)
 
     //! @todo Multi-level collisoin detecitons in the tick.
     //! @todo Have some concept of collision destruction criteria here.
+    //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
 
     if (phys_objects.size() > 1)
     {
         sort_aabb(dt, true);
 
-        int n = phys_objects.size() / MIN_OBJECTS_PER_THREAD;
+        int32_t n = (int32_t)(phys_objects.size() / MIN_OBJECTS_PER_THREAD);
         n = MAX(0, MIN(num_threads - 1, n));
 
         // If we're using more than 1 thread, try to split them evenly.
-        int d = phys_objects.size() / (n + 1);
+        // Note that this clamps (rounds) down in absolute value, so we'll have extra slack
+        // that we'll need to pick up at the end.
+        int32_t d = (int32_t)(phys_objects.size() / (n + 1));
 
         for (int i = 0; i < n; i++)
         {
@@ -565,7 +776,9 @@ void Universe::tick(double dt)
 
         // Save one work unit for this thread, so it isn't just sitting doing nothing useful.
         phys_worker_args[n].offset = n * d;
-        phys_worker_args[n].stride = d;
+        // Also note that it has to pick up slack objcts not accounted for by the other threads
+        // There's at most num_threads-1 such slack, so it isn't going to affect computation time a lot.
+        phys_worker_args[n].stride = phys_objects.size() - (n * d);
         phys_worker_args[n].dt = dt;
         check_collision_loop(&phys_worker_args[n]);
 
@@ -619,6 +832,12 @@ void Universe::tick(double dt)
                         {
                             if (beams[k]->phys_id == expired[j])
                             {
+                                if (beams[k]->scan_target != NULL)
+                                {
+                                    // Remember, we cloned the object we're interested in into the scan_target
+                                    // to prevent a use-after-free, so free that here.
+                                    free(beams[k]->scan_target);
+                                }
                                 beams.erase(beams.begin() + k);
                                 break;
                             }
@@ -633,6 +852,7 @@ void Universe::tick(double dt)
 
                         if (phys_objects[i]->emits_gravity)
                         {
+                            // This is nicer to read than the iterator in the for loop method.
                             for (size_t k = 0; k < attractors.size(); k++)
                             {
                                 if (attractors[k]->phys_id == expired[j])
@@ -642,14 +862,21 @@ void Universe::tick(double dt)
                                 }
                             }
                         }
-
-                        phys_objects.erase(phys_objects.begin() + i);
-                        backtrack = true;
                     }
+                    free(phys_objects[i]);
+                    phys_objects.erase(phys_objects.begin() + i);
+                    backtrack = true;
                     continue;
                 }
             }
         }
+
+        sorted.resize(phys_objects.size());
+        for (size_t i = 1; i < phys_objects.size(); i++)
+        {
+            sorted[i - 1] = i;
+        }
+
         expired.clear();
         UNLOCK(expire_lock);
     }

@@ -2,12 +2,14 @@
 #define UNIVERSE_HPP
 
 #include <stdint.h>
+#include <stdlib.h>
 
 //! @todo We should probably namespace all of this at some point.
 
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
+#include <list>
 
 #ifdef CPP11THREADS
 // GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
@@ -28,10 +30,10 @@ typedef uint64_t ATOMIC_T;
 #include "vector.hpp"
 #include "physics.hpp"
 #include "MIMOServer.hpp"
+#include "messaging.hpp"
+#include "bson.hpp"
 
 #include "scheduler.hpp"
-
-#include "../../protocols/universe.pb.h"
 
 //! Contains the code that handles physics simulation and communicating via smart objects
 //!
@@ -96,13 +98,16 @@ class Universe
     friend void* thread_check_collisions(void* argsV);
     friend void check_collision_loop(void* argsV);
 
+    friend void* vis_data_thread(void* argv);
+
 public:
 	Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
 	~Universe();
 	void start_net();
 	void stop_net();
 	void start_sim();
-	void pause_sim();
+    void pause_sim();
+    void pause_visdata();
 	void stop_sim();
 
 	//! The parameter should have space for four doubles:
@@ -135,8 +140,6 @@ public:
 	//! Update whether or not an object emits gravity.
 	void update_attractor(struct PhysicsObject* obj, bool calculate);
 
-	void register_for_vis_data(uint64_t phys_id, bool enable);
-
 private:
 	uint64_t get_id();
 	void broadcast_vis_data();
@@ -146,6 +149,19 @@ private:
 	void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
 	void handle_message(int32_t c);
 	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+
+    struct vis_client
+    {
+        int32_t socket;
+        int64_t client_id;
+        int64_t phys_id;
+    };
+
+    VisualDataMsg visdata_msg;
+
+    // Register a socket to receive VisData messages.
+    void register_vis_client(struct vis_client vc, bool enabled);
+    std::vector<struct vis_client> vis_clients;
 
 	MIMOServer* net;
     libodb::Scheduler* sched;
@@ -172,7 +188,6 @@ private:
 	//! collision information is retrieved, the SCANRESULT beam is built and
 	//! added to the universe.
 	std::map<uint64_t, uint64_t> queries;
-	std::vector<int32_t> vis_clients;
 
     //! Structure holding the arguments for the threaded checking of collisions
     struct phys_args
@@ -221,8 +236,11 @@ private:
 	volatile uint64_t num_ticks;
 
 	int32_t num_threads;
-	bool paused;
-	bool running;
+    // Because these are used to control the running-state of threads, we need them to update
+    // across caching with some reliability.
+	volatile bool paused;
+    volatile bool visdata_paused;
+	volatile bool running;
 	bool realtime;
 
 	ATOMIC_T total_objs;

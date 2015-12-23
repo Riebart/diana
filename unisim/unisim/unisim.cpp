@@ -43,29 +43,14 @@ void pool_rack()
 
 	int num_rows = 5;
 
-	// This loop produces a trangle of balls that points down the negative y axis.
-	// That is, the 'head' ball is further negative than the 'back' of the rack.
-	//
-	// Mathematica code.
-	// numRows = 5;
-	// radius = 1;
-	// balls = Reap[For[i = 0, i < numRows, i++,
-	//    For[j = 0, j <= i, j++,
-	//    x = (i - 2 j) radius;
-	//    y = Sqrt[3]/2 (1 + 2 i) radius;
-	//    Sow[Circle[{x, y}, radius]]
-	//    ]
-	//    ]][[2]][[1]];
-	// Graphics[balls]
-
 	struct PhysicsObject* obj;
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
-	struct Vector3 velocity = { 0.0, -25, 0.0 };
+	struct Vector3 velocity = { 0.0, -0.1, 0.0 };
 
 	double C = 1;
 	double y_scale = sqrt(3) / 2;
-	double y_offset = 100;
+	double y_offset = 0.0;
 
 	for (int i = 0; i < num_rows; i++)
 	{
@@ -84,7 +69,7 @@ void pool_rack()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	position.x = 0.0;
-	position.y = 10.0;
+	position.y = objs[0]->position.y + cue_ball_radius;
 	position.z = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
 	u->add_object(obj);
@@ -100,17 +85,17 @@ void simple_collision()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
-	position.x = 0.0;
+	position.x = 10;
 	position.y = 0.0;
-	velocity.x = -5.0;
+	velocity.x = -1.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
 	u->add_object(obj);
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
-	position.x = -20;
+	position.x = -1.0;
 	position.y = 0.0;
-	velocity.x = -1.0;
+	velocity.x = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
 	u->add_object(obj);
 }
@@ -375,19 +360,19 @@ void check_packing()
 
 int main(int32_t argc, char** argv)
 {
-	signal(SIGABRT, &sighandler);
+    signal(SIGABRT, &sighandler);
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-	//u = new Universe(0.001, 0.05, 0.5, 5505, 3);
-	u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, false);
+	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
 	{
-		//pool_rack();
+		pool_rack();
 		//simple_collision();
 		//fast_collision();
-		shifting();
+		//shifting();
 		//collision_exit();
 
 		//beam_collision();

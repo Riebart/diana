@@ -44,7 +44,7 @@ namespace Diana2DClient
             lstShips.Items.Clear();
             lstClasses.Items.Clear();
 
-            int[] ids;
+            Int64[] ids;
             string[] names;
 
             smarty.ListShips(out ids, out names);
@@ -77,10 +77,10 @@ namespace Diana2DClient
                 return;
             }
 
-            int id = (int)lstClasses.SelectedItems[0].Tag;
+            Int64 id = (Int64)lstClasses.SelectedItems[0].Tag;
             string name = lstClasses.SelectedItems[0].Name;
 
-            int ship_id = smarty.CaptainNewShip(id, name);
+            Int64 ship_id = smarty.CaptainNewShip(id, name);
             UpdateLists();
         }
 
@@ -91,10 +91,10 @@ namespace Diana2DClient
                 return;
             }
 
-            int id = (int)lstShips.SelectedItems[0].Tag;
+            Int64 id = (Int64)lstShips.SelectedItems[0].Tag;
             string name = lstShips.SelectedItems[0].Name;
 
-            int ship_id = smarty.JoinShip(id, name);
+            Int64 ship_id = smarty.JoinShip(id, name);
             UpdateLists();
         }
 
