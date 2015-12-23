@@ -172,14 +172,15 @@ private:
 class BSONWriter
 {
 public:
-    BSONWriter(int32_t _is_array = -1)
+    BSONWriter()
     {
         out = NULL;
         child = NULL;
-        reset(_is_array);
+        is_array = -1;
+        reset();
     }
 
-    void reset(int32_t _is_array = -1)
+    void reset()
     {
         if (child != NULL)
         {
@@ -199,7 +200,11 @@ public:
             throw "OOM you twat";
         }
 
-        is_array = _is_array;
+        if (is_array > 0)
+        {
+            is_array = 0;
+        }
+        
         pos = 4;
         child = NULL;
     }
@@ -478,6 +483,14 @@ public:
     }
 
 private:
+    BSONWriter(int32_t _is_array)
+    {
+        out = NULL;
+        child = NULL;
+        is_array = _is_array;
+        reset();
+    }
+    
     uint8_t* out;
     int32_t is_array = -1;
     char array_name[10];
