@@ -36,8 +36,8 @@ public:
 	void hungup(int32_t c);
 
     // Also provide a few convenience socket reading functions
-    static size_t socket_read(int fd, void* buf, size_t count);
-    static size_t socket_write(int fd, void* buf, size_t count);
+    static int64_t socket_read(int fd, char* buf, int64_t count);
+    static int64_t socket_write(int fd, char* buf, int64_t count);
 
 private:
 	void hangup(int32_t c);

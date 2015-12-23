@@ -312,11 +312,14 @@ void Universe::handle_message(int32_t c)
 {
     BSONMessage* msg_base = BSONMessage::ReadMessage(c);
 
+    printf("Received message of type %d from client %d\n", msg_base->msg_type, c);
+
     switch (msg_base->msg_type)
     {
     case BSONMessage::MessageType::VisualDataEnable:
     {
         VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
+        printf("Client %d %s for VisData\n", c, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
         break;
     }
     case BSONMessage::MessageType::Spawn:

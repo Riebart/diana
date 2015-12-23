@@ -3,8 +3,8 @@
 #include "MIMOServer.hpp"
 
 // There's some boilerplate stuff that happens for ever send, so here's the bookends that do it.
-#define SEND_PROLOGUE() BSONWriter bw; bw.push_int64(server_id); bw.push_int64(client_id);
-#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, bytes, *(int32_t*)bytes);
+#define SEND_PROLOGUE(msg_type) BSONWriter bw; bw.push("MsgType", msg_type); bw.push(server_id); bw.push(client_id);
+#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, (char*)bytes, *(int32_t*)bytes);
 
 double ReadDouble(BSONReader* br)
 {
@@ -56,9 +56,9 @@ struct Vector3 ReadVector3(BSONReader* br)
 
 void PushVector3(BSONWriter* bw, struct Vector3* v)
 {
-    bw->push_double(v->x);
-    bw->push_double(v->y);
-    bw->push_double(v->z);
+    bw->push(v->x);
+    bw->push(v->y);
+    bw->push(v->z);
 }
 
 struct Vector4 ReadVector4(BSONReader* br)
@@ -73,10 +73,10 @@ struct Vector4 ReadVector4(BSONReader* br)
 
 void PushVector4(BSONWriter* bw, struct Vector4* v)
 {
-    bw->push_double(v->w);
-    bw->push_double(v->x);
-    bw->push_double(v->y);
-    bw->push_double(v->z);
+    bw->push(v->w);
+    bw->push(v->x);
+    bw->push(v->y);
+    bw->push(v->z);
 }
 
 BSONMessage::BSONMessage(BSONReader* _br, MessageType _msg_type)
@@ -93,9 +93,9 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
 {
     // First start by reading the whole BSON message
     int32_t message_len = 0;
-    int nbytes = MIMOServer::socket_read(sock, (char*)(&message_len), 4);
+    int64_t nbytes = MIMOServer::socket_read(sock, (char*)(&message_len), 4);
 
-    char* buf = (char*)malloc(message_len + 4);
+    char* buf = (char*)malloc(message_len);
     if (buf == NULL)
     {
         throw "OOM You twat";
@@ -109,7 +109,7 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
     // Sanity checks:
     // The element should be an int32 (type 16), and a name of "MsgType".
     // Switch on the value to hand off further parsing.
-    if ((el.type != 16) || (strcmp(el.name, "MsgType") != 0))
+    if ((el.type != BSONReader::ElementType::Int32) || (strcmp(el.name, "MsgType") != 0))
     {
         return NULL;
     }
@@ -173,9 +173,9 @@ HelloMsg::HelloMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _m
     // This is just a token SYN, for ID establishing on both sides.
 }
 
-size_t HelloMsg::send(int sock)
+int64_t HelloMsg::send(int sock)
 {    
-    SEND_PROLOGUE();
+    SEND_PROLOGUE(Hello);
     SEND_EPILOGUE();
 }
 
@@ -195,16 +195,16 @@ PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
     free(obj_type);
 }
 
-size_t PhysicalPropertiesMsg::send(int sock)
+int64_t PhysicalPropertiesMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(obj_type);
-    bw.push_double(mass);
+    SEND_PROLOGUE(PhysicalProperties);
+    bw.push(obj_type);
+    bw.push(mass);
     PushVector3(&bw, &position);
     PushVector3(&bw, &velocity);
     PushVector4(&bw, &orientation);
     PushVector3(&bw, &thrust);
-    bw.push_double(radius);
+    bw.push(radius);
     SEND_EPILOGUE();
 }
 
@@ -213,7 +213,7 @@ VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type)
     throw "NotImplemented";
 }
 
-size_t VisualPropertiesMsg::send(int sock)
+int64_t VisualPropertiesMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -223,10 +223,10 @@ VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type)
     enabled = ReadBool(br);
 }
 
-size_t VisualDataEnableMsg::send(int sock)
+int64_t VisualDataEnableMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_bool(enabled);
+    SEND_PROLOGUE(VisualDataEnable);
+    bw.push(enabled);
     SEND_EPILOGUE();
 }
 
@@ -235,10 +235,10 @@ VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br, MessageType _m
     enabled = ReadBool(br);
 }
 
-size_t VisualMetaDataEnableMsg::send(int sock)
+int64_t VisualMetaDataEnableMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_bool(enabled);
+    SEND_PROLOGUE(VisualMetaDataEnable);
+    bw.push(enabled);
     SEND_EPILOGUE();
 }
 
@@ -247,7 +247,7 @@ VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : B
     throw "NotImplemented";
 }
 
-size_t VisualMetaDataMsg::send(int sock)
+int64_t VisualMetaDataMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -260,11 +260,11 @@ VisualDataMsg::VisualDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessa
     orientation = ReadVector4(br);
 }
 
-size_t VisualDataMsg::send(int sock)
+int64_t VisualDataMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_int64(phys_id);
-    bw.push_double(radius);
+    SEND_PROLOGUE(VisualData);
+    bw.push(phys_id);
+    bw.push(radius);
     PushVector3(&bw, &position);
     PushVector4(&bw, &orientation);
     SEND_EPILOGUE();
@@ -297,19 +297,19 @@ BeamMsg::~BeamMsg()
     }
 }
 
-size_t BeamMsg::send(int sock)
+int64_t BeamMsg::send(int sock)
 {
-    SEND_PROLOGUE();
+    SEND_PROLOGUE(Beam);
     PushVector3(&bw, &origin);
     PushVector3(&bw, &velocity);
     PushVector3(&bw, &up);
-    bw.push_double(spread_h);
-    bw.push_double(spread_v);
-    bw.push_double(energy);
-    bw.push_string(beam_type);
+    bw.push(spread_h);
+    bw.push(spread_v);
+    bw.push(energy);
+    bw.push(beam_type);
     if (strcmp(beam_type, "COMM") == 0)
     {
-        bw.push_string(msg);
+        bw.push(msg);
     }
     SEND_EPILOGUE();
 }
@@ -338,16 +338,16 @@ CollisionMsg::~CollisionMsg()
     }
 }
 
-size_t CollisionMsg::send(int sock)
+int64_t CollisionMsg::send(int sock)
 {
-    SEND_PROLOGUE();
+    SEND_PROLOGUE(Collision);
     PushVector3(&bw, &position);
     PushVector3(&bw, &direction);
-    bw.push_double(energy);
-    bw.push_string(coll_type);
+    bw.push(energy);
+    bw.push(coll_type);
     if (strcmp(coll_type, "COMM") == 0)
     {
-        bw.push_string(msg);
+        bw.push(msg);
     }
     SEND_EPILOGUE();
 }
@@ -368,16 +368,16 @@ SpawnMsg::~SpawnMsg()
     free(obj_type);
 }
 
-size_t SpawnMsg::send(int sock)
+int64_t SpawnMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(obj_type);
-    bw.push_double(mass);
+    SEND_PROLOGUE(Spawn);
+    bw.push(obj_type);
+    bw.push(mass);
     PushVector3(&bw, &position);
     PushVector3(&bw, &velocity);
     PushVector4(&bw, &orientation);
     PushVector3(&bw, &thrust);
-    bw.push_double(radius);
+    bw.push(radius);
     SEND_EPILOGUE();
 }
 
@@ -399,17 +399,17 @@ ScanResultMsg::~ScanResultMsg()
     free(data);
 }
 
-size_t ScanResultMsg::send(int sock)
+int64_t ScanResultMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(obj_type);
-    bw.push_double(mass);
+    SEND_PROLOGUE(ScanResult);
+    bw.push(obj_type);
+    bw.push(mass);
     PushVector3(&bw, &position);
     PushVector3(&bw, &velocity);
     PushVector4(&bw, &orientation);
     PushVector3(&bw, &thrust);
-    bw.push_double(radius);
-    bw.push_string(data);
+    bw.push(radius);
+    bw.push(data);
     SEND_EPILOGUE();
 }
 
@@ -420,11 +420,11 @@ ScanQueryMsg::ScanQueryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
     direction = ReadVector3(br);
 }
 
-size_t ScanQueryMsg::send(int sock)
+int64_t ScanQueryMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_int64(scan_id);
-    bw.push_double(energy);
+    SEND_PROLOGUE(ScanQuery);
+    bw.push(scan_id);
+    bw.push(energy);
     PushVector3(&bw, &direction);
     SEND_EPILOGUE();
 }
@@ -440,10 +440,10 @@ ScanResponseMsg::~ScanResponseMsg()
     free(data);
 }
 
-size_t ScanResponseMsg::send(int sock)
+int64_t ScanResponseMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(data);
+    SEND_PROLOGUE(ScanResponse);
+    bw.push(data);
     SEND_EPILOGUE();
 }
 
@@ -452,9 +452,9 @@ GoodbyeMsg::GoodbyeMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br
     // A generic FIN, indicating a smarty is disconnecting, or otherwise leaving.
 }
 
-size_t GoodbyeMsg::send(int sock)
+int64_t GoodbyeMsg::send(int sock)
 {
-    SEND_PROLOGUE();
+    SEND_PROLOGUE(Goodbye);
     SEND_EPILOGUE();
 }
 
@@ -462,10 +462,11 @@ DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
 {
     item_type = ReadString(br);
     item_count = ReadInt64(br);
-    items = (char**)malloc((size_t)(item_count * sizeof(char*)));
+    items = (struct DirectoryItem*)malloc((size_t)(item_count * sizeof(struct DirectoryItem)));
     for (int i = 0; i < item_count; i++)
     {
-        items[i] = ReadString(br);
+        items[i].id = ReadInt64(br);
+        items[i].name = ReadString(br);
     }
 }
 
@@ -473,19 +474,20 @@ DirectoryMsg::~DirectoryMsg()
 {
     for (int i = 0; i < item_count; i++)
     {
-        free(items[i]);
+        free(items[i].name);
     }
     free(items);
 }
 
-size_t DirectoryMsg::send(int sock)
+int64_t DirectoryMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(item_type);
-    bw.push_int64(item_count);
+    SEND_PROLOGUE(Directory);
+    bw.push(item_type);
+    bw.push(item_count);
     for (int i = 0; i < item_count; i++)
     {
-        bw.push_string(items[i]);
+        bw.push(items[i].id);
+        bw.push(items[i].name);
     }
     SEND_EPILOGUE();
 }
@@ -500,10 +502,10 @@ NameMsg::~NameMsg()
     free(name);
 }
 
-size_t NameMsg::send(int sock)
+int64_t NameMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_string(name);
+    SEND_PROLOGUE(Name);
+    bw.push(name);
     SEND_EPILOGUE();
 }
 
@@ -512,10 +514,10 @@ ReadyMsg::ReadyMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _m
     ready = ReadBool(br);
 }
 
-size_t ReadyMsg::send(int sock)
+int64_t ReadyMsg::send(int sock)
 {
-    SEND_PROLOGUE();
-    bw.push_bool(ready);
+    SEND_PROLOGUE(Ready);
+    bw.push(ready);
     SEND_EPILOGUE();
 }
 
@@ -524,7 +526,7 @@ ThrustMsg::ThrustMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, 
     throw "NotImplemented";
 }
 
-size_t ThrustMsg::send(int sock)
+int64_t ThrustMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -534,7 +536,7 @@ VelocityMsg::VelocityMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_
     throw "NotImplemented";
 }
 
-size_t VelocityMsg::send(int sock)
+int64_t VelocityMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -544,7 +546,7 @@ JumpMsg::JumpMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg
     throw "NotImplemented";
 }
 
-size_t JumpMsg::send(int sock)
+int64_t JumpMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -554,7 +556,7 @@ InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessa
     throw "NotImplemented";
 }
 
-size_t InfoUpdateMsg::send(int sock)
+int64_t InfoUpdateMsg::send(int sock)
 {
     throw "NotImplemented";
 }
@@ -564,7 +566,7 @@ RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSO
     throw "NotImplemented";
 }
 
-size_t RequestUpdateMsg::send(int sock)
+int64_t RequestUpdateMsg::send(int sock)
 {
     throw "NotImplemented";
 }

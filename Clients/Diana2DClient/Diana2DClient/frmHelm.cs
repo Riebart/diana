@@ -19,7 +19,7 @@ namespace Diana2DClient
         Smarty smarty = null;
         TcpClient client = null;
         Stream s = null;
-        int clientID = -1;
+        Int64 clientID = -1;
 
         Bitmap needle;
         Graphics needleG;

@@ -43,13 +43,28 @@
 #define SOCKET int32_t
 #endif
 
-size_t MIMOServer::socket_read(int fd, void* buf, size_t count)
+int64_t MIMOServer::socket_read(int fd, char* buf, int64_t count)
 {
-    throw "NotImplemented";
-    return 0;
+    int64_t nbytes = 0;
+    int64_t curbytes;
+    while (nbytes < count)
+    {
+        //! @todo Maybe use recvmsg()?
+        // Try to wait for all of the data, if possible.
+        curbytes = recv(fd, buf, (int)count, MSG_WAITALL);
+        if (curbytes == -1)
+        {
+            // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
+            nbytes *= -1;
+            break;
+        }
+        nbytes += curbytes;
+    }
+    
+    return nbytes;
 }
 
-size_t MIMOServer::socket_write(int fd, void* buf, size_t count)
+int64_t MIMOServer::socket_write(int fd, char* buf, int64_t count)
 {
     throw "NotImplemented";
     return 0;

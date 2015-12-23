@@ -74,8 +74,8 @@ namespace Diana2DClient
         void SocketReader(object arg)
         {
             Smarty smarty = (Smarty)arg;
-            int srv_id = -1;
-            int client_id = -1;
+            Int64 srv_id = -1;
+            Int64 client_id = -1;
 
             if (smarty != null)
             {
@@ -227,8 +227,8 @@ namespace Diana2DClient
 
                     double rX = Math.Max(1.0, canvasWidth * v.radius / xExtent);
                     double rY = Math.Max(1.0, canvasHeight * v.radius / yExtent);
-                    double x = (1 + (focusX - v.pX) / xExtent) * canvasWidth + border - rX;
-                    double y = (1 + (focusY - v.pY) / yExtent) * canvasHeight + border - rY;
+                    double x = (1 + (focusX - v.position.X) / xExtent) * canvasWidth + border - rX;
+                    double y = (1 + (focusY - v.position.Y) / yExtent) * canvasHeight + border - rY;
 
                     // Do some basic clipping testing.
                     if ((x + 2 * rX < 0) || (x - 2 * rX > this.ClientSize.Width))

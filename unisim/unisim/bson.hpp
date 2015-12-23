@@ -70,7 +70,7 @@ public:
             return el;
         }
 
-        el.type = *(ElementType*)(msg + pos);
+        el.type = (ElementType)(*(int8_t*)(msg + pos));
         pos += 1;
 
         // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
@@ -187,16 +187,16 @@ public:
         child = NULL;
     }
 
-    bool push_bool(bool v)
+    bool push(bool v)
     {
-        return push_bool("", v);
+        return push("", v);
     }
 
-    bool push_bool(char* name, bool v)
+    bool push(char* name, bool v)
     {
         if (child != NULL)
         {
-            return child->push_bool(name, v);
+            return child->push(name, v);
         }
         else
         {
@@ -213,16 +213,16 @@ public:
         }
     }
 
-    bool push_int32(int32_t v)
+    bool push(int32_t v)
     {
-        return push_int32("", v);
+        return push("", v);
     }
     
-    bool push_int32(char* name, int32_t v)
+    bool push(char* name, int32_t v)
     {
         if (child != NULL)
         {
-            return child->push_int32(name, v);
+            return child->push(name, v);
         }
         else
         {
@@ -239,16 +239,16 @@ public:
         }
     }
 
-    bool push_int64(int64_t v)
+    bool push(int64_t v)
     {
-        return push_int64("", v);
+        return push("", v);
     }
     
-    bool push_int64(char* name, int64_t v, int8_t type = BSONReader::ElementType::Int64)
+    bool push(char* name, int64_t v, int8_t type = BSONReader::ElementType::Int64)
     {
         if (child != NULL)
         {
-            return child->push_int64(name, v, type);
+            return child->push(name, v, type);
         }
         else
         {
@@ -274,16 +274,16 @@ public:
         }
     }
 
-    bool push_double(double v)
+    bool push(double v)
     {
-        return push_double("", v);
+        return push("", v);
     }
     
-    bool push_double(char* name, double v)
+    bool push(char* name, double v)
     {
         if (child != NULL)
         {
-            return child->push_double(name, v);
+            return child->push(name, v);
         }
         else
         {
@@ -300,16 +300,16 @@ public:
         }
     }
 
-    bool push_string(char* v)
+    bool push(char* v)
     {
-        return push_string("", v);
+        return push("", v);
     }
     
-    bool push_string(char* name, char* v, int32_t len = -1, int8_t type = BSONReader::ElementType::String)
+    bool push(char* name, char* v, int32_t len = -1, int8_t type = BSONReader::ElementType::String)
     {
         if (child != NULL)
         {
-            return child->push_string(name, v, len, type);
+            return child->push(name, v, len, type);
         }
         else
         {
@@ -343,16 +343,16 @@ public:
         }
     }
 
-    bool push_binary(uint8_t* bin, int32_t len)
+    bool push(uint8_t* bin, int32_t len)
     {
-        return push_binary("", bin, len);
+        return push("", bin, len);
     }
 
-    bool push_binary(char* name, uint8_t* bin, int32_t len, uint8_t subtype = 0)
+    bool push(char* name, uint8_t* bin, int32_t len, uint8_t subtype = 0)
     {
         if (child != NULL)
         {
-            return child->push_binary(name, bin, len, subtype);
+            return child->push(name, bin, len, subtype);
         }
         else
         {
