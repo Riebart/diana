@@ -249,8 +249,6 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     game_frametime = 0.0;
     vis_frametime = 0.0;
 
-    num_boxes_updated = 0;
-
     total_time = 0.0;
     num_ticks = 0;
     total_objs = 1;
@@ -579,13 +577,12 @@ void check_collision_loop(void* argsV)
     struct AABB* b;
 
     size_t end = args->offset + args->stride;
-    end = MIN(end, u->sorted.size() - 1);
+    end = MIN(end, u->phys_objects.size() - 1);
 
     for (size_t i = args->offset; i < end; i++)
-        //for (size_t i = args->offset; i < u->sorted.size() - 1; i += args->stride)
     {
         // In order for a full intersection to be possible, there has to be intersection
-        // of the AABBs in all three dimensions. The sorted list contains the objects'
+        // of the AABBs in all three dimensions.
         //
         // AABBs sorted by their lowest coordinate in the X dimensions.
         // We can test for potential intersections, first pruning by intersection along
@@ -593,10 +590,10 @@ void check_collision_loop(void* argsV)
         //
         // First test to see if the X projections intersect. If they do, then test the others.
 
-        a = &u->phys_objects[u->sorted[i]]->box;
-        for (size_t j = i + 1; j < u->sorted.size(); j++)
+        a = &u->phys_objects[i]->box;
+        for (size_t j = i + 1; j < u->phys_objects.size(); j++)
         {
-            b = &u->phys_objects[u->sorted[j]]->box;
+            b = &u->phys_objects[j]->box;
 
             double d;
             d = a->u.x - b->l.x;
@@ -622,7 +619,7 @@ void check_collision_loop(void* argsV)
                 // If we succeeded on both, count this as a potential collision for
                 // honest-to-goodness testing and hand it off to bounding-ball testing
                 // followed by collision effect calculation.
-                check_collision_single(u, u->phys_objects[u->sorted[i]], u->phys_objects[u->sorted[j]], args->dt);
+                check_collision_single(u, u->phys_objects[i], u->phys_objects[j], args->dt);
             }
             else
             {
@@ -657,12 +654,12 @@ void Universe::sort_aabb(double dt, bool calc)
     // Employs gnome sort to sort the lists, computing the bounding boxes along the way
     // http://en.wikipedia.org/wiki/Gnome_sort
 
-    size_t box_swap;
+    struct PhysicsObject* box_swap;
     size_t max_so_far = 0;
 
     if (calc)
     {
-        PhysicsObject_estimate_aabb(phys_objects[sorted[0]], &phys_objects[sorted[0]]->box, dt);
+        PhysicsObject_estimate_aabb(phys_objects[0], &phys_objects[0]->box, dt);
     }
 
     for (size_t i = 1; i < phys_objects.size();)
@@ -672,7 +669,7 @@ void Universe::sort_aabb(double dt, bool calc)
             // We only need to compute the bounding boxes on the first pass.
             if (calc)
             {
-                PhysicsObject_estimate_aabb(phys_objects[sorted[i]], &phys_objects[sorted[i]]->box, dt);
+                PhysicsObject_estimate_aabb(phys_objects[i], &phys_objects[i]->box, dt);
             }
 
             max_so_far = i;
@@ -681,13 +678,13 @@ void Universe::sort_aabb(double dt, bool calc)
         //! @todo Could the AABB comparisons be costly?
 
         // Compare to the previous one if we're not at the first one.
-        int c = Vector3_compare_aabbX(&phys_objects[sorted[i]]->box, &phys_objects[sorted[i - 1]]->box);
+        int c = Vector3_compare_aabbX(&phys_objects[i]->box, &phys_objects[i - 1]->box);
 
         if (c < 0)
         {
-            box_swap = sorted[i];
-            sorted[i] = sorted[i - 1];
-            sorted[i - 1] = box_swap;
+            box_swap = phys_objects[i];
+            phys_objects[i] = phys_objects[i - 1];
+            phys_objects[i - 1] = box_swap;
 
             // And then step back if we're not at the start.
             i -= (i > 1);
@@ -871,12 +868,6 @@ void Universe::tick(double dt)
             }
         }
 
-        sorted.resize(phys_objects.size());
-        for (size_t i = 1; i < phys_objects.size(); i++)
-        {
-            sorted[i - 1] = i;
-        }
-
         expired.clear();
         UNLOCK(expire_lock);
     }
@@ -896,10 +887,6 @@ void Universe::tick(double dt)
                 {
                     attractors.push_back(added[i]);
                 }
-
-                // Allocate and push back a bounding box, as well as index
-                // members to each of the sorting vectors.
-                sorted.push_back(phys_objects.size() - 1);
                 break;
             }
             case PHYSOBJECT_SMART:
@@ -912,10 +899,6 @@ void Universe::tick(double dt)
                 {
                     attractors.push_back(added[i]);
                 }
-
-                // Allocate and push back a bounding box, as well as index
-                // members to each of the sorting vectors.
-                sorted.push_back(phys_objects.size() - 1);
                 break;
             }
             case BEAM_COMM:

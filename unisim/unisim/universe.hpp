@@ -173,13 +173,6 @@ private:
 	std::vector<int64_t> expired;
 	std::vector<struct PhysicsObject*> added;
 
-	//! Hold a re-arranged list of indices that sort the physics objects by
-	//! the start of their bounding boxes, as computed and stored in boxes.
-	//! Primary sort condition is a projection onto the X axis.
-	std::vector<size_t> sorted;
-	std::vector<struct PhysicsObject*> potentials;
-	uint64_t num_boxes_updated;
-
 	//! Keeps track of the queries from SCAN beam collisions that are in progress.
 	//! When a scan beam collides with a smart objects, certain information can
 	//! be reported, but that requires a query to the OSim. These queries are

@@ -86,7 +86,7 @@ void simple_collision()
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
 	position.x = 10;
-	position.y = 0.0;
+	position.y = 0.2;
 	velocity.x = -1.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
 	u->add_object(obj);
@@ -106,13 +106,13 @@ void fast_collision()
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
 	struct Vector3 velocity = { 0.0, 0.0, 0.0 };
-	double mass = 1.0;
+	double mass = 1;
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	objs.push_back(obj);
 	position.x = 0.0;
 	position.y = 0.0;
-	velocity.x = -50000.0;
+	velocity.x = -500000.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
@@ -157,7 +157,7 @@ void beam_collision()
 	position.x = -20;
 	position.y = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 }
@@ -296,9 +296,9 @@ void print_positions()
 	for (size_t i = 0; i < objs.size(); i++)
 	{
 #if _WIN64 || __x86_64__
-		fprintf(stderr, "PO%lu   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+        fprintf(stderr, "PO%lu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
 #else
-		fprintf(stderr, "PO%llu   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z);
+		fprintf(stderr, "PO%llu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
 #endif
 	}
 
@@ -364,18 +364,18 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, false);
+    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, true);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
 	{
-		pool_rack();
+		//pool_rack();
 		//simple_collision();
 		//fast_collision();
 		//shifting();
 		//collision_exit();
 
-		//beam_collision();
+		beam_collision();
 		//beam_multi_collision();
 
 		//print_positions();
