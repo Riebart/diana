@@ -2,6 +2,7 @@
 #include "messaging.hpp"
 
 #include <stdio.h>
+#include <algorithm>
 
 #ifdef CPP11THREADS
 #include <chrono>
@@ -130,6 +131,65 @@ void* sim(void* uV)
     return NULL;
 }
 
+void* vis_data_thread(void* argV)
+{
+    Universe* u = (Universe*)argV;
+
+#ifdef CPP11THREADS
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    std::chrono::duration<double> elapsed;
+#else
+    struct timeb start, end;
+#endif
+    
+    while (u->running)
+    {
+        // If we're paused, then just sleep. We're not picky on how long we sleep for.
+        // Sleep for max_frametime time so that we're responsive to unpausing, but not
+        // waking up too often.
+        if (u->visdata_paused)
+        {
+#ifdef CPP11THREADS
+            std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+#else
+            usleep((uint32_t)(1000000 * u->max_frametime));
+#endif
+            continue;
+        }
+
+#ifdef CPP11THREADS
+        start = std::chrono::high_resolution_clock::now();
+        u->broadcast_vis_data();
+        end = std::chrono::high_resolution_clock::now();
+
+        elapsed = end - start;
+        double e = elapsed.count();
+#else
+        ftime(&start);
+        u->broadcast_vis_data();
+        ftime(&end);
+        double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
+        
+        // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
+        if (e < u->min_vis_frametime)
+        {
+#ifdef CPP11THREADS
+            std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_vis_frametime - e))));
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            e = elapsed.count();
+#else
+            usleep((uint32_t)(1000000 * (u->min_vis_frametime - e)));
+            ftime(&end);
+            e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
+#endif
+        }
+    }
+
+    return NULL;
+}
+
 void Universe_hangup_objects(int32_t c, void* arg)
 {
     Universe* u = (Universe*)arg;
@@ -195,6 +255,10 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     num_ticks = 0;
     total_objs = 1;
 
+    paused = true;
+    visdata_paused = true;
+    running = false;
+
     net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, port);
 }
 
@@ -229,7 +293,9 @@ void Universe::start_sim()
     {
         running = true;
         paused = false;
+        visdata_paused = false;
         THREAD_CREATE(sim_thread, sim, (void*)this);
+        THREAD_CREATE(vis_thread, vis_data_thread, (void*)this);
     }
 }
 
@@ -238,10 +304,16 @@ void Universe::pause_sim()
     paused = true;
 }
 
+void Universe::pause_visdata()
+{
+    visdata_paused = true;
+}
+
 void Universe::stop_sim()
 {
     running = false;
     THREAD_JOIN(sim_thread);
+    THREAD_JOIN(vis_thread);
 }
 
 void Universe::get_frametime(double* out)
@@ -308,6 +380,44 @@ void Universe::hangup_objects(int32_t c)
     UNLOCK(expire_lock);
 }
 
+void Universe::register_vis_client(struct vis_client vc, bool enabled)
+{
+    //! @todo Remove the linear searches here
+    LOCK(vis_lock);
+    
+    // Try to find the one we're looking for.
+    std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc,
+        [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
+
+    bool found = (vis_clients.size() == 0 ? false : (memcmp(&vc, &*it, sizeof(struct vis_client)) == 0));
+    
+    if (enabled && !found)
+    {
+        // If we find it, push it onto the back and re-sort the list.
+        vis_clients.push_back(vc);
+        std::sort(vis_clients.begin(), vis_clients.end(),
+            [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
+    }
+    else if (!enabled && found)
+    {
+        vis_clients.erase(it);
+    }
+    UNLOCK(vis_lock);
+}
+
+void Universe::broadcast_vis_data()
+{
+    //! @todo Should we acquire a physics lock here? Maybe, maybe not?
+    if (vis_clients.size() == 0)
+    {
+        return;
+    }
+
+    LOCK(vis_lock);
+    
+    UNLOCK(vis_lock);
+}
+
 void Universe::handle_message(int32_t c)
 {
     BSONMessage* msg_base = BSONMessage::ReadMessage(c);
@@ -320,6 +430,11 @@ void Universe::handle_message(int32_t c)
     {
         VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
         printf("Client %d %s for VisData\n", c, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
+        struct vis_client vc;
+        vc.socket = c;
+        vc.client_id = msg->client_id;
+        vc.phys_id = msg->server_id;
+        register_vis_client(vc, msg->enabled);
         break;
     }
     case BSONMessage::MessageType::Spawn:

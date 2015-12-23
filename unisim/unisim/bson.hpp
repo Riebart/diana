@@ -174,6 +174,23 @@ class BSONWriter
 public:
     BSONWriter(int32_t _is_array = -1)
     {
+        out = NULL;
+        child = NULL;
+        reset(_is_array);
+    }
+
+    void reset(int32_t _is_array = -1)
+    {
+        if (child != NULL)
+        {
+            delete child;
+        }
+
+        if (out != NULL)
+        {
+            free(out);
+        }
+
         // Allocate enough memory for the length starting field.
         // Each time we push something, we will realloc the block a bit bigger.
         out = (uint8_t*)calloc(1, 4);
@@ -454,6 +471,10 @@ public:
     ~BSONWriter()
     {
         free(out);
+        if (child != NULL)
+        {
+            delete child;
+        }
     }
 
 private:
