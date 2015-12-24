@@ -13,6 +13,9 @@ struct Vector4
     double w, x, y, z;
 };
 
+const struct Vector3 vector3d_zero = { 0.0, 0.0, 0.0 };
+const struct Vector4 vector4d_zero = { 0.0, 0.0, 0.0, 0.0 };
+
 //! Represents an axis-aligned bounding box
 struct AABB
 {
@@ -45,8 +48,8 @@ void Vector3_project_onto(struct Vector3* out, struct Vector3* v, struct Vector3
 void Vector3_project_down(struct Vector3* out, struct Vector3* v, struct Vector3* axis);
 
 double Vector3_dot(struct Vector3* v1, struct Vector3* v2);
-double Vector3_length2(struct Vector3* v);
-double Vector3_length(struct Vector3* v);
+const double Vector3_length2(const struct Vector3* v);
+const double Vector3_length(const struct Vector3* v);
 double Vector3_distance2(struct Vector3* v1, struct Vector3* v2);
 double Vector3_distance(struct Vector3* v1, struct Vector3* v2);
 

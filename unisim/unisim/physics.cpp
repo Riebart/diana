@@ -31,7 +31,7 @@ bool is_big_enough(double m, double r)
 	return ((6.67384e-11 * m / r) >= GRAVITY_CUTOFF);
 }
 
-void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_desc)
+void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
 {
 	obj->type = PHYSOBJECT;
 	obj->phys_id = 0;
@@ -44,7 +44,7 @@ void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity,
 	obj->thrust = *thrust;
 	obj->mass = mass;
 	obj->radius = radius;
-	obj->obj_desc = obj_desc;
+    obj->obj_type = const_cast<char*>(obj_type);
 	obj->t = 0.0;
 
 	Vector3_init(&obj->forward, 1, 0, 0);
@@ -403,12 +403,20 @@ PO* PhysicsObject_clone(PO* obj)
     case PHYSOBJECT:
     {
         ret = (PO*)malloc(sizeof(PO));
+        if (ret == NULL)
+        {
+            return NULL;
+        }
         *ret = *obj;
         break;
     }
     case PHYSOBJECT_SMART:
     {
         ret = (PO*)malloc(sizeof(SPO));
+        if (ret == NULL)
+        {
+            return NULL;
+        }
         *(SPO*)ret = *(SPO*)obj;
         break;
     }
@@ -417,6 +425,10 @@ PO* PhysicsObject_clone(PO* obj)
     case BEAM_SCAN:
     {
         ret = (PO*)malloc(sizeof(B));
+        if (ret == NULL)
+        {
+            return NULL;
+        }
         *(B*)ret = *(B*)obj;
     }
     default:
@@ -456,6 +468,10 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, str
         //! @warn There's a use-after-free bug sitting right here. Should duplicate the object, so that the original
         // can expire safely before the scan result gets back to someone.
 		res->scan_target = PhysicsObject_clone(obj);
+        if (res->scan_target == NULL)
+        {
+            throw "OOMError::ScanTargetAllocFailed";
+        }
 		obj->universe->add_object((PO*)res);
 		break;
 	}
@@ -472,9 +488,9 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, str
 	}
 }
 
-void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_desc)
+void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
 {
-	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_desc);
+	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type);
 	obj->pobj.type = PHYSOBJECT_SMART;
 
 	obj->client = client;
@@ -485,7 +501,7 @@ void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Univers
 	//obj->parent_phys_id = 0;
 }
 
-void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type)
+void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg)
 {
     beam->phys_id = 0;
 	beam->universe = universe;
@@ -501,12 +517,13 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V
 	beam->energy = energy;
 	beam->type = type;
     beam->scan_target = NULL;
+    beam->comm_msg = const_cast<char*>(comm_msg);
 
 	beam->distance_travelled = 0;
 	beam->max_distance = sqrt(energy / (area_factor * 1e-10));
 }
 
-void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type)
+void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg)
 {
 	V3 direction = *velocity;
 	Vector3_normalize(&direction);
@@ -521,7 +538,7 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, do
 	double cosh = cos(angle_h / 2);
 	double cosv = cos(angle_v / 2);
 
-	Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type);
+	Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg);
 }
 
 void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)

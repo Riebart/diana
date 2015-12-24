@@ -123,12 +123,12 @@ double Vector3_dot(V3* v1, V3* v2)
 	return v1->x * v2->x + v1->y * v2->y + v1->z * v2->z;
 }
 
-double Vector3_length2(V3* v)
+const double Vector3_length2(const V3* v)
 {
 	return v->x * v->x + v->y * v->y + v->z * v->z;
 }
 
-double Vector3_length(V3* v)
+const double Vector3_length(const V3* v)
 {
 	return sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
 }

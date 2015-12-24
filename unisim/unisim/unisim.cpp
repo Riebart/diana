@@ -46,7 +46,7 @@ void pool_rack()
 	struct PhysicsObject* obj;
 	struct Vector3 vector3_zero = { 0.0, 0.0, 0.0 };
 	struct Vector3 position = { 0.0, 0.0, 0.0 };
-	struct Vector3 velocity = { 0.0, -0.1, 0.0 };
+	struct Vector3 velocity = { 0.0, -1, 0.0 };
 
 	double C = 1;
 	double y_scale = sqrt(3) / 2;
@@ -69,7 +69,7 @@ void pool_rack()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	position.x = 0.0;
-	position.y = objs[0]->position.y + cue_ball_radius;
+    position.y = 10;
 	position.z = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
 	u->add_object(obj);
@@ -331,7 +331,7 @@ void check_packing()
 		(uint64_t)&p.mass - (uint64_t)&p,
 		(uint64_t)&p.radius - (uint64_t)&p,
 		(uint64_t)&p.health - (uint64_t)&p,
-		(uint64_t)&p.obj_desc - (uint64_t)&p,
+		(uint64_t)&p.obj_type - (uint64_t)&p,
 		(uint64_t)&p.art_id - (uint64_t)&p,
 		(uint64_t)&p.emits_gravity - (uint64_t)&p);
 
@@ -364,18 +364,18 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.001, 0.05, 0.5, 5505, 3, 1.0, true);
+    u = new Universe(0.001, 0.05, 0.1, 5505, 3, 1.0, true);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
 	{
-		//pool_rack();
+		pool_rack();
 		//simple_collision();
 		//fast_collision();
 		//shifting();
 		//collision_exit();
 
-		beam_collision();
+		//beam_collision();
 		//beam_multi_collision();
 
 		//print_positions();

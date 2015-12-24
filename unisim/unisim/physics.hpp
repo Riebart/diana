@@ -31,7 +31,7 @@ struct PhysicsObject
 	//! Unique ID as assigned by the universe
 	int64_t phys_id;
 	//! Universe this object is assigned to.
-	Universe* universe;
+    Universe* universe;
 	//! Axis aligned bounding box for this object.
 	struct AABB box;
 	//! For collisions, this is in [0,1] and is how far into the interval we've already traversed.
@@ -57,7 +57,7 @@ struct PhysicsObject
 		//! Health in some arbitrary hit points.
 		health;
 	//! Arbitrary C-string offering an object description of some sort
-	char* obj_desc;
+	char* obj_type;
 	//! A unique art ID for any art assets as assigned by an ArtCurator.
 	int64_t art_id;
 	//! Whether or not this object should be considered an attractor by the Universe.
@@ -107,6 +107,7 @@ struct Beam
 		energy,
 		distance_travelled,
 		max_distance;
+    char* comm_msg;
 };
 
 //! The structure that holds the effects on one object in a two-object physical collision
@@ -161,8 +162,8 @@ void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, doub
 
 void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, int64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
-void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type);
-void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type);
+void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg = NULL);
+void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg = NULL);
 void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
 void Beam_tick(struct Beam* beam, double dt);
 struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);

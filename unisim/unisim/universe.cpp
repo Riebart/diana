@@ -462,6 +462,8 @@ void Universe::broadcast_vis_data()
 void Universe::handle_message(int32_t c)
 {
     BSONMessage* msg_base = BSONMessage::ReadMessage(c);
+    std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+    SPO* smarty = (it != smarties.end() ? it->second : NULL);
 
     printf("Received message of type %d from client %d\n", msg_base->msg_type, c);
 
@@ -471,6 +473,7 @@ void Universe::handle_message(int32_t c)
     {
         VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
         printf("Client %d %s for VisData\n", c, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
+        
         struct vis_client vc;
         vc.socket = c;
         vc.client_id = msg->client_id;
@@ -481,6 +484,26 @@ void Universe::handle_message(int32_t c)
     case BSONMessage::MessageType::Spawn:
     {
         SpawnMsg* msg = (SpawnMsg*)msg_base;
+        PO* obj = (PO*)malloc(sizeof(struct PhysicsObject));
+        char* obj_type = (char*)malloc(strlen(msg->obj_type));
+        if (obj_type == NULL)
+        {
+            throw "OOM you twat";
+        }
+
+        PhysicsObject_init(obj, this, &msg->position, &msg->velocity, 
+            const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust, 
+            msg->mass, msg->radius, obj_type);
+
+        // If the object creating the object is a smarty, it's position and velocity
+        // are relative.
+        if (smarty != NULL)
+        {
+            Vector3_add(&obj->position, &smarty->pobj.position);
+            Vector3_add(&obj->velocity, &smarty->pobj.velocity);
+        }
+
+        add_object(obj);
         break;
     }
     case BSONMessage::MessageType::ScanResponse:
@@ -835,6 +858,10 @@ void Universe::tick(double dt)
                                     // to prevent a use-after-free, so free that here.
                                     free(beams[k]->scan_target);
                                 }
+                                if (beams[k]->comm_msg != NULL)
+                                {
+                                    free(beams[k]->comm_msg);
+                                }
                                 beams.erase(beams.begin() + k);
                                 break;
                             }
@@ -859,6 +886,8 @@ void Universe::tick(double dt)
                                 }
                             }
                         }
+
+                        free(phys_objects[i]->obj_type);
                     }
                     free(phys_objects[i]);
                     phys_objects.erase(phys_objects.begin() + i);
