@@ -338,7 +338,7 @@ void check_packing()
 	struct SmartPhysicsObject s;
 	printf("%lu %lu\n",
 		(uint64_t)&s.pobj - (uint64_t)&s,
-		(uint64_t)&s.client - (uint64_t)&s);
+        (uint64_t)&s.socket - (uint64_t)&s);
 
 	struct Beam b;
 	printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",

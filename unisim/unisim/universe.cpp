@@ -370,7 +370,7 @@ void Universe::hangup_objects(int32_t c)
 
     for (it = smarties.begin(); it != smarties.end(); ++it)
     {
-        if (it->second->client == c)
+        if (it->second->socket == c)
         {
             expired.push_back(it->first);
         }
@@ -459,23 +459,23 @@ void Universe::broadcast_vis_data()
     UNLOCK(vis_lock);
 }
 
-void Universe::handle_message(int32_t c)
+void Universe::handle_message(int32_t socket)
 {
-    BSONMessage* msg_base = BSONMessage::ReadMessage(c);
+    BSONMessage* msg_base = BSONMessage::ReadMessage(socket);
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
     SPO* smarty = (it != smarties.end() ? it->second : NULL);
 
-    printf("Received message of type %d from client %d\n", msg_base->msg_type, c);
+    printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
 
     switch (msg_base->msg_type)
     {
     case BSONMessage::MessageType::VisualDataEnable:
     {
         VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
-        printf("Client %d %s for VisData\n", c, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
+        printf("Client %d %s for VisData\n", socket, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
         
         struct vis_client vc;
-        vc.socket = c;
+        vc.socket = socket;
         vc.client_id = msg->client_id;
         vc.phys_id = msg->server_id;
         register_vis_client(vc, msg->enabled);
@@ -499,6 +499,9 @@ void Universe::handle_message(int32_t c)
         // are relative.
         if (smarty != NULL)
         {
+            SPO* s = (SPO*)obj;
+            s->client_id = msg->client_id;
+            s->socket = socket;
             Vector3_add(&obj->position, &smarty->pobj.position);
             Vector3_add(&obj->velocity, &smarty->pobj.velocity);
         }
@@ -571,16 +574,35 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
             //! But I don't think, in general, this will cause much of a problem for a 60hz
             //! physics refresh rate.
 
+            // Alert the smarties that there was a collision
+            // Only physical collisions are generated here, beams are elsewhere.
+            CollisionMsg cm;
+            cm.msg = NULL;
+
             if (obj1->type == PHYSOBJECT_SMART)
             {
-                //SPO* s = (SPO*)obj1;
-                //! @todo Smart phys collision messages
+                SPO* s = (SPO*)obj1;
+                cm.client_id = s->socket;
+                cm.server_id = obj1->phys_id; //! @todo Should this be the physID of obj1 or obj2
+                cm.set_colltype("PHYS");
+                cm.direction = phys_result.pce1.d;
+                cm.position = phys_result.pce1.p;
+                cm.energy = phys_result.e;
+                cm.msg = NULL;
+                cm.send(s->socket);
             }
 
             if (obj2->type == PHYSOBJECT_SMART)
             {
-                //SPO* s = (SPO*)obj2;
-                //! @todo Smart phys collision (other) messages
+                SPO* s = (SPO*)obj2;
+                cm.client_id = s->socket;
+                cm.server_id = obj2->phys_id; //! @todo Should this be the physID of obj1 or obj2
+                cm.set_colltype("PHYS");
+                cm.direction = phys_result.pce2.d;
+                cm.position = phys_result.pce2.p;
+                cm.energy = phys_result.e;
+                cm.msg = NULL;
+                cm.send(s->socket);
             }
         }
     }
@@ -724,6 +746,8 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
 {
     V3 g = { 0.0, 0.0, 0.0 };
     struct BeamCollisionResult beam_result;
+
+    // Needed to resolve the physical effects of the collision.
     struct PhysCollisionResult phys_result;
 
     struct Beam* b;
@@ -747,6 +771,55 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
 
             //! @todo Smarty beam collision messages
             //! @todo Beam collision messages
+            if (o->type == PHYSOBJECT_SMART)
+            {
+                struct SmartPhysicsObject* s = (SPO*)o;
+                CollisionMsg cm;
+                cm.client_id = s->socket;
+                cm.server_id = o->phys_id; //! @todo Should this be the physID of object or beam
+                cm.direction = beam_result.d;
+                cm.position = beam_result.p;
+                cm.energy = beam_result.e;
+                cm.msg = NULL;
+                
+                switch (b->type)
+                {
+                case BEAM_COMM:
+                    cm.set_colltype("COMM");
+                    cm.msg = b->comm_msg;
+                    cm.send(s->socket);
+                    break;
+                case BEAM_SCAN:
+                {
+                    cm.set_colltype("SCAN");
+                    cm.send(s->socket);
+
+                    ScanQueryMsg sqm;
+                    sqm.client_id = s->pobj.phys_id;
+                    sqm.server_id = b->phys_id;
+                    sqm.scan_id = b->phys_id;
+                    sqm.energy = cm.energy;
+                    sqm.direction = cm.direction;
+                    sqm.send(s->socket);
+
+                    // Add the query to the universe so that it can send the response beam
+                    // when the osim responds.
+                    // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+                    B* b_copy = (B*)malloc(sizeof(B));
+                    *b_copy = *b;
+                    //! @todo There's a bug here if a beam hits more than one target before the
+                    // first one respones and this gets cleared.
+                    u->queries[b->phys_id] = { b_copy, cm.energy, cm.position };
+                    break;
+                }
+                case BEAM_WEAP:
+                    cm.set_colltype("WEAP");
+                    cm.send(s->socket);
+                    break;
+                default:
+                    break;
+                }
+            }
         }
     }
 

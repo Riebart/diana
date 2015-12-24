@@ -329,6 +329,7 @@ void PhysicsObject_resolve_damage(PO* obj, double energy)
 	// We'll take damage if we absorb an impact whose energy is above ten percent
 	// of our current health, and only by the energy that is above that threshold
 
+    //! @todo Don't do this for smarties!
 	if (obj->health < 0)
 	{
 		return;
@@ -439,40 +440,41 @@ PO* PhysicsObject_clone(PO* obj)
     return ret;
 }
 
-//! @todo fix variable and argument names. They aren't types.
 //! @param args This describes the information about the thing that hit obj, that is other.
-void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, struct PhysCollisionEffect* effect)
+void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struct PhysCollisionEffect* effect)
 {
-	switch (othert->type)
+	switch (other->type)
 	{
 	case PHYSOBJECT:
 	case PHYSOBJECT_SMART:
 	{
-		PO* obj = (PO*)objt;
 		PhysicsObject_resolve_phys_collision(obj, energy, dt, effect);
 		PhysicsObject_resolve_damage(obj, energy);
 		break;
 	}
 	case BEAM_WEAP:
 	{
-		PO* obj = (PO*)objt;
 		PhysicsObject_resolve_damage(obj, energy);
 		break;
 	}
 	case BEAM_SCAN:
 	{
-		PO* obj = (PO*)objt;
-		Beam* other = (Beam*)othert;
-		Beam* res = Beam_make_return_beam(other, energy, &effect->p, BEAM_SCANRESULT);
-		res->type = BEAM_SCANRESULT;
-        //! @warn There's a use-after-free bug sitting right here. Should duplicate the object, so that the original
-        // can expire safely before the scan result gets back to someone.
-		res->scan_target = PhysicsObject_clone(obj);
-        if (res->scan_target == NULL)
+        // Note that Smarties are handled back in the universe, since a response beam
+        // needs to wait for a ScanQuery and ScanQueryResponse to fill in the response beam
+        // with data.
+        if (obj->type == PHYSOBJECT)
         {
-            throw "OOMError::ScanTargetAllocFailed";
+            Beam* b = (Beam*)other;
+            Beam* res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+            res->type = BEAM_SCANRESULT;
+
+            res->scan_target = PhysicsObject_clone(obj);
+            if (res->scan_target == NULL)
+            {
+                throw "OOMError::ScanTargetAllocFailed";
+            }
+            obj->universe->add_object((PO*)res);
         }
-		obj->universe->add_object((PO*)res);
 		break;
 	}
     case BEAM_COMM:
@@ -488,13 +490,13 @@ void PhysicsObject_collision(PO* objt, PO* othert, double energy, double dt, str
 	}
 }
 
-void SmartPhysicsObject_init(SPO* obj, int32_t client, uint64_t osim_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
 {
 	PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type);
 	obj->pobj.type = PHYSOBJECT_SMART;
 
-	obj->client = client;
-	//obj->osim_id = osim_id;
+    obj->socket = socket;
+    obj->client_id = client_id;
 	//obj->vis_data = false;
 	//obj->vis_meta_data = false;
 	//obj->exists = true;

@@ -91,12 +91,13 @@ class Universe
 	friend void* sim(void* u);
 
 	friend void Universe_hangup_objects(int32_t c, void* arg);
-	friend void Universe_handle_message(int32_t c, void* arg);
+    friend void Universe_handle_message(int32_t socket, void* arg);
 	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
     friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
     friend void* thread_check_collisions(void* argsV);
     friend void check_collision_loop(void* argsV);
+    friend void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
 
     friend void* vis_data_thread(void* argv);
 
@@ -147,7 +148,7 @@ private:
 	void sort_aabb(double dt, bool calc);
 	//void get_collisions();
 	void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
-	void handle_message(int32_t c);
+    void handle_message(int32_t socket);
 	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
     struct vis_client
@@ -173,6 +174,14 @@ private:
 	std::vector<int64_t> expired;
 	std::vector<struct PhysicsObject*> added;
 
+    struct scan_origin
+    {
+        //! @todo Why won't this let me use a struct, it complains about undefined type.
+        struct Beam* origin_beam;
+        double energy;
+        struct Vector3 hit_position;
+    };
+
 	//! Keeps track of the queries from SCAN beam collisions that are in progress.
 	//! When a scan beam collides with a smart objects, certain information can
 	//! be reported, but that requires a query to the OSim. These queries are
@@ -180,7 +189,7 @@ private:
 	//! this structure. When the query result message comes back, the original
 	//! collision information is retrieved, the SCANRESULT beam is built and
 	//! added to the universe.
-	std::map<int64_t, int64_t> queries;
+    std::map<int64_t, struct scan_origin> queries;
 
     //! Structure holding the arguments for the threaded checking of collisions
     struct phys_args

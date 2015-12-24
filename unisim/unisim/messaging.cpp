@@ -320,6 +320,7 @@ CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
     direction = ReadVector3(br);
     energy = ReadDouble(br);
     ReadString(br, coll_type, 4);
+    //! @todo Move these to an enum?
     if (strcmp(coll_type, "COMM") == 0)
     {
         msg = ReadString(br);
@@ -338,6 +339,15 @@ CollisionMsg::~CollisionMsg()
     }
 }
 
+void CollisionMsg::set_colltype(char* type)
+{
+    coll_type[0] = type[0];
+    coll_type[1] = type[1];
+    coll_type[2] = type[2];
+    coll_type[3] = type[3];
+    coll_type[4] = type[4];
+}
+
 int64_t CollisionMsg::send(int sock)
 {
     SEND_PROLOGUE(Collision);
@@ -348,6 +358,10 @@ int64_t CollisionMsg::send(int sock)
     if (strcmp(coll_type, "COMM") == 0)
     {
         bw.push(msg);
+    }
+    else
+    {
+        bw.push("");
     }
     SEND_EPILOGUE();
 }

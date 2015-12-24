@@ -124,6 +124,7 @@ public:
     CollisionMsg(BSONReader* _br, MessageType _msg_type);
     ~CollisionMsg();
     int64_t send(int sock);
+    void set_colltype(char* type);
 
     char coll_type[5];
     char* msg;

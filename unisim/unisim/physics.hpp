@@ -80,7 +80,8 @@ struct SmartPhysicsObject
 	//    //! Query ID (UNUSED)
 	//    query_id;
 	//! Client FD to talk out of.
-	int32_t client;
+	int32_t socket;
+    int64_t client_id;
 	//!// Is this client registered for vis data
 	//bool vis_data,
 	//    //! Is this client registered for vis meta data
@@ -160,7 +161,7 @@ void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
 void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, double dt, struct PhysCollisionEffect* pce);
 void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
-void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t client, int64_t osim_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg = NULL);
 void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg = NULL);
