@@ -462,21 +462,28 @@ void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struc
         // Note that Smarties are handled back in the universe, since a response beam
         // needs to wait for a ScanQuery and ScanQueryResponse to fill in the response beam
         // with data.
+        //
+        // This isn't done to separate beams and phys-objects, since a beam will always be the other
+        // object here (beams collide into objects, not the other way around).
         if (obj->type == PHYSOBJECT)
         {
             Beam* b = (Beam*)other;
             Beam* res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
-            res->type = BEAM_SCANRESULT;
 
             res->scan_target = PhysicsObject_clone(obj);
             if (res->scan_target == NULL)
             {
                 throw "OOMError::ScanTargetAllocFailed";
             }
-            obj->universe->add_object((PO*)res);
+            obj->universe->add_object(res);
         }
 		break;
 	}
+    case BEAM_SCANRESULT:
+    {
+        // ScanResult beams have no physical effect, and don't do anything to non-Smarty objects.
+        break;
+    }
     case BEAM_COMM:
     {
         // Note that COMM beams have no physical effect on the world, so don't have a case here.
@@ -503,7 +510,7 @@ void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Unive
 	//obj->parent_phys_id = 0;
 }
 
-void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg)
+void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data)
 {
     beam->phys_id = 0;
 	beam->universe = universe;
@@ -520,12 +527,13 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V
 	beam->type = type;
     beam->scan_target = NULL;
     beam->comm_msg = const_cast<char*>(comm_msg);
+    beam->data = data;
 
 	beam->distance_travelled = 0;
 	beam->max_distance = sqrt(energy / (area_factor * 1e-10));
 }
 
-void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg)
+void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data)
 {
 	V3 direction = *velocity;
 	Vector3_normalize(&direction);
@@ -540,7 +548,7 @@ void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, do
 	double cosh = cos(angle_h / 2);
 	double cosv = cos(angle_v / 2);
 
-	Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg);
+	Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg, data);
 }
 
 void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)

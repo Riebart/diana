@@ -69,7 +69,7 @@ void pool_rack()
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
 	position.x = 0.0;
-    position.y = 10;
+    position.y = 2;
 	position.z = 0.0;
 	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
 	u->add_object(obj);
@@ -137,7 +137,7 @@ void beam_collision()
 
 	beam = (struct Beam*)malloc(sizeof(struct Beam));
 	beams.push_back(beam);
-	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_WEAP);
+	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_SCAN);
 	u->add_object((struct PhysicsObject*)beam);
 
 	double mass = 1.0;
@@ -369,13 +369,13 @@ int main(int32_t argc, char** argv)
 
 	try
 	{
-		pool_rack();
+		//pool_rack();
 		//simple_collision();
 		//fast_collision();
 		//shifting();
 		//collision_exit();
 
-		//beam_collision();
+		beam_collision();
 		//beam_multi_collision();
 
 		//print_positions();

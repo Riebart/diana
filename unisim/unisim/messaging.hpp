@@ -39,6 +39,7 @@ public:
     // Read a BSON message form a socket and return a pointer to a newly allocated object.
     static BSONMessage* ReadMessage(int sock);
     BSONMessage() { }
+    virtual ~BSONMessage() { };
 
 protected:
     BSONReader* br;
@@ -125,7 +126,7 @@ public:
     int64_t send(int sock);
 
     char beam_type[5];
-    char* msg;
+    char* comm_msg;
     double spread_h, spread_v, energy;
     struct Vector3 origin, velocity, up;
 };
@@ -140,7 +141,7 @@ public:
     void set_colltype(char* type);
 
     char coll_type[5];
-    char* msg;
+    char* comm_msg;
     double energy;
     struct Vector3 position, direction;
 };

@@ -348,11 +348,13 @@ void Universe::add_object(PO* obj)
 
     LOCK(add_lock);
     added.push_back(obj);
-    UNLOCK(add_lock);
+    UNLOCK(add_lock);          
 }
 
 void Universe::add_object(B* beam)
 {
+    //! @todo Are there issues with casting between Beams and POs?
+    // Before pack()-ing the beam struct, the phys_id was being rearranged into a padding portion.
     add_object((PO*)beam);
 }
 
@@ -478,6 +480,32 @@ void Universe::handle_message(int32_t socket)
         register_vis_client(vc, msg->enabled);
         break;
     }
+    case BSONMessage::Beam:
+    {
+        BeamMsg* msg = (BeamMsg*)msg_base;
+        B* b = (B*)malloc(sizeof(B));
+        PhysicsObjectType btype;
+        if (strcmp(msg->beam_type, "COMM") == 0)
+        {
+            btype = BEAM_COMM;
+        }
+        if (strcmp(msg->beam_type, "WEAP") == 0)
+        {
+            btype = BEAM_WEAP;
+        }
+        if (strcmp(msg->beam_type, "SCAN") == 0)
+        {
+            btype = BEAM_SCAN;
+        }
+        if (strcmp(msg->beam_type, "SCRE") == 0)
+        {
+            btype = BEAM_SCANRESULT;
+        }
+        
+        Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up, msg->spread_h, msg->spread_v, msg->energy, btype, msg->comm_msg, NULL);
+        add_object(b);
+        break;
+    }
     case BSONMessage::MessageType::Spawn:
     {
         SpawnMsg* msg = (SpawnMsg*)msg_base;
@@ -509,7 +537,29 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::ScanResponse:
     {
         ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
+        struct Universe::scan_target st = { msg->scan_id, msg->server_id };
 
+        // We SHOULD be able to find the target in the map, and something is very
+        // wrong if we can't.
+        std::map<Universe::scan_target, Universe::scan_origin>::iterator it = queries.find(st);
+        if (it != queries.end())
+        {
+            struct scan_origin so = it->second;
+            Beam* return_beam = Beam_make_return_beam(so.origin_beam, so.energy, &so.hit_position, PhysicsObjectType::BEAM_SCANRESULT);
+            return_beam->scan_target = so.origin_beam->scan_target;
+            char* data_copy = (char*)malloc(strlen(msg->data) + 1);
+            memcpy(data_copy, msg->data, strlen(msg->data) + 1);
+            //! @todo The value of the ->data member should be NULL here, verify that.
+            return_beam->data = data_copy;
+            free(so.origin_beam);
+            add_object(return_beam);
+            queries.erase(it);
+        }
+        else
+        {
+            //! @todo Bad things? This should be handled gracefully
+            throw "ShouldSendErrorMsg";
+        }
         break;
     }
     case BSONMessage::MessageType::Hello:
@@ -521,6 +571,7 @@ void Universe::handle_message(int32_t socket)
         throw "Universe::UnrecognizedMessageType";
     }
 
+    //! @todo Check that this calls the right desstructors, specifically of the children.
     delete msg_base;
 }
 
@@ -575,7 +626,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
             // Alert the smarties that there was a collision
             // Only physical collisions are generated here, beams are elsewhere.
             CollisionMsg cm;
-            cm.msg = NULL;
+            cm.comm_msg = NULL;
 
             if (obj1->type == PHYSOBJECT_SMART)
             {
@@ -586,7 +637,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 cm.direction = phys_result.pce1.d;
                 cm.position = phys_result.pce1.p;
                 cm.energy = phys_result.e;
-                cm.msg = NULL;
+                cm.comm_msg = NULL;
                 cm.send(s->socket);
             }
 
@@ -599,7 +650,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 cm.direction = phys_result.pce2.d;
                 cm.position = phys_result.pce2.p;
                 cm.energy = phys_result.e;
-                cm.msg = NULL;
+                cm.comm_msg = NULL;
                 cm.send(s->socket);
             }
         }
@@ -778,13 +829,13 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 cm.direction = beam_result.d;
                 cm.position = beam_result.p;
                 cm.energy = beam_result.e;
-                cm.msg = NULL;
+                cm.comm_msg = NULL;
                 
                 switch (b->type)
                 {
                 case BEAM_COMM:
                     cm.set_colltype("COMM");
-                    cm.msg = b->comm_msg;
+                    cm.comm_msg = b->comm_msg;
                     cm.send(s->socket);
                     break;
                 case BEAM_SCAN:
@@ -799,20 +850,51 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
                     sqm.send(s->socket);
-
-                    // Add the query to the universe so that it can send the response beam
-                    // when the osim responds.
-                    // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
-                    B* b_copy = (B*)malloc(sizeof(B));
-                    *b_copy = *b;
                     
                     // Ignore multiple hits of the same beam/object pair.
+                    // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
                     struct Universe::scan_target st = { b->phys_id, o->phys_id };
                     std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
                     if ((it == u->queries.end()) || !(st == (it->first)))
                     {
+                        // Add the query to the universe so that it can send the response beam
+                        // when the osim responds.
+                        // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+                        // Clone the beam so that if the beam expires before the return beam is sent, we don't access the freed space.
+                        B* b_copy = (B*)malloc(sizeof(B));
+                        PO* o_copy = PhysicsObject_clone(o);
+                        if ((b_copy == NULL) || (o_copy == NULL))
+                        {
+                            throw "OOM::Universe::BeamHitObjClone";
+                        }
+
+                        *b_copy = *b;
+                        b_copy->scan_target = o_copy;
                         u->queries[st] = { b_copy, cm.energy, cm.position };
                     }
+                    break;
+                }
+                case BEAM_SCANRESULT:
+                {
+                    //! @todo This feels forced, ugh...
+                    cm.set_colltype("SCRE");
+                    cm.send(s->socket);
+
+                    //! @todo Should we consider only sending this message if the phys_id of the object matches that of the originator?
+                    // We'd need to add that information to the beaming chain.
+                    ScanResultMsg srm;
+                    srm.client_id = s->client_id;
+                    srm.server_id = s->pobj.phys_id;
+                    srm.position = b->scan_target->position;
+                    srm.velocity = b->scan_target->velocity;
+                    srm.thrust = b->scan_target->thrust;
+                    srm.mass = b->scan_target->mass;
+                    srm.radius = b->scan_target->radius;
+                    srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
+                    srm.obj_type = b->scan_target->obj_type;
+                    srm.data = b->data;
+                    srm.send(s->socket);
+
                     break;
                 }
                 case BEAM_WEAP:
@@ -928,12 +1010,18 @@ void Universe::tick(double dt)
                         {
                             if (beams[k]->phys_id == expired[j])
                             {
+                                if (beams[k]->data != NULL)
+                                {
+                                    free(beams[k]->data);
+                                }
+                                
                                 if (beams[k]->scan_target != NULL)
                                 {
                                     // Remember, we cloned the object we're interested in into the scan_target
                                     // to prevent a use-after-free, so free that here.
                                     free(beams[k]->scan_target);
                                 }
+                                
                                 if (beams[k]->comm_msg != NULL)
                                 {
                                     free(beams[k]->comm_msg);

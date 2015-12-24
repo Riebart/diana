@@ -41,6 +41,10 @@ char* ReadString(BSONReader* br)
     struct BSONReader::Element el;
     el = br->get_next_element();
     char* ret = (char*)malloc(el.str_len);
+    if (ret == NULL)
+    {
+        throw "OOM you twat";
+    }
     memcpy(ret, el.str_val, el.str_len);
     return ret;
 }
@@ -281,19 +285,19 @@ BeamMsg::BeamMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg
     ReadString(br, beam_type, 5);
     if (strcmp(beam_type, "COMM") == 0)
     {
-        msg = ReadString(br);
+        comm_msg = ReadString(br);
     }
     else
     {
-        msg = NULL;
+        comm_msg = NULL;
     }
 }
 
 BeamMsg::~BeamMsg()
 {
-    if (msg != NULL)
+    if (comm_msg != NULL)
     {
-        free(msg);
+        free(comm_msg);
     }
 }
 
@@ -309,7 +313,7 @@ int64_t BeamMsg::send(int sock)
     bw.push(beam_type);
     if (strcmp(beam_type, "COMM") == 0)
     {
-        bw.push(msg);
+        bw.push(comm_msg);
     }
     SEND_EPILOGUE();
 }
@@ -320,22 +324,22 @@ CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
     direction = ReadVector3(br);
     energy = ReadDouble(br);
     ReadString(br, coll_type, 4);
-    //! @todo Move these to an enum?
+    //! @todo Move these to an enum? It is at the top of physics_hpp, and used in the physics *_init() functions for POs and Beams.
     if (strcmp(coll_type, "COMM") == 0)
     {
-        msg = ReadString(br);
+        comm_msg = ReadString(br);
     }
     else
     {
-        msg = NULL;
+        comm_msg = NULL;
     }
 }
 
 CollisionMsg::~CollisionMsg()
 {
-    if (msg != NULL)
+    if (comm_msg != NULL)
     {
-        free(msg);
+        free(comm_msg);
     }
 }
 
@@ -357,7 +361,7 @@ int64_t CollisionMsg::send(int sock)
     bw.push(coll_type);
     if (strcmp(coll_type, "COMM") == 0)
     {
-        bw.push(msg);
+        bw.push(comm_msg);
     }
     else
     {
@@ -423,7 +427,14 @@ int64_t ScanResultMsg::send(int sock)
     PushVector4(&bw, &orientation);
     PushVector3(&bw, &thrust);
     bw.push(radius);
-    bw.push(data);
+    if (data != NULL)
+    {
+        bw.push(data);
+    }
+    else
+    {
+        bw.push("");
+    }
     SEND_EPILOGUE();
 }
 
@@ -457,7 +468,14 @@ ScanResponseMsg::~ScanResponseMsg()
 int64_t ScanResponseMsg::send(int sock)
 {
     SEND_PROLOGUE(ScanResponse);
-    bw.push(data);
+    if (data != NULL)
+    {
+        bw.push(data);
+    }
+    else
+    {
+        bw.push("");
+    }
     SEND_EPILOGUE();
 }
 
@@ -491,6 +509,7 @@ DirectoryMsg::~DirectoryMsg()
         free(items[i].name);
     }
     free(items);
+    free(item_type);
 }
 
 int64_t DirectoryMsg::send(int sock)
