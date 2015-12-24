@@ -8,9 +8,11 @@
 
 class BSONReader;
 
+// The general superclass of all messages
 class BSONMessage
 {
 public:
+    // A enumeration of all message types, and their IDs.
     enum MessageType
     {
         Reservedx00 = 0, Hello = 1, PhysicalProperties = 2, VisualProperties = 3, VisualDataEnable = 4,
@@ -20,10 +22,21 @@ public:
         InfoUpdate = 21, RequestUpdate = 22
     };
 
+    // Type of message, stored in the first field, an Int32 field with the name MsgType
+    // of every message.
     MessageType msg_type;
-    int64_t server_id;
-    int64_t client_id;
 
+    // The referece ID on the 'server' as appropriate for the message
+    // For OSIM-Unisim messages, this is a phys_id, for end-user-client to OSIM
+    // messages, this is an OSIM ID.
+    int64_t server_id;
+    
+    // The referece ID on the 'client' as appropriate for the message
+    // For OSIM-Unisim messages, this is an OSIM ID, and for end-user to OSIM messages
+    // this will be an ID that is determined local to the end-user client.
+    int64_t client_id;
+    
+    // Read a BSON message form a socket and return a pointer to a newly allocated object.
     static BSONMessage* ReadMessage(int sock);
     BSONMessage() { }
 

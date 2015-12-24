@@ -384,17 +384,14 @@ void Universe::register_vis_client(struct vis_client vc, bool enabled)
     LOCK(vis_lock);
     
     // Try to find the one we're looking for.
-    std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc,
-        [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
-
-    bool found = (vis_clients.size() == 0 ? false : (memcmp(&vc, &*it, sizeof(struct vis_client)) == 0));
+    std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc);
+    bool found = (vis_clients.size() == 0 ? false : (vc == *it));
     
     if (enabled && !found)
     {
         // If we find it, push it onto the back and re-sort the list.
         vis_clients.push_back(vc);
-        std::sort(vis_clients.begin(), vis_clients.end(),
-            [](struct vis_client a, struct vis_client b) { return (memcmp(&a, &b, sizeof(struct vis_client)) < 0); });
+        std::sort(vis_clients.begin(), vis_clients.end());
     }
     else if (!enabled && found)
     {
@@ -512,6 +509,7 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::ScanResponse:
     {
         ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
+
         break;
     }
     case BSONMessage::MessageType::Hello:
@@ -795,8 +793,8 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     cm.send(s->socket);
 
                     ScanQueryMsg sqm;
-                    sqm.client_id = s->pobj.phys_id;
-                    sqm.server_id = b->phys_id;
+                    sqm.client_id = s->client_id;
+                    sqm.server_id = s->pobj.phys_id;
                     sqm.scan_id = b->phys_id;
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
@@ -807,9 +805,14 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
                     B* b_copy = (B*)malloc(sizeof(B));
                     *b_copy = *b;
-                    //! @todo There's a bug here if a beam hits more than one target before the
-                    // first one respones and this gets cleared.
-                    u->queries[b->phys_id] = { b_copy, cm.energy, cm.position };
+                    
+                    // Ignore multiple hits of the same beam/object pair.
+                    struct Universe::scan_target st = { b->phys_id, o->phys_id };
+                    std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
+                    if ((it == u->queries.end()) || !(st == (it->first)))
+                    {
+                        u->queries[st] = { b_copy, cm.energy, cm.position };
+                    }
                     break;
                 }
                 case BEAM_WEAP:

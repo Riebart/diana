@@ -24,6 +24,7 @@ class Universe;
 enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP };
 
 //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
+#pragma pack(1)
 struct PhysicsObject
 {
 	//! Type of PhysicsObject
@@ -64,10 +65,12 @@ struct PhysicsObject
 	//! Make sure to call Universe::update_attractor if you set this or change the mass/radius.
 	bool emits_gravity;
 };
+#pragma pack()
 
 //! @note The pack() pragmas here actually improve performance under Release MSVS2012 x64 by a very consistent 6%
 //! @note But unpacking them is a reliable way to get the fields ordered right?
 
+#pragma pack(1)
 //! A smart physics object which is a physics object that ties back to a ship or other object over a socket.
 struct SmartPhysicsObject
 {
@@ -89,6 +92,7 @@ struct SmartPhysicsObject
 	//    //! Does this exist in the world (UNUSED)
 	//    exists;
 };
+#pragma pack()
 
 //! A beam as it exists in the universe
 struct Beam

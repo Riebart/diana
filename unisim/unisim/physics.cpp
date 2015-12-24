@@ -695,6 +695,7 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 		double object_surface = M_PI * obj->radius * obj->radius;
 
 		double energy_factor = object_surface / wavefront_area;
+        //! @todo Expire the beam if it's more than some cutoff for energy factor.
 		energy_factor = MIN(1.0, energy_factor);
 		bcr->e = b->energy * energy_factor;
 	}

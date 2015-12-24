@@ -88,11 +88,11 @@ typedef uint64_t ATOMIC_T;
 //! constraints and are, perhaps, not interactive.
 class Universe
 {
-	friend void* sim(void* u);
+    friend void* sim(void* u);
 
-	friend void Universe_hangup_objects(int32_t c, void* arg);
+    friend void Universe_hangup_objects(int32_t c, void* arg);
     friend void Universe_handle_message(int32_t socket, void* arg);
-	friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
 
     friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
     friend void* thread_check_collisions(void* argsV);
@@ -102,60 +102,74 @@ class Universe
     friend void* vis_data_thread(void* argv);
 
 public:
-	Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
-	~Universe();
-	void start_net();
-	void stop_net();
-	void start_sim();
+    Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
+    ~Universe();
+    void start_net();
+    void stop_net();
+    void start_sim();
     void pause_sim();
     void pause_visdata();
-	void stop_sim();
+    void stop_sim();
 
-	//! The parameter should have space for four doubles:
-	//! The time spent actually calculating physics.
-	//! The wall clock time spent on the last tick, including physics and sleeping
-	//! The time elapsed in game on the last physics tick.
-	//! The wall clock duration of the last visdata blast.
-	void get_frametime(double* out);
+    //! The parameter should have space for four doubles:
+    //! The time spent actually calculating physics.
+    //! The wall clock time spent on the last tick, including physics and sleeping
+    //! The time elapsed in game on the last physics tick.
+    //! The wall clock duration of the last visdata blast.
+    void get_frametime(double* out);
 
-	//! Get the total number of ticks so far.
-	uint64_t get_ticks();
+    //! Get the total number of ticks so far.
+    uint64_t get_ticks();
 
-	//! Get the total amount of time passed inside the simulation.
-	double total_sim_time();
+    //! Get the total amount of time passed inside the simulation.
+    double total_sim_time();
 
-	//! Add an object to the universe. It will appear on the next physics tick.
-	//! This function is used when the universe has never seen the object before.
-	//! Objects have their phys_id property set, and are queued to be added
-	//! at the end of the current physics tick.
-	//! @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
-	void add_object(struct PhysicsObject* obj);
-	void add_object(struct Beam* beam);
+    //! Add an object to the universe. It will appear on the next physics tick.
+    //! This function is used when the universe has never seen the object before.
+    //! Objects have their phys_id property set, and are queued to be added
+    //! at the end of the current physics tick.
+    //! @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
+    void add_object(struct PhysicsObject* obj);
+    void add_object(struct Beam* beam);
 
-	//! Queue an object for expiry in the next physics tick.
-	void expire(int64_t phys_id);
+    //! Queue an object for expiry in the next physics tick.
+    void expire(int64_t phys_id);
 
-	//! Expire all objects in the universe associated with the given client.
-	void hangup_objects(int32_t c);
+    //! Expire all objects in the universe associated with the given client.
+    void hangup_objects(int32_t c);
 
-	//! Update whether or not an object emits gravity.
-	void update_attractor(struct PhysicsObject* obj, bool calculate);
+    //! Update whether or not an object emits gravity.
+    void update_attractor(struct PhysicsObject* obj, bool calculate);
 
 private:
-	int64_t get_id();
-	void broadcast_vis_data();
-	void tick(double dt);
-	void sort_aabb(double dt, bool calc);
-	//void get_collisions();
-	void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
+    int64_t get_id();
+    void broadcast_vis_data();
+    void tick(double dt);
+    void sort_aabb(double dt, bool calc);
+    //void get_collisions();
+    void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
     void handle_message(int32_t socket);
-	void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+    void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
     struct vis_client
     {
         int32_t socket;
         int64_t client_id;
         int64_t phys_id;
+
+        bool operator <(const struct vis_client& rhs) const
+        {
+            // Could also use std::tie
+            return (socket < rhs.socket ? true :
+                (client_id < rhs.client_id ? true : phys_id < rhs.client_id));
+        }
+
+        bool operator ==(const struct vis_client& rhs) const
+        {
+            return ((socket == rhs.socket) &&
+                (client_id == rhs.client_id) &&
+                (phys_id == rhs.phys_id));
+        }
     };
 
     VisualDataMsg visdata_msg;
@@ -164,16 +178,39 @@ private:
     void register_vis_client(struct vis_client vc, bool enabled);
     std::vector<struct vis_client> vis_clients;
 
-	MIMOServer* net;
+    MIMOServer* net;
     libodb::Scheduler* sched;
 
-	std::map<int64_t, struct SmartPhysicsObject*> smarties;
-	std::vector<struct PhysicsObject*> attractors;
-	std::vector<struct PhysicsObject*> phys_objects;
-	std::vector<struct Beam*> beams;
-	std::vector<int64_t> expired;
-	std::vector<struct PhysicsObject*> added;
+    std::map<int64_t, struct SmartPhysicsObject*> smarties;
+    std::vector<struct PhysicsObject*> attractors;
+    std::vector<struct PhysicsObject*> phys_objects;
+    std::vector<struct Beam*> beams;
+    std::vector<int64_t> expired;
+    std::vector<struct PhysicsObject*> added;
 
+    // Represents the pair of IDs that uniquely identifies a beam/object collision event.
+    // This is used as the index object for SCAN queries sent to the OSIM.
+    struct scan_target
+    {
+        int64_t beam_id;
+        int64_t target_id;
+
+        bool operator <(const struct scan_target& rhs) const
+        {
+            // Could also use std::tie
+            return (beam_id < rhs.beam_id ? true : target_id < rhs.target_id);
+        }
+
+        bool operator ==(const struct scan_target& rhs) const
+        {
+            return ((beam_id == rhs.beam_id) &&
+                (target_id == rhs.target_id));
+        }
+    };
+
+    // The information required to build the response beam when the response comes back
+    // from the OSIM. It requires the energy of the impact, position of impact, and the
+    // original beam to recreate dispersion and orientation properties.
     struct scan_origin
     {
         //! @todo Why won't this let me use a struct, it complains about undefined type.
@@ -182,14 +219,14 @@ private:
         struct Vector3 hit_position;
     };
 
-	//! Keeps track of the queries from SCAN beam collisions that are in progress.
-	//! When a scan beam collides with a smart objects, certain information can
-	//! be reported, but that requires a query to the OSim. These queries are
-	//! sent over the network, with a unique ID, and the query ID is logged in
-	//! this structure. When the query result message comes back, the original
-	//! collision information is retrieved, the SCANRESULT beam is built and
-	//! added to the universe.
-    std::map<int64_t, struct scan_origin> queries;
+    //! Keeps track of the queries from SCAN beam collisions that are in progress.
+    //! When a scan beam collides with a smart objects, certain information can
+    //! be reported, but that requires a query to the OSim. These queries are
+    //! sent over the network, with a unique ID, and the query ID is logged in
+    //! this structure. When the query result message comes back, the original
+    //! collision information is retrieved, the SCANRESULT beam is built and
+    //! added to the universe.
+    std::map<struct scan_target, struct scan_origin> queries;
 
     //! Structure holding the arguments for the threaded checking of collisions
     struct phys_args
@@ -209,43 +246,43 @@ private:
     struct phys_args* phys_worker_args;
 
     //! @todo Move these threaded operations onto the scheduler, let it handle the asynchronous stuff
-	THREAD_T sim_thread;
-	THREAD_T vis_thread;
-	LOCK_T add_lock;
-	LOCK_T expire_lock;
-	LOCK_T phys_lock;
-	LOCK_T vis_lock;
+    THREAD_T sim_thread;
+    THREAD_T vis_thread;
+    LOCK_T add_lock;
+    LOCK_T expire_lock;
+    LOCK_T phys_lock;
+    LOCK_T vis_lock;
 
-	//! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
-	double rate;
-	//! Total time elapsed in the game world
-	double total_time;
-	//! The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks.
-	double min_frametime;
-	//! The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse.
-	double max_frametime;
-	//! The time spent calculating the physics on the last physics tick.
-	double phys_frametime;
-	//! The time elapsed calcualting physics and sleeping (if that happened) on the last physics tick.
-	double wall_frametime;
-	//! The time elapsed in the game world on the last physics tick.
-	double game_frametime;
-	//! The minimum time to spend between VISDATA blasts.
-	double min_vis_frametime;
-	//! The time spent sending out the last VISDATA blast.
-	double vis_frametime;
-	//! Total number of physics ticks so far.
-	volatile uint64_t num_ticks;
+    //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
+    double rate;
+    //! Total time elapsed in the game world
+    double total_time;
+    //! The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks.
+    double min_frametime;
+    //! The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse.
+    double max_frametime;
+    //! The time spent calculating the physics on the last physics tick.
+    double phys_frametime;
+    //! The time elapsed calcualting physics and sleeping (if that happened) on the last physics tick.
+    double wall_frametime;
+    //! The time elapsed in the game world on the last physics tick.
+    double game_frametime;
+    //! The minimum time to spend between VISDATA blasts.
+    double min_vis_frametime;
+    //! The time spent sending out the last VISDATA blast.
+    double vis_frametime;
+    //! Total number of physics ticks so far.
+    volatile uint64_t num_ticks;
 
-	int32_t num_threads;
+    int32_t num_threads;
     // Because these are used to control the running-state of threads, we need them to update
     // across caching with some reliability.
-	volatile bool paused;
+    volatile bool paused;
     volatile bool visdata_paused;
-	volatile bool running;
-	bool realtime;
+    volatile bool running;
+    bool realtime;
 
-	ATOMIC_T total_objs;
+    ATOMIC_T total_objs;
 };
 
 #endif
