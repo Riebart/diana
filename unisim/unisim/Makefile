@@ -11,7 +11,7 @@ clean:
 	rm unisim libdiana.so
 
 diana-shared:
-	$(CXX) $(CFLAGS) $(INDLUDE_DIR) $(FILES) $(EXT_LIBS) $(EXT_ST_LIBS) -o libdiana.so -fPIC -shared
+	$(CXX) $(CFLAGS) $(INCLUDE_DIR) $(FILES) $(EXT_LIBS) $(EXT_ST_LIBS) -o libdiana.so -fPIC -shared
 	cp libodb/linux-x64/libodb.so ./
 
 unisim-bin:
