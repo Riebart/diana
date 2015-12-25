@@ -226,6 +226,20 @@ int64_t VisualPropertiesMsg::send(int sock)
 
 VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
+    //struct BSONReader::Element el = br->get_next_element();
+    //while (el.name[0] != 0)
+    //{
+    //    switch (el.name[0])
+    //    {
+    //    case 1:
+    //        server_id = el.i64_val;
+    //    case 2:
+    //        client_id = el.i64_val;
+    //    case 3:
+    //        enabled = el.bln_val;
+    //    }
+    //    el = br->get_next_element();
+    //}
     enabled = ReadBool(br);
 }
 

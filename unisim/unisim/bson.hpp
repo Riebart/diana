@@ -530,7 +530,7 @@ private:
         {
             // Note that ANSI characters in the range of (decimal) 32 - 126 inclusive are
             // printable, but this just uses this as an 8-bit unsigned field.
-            if (tag_index > 255)
+            if (tag_index > 254)
             {
                 throw "OutOfMinimalTags";
             }

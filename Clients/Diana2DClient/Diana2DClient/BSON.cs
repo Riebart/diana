@@ -180,7 +180,7 @@ class BSONWriter
         }
         else if (name == null)
         {
-            if (tag_index > 255)
+            if (tag_index > 254)
             {
                 throw new Exception("Out of minimal tag values");
             }
