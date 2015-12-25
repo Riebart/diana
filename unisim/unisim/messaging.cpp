@@ -99,6 +99,8 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
     int32_t message_len = 0;
     int64_t nbytes = MIMOServer::socket_read(sock, (char*)(&message_len), 4);
 
+    //! @todo Do the right thing, and check that nbytes matches what it should.
+
     char* buf = (char*)malloc(message_len);
     if (buf == NULL)
     {
@@ -365,7 +367,7 @@ int64_t CollisionMsg::send(int sock)
     }
     else
     {
-        bw.push("");
+        bw.push((char*)"");
     }
     SEND_EPILOGUE();
 }
@@ -433,7 +435,7 @@ int64_t ScanResultMsg::send(int sock)
     }
     else
     {
-        bw.push("");
+        bw.push((char*)"");
     }
     SEND_EPILOGUE();
 }
@@ -474,7 +476,7 @@ int64_t ScanResponseMsg::send(int sock)
     }
     else
     {
-        bw.push("");
+        bw.push((char*)"");
     }
     SEND_EPILOGUE();
 }
