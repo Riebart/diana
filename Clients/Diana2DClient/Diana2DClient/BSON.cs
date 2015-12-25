@@ -160,20 +160,40 @@ class BSONReader
 
 class BSONWriter
 {
-    public BSONWriter(int is_array = -1)
+    public BSONWriter(bool is_array = false)
     {
         bytes = new MemoryStream();
         bw = new BinaryWriter(bytes);
         bw.Write((Int32)0);
         this.is_array = is_array;
+        tag_index = 0;
         child = null;
     }
 
-    String PrintArrayName()
+    String PrintArrayName(String name)
     {
-        String r = is_array.ToString();
-        is_array += 1;
-        return r;
+        if (is_array)
+        {
+            String r = tag_index.ToString();
+            tag_index += 1;
+            return r;
+        }
+        else if (name == null)
+        {
+            if (tag_index > 255)
+            {
+                throw new Exception("Out of minimal tag values");
+            }
+            String r = "";
+            r += (char)(tag_index);
+            r += (char)0;
+            tag_index += 1;
+            return r;
+        }
+        else
+        {
+            return name;
+        }
     }
 
     void WriteCString(String s)
@@ -187,7 +207,7 @@ class BSONWriter
 
     public bool Push(bool v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, bool v)
@@ -198,7 +218,7 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.Boolean);
             WriteCString(name);
             bw.Write(v);
@@ -208,7 +228,7 @@ class BSONWriter
 
     public bool Push(Int32 v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, Int32 v)
@@ -219,7 +239,7 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.Int32);
             WriteCString(name);
             bw.Write(v);
@@ -229,7 +249,7 @@ class BSONWriter
 
     public bool Push(Int64 v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, Int64 v, BSONReader.ElementType type = BSONReader.ElementType.Int64)
@@ -245,7 +265,7 @@ class BSONWriter
                 case BSONReader.ElementType.Int64:
                 case BSONReader.ElementType.UTCDateTime:
                 case BSONReader.ElementType.MongoTimeStamp:
-                    name = (is_array != -1 ? PrintArrayName() : name);
+                    name = PrintArrayName(name);
                     bw.Write((byte)type);
                     WriteCString(name);
                     bw.Write(v);
@@ -258,7 +278,7 @@ class BSONWriter
 
     public bool Push(double v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, double v)
@@ -269,7 +289,7 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.Double);
             WriteCString(name);
             bw.Write(v);
@@ -279,7 +299,7 @@ class BSONWriter
 
     public bool Push(String v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, String v, BSONReader.ElementType type = BSONReader.ElementType.String)
@@ -295,7 +315,7 @@ class BSONWriter
                 case BSONReader.ElementType.String:
                 case BSONReader.ElementType.JavaScript:
                 case BSONReader.ElementType.Deprecatedx0E:
-                    name = (is_array != -1 ? PrintArrayName() : name);
+                    name = PrintArrayName(name);
                     byte[] str_bytes = Encoding.UTF8.GetBytes(v.ToCharArray());
                     bw.Write((byte)BSONReader.ElementType.String);
                     WriteCString(name);
@@ -311,7 +331,7 @@ class BSONWriter
 
     public bool Push(byte[] v)
     {
-        return Push("", v);
+        return Push(null, v);
     }
 
     public bool Push(String name, byte[] v, byte subtype = 0)
@@ -322,7 +342,7 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.Binary);
             WriteCString(name);
             bw.Write((Int32)v.Length);
@@ -334,7 +354,7 @@ class BSONWriter
 
     public bool PushArray()
     {
-        return PushArray("");
+        return PushArray(null);
     }
 
     public bool PushArray(String name)
@@ -345,11 +365,11 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.Array);
             WriteCString(name);
 
-            child = new BSONWriter(0);
+            child = new BSONWriter(true);
             return true;
         }
     }
@@ -367,7 +387,7 @@ class BSONWriter
         }
         else
         {
-            name = (is_array != -1 ? PrintArrayName() : name);
+            name = PrintArrayName(name);
             bw.Write((byte)BSONReader.ElementType.SubDocument);
             WriteCString(name);
 
@@ -398,7 +418,8 @@ class BSONWriter
     }
 
     BSONWriter child;
-    int is_array;
+    bool is_array;
+    int tag_index;
     MemoryStream bytes;
     BinaryWriter bw;
 }

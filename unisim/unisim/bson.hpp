@@ -176,7 +176,6 @@ public:
     {
         out = NULL;
         child = NULL;
-        is_array = -1;
         reset();
     }
 
@@ -200,10 +199,8 @@ public:
             throw "OOM you twat";
         }
 
-        if (is_array > 0)
-        {
-            is_array = 0;
-        }
+        is_array = false;
+        tag_index = 0;
         
         pos = 4;
         child = NULL;
@@ -211,7 +208,7 @@ public:
 
     bool push(bool v)
     {
-        return push("", v);
+        return push((char*)NULL, v);
     }
 
     bool push(char* name, bool v)
@@ -222,7 +219,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 1);
             out[pos] = BSONReader::ElementType::Boolean;
@@ -237,7 +234,7 @@ public:
 
     bool push(int32_t v)
     {
-        return push("", v);
+        return push((char*)NULL, v);
     }
     
     bool push(char* name, int32_t v)
@@ -248,7 +245,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 4);
             out[pos] = BSONReader::ElementType::Int32;
@@ -263,7 +260,7 @@ public:
 
     bool push(int64_t v)
     {
-        return push("", v);
+        return push((char*)NULL, v);
     }
     
     bool push(char* name, int64_t v, int8_t type = BSONReader::ElementType::Int64)
@@ -274,7 +271,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
 
             switch (type)
@@ -298,7 +295,7 @@ public:
 
     bool push(double v)
     {
-        return push("", v);
+        return push((char*)NULL, v);
     }
     
     bool push(char* name, double v)
@@ -309,7 +306,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 8);
             out[pos] = BSONReader::ElementType::Double;
@@ -324,7 +321,7 @@ public:
 
     bool push(char* v)
     {
-        return push("", v);
+        return push((char*)NULL, v);
     }
     
     bool push(char* name, char* v, int32_t len = -1, int8_t type = BSONReader::ElementType::String)
@@ -339,7 +336,7 @@ public:
             {
                 len = strlen(v);
             }
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
 
             switch (type)
@@ -367,7 +364,7 @@ public:
 
     bool push(uint8_t* bin, int32_t len)
     {
-        return push("", bin, len);
+        return push((char*)NULL, bin, len);
     }
 
     bool push(char* name, uint8_t* bin, int32_t len, uint8_t subtype = 0)
@@ -378,7 +375,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len + 4 + 1 + len); // Type, name, length, subtype, data
             out[pos] = BSONReader::ElementType::Binary;
@@ -397,7 +394,7 @@ public:
 
     bool push_array()
     {
-        return push_array("");
+        return push_array((char*)NULL);
     }
     
     bool push_array(char* name)
@@ -408,7 +405,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len);
             out[pos] = BSONReader::ElementType::Array;
@@ -416,14 +413,14 @@ public:
             memcpy(out + pos, name, name_len);
             pos += name_len;
 
-            child = new BSONWriter(0);
+            child = new BSONWriter(true);
             return true;
         }
     }
 
     bool push_subdoc()
     {
-        return push_subdoc("");
+        return push_subdoc((char*)NULL);
     }
     
     bool push_subdoc(char* name)
@@ -434,7 +431,7 @@ public:
         }
         else
         {
-            name = (is_array != -1 ? print_array_name() : name);
+            name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
             enlarge(1 + name_len);
             out[pos] = BSONReader::ElementType::SubDocument;
@@ -483,17 +480,19 @@ public:
     }
 
 private:
-    BSONWriter(int32_t _is_array)
+    BSONWriter(bool _is_array)
     {
         out = NULL;
         child = NULL;
-        is_array = _is_array;
         reset();
+        is_array = _is_array;
     }
     
-    uint8_t* out;
-    int32_t is_array = -1;
+    bool is_array;
+    int32_t tag_index = 0;
     char array_name[10];
+    
+    uint8_t* out;
     uint64_t pos;
     BSONWriter* child;
 
@@ -510,16 +509,42 @@ private:
         }
     }
 
-    char* print_array_name()
+    char* print_array_name(char* name)
     {
-        // Windows notes that sprintf_s is available.
+        // If we're an array, we don't care what the name is, print the numeric
+        // value of the tag_index into the char buffer, and return that.
+        if (is_array)
+        {
+            // Windows notes that sprintf_s is available.
 #ifdef WIN32
-        sprintf_s(array_name, "%d", is_array);
+            sprintf_s(array_name, "%d", tag_index);
 #else
-        sprintf(array_name, "%d", is_array);
+            sprintf(array_name, "%d", tag_index);
 #endif
-        is_array += 1;
-        return array_name;
+            tag_index += 1;
+            return array_name;
+        }
+        // If the name is NULL, one was unspecified, so fill it in with a one-character
+        // tag
+        else if (name == NULL)
+        {
+            // Note that ANSI characters in the range of (decimal) 32 - 126 inclusive are
+            // printable, but this just uses this as an 8-bit unsigned field.
+            if (tag_index > 255)
+            {
+                throw "OutOfMinimalTags";
+            }
+            array_name[0] = (char)tag_index;
+            array_name[1] = 0;
+            tag_index++;
+            return array_name;
+        }
+        // If it's not an array, and the name isn't NULL (that is, it is specified), 
+        // then use the name we got.
+        else
+        {
+            return name;
+        }
     }
 };
 

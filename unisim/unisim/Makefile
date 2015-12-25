@@ -1,7 +1,7 @@
 CXX=g++
 INCLUDE_DIR=-I . -I libodb/src/include
 CFLAGS=-O3 -Wall -g -pthread -fopenmp -std=c++11
-FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp
+FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp messaging.cpp
 EXT_LIBS=-lodb -Llibodb/linux-x64
 EXT_ST_LIBS=
 
