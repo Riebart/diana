@@ -368,11 +368,12 @@ void Universe::expire(int64_t phys_id)
 void Universe::hangup_objects(int32_t c)
 {
     LOCK(expire_lock);
+    //! @todo Add a second std::map to change out this linear search.
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it;
 
     for (it = smarties.begin(); it != smarties.end(); ++it)
     {
-        if (it->second->socket == c)
+        if ((it->second != NULL) && (it->second->socket == c))
         {
             expired.push_back(it->first);
         }

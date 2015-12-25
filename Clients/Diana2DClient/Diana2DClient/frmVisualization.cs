@@ -182,6 +182,9 @@ namespace Diana2DClient
                 VisDataEnableMessage.Send(s, smarty.osim_id, smarty.client_id, false);
             }
 
+            // There's a weird race condition where this force-closes the socket, and the data doesn't always make it to the
+            // application on the remote end. 250ms should be enough time for the message to get processed. This is bad though.
+            Thread.Sleep(250);
             s.Flush();
             s.Close();
             client.Close();

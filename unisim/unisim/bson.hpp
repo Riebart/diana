@@ -534,7 +534,9 @@ private:
             {
                 throw "OutOfMinimalTags";
             }
-            array_name[0] = (char)tag_index;
+
+            // Because we're using the actual integer values, we need to start at 1, otherwise we'll have a pair of NULL characters.
+            array_name[0] = (char)(tag_index + 1);
             array_name[1] = 0;
             tag_index++;
             return array_name;

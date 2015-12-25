@@ -465,6 +465,7 @@ void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struc
         //
         // This isn't done to separate beams and phys-objects, since a beam will always be the other
         // object here (beams collide into objects, not the other way around).
+
         if (obj->type == PHYSOBJECT)
         {
             Beam* b = (Beam*)other;

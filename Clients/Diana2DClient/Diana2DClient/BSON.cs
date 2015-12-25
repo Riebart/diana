@@ -184,9 +184,7 @@ class BSONWriter
             {
                 throw new Exception("Out of minimal tag values");
             }
-            String r = "";
-            r += (char)(tag_index);
-            r += (char)0;
+            String r = "" + (char)(tag_index + 1);
             tag_index += 1;
             return r;
         }
