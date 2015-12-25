@@ -3,7 +3,7 @@
 #include "MIMOServer.hpp"
 
 // There's some boilerplate stuff that happens for ever send, so here's the bookends that do it.
-#define SEND_PROLOGUE(msg_type) BSONWriter bw; bw.push("MsgType", msg_type); bw.push(server_id); bw.push(client_id);
+#define SEND_PROLOGUE(msg_type) BSONWriter bw; bw.push((char*)"MsgType", msg_type); bw.push(server_id); bw.push(client_id);
 #define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, (char*)bytes, *(int32_t*)bytes);
 
 double ReadDouble(BSONReader* br)

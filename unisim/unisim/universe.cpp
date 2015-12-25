@@ -445,7 +445,7 @@ void Universe::broadcast_vis_data()
             if (nbytes < 0)
             {
                 vis_clients.erase(it);
-                printf("Client %d erased due to failed network send");
+                printf("Client %d erased due to failed network send", vc.socket);
                 disconnect = true;
                 break;
             }
@@ -634,7 +634,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 SPO* s = (SPO*)obj1;
                 cm.client_id = s->socket;
                 cm.server_id = obj1->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                cm.set_colltype("PHYS");
+                cm.set_colltype((char*)"PHYS");
                 cm.direction = phys_result.pce1.d;
                 cm.position = phys_result.pce1.p;
                 cm.energy = phys_result.e;
@@ -647,7 +647,7 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 SPO* s = (SPO*)obj2;
                 cm.client_id = s->socket;
                 cm.server_id = obj2->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                cm.set_colltype("PHYS");
+                cm.set_colltype((char*)"PHYS");
                 cm.direction = phys_result.pce2.d;
                 cm.position = phys_result.pce2.p;
                 cm.energy = phys_result.e;
@@ -835,13 +835,13 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 switch (b->type)
                 {
                 case BEAM_COMM:
-                    cm.set_colltype("COMM");
+                    cm.set_colltype((char*)"COMM");
                     cm.comm_msg = b->comm_msg;
                     cm.send(s->socket);
                     break;
                 case BEAM_SCAN:
                 {
-                    cm.set_colltype("SCAN");
+                    cm.set_colltype((char*)"SCAN");
                     cm.send(s->socket);
 
                     ScanQueryMsg sqm;
@@ -878,7 +878,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 case BEAM_SCANRESULT:
                 {
                     //! @todo This feels forced, ugh...
-                    cm.set_colltype("SCRE");
+                    cm.set_colltype((char*)"SCRE");
                     cm.send(s->socket);
 
                     //! @todo Should we consider only sending this message if the phys_id of the object matches that of the originator?
@@ -899,7 +899,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     break;
                 }
                 case BEAM_WEAP:
-                    cm.set_colltype("WEAP");
+                    cm.set_colltype((char*)"WEAP");
                     cm.send(s->socket);
                     break;
                 default:
