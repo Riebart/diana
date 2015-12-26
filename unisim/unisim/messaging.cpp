@@ -176,11 +176,10 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
 
 HelloMsg::HelloMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
-    // This is just a token SYN, for ID establishing on both sides.
 }
 
 int64_t HelloMsg::send(int sock)
-{    
+{
     SEND_PROLOGUE(Hello);
     SEND_EPILOGUE();
 }
@@ -226,6 +225,7 @@ int64_t VisualPropertiesMsg::send(int sock)
 
 VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
 {
+    //! @todo Change all reading to use this style, so that optional parameters are supported
     //struct BSONReader::Element el = br->get_next_element();
     //while (el.name[0] != 0)
     //{
@@ -245,6 +245,7 @@ VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type)
 
 int64_t VisualDataEnableMsg::send(int sock)
 {
+    //! @todo Change all sending to support optional parameters.
     SEND_PROLOGUE(VisualDataEnable);
     bw.push(enabled);
     SEND_EPILOGUE();

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import bson
+import struct # Needed to unpack the first four bytes of the string.
 import sys
 import socket
 from vector import Vector3, zero3d
@@ -12,26 +14,21 @@ class Message:
     @staticmethod
     def get_message_size(client):
         try:
-            raw = Message.big_read(client, 10).rstrip()
-            #raw = client.recv(10).rstrip()
-            msg_length = int(raw)
-            # We really don't want zero-length messages
-            if msg_length > 0:
-                return msg_length
-            else:
-                return None
+            bytes = Message.big_read(client, 4)
+            msg_length = struct.unpack('<L', bytes)[0]
+            return (bytes, msg_length)
         except ValueError:
             print "Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno())
-            return None
+            return (None, None)
         except socket.timeout as e:
             raise e
         except socket.error, (errno, errmsg):
             if client.fileno() == -1 or errno == 10054 or errno == 10053:
-                return None
+                return (None, None)
 
             print "There was an error getting message size header from client %d" % client.fileno()
             print "Error:", sys.exc_info()
-            return None
+            return (None, None)
 
     @staticmethod
     def big_read(client, num_bytes):
@@ -101,28 +98,24 @@ class Message:
     # Reads a single message from the socket and returns that object.
     def get_message(client):
         # First grab the message size
-        msg_size = Message.get_message_size(client)
+        bytes, msg_size = Message.get_message_size(client)
         if msg_size == None:
             return None
 
-        msg = Message.big_read(client, msg_size).split("\n")
-
-        #print msg
+        msg_bytes = bytes = Message.big_read(client, msg_size - 4)
+        msg = bson.loads(msg_bytes)
 
         # Snag out the IDs
         try:
-            srv_id = None if msg[0] == "" else int(msg[0])
-            del msg[0]
-            cli_id = None if msg[0] == "" else int(msg[0])
-            del msg[0]
+            srv_id = msg['\x01']
+            cli_id = msg['\x02']
         except:
             print "Couldn't parse the IDs from the message header from %d" % client.fileno()
             sys.stdout.flush()
             return None
 
         if not msg == None:
-            msgtype = msg[0]
-            del msg[0]
+            msgtype = msg['MsgType']
 
             if msgtype in MessageTypes:
                 m = MessageTypes[msgtype](msg, srv_id, cli_id)
@@ -140,22 +133,9 @@ class Message:
         if client.fileno() == -1:
             return 0
 
-        if srv_id == None and cli_id == None:
-            id_str = "\n\n"
-        else:
-            if srv_id == None:
-                id_str = "\n%d\n" % cli_id
-            elif cli_id == None:
-                id_str = "%d\n\n" % srv_id
-            else:
-                id_str = "%d\n%d\n" % (srv_id, cli_id)
-
-        msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
-        full_msg = msg_hdr + msg
-
-        #print full_msg
-
-        num_sent = Message.big_send(client, full_msg)
+        msg['\x01'] = srv_id if srv_id != None else -1
+        msg['\x02'] = cli_id if cli_id != None else -1
+        num_sent = Message.big_send(client, bson.dumps(msg))
         if num_sent == 0:
             return 0
 
@@ -272,9 +252,7 @@ class HelloMsg(Message):
 
     @staticmethod
     def send(client, srv_id, cli_id):
-        msg = "HELLO\n"
-
-        ret = Message.sendall(client, srv_id, cli_id, msg)
+        ret = Message.sendall(client, srv_id, cli_id, {})
         return ret
 
 class PhysicalPropertiesMsg(Message):
@@ -291,15 +269,31 @@ class PhysicalPropertiesMsg(Message):
         self.radius = Message.read_double(s)
 
     def sendto(self, client):
-        args = [(self.object_type if self.object_type != None else ""),
-                (self.mass if self.mass != None else "") ]
-        args += (self.position if self.position != None else ["","",""])
-        args += (self.velocity if self.velocity != None else ["","",""])
-        args += (self.orientation if self.orientation != None else ["","","",""])
-        args += (self.thrust if self.thrust != None else ["","",""])
-        args += [ (self.radius if self.radius != None else "") ]
+        if object_type != None:
+            msg['\x03'] = object_type
+        if mass != None:
+            msg['\x04'] = mass
+        if position != None:
+            msg['\x05'] = position.x
+            msg['\x06'] = position.y
+            msg['\x07'] = position.z
+        if velocity != None:
+            msg['\x08'] = velocity.x
+            msg['\x09'] = velocity.y
+            msg['\x0A'] = velocity.z
+        if orientation != None:
+            msg['\x0B'] = orientation.w
+            msg['\x0C'] = orientation.x
+            msg['\x0D'] = orientation.y
+            msg['\x0E'] = orientation.z
+        if thrust != None:
+            msg['\x0F'] = thrust.x
+            msg['\x10'] = thrust.y
+            msg['\x11'] = thrust.z
+        if radius != None:
+            msg['\x12'] = radius
 
-        PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, args)
+        PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, msg)
 
     @staticmethod
     def send(client, srv_id, cli_id, args):
@@ -802,27 +796,26 @@ class RequestUpdateMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
-
-MessageTypes = { "HELLO": HelloMsg,
-                "PHYSPROPS": PhysicalPropertiesMsg,
-                #"ROTATE": RotationMsg,
-                "VISPROPS": VisualPropertiesMsg,
-                "VISDATAENABLE": VisualDataEnableMsg,
-                "VISMETADATAENABLE": VisualMetaDataEnableMsg,
-                "VISMETADATA": VisualMetaDataMsg,
-                "VISDATA": VisualDataMsg,
-                "BEAM": BeamMsg,
-                "COLLISION": CollisionMsg,
-                "SPAWN": SpawnMsg,
-                "SCANRESULT": ScanResultMsg,
-                "SCANQUERY": ScanQueryMsg,
-                "SCANRESP": ScanResponseMsg,
-                "GOODBYE": GoodbyeMsg,
-                "DIRECTORY": DirectoryMsg,
-                "NAME": NameMsg,
-                "READY": ReadyMsg,
-                "CMDTHRUST": ThrustMsg,
-                "CMDVELOCITY": VelocityMsg,
-                "CMDJUMP": JumpMsg,
-                "INFO": InfoUpdateMsg,
-                "REQUEST": RequestUpdateMsg}
+MessageTypes = { 1: HelloMsg,
+                 2: PhysicalPropertiesMsg,
+                 3: VisualPropertiesMsg,
+                 4: VisualDataEnableMsg,
+                 5: VisualMetaDataEnableMsg,
+                 6: VisualMetaDataMsg,
+                 7: VisualDataMsg,
+                 8: BeamMsg,
+                 9: CollisionMsg,
+                10: SpawnMsg,
+                11: ScanResultMsg,
+                12: ScanQueryMsg,
+                13: ScanResponseMsg,
+                14: GoodbyeMsg,
+                15: DirectoryMsg,
+                16: NameMsg,
+                17: ReadyMsg,
+                18: ThrustMsg,
+                19: VelocityMsg,
+                20: JumpMsg,
+                21: InfoUpdateMsg,
+                22: RequestUpdateMsg
+               }
