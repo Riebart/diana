@@ -84,6 +84,17 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
 	Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
 }
 
+void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation)
+{
+    obj->forward.x = orientation->w;
+    obj->forward.y = orientation->x;
+    obj->forward.z = 1 - sqrt(obj->forward.x*obj->forward.x + obj->forward.x*obj->forward.y);
+
+    obj->up.x = orientation->y;
+    obj->up.y = orientation->z;
+    obj->up.z = 1 - sqrt(obj->up.x*obj->up.x + obj->up.x*obj->up.y);
+}
+
 //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
 void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, double dt)
 {

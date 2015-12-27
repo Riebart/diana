@@ -195,7 +195,7 @@ int64_t HelloMsg::send(int sock)
     SEND_EPILOGUE();
 }
 
-#define PHYSICALPROPERTIES_MSG_LEN 1 * 2 + 3 * 3 + 4
+#define PHYSICALPROPERTIES_MSG_LEN 1 * 3 + 3 * 3 + 4
 PhysicalPropertiesMsg::PhysicalPropertiesMsg()
 {
     msg_type = PhysicalProperties;
@@ -213,6 +213,7 @@ PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_t
         READ_VECTOR3(velocity, el.dbl_val)
         READ_VECTOR4(orientation, el.dbl_val)
         READ_VECTOR3(thrust, el.dbl_val)
+        READ_ELEMENT(radius, el.dbl_val)
         READ_BEGIN();
 }
 

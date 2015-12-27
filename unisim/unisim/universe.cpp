@@ -493,6 +493,36 @@ void Universe::handle_message(int32_t socket)
         PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
         if ((smarty != NULL) && msg->all_specced())
         {
+            if (msg->specced[3])
+            {
+                size_t new_type_len = strlen(msg->obj_type) + 1;
+                char* new_type = (char*)malloc(sizeof(char) * new_type_len);
+                if (new_type != NULL)
+                {
+                    free(smarty->pobj.obj_type);
+#ifdef WIN32
+                    strncpy_s(new_type, new_type_len, msg->obj_type, new_type_len);
+#else
+                    strncpy_(new_type, new_type_len, msg->obj_type, new_type_len);
+#endif
+                    smarty->pobj.obj_type = new_type;
+                }
+            }
+#define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
+#define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
+#define ASSIGN_V4(i, var) ASSIGN_VAL(i, var.w) ASSIGN_VAL(i + 1, var.x) ASSIGN_VAL(i + 2, var.y) ASSIGN_VAL(i + 3, var.z);
+            ASSIGN_VAL(4, mass);
+            ASSIGN_V3(5, position);
+            ASSIGN_V3(8, velocity);
+            if (msg->specced[11] && msg->specced[12] && msg->specced[13] && msg->specced[14])
+            {
+                PhysicsObject_from_orientation(&smarty->pobj, &msg->orientation);
+            }
+            ASSIGN_V3(15, thrust);
+            ASSIGN_VAL(18, radius);
+#undef ASSIGN_VAL
+#undef ASSIGN_V3
+#undef ASSIGN_V4
         }
         break;
     }
