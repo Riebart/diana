@@ -10,7 +10,6 @@ import thread
 import threading
 import traceback
 import struct
-from protocols.universe_pb2 import MessageWrapper
 
 # ==============================================================================
 # This implements sending serializable objects back and forth. We won't use it
@@ -87,12 +86,12 @@ class MIMOServer:
                     print "Error:", sys.exc_info()
                     sys.stdout.flush()
                     break
-                    
+
                 data_size = struct.unpack("H", data)[0]
                 #check data_size?
-                
+
                 data = self.client.recv(data_size)
-                
+
                 response = MessageWrapper()
                 response.ParseFromString(data) #can this throw an error?
 

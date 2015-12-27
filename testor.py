@@ -12,7 +12,6 @@ import time
 import spaceobj
 import sys
 import math
-import protocols.universe_pb2
 
 
 def testSimple():

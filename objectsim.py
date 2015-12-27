@@ -8,8 +8,7 @@ from mimosrv import MIMOServer
 from vector import Vector3
 from spaceobj import SmartObject
 
-#from message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
-from protocols.universe_pb2 import MessageWrapper, HelloMsg, DirectoryMsg, GoodbyeMsg
+from message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
 
 class ObjectSim:
     def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):

@@ -7,54 +7,6 @@ import socket
 from vector import Vector3, zero3d
 from cStringIO import StringIO
 
-MessageTypeClasses = {1: HelloMsg,
-                      2: PhysicalPropertiesMsg,
-                      3: VisualPropertiesMsg,
-                      4: VisualDataEnableMsg,
-                      5: VisualMetaDataEnableMsg,
-                      6: VisualMetaDataMsg,
-                      7: VisualDataMsg,
-                      8: BeamMsg,
-                      9: CollisionMsg,
-                      10: SpawnMsg,
-                      11: ScanResultMsg,
-                      12: ScanQueryMsg,
-                      13: ScanResponseMsg,
-                      14: GoodbyeMsg,
-                      15: DirectoryMsg,
-                      16: NameMsg,
-                      17: ReadyMsg,
-                      18: ThrustMsg,
-                      19: VelocityMsg,
-                      20: JumpMsg,
-                      21: InfoUpdateMsg,
-                      22: RequestUpdateMsg
-                      }
-
-MessageTypeIDs = { HelloMsg: 1,
-                  PhysicalPropertiesMsg: 2,
-                  VisualPropertiesMsg: 3,
-                  VisualDataEnableMsg: 4,
-                  VisualMetaDataEnableMsg: 5,
-                  VisualMetaDataMsg: 6,
-                  VisualDataMsg: 7,
-                  BeamMsg: 8,
-                  CollisionMsg: 9,
-                  SpawnMsg: 10,
-                  ScanResultMsg: 11,
-                  ScanQueryMsg: 12,
-                  ScanResponseMsg: 13,
-                  GoodbyeMsg: 14,
-                  DirectoryMsg: 15,
-                  NameMsg: 16,
-                  ReadyMsg: 17,
-                  ThrustMsg: 18,
-                  VelocityMsg: 19,
-                  JumpMsg: 20,
-                  InfoUpdateMsg: 21,
-                  RequestUpdateMsg: 22
-                  }
-
 class Message:
     def __init__(self, client):
         pass
@@ -518,10 +470,11 @@ class GoodbyeMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, {})
         return ret
 
-#class DirectoryMsg(Message):
-    #def __init__(self, msg, msgtype, srv_id, cli_id):
-        #self.srv_id = srv_id
-        #self.cli_id = cli_id
+class DirectoryMsg(Message):
+    def __init__(self, msg, msgtype, srv_id, cli_id):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
         #self.item_type = s[0]
         #del s[0]
 
@@ -529,11 +482,13 @@ class GoodbyeMsg(Message):
         #for i in range(0, len(s) - (len(s) % 2), 2):
             #self.items.append([int(s[i]), s[i+1]])
 
-    ##def sendto(self, client):
-        ##DirectoryMsg.send(client, self.srv_id, self.cli_id, [self.item_type] + self.items)
+    def sendto(self, client):
+        pass
+        #DirectoryMsg.send(client, self.srv_id, self.cli_id, [self.item_type] + self.items)
 
-    #@staticmethod
-    #def send(client, srv_id, cli_id, args):
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        return None
         #msg = "DIRECTORY\n%s\n" % args[0]
 
         #del args[0]
@@ -679,3 +634,51 @@ class RequestUpdateMsg(Message):
         msg['MsgType'] = MessageTypeIDs[RequestUpdateMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
+
+MessageTypeClasses = {1: HelloMsg,
+                      2: PhysicalPropertiesMsg,
+#                      3: VisualPropertiesMsg,
+                      4: VisualDataEnableMsg,
+#                      5: VisualMetaDataEnableMsg,
+#                      6: VisualMetaDataMsg,
+                      7: VisualDataMsg,
+                      8: BeamMsg,
+                      9: CollisionMsg,
+                      10: SpawnMsg,
+                      11: ScanResultMsg,
+                      12: ScanQueryMsg,
+                      13: ScanResponseMsg,
+                      14: GoodbyeMsg,
+                      15: DirectoryMsg,
+                      16: NameMsg,
+                      17: ReadyMsg,
+                      18: ThrustMsg,
+                      19: VelocityMsg,
+                      20: JumpMsg,
+                      21: InfoUpdateMsg,
+                      22: RequestUpdateMsg
+                      }
+
+MessageTypeIDs = { HelloMsg: 1,
+                  PhysicalPropertiesMsg: 2,
+#                  VisualPropertiesMsg: 3,
+                  VisualDataEnableMsg: 4,
+#                  VisualMetaDataEnableMsg: 5,
+#                  VisualMetaDataMsg: 6,
+                  VisualDataMsg: 7,
+                  BeamMsg: 8,
+                  CollisionMsg: 9,
+                  SpawnMsg: 10,
+                  ScanResultMsg: 11,
+                  ScanQueryMsg: 12,
+                  ScanResponseMsg: 13,
+                  GoodbyeMsg: 14,
+                  DirectoryMsg: 15,
+                  NameMsg: 16,
+                  ReadyMsg: 17,
+                  ThrustMsg: 18,
+                  VelocityMsg: 19,
+                  JumpMsg: 20,
+                  InfoUpdateMsg: 21,
+                  RequestUpdateMsg: 22
+                  }
