@@ -7,6 +7,7 @@
 #define CHOP_CUTOFF 1e-8
 
 typedef struct Vector3 V3;
+typedef struct Vector4 V4;
 
 //! @todo Clarify some of these functions. In-place operations can be done by specifying
 //! return value as one of the inputs, assuming there is no interdependency. Ass explicit
@@ -31,16 +32,32 @@ V3* Vector3_clone(V3* v)
 
 void Vector3_init(V3* out, double x, double y, double z)
 {
-	out->x = x;
-	out->y = y;
-	out->z = z;
+    out->x = x;
+    out->y = y;
+    out->z = z;
 }
 
 void Vector3_init(V3* out, V3* v)
 {
-	out->x = v->x;
-	out->y = v->y;
-	out->z = v->z;
+    out->x = v->x;
+    out->y = v->y;
+    out->z = v->z;
+}
+
+void Vector4_init(V4* out, double w, double x, double y, double z)
+{
+    out->w = w;
+    out->x = x;
+    out->y = y;
+    out->z = z;
+}
+
+void Vector4_init(V4* out, V4* v)
+{
+    out->w = v->w;
+    out->x = v->x;
+    out->y = v->y;
+    out->z = v->z;
 }
 
 bool Vector3_almost_zeroS(double v)

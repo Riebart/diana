@@ -243,6 +243,8 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
     this->min_vis_frametime = min_vis_frametime;
     this->realtime = realtime;
 
+    visdata_msg.enable_all();
+    
     total_time = 0.0;
     phys_frametime = 0.0;
     wall_frametime = 0.0;

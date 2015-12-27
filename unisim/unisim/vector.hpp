@@ -31,6 +31,9 @@ struct Vector3* Vector3_clone(struct Vector3* v);
 void Vector3_init(struct Vector3* v, double x, double y, double z);
 void Vector3_init(struct Vector3* out, struct Vector3* v);
 
+void Vector4_init(struct Vector4* v, double w, double x, double y, double z);
+void Vector4_init(struct Vector4* out, struct Vector4* v);
+
 bool Vector3_almost_zeroS(double v);
 bool Vector3_almost_zero(struct Vector3* v);
 

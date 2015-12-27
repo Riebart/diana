@@ -45,7 +45,14 @@ namespace Diana2DClient
             
             Int32 msg_len = BitConverter.ToInt32(buf, 0);
             buf = new byte[msg_len];
-            s.Read(buf, 4, msg_len - 4);
+            try
+            {
+                s.Read(buf, 4, msg_len - 4);
+            }
+            catch (System.IO.IOException)
+            {
+                return null;
+            }
             Array.Copy(BitConverter.GetBytes(msg_len), 0, buf, 0, 4);
 
             BSONReader br = new BSONReader(buf);

@@ -30,7 +30,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = (int8_t)0xFF, MaxKey = 0x7F
+        MinKey = (int8_t)0xFF, MaxKey = 0x7F, NoMoreData = (int16_t)0x8001
     };
 
     // Every element is returned in this structure, with the type field and the relevant
@@ -63,10 +63,10 @@ public:
 
     struct Element get_next_element()
     {
-        // Return a sentinel MinKey type when we reach the end of the message
+        // Return a sentinel NoMoreData type when we reach the end of the message
         if ((int32_t)pos >= len)
         {
-            el.type = ElementType::MinKey;
+            el.type = ElementType::NoMoreData;
             return el;
         }
 
@@ -76,6 +76,7 @@ public:
         // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
         if (el.type == ElementType::EndOfDocument)
         {
+            el.name = msg + pos - 1;
             return el;
         }
         else
@@ -206,6 +207,13 @@ public:
         child = NULL;
     }
 
+    // Push a NOP, simply increment the tag_index.
+    bool push()
+    {
+        print_array_name(NULL);
+        return true;
+    }
+
     bool push(bool v)
     {
         return push((char*)NULL, v);
@@ -332,6 +340,11 @@ public:
         }
         else
         {
+            if (v == NULL)
+            {
+                return false;
+            }
+
             if (len < 0)
             {
                 len = strlen(v);
@@ -521,7 +534,7 @@ private:
 #else
             sprintf(array_name, "%d", tag_index);
 #endif
-            tag_index += 1;
+            tag_index++;
             return array_name;
         }
         // If the name is NULL, one was unspecified, so fill it in with a one-character
