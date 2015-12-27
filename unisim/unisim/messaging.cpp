@@ -74,13 +74,23 @@ BSONMessage::~BSONMessage()
     free(specced);
 }
 
-int BSONMessage::enable_all()
+int BSONMessage::spec_all(bool spec)
 {
     for (int i = 0; i < num_el; i++)
     {
-        specced[i] = true;
+        specced[i] = spec;
     }
     return num_el;
+}
+
+bool BSONMessage::all_specced(int start_index)
+{
+    bool ret = true;
+    for (int i = start_index; i < num_el; i++)
+    {
+        ret &= specced[i];
+    }
+    return ret;
 }
 
 BSONMessage* BSONMessage::ReadMessage(int sock)

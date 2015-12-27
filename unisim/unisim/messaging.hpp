@@ -40,7 +40,8 @@ public:
     static BSONMessage* ReadMessage(int sock);
     BSONMessage() { }
     virtual ~BSONMessage();
-    virtual int enable_all();
+    virtual int spec_all(bool spec = true);
+    virtual bool all_specced(int start_index = 0);
 
 protected:
     BSONReader* br;
