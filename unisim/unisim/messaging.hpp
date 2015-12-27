@@ -35,6 +35,12 @@ public:
     // For OSIM-Unisim messages, this is an OSIM ID, and for end-user to OSIM messages
     // this will be an ID that is determined local to the end-user client.
     int64_t client_id;
+
+    // An array of boolean values indicating whether a value was filled or left blank.
+    bool* specced;
+
+    // NUmber of elements, equals the length of the 'specced' array.
+    int num_el;
     
     // Read a BSON message form a socket and return a pointer to a newly allocated object.
     static BSONMessage* ReadMessage(int sock);
@@ -46,9 +52,6 @@ public:
 protected:
     BSONReader* br;
     BSONMessage(BSONReader* _br, MessageType _msg_type);
-
-    bool* specced;
-    int num_el;
 };
 
 class HelloMsg : public BSONMessage

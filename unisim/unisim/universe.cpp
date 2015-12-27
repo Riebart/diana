@@ -141,7 +141,7 @@ void* vis_data_thread(void* argV)
 #else
     struct timeb start, end;
 #endif
-    
+
     while (u->running)
     {
         // If we're paused, then just sleep. We're not picky on how long we sleep for.
@@ -170,7 +170,7 @@ void* vis_data_thread(void* argV)
         ftime(&end);
         double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
 #endif
-        
+
         // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
         if (e < u->min_vis_frametime)
         {
@@ -245,7 +245,7 @@ Universe::Universe(double min_frametime, double max_frametime, double min_vis_fr
 
     // We're always going to specify all of the options, so just set them all to specced.
     visdata_msg.spec_all(true);
-    
+
     total_time = 0.0;
     phys_frametime = 0.0;
     wall_frametime = 0.0;
@@ -351,7 +351,7 @@ void Universe::add_object(PO* obj)
 
     LOCK(add_lock);
     added.push_back(obj);
-    UNLOCK(add_lock);          
+    UNLOCK(add_lock);
 }
 
 void Universe::add_object(B* beam)
@@ -388,11 +388,11 @@ void Universe::register_vis_client(struct vis_client vc, bool enabled)
 {
     //! @todo Remove the linear searches here
     LOCK(vis_lock);
-    
+
     // Try to find the one we're looking for.
     std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc);
     bool found = (vis_clients.size() == 0 ? false : (vc == *it));
-    
+
     if (enabled && !found)
     {
         // If we find it, push it onto the back and re-sort the list.
@@ -417,7 +417,7 @@ void Universe::broadcast_vis_data()
     struct vis_client vc;
     PO* o;
     PO* ro;
-    
+
     LOCK(vis_lock);
     for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
     {
@@ -425,7 +425,7 @@ void Universe::broadcast_vis_data()
         visdata_msg.client_id = vc.client_id;
         ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
         bool disconnect = false;
-        
+
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
             o = phys_objects[i];
@@ -433,18 +433,18 @@ void Universe::broadcast_vis_data()
             visdata_msg.radius = o->radius;
             visdata_msg.phys_id = o->phys_id;
             visdata_msg.position = o->position;
-            
+
             if (ro != NULL)
             {
                 Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
             }
-            
+
             visdata_msg.orientation.w = o->forward.x;
             visdata_msg.orientation.x = o->forward.y;
             visdata_msg.orientation.y = o->up.x;
             visdata_msg.orientation.z = o->up.y;
             int64_t nbytes = visdata_msg.send(vc.socket);
-            
+
             if (nbytes < 0)
             {
                 vis_clients.erase(it);
@@ -464,6 +464,7 @@ void Universe::broadcast_vis_data()
 
 void Universe::handle_message(int32_t socket)
 {
+    //! @todo Support optional arguments with sensible defaults.
     BSONMessage* msg_base = BSONMessage::ReadMessage(socket);
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
     SPO* smarty = (it != smarties.end() ? it->second : NULL);
@@ -475,25 +476,34 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::VisualDataEnable:
     {
         VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
-        printf("Client %d %s for VisData\n", socket, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
-        
-        struct vis_client vc;
-        vc.socket = socket;
-        vc.client_id = msg->client_id;
-        vc.phys_id = msg->server_id;
-        register_vis_client(vc, msg->enabled);
+        if (msg->specced[2])
+        {
+            printf("Client %d %s for VisData\n", socket, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
+
+            struct vis_client vc;
+            vc.socket = socket;
+            vc.phys_id = (msg->specced[0] ? msg->server_id : -1);
+            vc.client_id = (msg->specced[1] ? msg->client_id : -1);
+            register_vis_client(vc, msg->enabled);
+        }
         break;
     }
     case BSONMessage::PhysicalProperties:
     {
         PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
-        if (smarty != NULL)
+        if ((smarty != NULL) && msg->all_specced())
         {
         }
+        break;
     }
     case BSONMessage::Beam:
     {
         BeamMsg* msg = (BeamMsg*)msg_base;
+        if (!msg->all_specced())
+        {
+            break;
+        }
+
         B* b = (B*)malloc(sizeof(B));
         PhysicsObjectType btype;
         if (strcmp(msg->beam_type, "COMM") == 0)
@@ -512,7 +522,7 @@ void Universe::handle_message(int32_t socket)
         {
             btype = BEAM_SCANRESULT;
         }
-        
+
         //! @todo This should also apply for non-smarties.
         if (smarty != NULL)
         {
@@ -528,28 +538,33 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Spawn:
     {
         SpawnMsg* msg = (SpawnMsg*)msg_base;
+        if (!msg->all_specced())
+        {
+            break;
+        }
+
         PO* obj;
         // If this object is smart, add it to the smarties, and such.
         if (msg->is_smart)
         {
             SPO* sobj = (SPO*)malloc(sizeof(struct SmartPhysicsObject));
             obj = &sobj->pobj;
-            sobj->client_id = msg->client_id;
+            sobj->client_id = (msg->specced[1] ? msg->client_id : -1);
             sobj->socket = socket;
         }
         else
         {
             obj = (PO*)malloc(sizeof(struct PhysicsObject));
         }
-        
+
         char* obj_type = (char*)malloc(strlen(msg->obj_type));
         if (obj_type == NULL)
         {
             throw "OOM you twat";
         }
 
-        PhysicsObject_init(obj, this, &msg->position, &msg->velocity, 
-            const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust, 
+        PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
+            const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
             msg->mass, msg->radius, obj_type);
 
         // If the object creating the object is a smarty, it's position and velocity
@@ -570,6 +585,7 @@ void Universe::handle_message(int32_t socket)
             HelloMsg hm;
             hm.client_id = msg->client_id;
             hm.server_id = obj->phys_id;
+            hm.spec_all();
             hm.send(socket);
         }
         break;
@@ -577,6 +593,11 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::ScanResponse:
     {
         ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
+        if (!msg->all_specced())
+        {
+            break;
+        }
+
         struct Universe::scan_target st = { msg->scan_id, msg->server_id };
 
         // We SHOULD be able to find the target in the map, and something is very
@@ -610,7 +631,10 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Goodbye:
     {
         GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;
-        expire(msg->server_id);
+        if (msg->specced[0])
+        {
+            expire(msg->server_id);
+        }
         break;
     }
     default:
@@ -876,7 +900,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 cm.position = beam_result.p;
                 cm.energy = beam_result.e;
                 cm.comm_msg = NULL;
-                
+
                 switch (b->type)
                 {
                 case BEAM_COMM:
@@ -896,7 +920,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
                     sqm.send(s->socket);
-                    
+
                     // Ignore multiple hits of the same beam/object pair.
                     // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
                     struct Universe::scan_target st = { b->phys_id, o->phys_id };
@@ -1060,14 +1084,14 @@ void Universe::tick(double dt)
                                 {
                                     free(beams[k]->data);
                                 }
-                                
+
                                 if (beams[k]->scan_target != NULL)
                                 {
                                     // Remember, we cloned the object we're interested in into the scan_target
                                     // to prevent a use-after-free, so free that here.
                                     free(beams[k]->scan_target);
                                 }
-                                
+
                                 if (beams[k]->comm_msg != NULL)
                                 {
                                     free(beams[k]->comm_msg);
