@@ -484,6 +484,13 @@ void Universe::handle_message(int32_t socket)
         register_vis_client(vc, msg->enabled);
         break;
     }
+    case BSONMessage::PhysicalProperties:
+    {
+        PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
+        if (smarty != NULL)
+        {
+        }
+    }
     case BSONMessage::Beam:
     {
         BeamMsg* msg = (BeamMsg*)msg_base;
@@ -506,6 +513,14 @@ void Universe::handle_message(int32_t socket)
             btype = BEAM_SCANRESULT;
         }
         
+        //! @todo This should also apply for non-smarties.
+        if (smarty != NULL)
+        {
+            Vector3_add(&msg->origin, &smarty->pobj.position);
+            //! @todo Relativistic velocity composition
+            Vector3_add(&msg->velocity, &smarty->pobj.velocity);
+        }
+
         Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up, msg->spread_h, msg->spread_v, msg->energy, btype, msg->comm_msg, NULL);
         add_object(b);
         break;
@@ -513,7 +528,20 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Spawn:
     {
         SpawnMsg* msg = (SpawnMsg*)msg_base;
-        PO* obj = (PO*)malloc(sizeof(struct PhysicsObject));
+        PO* obj;
+        // If this object is smart, add it to the smarties, and such.
+        if (msg->is_smart)
+        {
+            SPO* sobj = (SPO*)malloc(sizeof(struct SmartPhysicsObject));
+            obj = &sobj->pobj;
+            sobj->client_id = msg->client_id;
+            sobj->socket = socket;
+        }
+        else
+        {
+            obj = (PO*)malloc(sizeof(struct PhysicsObject));
+        }
+        
         char* obj_type = (char*)malloc(strlen(msg->obj_type));
         if (obj_type == NULL)
         {
@@ -536,6 +564,14 @@ void Universe::handle_message(int32_t socket)
         }
 
         add_object(obj);
+
+        if (msg->is_smart)
+        {
+            HelloMsg hm;
+            hm.client_id = msg->client_id;
+            hm.server_id = obj->phys_id;
+            hm.send(socket);
+        }
         break;
     }
     case BSONMessage::MessageType::ScanResponse:
@@ -569,6 +605,12 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Hello:
     {
         HelloMsg* msg = (HelloMsg*)msg_base;
+        break;
+    }
+    case BSONMessage::MessageType::Goodbye:
+    {
+        GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;
+        expire(msg->server_id);
         break;
     }
     default:

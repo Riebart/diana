@@ -13,6 +13,7 @@
 // Finish off by pushing an end, and writing the bytes to the socket.
 #define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, (char*)bytes, *(int32_t*)bytes);
 
+//! @todo Move these to be static in the source file, so they aren't build for every message read. Leave that until later, because premature optimization=bad.
 // Read a single value of the specified type from the BSONReader, and assign it to the variable specified.
 #define READ_ELEMENT(var, val) [this, &el](int i){ this->var = val; this->specced[i] = true; },
 // Insert arbitrary code into the lambda to operate on the lement, and modify the object.
@@ -414,7 +415,7 @@ int64_t CollisionMsg::send(int sock)
     SEND_EPILOGUE();
 }
 
-#define SPAWN_MSG_LEN 3 * 3 + 4 + 3 * 1
+#define SPAWN_MSG_LEN 3 * 3 + 4 + 4 * 1
 SpawnMsg::SpawnMsg()
 {
     msg_type = Spawn;
@@ -425,6 +426,7 @@ SpawnMsg::SpawnMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _m
 {
     obj_type = NULL;
     READ_PROLOGUE(SPAWN_MSG_LEN)
+        READ_ELEMENT(is_smart, el.bln_val)
         READ_ELEMENT(obj_type, ReadString(el))
         READ_ELEMENT(mass, el.dbl_val)
         READ_VECTOR3(position, el.dbl_val)
@@ -443,6 +445,7 @@ SpawnMsg::~SpawnMsg()
 int64_t SpawnMsg::send(int sock)
 {
     SEND_PROLOGUE();
+    SEND_ELEMENT(is_smart)
     SEND_ELEMENT(obj_type);
     SEND_ELEMENT(mass);
     SEND_VECTOR3(position);

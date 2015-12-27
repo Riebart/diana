@@ -359,8 +359,8 @@ class SmartPhysicsObject(PhysicsObject):
 
             # ### TODO ### Relativistic velocity composition?
             msg.velocity[0] += self.velocity.x
-            msg.velocity[0] += self.velocity.y
-            msg.velocity[0] += self.velocity.z
+            msg.velocity[1] += self.velocity.y
+            msg.velocity[2] += self.velocity.z
 
             beam = Beam.build(msg, self.universe)
 

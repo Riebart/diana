@@ -159,6 +159,7 @@ public:
     ~SpawnMsg();
     int64_t send(int sock);
 
+    bool is_smart;
     char* obj_type;
     double mass, radius;
     struct Vector3 position, velocity, thrust;
