@@ -239,7 +239,9 @@ class PhysicalPropertiesMsg(Message):
 
     def sendto(self, client):
         msg = {}
-        vals = [ self.object_type, self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius ]
+        vals = [ self.object_type, self.mass ] + \
+            self.position + self.velocity + \
+            self.orientation + self.thrust + [ self.radius ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, msg)
 
@@ -252,9 +254,9 @@ class PhysicalPropertiesMsg(Message):
     @staticmethod
     def make_from_object(obj, p = zero3d, v = zero3d):
         msg = {}
-        vals = [ obj.object_type, obj.mass ] +
-            (obj.position + p) +
-            (obj.velocity + v) +
+        vals = [ obj.object_type, obj.mass ] + \
+            [a-b for a,b in zip(obj.position,p)] + \
+            [a-b for a,b in zip(obj.velocity,v)] + \
             obj.orientation + obj.thrust + [ obj.radius ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
 
@@ -376,7 +378,7 @@ class BeamMsg(Message):
 
     def sendto(self, client):
         msg = {}
-        vals = self.origin + self.velocity + self.up +
+        vals = self.origin + self.velocity + self.up + \
             [ self.spread_h, self.spread_v, self.energy, self.beam_type, self.comm_msg ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         BeamMsg.send(client, self.srv_id, self.cli_id, msg)
@@ -415,16 +417,19 @@ class SpawnMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.mass = Message.ReadMsgEl('\x03', msg)
-        self.position = Message.ReadMsgEl(('\x04','\x05','\x06'), msg)
-        self.velocity = Message.ReadMsgEl(('\x07','\x08','\x09'), msg)
-        self.orientation = Message.ReadMsgEl(('\x0A','\x0B','\x0C','\x0D'), msg)
-        self.thrust = Message.ReadMsgEl(('\x0E','\x0F','\x10'), msg)
-        self.radius = Message.ReadMsgEl('\x11', msg)
+        self.is_smart = Message.ReadMsgEl('\x03', msg)
+        self.mass = Message.ReadMsgEl('\x04', msg)
+        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
+        self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
+        self.radius = Message.ReadMsgEl('\x12', msg)
 
     def sendto(self, client):
         msg = {}
-        vals = [ self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius ]
+        vals = [ self.mass, self.is_smart ] + \
+            self.position + self.velocity + self.orientation + self.thrust + \
+            [ self.radius ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         SpawnMsg.send(client, self.srv_id, self.cli_id, msg)
 
