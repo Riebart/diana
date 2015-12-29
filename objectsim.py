@@ -171,7 +171,18 @@ class ObjectSim:
     #assume object already constructed, with appropriate vals
     def spawn_object(self, obj):
         if isinstance(obj, SmartObject):
-            #self.send_physprops(obj)
+            sm = message.SpawnMsg()
+            sm.srv_id = obj.phys_id
+            sm.cli_id = obj.osim_id
+            sm.is_smart = True
+            sm.object_type = obj.object_type
+            sm.position = obj.position
+            sm.velocity = obj.velocity
+            sm.mass = obj.mass
+            sm.thrust = obj.thrust
+            sm.radius = obj.radius
+            sm.orientation = [ obj.forward[0], obj.forward[1], obj.up[0], obj.up[1] ]
+            message.SpawnMsg.send(obj.sock, sm.srv_id, sm.cli_id, sm.build())
 
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)
