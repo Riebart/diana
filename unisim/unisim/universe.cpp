@@ -511,7 +511,7 @@ void Universe::handle_message(int32_t socket)
 #ifdef WIN32
                     strncpy_s(new_type, new_type_len, msg->obj_type, new_type_len);
 #else
-                    strncpy_s(new_type, new_type_len, msg->obj_type, new_type_len);
+                    strncpy(new_type, msg->obj_type, new_type_len);
 #endif
                     smarty->pobj.obj_type = new_type;
                 }

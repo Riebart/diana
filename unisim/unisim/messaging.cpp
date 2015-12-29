@@ -1,6 +1,8 @@
 #include "messaging.hpp"
 #include "bson.hpp"
 #include "MIMOServer.hpp"
+#include <limits>
+#include <functional>
 
 // Send a single element named by variable name to the BSONWriter. If the specced value is false, push a NOP.
 #define SEND_ELEMENT(var) if (specced[spec_check++]) { bw.push(var); } else { bw.push(); }
