@@ -592,6 +592,7 @@ void Universe::handle_message(int32_t socket)
         {
             throw "OOM you twat";
         }
+        memcpy(obj_type, msg->obj_type, strlen(msg->obj_type) + 1);
 
         PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
             const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,

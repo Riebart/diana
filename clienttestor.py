@@ -140,8 +140,8 @@ def pool_rack():
     from math import sin, cos, pi, sqrt
     from message import SpawnMsg
 
-    ball_mass = 10000
-    ball_radius = 1
+    ball_mass = 10000.0
+    ball_radius = 1.0
 
     num_rows = 5
 
@@ -159,10 +159,15 @@ def pool_rack():
         # ]][[2]][[1]];
     # Graphics[balls]
 
-    C = 1
+    C = 1.0
     y_scale = sqrt(3) / 2
-    y_offset = 100
+    y_offset = 100.0
+
     sm = SpawnMsg()
+    sm.velocity = [0.0,0.0,0.0]
+    sm.thrust = [0.0,0.0,0.0]
+    sm.orientation = [0.0,0.0,0.0,0.0]
+
     for i in range(0, num_rows):
         for j in range(0, i+1):
             sm.srv_id = -1
@@ -171,10 +176,7 @@ def pool_rack():
             sm.radius = ball_radius
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
-            sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0 ]
-            sm.velocity = [0,0,0]
-            sm.thrust = [0,0,0]
-            sm.orientation = [0,0,0,0]
+            sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0.0 ]
 
             SpawnMsg.send(sock, -1, -1, sm.build())
 
@@ -184,10 +186,8 @@ def pool_rack():
     sm.is_smart = False
     sm.object_type = "Cue ball"
     sm.mass = ball_mass
-    sm.position = [0,-25,0]
-    sm.velocity = [0,1,0]
-    sm.thrust = [0,0,0]
-    sm.orientation = [0,0,0,0]
+    sm.position = [0.0,-25.0,0.0]
+    sm.velocity = [0.0,1.0,0.0]
     sm.radius = ball_radius
     SpawnMsg.send(sock, -1, -1, sm.build())
 
