@@ -46,7 +46,7 @@ class ObjectSim:
             self.id_lock.acquire()
             osim_id = self.get_id()
             self.id_lock.release()
-            HelloMsg.send(msg.socket, osim_id, client_id, {})
+            #HelloMsg.send(msg.socket, osim_id, client_id, {})
 
         elif isinstance(msg, DirectoryMsg):
             # ### TODO ### Update clients sitting at the directories as joinable
@@ -132,7 +132,7 @@ class ObjectSim:
 
     def get_phys_id(self, sock, osim_id):
         sock.connect(self.unisim)
-        message.HelloMsg.send(sock, None, osim_id, {})
+        #message.HelloMsg.send(sock, None, osim_id, {})
 
         try:
             reply = message.Message.get_message(sock)
@@ -183,6 +183,8 @@ class ObjectSim:
             sm.radius = obj.radius
             sm.orientation = [ obj.forward[0], obj.forward[1], obj.up[0], obj.up[1] ]
             message.SpawnMsg.send(obj.sock, sm.srv_id, sm.cli_id, sm.build())
+
+            # We now should wait for a Hello back
 
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)

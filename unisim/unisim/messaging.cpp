@@ -39,12 +39,13 @@ const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
 const struct Vector4 v4_nan = { dbl_nan, dbl_nan, dbl_nan, dbl_nan };
 
 //! @todo Support things other than C strings
-void ReadString(BSONReader* br, char* dst, int32_t dstlen)
+void ReadString(BSONReader::Element& el, char* dst, int32_t dstlen)
 {
-    struct BSONReader::Element el;
-    el = br->get_next_element();
+    //struct BSONReader::Element el;
+    //el = br->get_next_element();
     int32_t copy_len = (el.str_len <= dstlen ? el.str_len : dstlen);
     memcpy(dst, el.str_val, copy_len);
+    dst[dstlen - 1] = 0;
 }
 
 //! @todo Support things other than C strings
@@ -92,10 +93,14 @@ int BSONMessage::spec_all(bool spec)
     return num_el;
 }
 
-bool BSONMessage::all_specced(int start_index)
+bool BSONMessage::all_specced(int start_index, int stop_index)
 {
+    if (stop_index == -1)
+    {
+        stop_index = num_el - 1;
+    }
     bool ret = true;
-    for (int i = start_index; i < num_el; i++)
+    for (int i = start_index; i <= stop_index; i++)
     {
         ret &= specced[i];
     }
@@ -355,7 +360,7 @@ BeamMsg::BeamMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg
         READ_ELEMENT(spread_h, el.dbl_val)
         READ_ELEMENT(spread_v, el.dbl_val)
         READ_ELEMENT(energy, el.dbl_val)
-        READ_ELEMENT_IP(ReadString(this->br, this->beam_type, 5)) //! @todo Move these to an enum?
+        READ_ELEMENT_IP(ReadString(el, this->beam_type, 5)) //! @todo Move these to an enum?
         READ_ELEMENT(comm_msg, ReadString(el))
         READ_BEGIN()
 }
@@ -394,7 +399,7 @@ CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
         READ_VECTOR3(position, el.dbl_val)
         READ_VECTOR3(direction, el.dbl_val)
         READ_ELEMENT(energy, el.dbl_val)
-        READ_ELEMENT_IP(ReadString(this->br, this->coll_type, 5))
+        READ_ELEMENT_IP(ReadString(el, this->coll_type, 5))
         READ_ELEMENT(comm_msg, ReadString(el))
         READ_BEGIN()
 }

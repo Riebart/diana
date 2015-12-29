@@ -466,7 +466,13 @@ void Universe::handle_message(int32_t socket)
 {
     //! @todo Support optional arguments with sensible defaults.
     BSONMessage* msg_base = BSONMessage::ReadMessage(socket);
+
+    // For objects spawned as 'children' from a parent, they should have the parent's phys_id in the server_id
+    // field. That is used to find the parent, and adjust the position/velocity/whatever accordingly.
+    // This only applies, right now, to smart parents.
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+
+    // If this smarty is non-NULL, then this points to the PARENT
     SPO* smarty = (it != smarties.end() ? it->second : NULL);
 
     printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
@@ -491,6 +497,8 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::PhysicalProperties:
     {
         PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
+        // We currently only support PhysProps messages for smarties. Why would you be able to adjust
+        // the properties of another object?
         if ((smarty != NULL) && msg->all_specced())
         {
             if (msg->specced[3])
@@ -529,7 +537,11 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::Beam:
     {
         BeamMsg* msg = (BeamMsg*)msg_base;
-        if (!msg->all_specced())
+        // We need all of the properties, except the last, if it's not a COMM beam,
+        // If it's a COMM beam, we need them all.
+        if (
+            ((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) || 
+              msg->all_specced(0, msg->num_el - 1))
         {
             break;
         }
@@ -561,7 +573,8 @@ void Universe::handle_message(int32_t socket)
             Vector3_add(&msg->velocity, &smarty->pobj.velocity);
         }
 
-        Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up, msg->spread_h, msg->spread_v, msg->energy, btype, msg->comm_msg, NULL);
+        Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up, 
+            msg->spread_h, msg->spread_v, msg->energy, btype, msg->comm_msg, NULL);
         add_object(b);
         break;
     }
@@ -602,13 +615,17 @@ void Universe::handle_message(int32_t socket)
         // are relative.
         if (smarty != NULL)
         {
-            SPO* s = (SPO*)obj;
-            s->client_id = msg->client_id;
-            s->socket = socket;
             Vector3_add(&obj->position, &smarty->pobj.position);
             Vector3_add(&obj->velocity, &smarty->pobj.velocity);
         }
 
+        // We need to assign type BEFORE adding to the universe, because the adding to smarties{} is async from this.
+        //! @todo Should smartie-adding be synchronous here? Grab the lock, add, release?
+        if (msg->is_smart)
+        {
+            obj->type = PhysicsObjectType::PHYSOBJECT_SMART;
+        }
+        
         add_object(obj);
 
         if (msg->is_smart)
@@ -762,8 +779,8 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 cm.comm_msg = NULL;
                 cm.send(s->socket);
             }
-        }
     }
+}
 }
 
 //! Get the next collision, as ordered by time

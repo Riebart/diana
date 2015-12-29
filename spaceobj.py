@@ -146,34 +146,21 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_thrust(x[0], x[1], x[2])
         self.thrust = Vector3(x,y,z)
-        return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, (
-            "",
-            "",
-            "", "", "",
-            "", "", "",
-            "", "", "", "",
-            x, y, z,
-            ""
-            ) )
-        pass
+        pp = message.PhysicalPropertiesMsg()
+        pm.thrust = [ x, y, z ]
+        return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, pm.build())
 
     def set_orientation(self, fX, fY = None, uX = None, uY = None):
         if y == None:
             return self.set_orientation(osim_id, fX[0], fX[1], fX[2], fX[3])
 
-        [ self.forward, self.up, self.right ] = Vector3.from_orientation(Vector3([fX, fY, uX, uY]))
-        return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, (
-            "",
-            "",
-            "", "", "",
-            "", "", "",
-            fX, fY, uX, uY,
-            "", "", "",
-            ""
-            ) )
+        [ self.forward, self.up, self.right ] = [fX, fY, uX, uY]
+        pp = message.PhysicalPropertiesMsg()
+        pm.orientation = [ fX, fY, uX, uY ]
+        return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, pm.build())
 
     def die(self):
-        message.GoodbyeMsg.send(self.sock, self.phys_id, self.osim_id)
+        message.GoodbyeMsg.send(self.sock, self.phys_id, self.osim_id, {})
         self.done = True
         self.sock.shutdown(socket.SHUT_RDWR)
         self.sock.close()
@@ -214,17 +201,19 @@ class Beam(SpaceObject):
         self.v_focus = v_focus
 
     def build_common(self):
-        return ([self.origin[0], self.origin[1], self.origin[2],
-                self.velocity[0], self.velocity[1], self.velocity[2],
-                self.up[0], self.up[1], self.up[2],
-                self.h_focus,
-                self.v_focus,
-                self.power,
-                self.beam_type ])
+        bm = message.BeamMsg()
+        bm.origin = [ self.origin[i] for i in range(3) ]
+        bm.velocity = [ self.velocity[i] for i in range(3) ]
+        bm.up = [ self.up[i] for i in range(3) ]
+        bm.spread_h = self.h_focus
+        bm.spread_v = self.v_focus
+        bm.power = self.power
+        bm.beam_type = self.beam_type
+        return bm
 
     def send_it(self, sock):
-        message.BeamMsg.send(sock, self.phys_id, self.osim_id, self.build_common())
-
+        bm = self.build_common()
+        message.BeamMsg.send(sock, self.phys_id, self.osim_id, bm.build())
 
 class CommBeam(Beam):
     def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus, message):
@@ -233,8 +222,8 @@ class CommBeam(Beam):
 
     def send_it(self, sock):
         ar = self.build_common()
-        ar.append(self.message)
-        message.BeamMsg.send(sock, self.phys_id, self.osim_id, ar)
+        ar.comm_msg = self.message
+        message.BeamMsg.send(sock, self.phys_id, self.osim_id, ar.build())
 
 
 class WeaponBeam(Beam):
@@ -244,8 +233,8 @@ class WeaponBeam(Beam):
 
     def send_it(self, sock):
         ar = self.build_common()
-        ar.append(self.subtype)
-        message.BeamMsg.send(sock, self.phys_id, self.osim_id, ar)
+        #ar.append(self.subtype)
+        message.BeamMsg.send(sock, self.phys_id, self.osim_id, ar.build)
 
 class ScanBeam(Beam):
     def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus):

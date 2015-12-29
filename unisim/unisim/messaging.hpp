@@ -47,7 +47,7 @@ public:
     BSONMessage() { }
     virtual ~BSONMessage();
     virtual int spec_all(bool spec = true);
-    virtual bool all_specced(int start_index = 0);
+    virtual bool all_specced(int start_index = 0, int stop_index = -1);
 
 protected:
     BSONReader* br;

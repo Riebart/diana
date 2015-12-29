@@ -217,25 +217,22 @@ class PhysicalPropertiesMsg(Message):
 
         return msg
 
-#class VisualPropertiesMsg(Message):
-    #def __init__(self, s, srv_id, cli_id):
-        #self.srv_id = srv_id
-        #self.cli_id = cli_id
+class VisualPropertiesMsg(Message):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
         #self.mesh = Message.read_mesh(s)
         #self.texture = Message.read_texture(s)
 
-    ##def build(self):
-        ##VisualPropertiesMsg.send(client, self.srv_id, self.cli_id,
-            ##[ self.mesh, self.texture ])
+    def build(self):
+        msg = {}
+        return msg
 
-    #@staticmethod
-    #def send(client, srv_id, cli_id, args):
-        #msg = "VISPROPS\n"
-        #msg += Message.prep_mesh(args[0])
-        #msg += Message.prep_texture(args[1])
-
-        #ret = Message.sendall(client, srv_id, cli_id, msg)
-        #return ret
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualPropertiesMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class VisualDataEnableMsg(Message):
     def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
@@ -254,46 +251,41 @@ class VisualDataEnableMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
-#class VisualMetaDataEnableMsg(Message):
-    #def __init__(self, s, srv_id, cli_id):
-        #self.srv_id = srv_id
-        #self.cli_id = cli_id
-        #self.enabled = Message.read_int(s)
-
-    ##def build(self):
-        ##VisualMetaDataEnableMsg.send(client, self.srv_id, self.cli_id, self.enabled)
-
-    #@staticmethod
-    #def send(client, srv_id, cli_id, arg):
-        #msg = "VISMETADATAENABLE\n%d\n" % arg
-
-        #ret = Message.sendall(client, srv_id, cli_id, msg)
-        #return ret
-
-#class VisualMetaDataMsg(Message):
-    #def __init__(self, s, srv_id, cli_id):
-        #self.srv_id = srv_id
-        #self.cli_id = cli_id
+class VisualMetaDataEnableMsg(Message):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
         #self.art_id = Message.read_int(s)
         #self.mesh = Message.read_mesh(s)
         #self.texture = Message.read_texture(s)
 
-    ##def build(self):
-        ##VisualMetaDataMsg.send(client, self.srv_id, self.cli_id, [ self.art_id, self.mesh, self.texture ])
+    def build(self):
+        msg = {}
+        return msg
 
-    #@staticmethod
-    #def send(client, srv_id, cli_id, args):
-        #msg = "VISMETADATA\n"
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualMetaDataEnableMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
 
-        #art_id = args[0]
-        #mesh = args[1]
-        #texture = args[2]
-        #msg += "%d\n" % art_id
-        #msg += Message.prep_mesh(mesh) + "\n"
-        #msg += Message.prep_texture(texture) + "\n"
+class VisualMetaDataMsg(Message):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        #self.art_id = Message.read_int(s)
+        #self.mesh = Message.read_mesh(s)
+        #self.texture = Message.read_texture(s)
 
-        #ret = Message.sendall(client, srv_id, cli_id, msg)
-        #return ret
+    def build(self):
+        msg = {}
+        return msg
+
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualMetaDataMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class VisualDataMsg(Message):
     def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
