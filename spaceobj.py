@@ -21,9 +21,9 @@ class SpaceObject:
         self.position = None
         self.velocity = None
         self.thrust = None
-        self.forward = Vector3([1,0,0])
-        self.up = Vector3([0,0,1])
-        self.right = Vector3([0,1,0])
+        self.forward = Vector3([1.0,0.0,0.0])
+        self.up = Vector3([0.0,0.0,1.0])
+        self.right = Vector3([0.0,1.0,0.0])
         self.radius = None
 
 class SmartObject(SpaceObject, threading.Thread):
@@ -285,8 +285,8 @@ class HomingMissile1(Missile):
         Missile.__init__(self, osim, "Homing missile", payload)
         self.direction = direction
         self.position = direction.unit()
-        self.radius = 2
-        self.mass = 100
+        self.radius = 2.0
+        self.mass = 100.0
         self.tout_val = 1
         #self.sock.settimeout(self.tout_val)
         self.fuse = 100.0    #distance in meters to explode from target

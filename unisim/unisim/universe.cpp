@@ -499,8 +499,9 @@ void Universe::handle_message(int32_t socket)
         PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
         // We currently only support PhysProps messages for smarties. Why would you be able to adjust
         // the properties of another object?
-        if ((smarty != NULL) && msg->all_specced())
+        if (smarty != NULL)
         {
+            // Object type
             if (msg->specced[3])
             {
                 size_t new_type_len = strlen(msg->obj_type) + 1;
@@ -516,9 +517,9 @@ void Universe::handle_message(int32_t socket)
                     smarty->pobj.obj_type = new_type;
                 }
             }
+
 #define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
 #define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
-#define ASSIGN_V4(i, var) ASSIGN_VAL(i, var.w) ASSIGN_VAL(i + 1, var.x) ASSIGN_VAL(i + 2, var.y) ASSIGN_VAL(i + 3, var.z);
             ASSIGN_VAL(3, mass);
             ASSIGN_V3(4, position);
             ASSIGN_V3(7, velocity);
@@ -528,9 +529,8 @@ void Universe::handle_message(int32_t socket)
             }
             ASSIGN_V3(14, thrust);
             ASSIGN_VAL(17, radius);
-#undef ASSIGN_VAL
 #undef ASSIGN_V3
-#undef ASSIGN_V4
+#undef ASSIGN_VAL
         }
         break;
     }
@@ -952,9 +952,10 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 struct SmartPhysicsObject* s = (SPO*)o;
                 CollisionMsg cm;
                 cm.client_id = s->client_id;
-                cm.server_id = o->phys_id; //! @todo Should this be the physID of object or beam
+                cm.server_id = o->phys_id;
                 cm.direction = beam_result.d;
                 cm.position = beam_result.p;
+                Vector3_subtract(&cm.position, &o->position);
                 cm.energy = beam_result.e;
                 cm.comm_msg = NULL;
                 cm.spec_all();
@@ -1017,7 +1018,9 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     srm.client_id = s->client_id;
                     srm.server_id = s->pobj.phys_id;
                     srm.position = b->scan_target->position;
+                    Vector3_subtract(&srm.position, &o->position);
                     srm.velocity = b->scan_target->velocity;
+                    Vector3_subtract(&srm.velocity, &o->velocity);
                     srm.thrust = b->scan_target->thrust;
                     srm.mass = b->scan_target->mass;
                     srm.radius = b->scan_target->radius;
