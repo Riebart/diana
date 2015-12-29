@@ -17,7 +17,7 @@ namespace Diana2DClient
             InfoUpdate = 21, RequestUpdate = 22
         };
 
-        internal Int64 osim_id;
+        internal Int64 server_id;
         internal Int64 client_id;
 
         static Dictionary<MessageType, Func<BSONReader, Message>> messageMap = new Dictionary<MessageType, Func<BSONReader, Message>>()
@@ -33,7 +33,7 @@ namespace Diana2DClient
         internal static Message GetMessage(Stream s)
         {
             byte[] buf = new byte[4];
-            
+
             try
             {
                 s.Read(buf, 0, 4);
@@ -42,7 +42,7 @@ namespace Diana2DClient
             {
                 return null;
             }
-            
+
             Int32 msg_len = BitConverter.ToInt32(buf, 0);
             buf = new byte[msg_len];
             try
@@ -58,14 +58,14 @@ namespace Diana2DClient
             BSONReader br = new BSONReader(buf);
             BSONReader.Element el = br.GetNextElement();
 
-            if ((el.type != BSONReader.ElementType.Int32) || (el.name != "MsgType"))
+            if ((el.type != BSONReader.ElementType.Int32) || (el.name != ""))
             {
                 return null;
             }
-            
+
             return messageMap[(MessageType)el.i32_val](br);
         }
-        
+
         internal static bool SendMessage(Stream s, byte[] msg)
         {
             s.Write(msg, 0, msg.Length);
@@ -76,11 +76,11 @@ namespace Diana2DClient
 
     class VisDataEnableMessage : Message
     {
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, bool enable)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id, bool enable)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.VisualDataEnable);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.VisualDataEnable);
+            bw.Push(server_id);
             bw.Push(client_id);
             bw.Push(enable);
             return Message.SendMessage(s, bw.PushEnd());
@@ -97,7 +97,7 @@ namespace Diana2DClient
 
         internal VisDataMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
             id = br.GetNextElement().i64_val;
             radius = br.GetNextElement().dbl_val;
@@ -107,7 +107,7 @@ namespace Diana2DClient
                 br.GetNextElement().dbl_val,
                 br.GetNextElement().dbl_val
                 );
-            
+
             orientation = new Vector4D(
                 br.GetNextElement().dbl_val,
                 br.GetNextElement().dbl_val,
@@ -131,7 +131,7 @@ namespace Diana2DClient
     {
         internal HelloMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
         }
 
@@ -140,11 +140,11 @@ namespace Diana2DClient
             return new HelloMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.Hello);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.Hello);
+            bw.Push(server_id);
             bw.Push(client_id);
             return Message.SendMessage(s, bw.PushEnd());
         }
@@ -154,7 +154,7 @@ namespace Diana2DClient
     {
         internal GoodbyeMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
         }
 
@@ -163,11 +163,11 @@ namespace Diana2DClient
             return new GoodbyeMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.Goodbye);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.Goodbye);
+            bw.Push(server_id);
             bw.Push(client_id);
             return Message.SendMessage(s, bw.PushEnd());
         }
@@ -182,19 +182,45 @@ namespace Diana2DClient
 
         internal DirectoryMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
-            client_id = br.GetNextElement().i64_val;
-            item_type = br.GetNextElement().str_val;
-            is_ships = item_type.Equals("SHIP");
-            Int64 item_count = br.GetNextElement().i64_val;
-            ids = new Int64[item_count];
-            names = new string[item_count];
-
-            for (int i = 0; i < item_count; i++)
+            BSONReader.Element el = br.GetNextElement();
+            Int64 item_count = 0;
+            while (el.type != BSONReader.ElementType.NoMoreData)
             {
-                ids[i] = br.GetNextElement().i64_val;
-                names[i] = br.GetNextElement().str_val;
-                
+                switch((Int32)el.name[0])
+                {
+                    case 1:
+                        server_id = el.i64_val;
+                        break;
+                    case 2:
+                        client_id = el.i64_val;
+                        break;
+                    case 3:
+                        item_type = el.str_val;
+                        is_ships = item_type.Equals("SHIP");
+                        break;
+                    case 4:
+                        item_count = el.i64_val;
+                        ids = new Int64[item_count];
+                        names = new string[item_count];
+                        break;
+                    case 5:
+                        el = br.GetNextElement(); // Eat the array tag
+                        for (int i = 0; i < item_count; i++)
+                        {
+                            ids[i] = el.i64_val;
+                            el = br.GetNextElement();
+                        }
+                        break;
+                    case 6:
+                        el = br.GetNextElement(); // Eat the array tag
+                        for (int i = 0; i < item_count; i++)
+                        {
+                            names[i] = el.str_val;
+                            el = br.GetNextElement();
+                        }
+                        break;
+                }
+                el = br.GetNextElement();
             }
         }
 
@@ -203,18 +229,43 @@ namespace Diana2DClient
             return new DirectoryMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string type, Int64[] ids, string[] names)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id, string type, Int64[] ids, string[] names)
         {
+            if (
+                ((ids == null) && (names != null)) ||
+                ((ids != null) && (names == null)) ||
+                (
+                ((ids != null) && (names != null)) && (ids.Length != names.Length)
+                )
+                )
+            {
+                throw new Exception("ArraysNotEqualLength");
+            }
+
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.Directory);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.Directory);
+            bw.Push(server_id);
             bw.Push(client_id);
             bw.Push(type);
-            for (int i = 0; i < ids.Length; i++)
+            bw.Push((ids == null ? 0 : ids.Length));
+            bw.PushArray();
+            if (ids != null)
             {
-                bw.Push(ids[i]);
-                bw.Push(names[i]);
+                for (int i = 0; i < ids.Length; i++)
+                {
+                    bw.Push(ids[i]);
+                }
             }
+            bw.PushEnd();
+            bw.PushArray();
+            if (names != null)
+            {
+                for (int i = 0; i < names.Length; i++)
+                {
+                    bw.Push(names[i]);
+                }
+            }
+            bw.PushEnd();
             return Message.SendMessage(s, bw.PushEnd());
         }
     }
@@ -225,7 +276,7 @@ namespace Diana2DClient
 
         internal NameMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
             name = br.GetNextElement().str_val;
         }
@@ -235,11 +286,11 @@ namespace Diana2DClient
             return new NameMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string name)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id, string name)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.Name);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.Name);
+            bw.Push(server_id);
             bw.Push(client_id);
             bw.Push(name);
             return Message.SendMessage(s, bw.PushEnd());
@@ -252,7 +303,7 @@ namespace Diana2DClient
 
         internal ReadyMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
             ready = br.GetNextElement().bln_val;
         }
@@ -262,11 +313,11 @@ namespace Diana2DClient
             return new ReadyMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, bool ready)
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id, bool ready)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.Name);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.Ready);
+            bw.Push(server_id);
             bw.Push(client_id);
             bw.Push(ready);
             return Message.SendMessage(s, bw.PushEnd());
@@ -282,7 +333,7 @@ namespace Diana2DClient
 
         internal PhysicalPropertiesMessage(BSONReader br)
         {
-            osim_id = br.GetNextElement().i64_val;
+            server_id = br.GetNextElement().i64_val;
             client_id = br.GetNextElement().i64_val;
             object_type = br.GetNextElement().str_val;
             mass = br.GetNextElement().dbl_val;
@@ -320,12 +371,12 @@ namespace Diana2DClient
             return new PhysicalPropertiesMessage(br);
         }
 
-        internal static bool Send(Stream s, Int64 osim_id, Int64 client_id, string object_type, double mass, double radius,
+        internal static bool Send(Stream s, Int64 server_id, Int64 client_id, string object_type, double mass, double radius,
                                   Vector3D position, Vector3D velocity, Vector4D orientation, Vector3D thrust)
         {
             BSONWriter bw = new BSONWriter();
-            bw.Push("MsgType", (Int32)Message.MessageType.PhysicalProperties);
-            bw.Push(osim_id);
+            bw.Push("", (Int32)Message.MessageType.PhysicalProperties);
+            bw.Push(server_id);
             bw.Push(client_id);
             bw.Push(object_type);
             bw.Push(mass);

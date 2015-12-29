@@ -41,7 +41,7 @@ namespace Diana2DClient
             HelloMessage.Send(s, -1, -1);
 
             Message msg = Message.GetMessage(s);
-            this.client_id = msg.client_id;
+            this.osim_id = msg.server_id;
             return true;
         }
 
@@ -49,7 +49,7 @@ namespace Diana2DClient
         {
             DirectoryMessage.Send(s, osim_id, client_id, "CLASS", new Int64[] { id }, new string[] { name });
             Message helloBack = Message.GetMessage(s);
-            osim_id = helloBack.osim_id;
+            osim_id = helloBack.server_id;
             return osim_id;
         }
 
@@ -93,7 +93,7 @@ namespace Diana2DClient
         {
             DirectoryMessage.Send(s, osim_id, client_id, "SHIP", new Int64[] { id }, new string[] { name });
             Message helloBack = Message.GetMessage(s);
-            osim_id = helloBack.osim_id;
+            osim_id = helloBack.server_id;
             return osim_id;
         }
 

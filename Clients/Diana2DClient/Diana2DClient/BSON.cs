@@ -53,11 +53,12 @@ class BSONReader
     String ReadString(int len)
     {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < len; i++)
+        // Don't copy in the null terminator, we'll eat it later as part of skipping pos
+        // along by item_len
+        for (int i = 0; i < len - 1; i++)
         {
             sb.Append((char)msg[pos + i]);
         }
-        pos += 1; // Also skip the trailing 0x00
         return sb.ToString();
 
     }
@@ -113,6 +114,7 @@ class BSONReader
                 el.subtype = (int)msg[pos];
                 pos += 1;
                 el.bin_val = msg.Skip(pos).Take(item_len).ToArray();
+                el.str_val = new String(Encoding.ASCII.GetChars(el.bin_val));
                 pos += item_len;
                 break;
 
@@ -141,11 +143,13 @@ class BSONReader
             case ElementType.MongoTimeStamp:
             case ElementType.Int64:
                 el.i64_val = BitConverter.ToInt64(msg, pos);
+                el.i32_val = (Int32)el.i64_val;
                 pos += 8;
                 break;
 
             case ElementType.Int32:
                 el.i32_val = BitConverter.ToInt32(msg, pos);
+                el.i64_val = el.i32_val;
                 pos += 4;
                 break;
         }
@@ -266,10 +270,11 @@ class BSONWriter
         }
         else
         {
-            if (v == null)
-            {
-                return false;
-            }
+            // This would be here for consistency, but is always false, since IntX types are non-nullable value types.
+            //if (v == null)
+            //{
+            //    return false;
+            //}
 
             switch (type)
             {

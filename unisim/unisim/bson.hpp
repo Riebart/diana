@@ -144,11 +144,13 @@ public:
         case ElementType::MongoTimeStamp:
         case ElementType::Int64:
             el.i64_val = *(int64_t*)(msg + pos);
+            el.i32_val = (int32_t)el.i64_val;
             pos += 8;
             break;
 
         case ElementType::Int32:
             el.i32_val = *(int32_t*)(msg + pos);
+            el.i64_val = el.i32_val;
             pos += 4;
             break;
         default:

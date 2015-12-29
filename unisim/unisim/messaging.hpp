@@ -22,7 +22,7 @@ public:
         InfoUpdate = 21, RequestUpdate = 22
     };
 
-    // Type of message, stored in the first field, an Int32 field with the name MsgType
+    // Type of message, stored in the first field, an Int32 field with the name "" (empty string)
     // of every message.
     MessageType msg_type;
 

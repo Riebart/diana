@@ -137,10 +137,10 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
 
     def enable_visdata(self):
-        return message.VisualDataEnableMsg.send(self.sock, self.phys_id, self.osim_id, 1)
+        return message.VisualDataEnableMsg.send(self.sock, self.phys_id, self.osim_id, {'\x03': True})
 
     def disable_visdata(self):
-        return message.VisualDataEnableMsg.send(self.sock, self.phys_id, self.osim_id, 0)
+        return message.VisualDataEnableMsg.send(self.sock, self.phys_id, self.osim_id, {'\x03': False})
 
     def set_thrust(self, x, y=None, z=None):
         if (y==None):

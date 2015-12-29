@@ -33,12 +33,7 @@ class ObjectSim:
     # This is always called from a client's thread, so we don't actually need
     # to be concerned about how long this takes necessarily, as it will only hold
     # up one socket.
-    def handler(self, client):
-        try:
-            msg = Message.get_message(client)
-        except:
-            return None
-
+    def handler(self, msg):
         if msg == None:
             return None
 
@@ -49,9 +44,9 @@ class ObjectSim:
         if isinstance(msg, HelloMsg):
             # Say Hello back with its client ID
             self.id_lock.acquire()
-            client_id = self.get_id()
+            osim_id = self.get_id()
             self.id_lock.release()
-            HelloMsg.send(client, None, client_id)
+            HelloMsg.send(msg.socket, osim_id, client_id, {})
 
         elif isinstance(msg, DirectoryMsg):
             # ### TODO ### Update clients sitting at the directories as joinable
@@ -60,34 +55,45 @@ class ObjectSim:
             # A directory message with zero items means it wants an update on
             # joinable ships or ship classes
             if len(msg.items) == 0:
-                DirectoryMsg.send(client, None, client_id,
-                [ "SHIP" ] + self.get_joinable_ships() if msg.item_type == "SHIP" else
-                [ "CLASS" ] + self.get_player_ship_classes())
+                dm = DirectoryMsg()
+                dm.srv_id = osim_id
+                dm.cli_id = client_id
+                if msg.item_type == "SHIP":
+                    dm.item_type = msg.item_type
+                    dm.items = self.get_joinable_ships()
+                elif msg.item_type == "CLASS":
+                    dm.item_type = msg.item_type
+                    dm.items = self.get_player_ship_classes()
+                DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
 
             # If they send back one item, then they have made a choice.
             elif len(msg.items) == 1:
                 if msg.item_type == "SHIP":
                     # They chose a ship, so take the ID, and hand off.
-                    self.client_list[msg.items[0][0]].append([client, client_id])
-                    HelloMsg.send(client, msg.items[0][0], client_id)
-                    self.ship_list[msg.items[0][0]].new_client(client, client_id)
+                    ship_id = msg.items[0][0]
+                    if ship_id not in self.client_list:
+                        self.client_list[ship_id] = []
+                    self.client_list[ship_id].append((msg.socket, client_id))
+                    HelloMsg.send(msg.socket, ship_id, client_id, {})
+                    self.ship_list[ship_id].new_client(msg.socket, client_id)
 
                 elif msg.item_type == "CLASS":
+                    class_id = msg.items[0][0]
                     # They chose a class, so take the class ID and hand off.
-                    newship = self.christen_ship(msg.items[0][0])
-                    HelloMsg.send(client, newship.osim_id, client_id)
-                    self.client_list[newship.osim_id] = [[client, client_id]]
-                    newship.new_client(client, client_id)
+                    newship = self.christen_ship(class_id)
+                    HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
+                    self.client_list[newship.osim_id] = [[msg.socket, client_id]]
+                    newship.new_client(msg.socket, client_id)
 
         elif osim_id != None and client_id != None:
-            self.ship_list[osim_id].handle(client, msg)
+            self.ship_list[osim_id].handle(msg.socket, msg)
 
     def hangup(self, client):
         # ### TODO ### Really inefficient...
-        for k in self.client_list:
-            for c in self.client_list[k]:
+        for ship_id in self.client_list:
+            for c in self.client_list[ship_id]:
                 if c == client:
-                    self.object_list[k].hangup(c)
+                    self.object_list[ship_id].hangup(c)
         pass
 
     def get_id(self):
@@ -126,7 +132,7 @@ class ObjectSim:
 
     def get_phys_id(self, sock, osim_id):
         sock.connect(self.unisim)
-        message.HelloMsg.send(sock, None, osim_id)
+        message.HelloMsg.send(sock, None, osim_id, {})
 
         try:
             reply = message.Message.get_message(sock)
@@ -165,7 +171,7 @@ class ObjectSim:
     #assume object already constructed, with appropriate vals
     def spawn_object(self, obj):
         if isinstance(obj, SmartObject):
-            self.send_physprops(obj)
+            #self.send_physprops(obj)
 
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)
@@ -179,6 +185,7 @@ class ObjectSim:
             #will non-smart objects be multiplexed over a single osim connection (probably)
 
     def destroy_object(self, osim_id):
+        print "DESTROYING", osim_id
         obj = self.object_list[osim_id]
         del self.object_list[osim_id]
         del self.ship_list[osim_id]

@@ -9,7 +9,7 @@
 // Send a 4D vector to the writer.
 #define SEND_VECTOR4(var) SEND_ELEMENT(var.w) SEND_ELEMENT(var.x) SEND_ELEMENT(var.y) SEND_ELEMENT(var.z)
 // Prepare the necessary writers and index variables for writing elements.
-#define SEND_PROLOGUE() BSONWriter bw; bw.push((char*)"MsgType", (int32_t)msg_type); int spec_check = 0; SEND_ELEMENT(server_id); SEND_ELEMENT(client_id);
+#define SEND_PROLOGUE() BSONWriter bw; bw.push((char*)"", (int32_t)msg_type); int spec_check = 0; SEND_ELEMENT(server_id); SEND_ELEMENT(client_id);
 // Finish off by pushing an end, and writing the bytes to the socket.
 #define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, (char*)bytes, *(int32_t*)bytes);
 
@@ -114,9 +114,9 @@ BSONMessage* BSONMessage::ReadMessage(int sock)
     struct BSONReader::Element el = br.get_next_element();
 
     // Sanity checks:
-    // The element should be an int32 (type 16), and a name of "MsgType".
+    // The element should be an int32 (type 16), and a name of "".
     // Switch on the value to hand off further parsing.
-    if ((el.type != BSONReader::ElementType::Int32) || (strcmp(el.name, "MsgType") != 0))
+    if ((el.type != BSONReader::ElementType::Int32) || (strcmp(el.name, "") != 0))
     {
         return NULL;
     }
@@ -447,7 +447,7 @@ int64_t SpawnMsg::send(int sock)
 {
     SEND_PROLOGUE();
     SEND_ELEMENT(is_smart)
-    SEND_ELEMENT(obj_type);
+        SEND_ELEMENT(obj_type);
     SEND_ELEMENT(mass);
     SEND_VECTOR3(position);
     SEND_VECTOR3(velocity);
@@ -577,7 +577,7 @@ int64_t GoodbyeMsg::send(int sock)
     SEND_EPILOGUE();
 }
 
-#define DIRECTORY_MSG_LEN 3
+#define DIRECTORY_MSG_LEN 4
 DirectoryMsg::DirectoryMsg()
 {
     msg_type = Directory;
@@ -592,15 +592,11 @@ DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage
     READ_PROLOGUE(DIRECTORY_MSG_LEN)
         READ_ELEMENT(item_type, ReadString(el))
         READ_ELEMENT(item_count, el.i64_val; \
-        this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));
-    )
-        //! @todo We're missing reading all of the items.
+        this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
+        // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
+        READ_ELEMENT_IP(;)
+        READ_ELEMENT_IP(;)
         READ_BEGIN()
-        //for (int i = 0; i < item_count; i++)
-        //{
-        //    items[i].id = ReadInt64(br);
-        //    items[i].name = ReadString(br);
-        //}
 }
 
 DirectoryMsg::~DirectoryMsg()
@@ -615,16 +611,23 @@ DirectoryMsg::~DirectoryMsg()
 
 int64_t DirectoryMsg::send(int sock)
 {
-    throw "NotImplemented";
-    //SEND_PROLOGUE(Directory);
-    //bw.push(item_type);
-    //bw.push(item_count);
+    SEND_PROLOGUE();
+    SEND_ELEMENT(item_type);
+    SEND_ELEMENT(item_count);
+    bw.push_array();
     //for (int i = 0; i < item_count; i++)
     //{
     //    bw.push(items[i].id);
+    //}
+    bw.push_end();
+    bw.push_array();
+    //for (int i = 0; i < item_count; i++)
+    //{
     //    bw.push(items[i].name);
     //}
-    //SEND_EPILOGUE();
+    bw.push_end();
+    
+    SEND_EPILOGUE();
 }
 
 #define NAME_MSG_LEN 1
