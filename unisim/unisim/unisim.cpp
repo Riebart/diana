@@ -375,7 +375,7 @@ int main(int32_t argc, char** argv)
 		//shifting();
 		//collision_exit();
 
-		beam_collision();
+		//beam_collision();
 		//beam_multi_collision();
 
 		//print_positions();

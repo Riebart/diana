@@ -162,20 +162,34 @@ def pool_rack():
     C = 1
     y_scale = sqrt(3) / 2
     y_offset = 100
+    sm = SpawnMsg()
     for i in range(0, num_rows):
         for j in range(0, i+1):
-            SpawnMsg.send(sock, None, None, [ "Target Ball %d" % (i * (i + 1) / 2 + j + 1),
-            ball_mass, C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0,
-            0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, ball_radius ])
+            sm.srv_id = -1
+            sm.cli_id = -1
+            sm.is_smart = False
+            sm.radius = ball_radius
+            sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
+            sm.mass = ball_mass
+            sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0 ]
+            sm.velocity = [0,0,0]
+            sm.thrust = [0,0,0]
+            sm.orientation = [0,0,0,0]
+
+            SpawnMsg.send(sock, -1, -1, sm.build())
 
     # This makes us a cue ball
-    SpawnMsg.send(sock, None, None, [ "Cue Ball", ball_mass,
-    0, -25, 0,
-    0, 10, 0,
-    0, 0, 0, 0,
-    0, 0, 0, ball_radius ])
+    sm.srv_id = -1
+    sm.cli_id = -1
+    sm.is_smart = False
+    sm.object_type = "Cue ball"
+    sm.mass = ball_mass
+    sm.position = [0,-25,0]
+    sm.velocity = [0,1,0]
+    sm.thrust = [0,0,0]
+    sm.orientation = [0,0,0,0]
+    sm.radius = ball_radius
+    SpawnMsg.send(sock, -1, -1, sm.build())
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()

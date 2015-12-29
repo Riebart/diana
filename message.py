@@ -373,17 +373,18 @@ class SpawnMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
         self.is_smart = Message.ReadMsgEl('\x03', msg)
-        self.mass = Message.ReadMsgEl('\x04', msg)
-        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
-        self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
-        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
-        self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
-        self.radius = Message.ReadMsgEl('\x12', msg)
+        self.object_type = Message.ReadMsgEl('\x04', msg)
+        self.mass = Message.ReadMsgEl('\x05', msg)
+        self.position = Message.ReadMsgEl(('\x06','\x07','\x08'), msg)
+        self.velocity = Message.ReadMsgEl(('\x09','\x0A','\x0B'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0C','\x0D','\x0E','\x0F'), msg)
+        self.thrust = Message.ReadMsgEl(('\x10','\x11','\x12'), msg)
+        self.radius = Message.ReadMsgEl('\x13', msg)
 
     def build(self):
         msg = {}
-        vals = [ self.mass, self.is_smart ] + \
-            self.position + self.velocity + self.orientation + self.thrust + \
+        vals = [ self.is_smart, str(self.object_type), self.mass ] + \
+            list(self.position) + list(self.velocity) + list(self.orientation) + list(self.thrust) + \
             [ self.radius ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg

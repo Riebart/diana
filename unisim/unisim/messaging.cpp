@@ -446,8 +446,8 @@ SpawnMsg::~SpawnMsg()
 int64_t SpawnMsg::send(int sock)
 {
     SEND_PROLOGUE();
-    SEND_ELEMENT(is_smart)
-        SEND_ELEMENT(obj_type);
+    SEND_ELEMENT(is_smart);
+    SEND_ELEMENT(obj_type);
     SEND_ELEMENT(mass);
     SEND_VECTOR3(position);
     SEND_VECTOR3(velocity);

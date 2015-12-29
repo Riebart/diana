@@ -116,6 +116,10 @@ public:
             pos += 1;
             el.bin_val = (uint8_t*)(msg + pos);
             pos += el.bin_len;
+            // The Python BSON library has a habit of encoding strings as binary arrays.
+            // Fill in the string pointer and length in case we were expecting a string.
+            el.str_len = el.bin_len;
+            el.str_val = (char*)el.bin_val;
             break;
 
         case ElementType::Deprecatedx06:
@@ -144,12 +148,16 @@ public:
         case ElementType::MongoTimeStamp:
         case ElementType::Int64:
             el.i64_val = *(int64_t*)(msg + pos);
+            // The Python BSON library has a habit of not obeying integer types
+            // Fill in the i32_val from the parsed value, as best we can, in case we were expected an i32
             el.i32_val = (int32_t)el.i64_val;
             pos += 8;
             break;
 
         case ElementType::Int32:
             el.i32_val = *(int32_t*)(msg + pos);
+            // The Python BSON library has a habit of not obeying integer types
+            // Fill in the i64_val from the parsed value, in case we were expected an i64
             el.i64_val = el.i32_val;
             pos += 4;
             break;
