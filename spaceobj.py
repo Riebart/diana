@@ -38,8 +38,9 @@ class SmartObject(SpaceObject, threading.Thread):
         self.sock = socket.socket()
         self.done = False
         self.tout_val = 0
+        self.phys_id = None
 
-        self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
+        #self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
 
     # ++++++++++++++++++++++++++++++++
     # All of the handlers
@@ -70,8 +71,9 @@ class SmartObject(SpaceObject, threading.Thread):
         elif collision.collision_type == "SCAN":
             #hit by a scan beam
             self.handle_scan(collision)
-        elif collision.collision_type == "SCANRESULT":
-            self.handle_scanresult(collision)
+        elif collision.collision_type == "SCRE":
+            #self.handle_scanresult(collision)
+            pass
         else:
             print "Bad collision: " + str(collision)
 
@@ -91,33 +93,35 @@ class SmartObject(SpaceObject, threading.Thread):
 
     def handle_scanresult(self, mess):
         print "Got a scanresult for %s" % mess.object_type
-        pass
+        self.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         print str(mess)
 
-    def make_response(self, power):
+    def make_response(self, energy):
         return [ self.object_type, self.name ]
 
     def handle_query(self, mess):
         # This is where we respond to SCANQUERY messages.
-        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(), mess.power ])
-        return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id ] + self.make_response(mess.scan_power))
-        pass
+        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(), mess.energy ])
+        srm = message.ScanResponseMsg()
+        srm.scan_id = mess.scan_id
+        srm.data = " ".join(self.make_response(mess.scan_energy))
+        return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, srm.build())
 
     # ++++++++++++++++++++++++++++++++
 
-    def make_explosion(self, position, power):
+    def make_explosion(self, position, energy):
         message.BeamMsg.send(self.sock, self.phys_id, self.osim_id, [
                 position[0], position[1], position[2],
                 299792458.0, 0.0, 0.0,
                 0.0, 0.0, 0.0,
                 2*pi,
                 2*pi,
-                power,
+                energy,
                 "WEAP" ])
 
-    def init_beam(self, BeamClass, power, speed, direction, up, h_focus, v_focus):
+    def init_beam(self, BeamClass, energy, speed, direction, up, h_focus, v_focus):
         direction = direction.unit()
 
         velocity = direction.clone()
@@ -126,7 +130,7 @@ class SmartObject(SpaceObject, threading.Thread):
         origin = direction.clone()
         origin.scale(self.radius + 0.0001)
 
-        beam = BeamClass(self.osim, self.phys_id, self.osim_id, power, velocity, origin, up, h_focus, v_focus)
+        beam = BeamClass(self.osim, self.phys_id, self.osim_id, energy, velocity, origin, up, h_focus, v_focus)
         return beam
 
     #create and launch a beam object. Assumes beam object is already populated with proper values
@@ -189,11 +193,11 @@ class SmartObject(SpaceObject, threading.Thread):
 class Beam(SpaceObject):
     speed_of_light = 299792458.0
 
-    def __init__(self, osim, phys_id, osim_id, beam_type, power, velocity, origin, up, h_focus, v_focus):
+    def __init__(self, osim, phys_id, osim_id, beam_type, energy, velocity, origin, up, h_focus, v_focus):
         SpaceObject.__init__(self, osim, osim_id)
         self.phys_id = phys_id
         self.beam_type = beam_type
-        self.power = power
+        self.energy = energy
         self.velocity = velocity
         self.origin = origin
         self.up = up
@@ -207,7 +211,7 @@ class Beam(SpaceObject):
         bm.up = [ self.up[i] for i in range(3) ]
         bm.spread_h = self.h_focus
         bm.spread_v = self.v_focus
-        bm.power = self.power
+        bm.energy = self.energy
         bm.beam_type = self.beam_type
         return bm
 
@@ -216,8 +220,8 @@ class Beam(SpaceObject):
         message.BeamMsg.send(sock, self.phys_id, self.osim_id, bm.build())
 
 class CommBeam(Beam):
-    def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus, message):
-        Beam.__init__(self, osim, phys_id, osim_id, "COMM", power, velocity, origin, up, h_focus, v_focus)
+    def __init__(self, osim, phys_id, osim_id, energy, velocity, origin, up, h_focus, v_focus, message):
+        Beam.__init__(self, osim, phys_id, osim_id, "COMM", energy, velocity, origin, up, h_focus, v_focus)
         self.message = message
 
     def send_it(self, sock):
@@ -227,8 +231,8 @@ class CommBeam(Beam):
 
 
 class WeaponBeam(Beam):
-    def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus, subtype="laser"):
-        Beam.__init__(self, osim, phys_id, osim_id, "WEAP", power, velocity, origin, up, h_focus, v_focus)
+    def __init__(self, osim, phys_id, osim_id, energy, velocity, origin, up, h_focus, v_focus, subtype="laser"):
+        Beam.__init__(self, osim, phys_id, osim_id, "WEAP", energy, velocity, origin, up, h_focus, v_focus)
         self.subtype = subtype
 
     def send_it(self, sock):
@@ -237,8 +241,8 @@ class WeaponBeam(Beam):
         message.BeamMsg.send(sock, self.phys_id, self.osim_id, ar.build)
 
 class ScanBeam(Beam):
-    def __init__(self, osim, phys_id, osim_id, power, velocity, origin, up, h_focus, v_focus):
-        Beam.__init__(self, osim, phys_id, osim_id, "SCAN", power, velocity, origin, up, h_focus, v_focus)
+    def __init__(self, osim, phys_id, osim_id, energy, velocity, origin, up, h_focus, v_focus):
+        Beam.__init__(self, osim, phys_id, osim_id, "SCAN", energy, velocity, origin, up, h_focus, v_focus)
 
 # ==============================================================================
 

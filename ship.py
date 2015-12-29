@@ -240,7 +240,8 @@ class Ship(SmartObject):
     # Now the rest of the handler functions
     # ++++++++++++++++++++++++++++++++
     def handle_scanresult(self, mess):
-        self.Sensors.handle_scanresult(mess)
+        pass
+        #self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         mess.srv_id = self.osim_id

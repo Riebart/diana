@@ -581,7 +581,8 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Spawn:
     {
         SpawnMsg* msg = (SpawnMsg*)msg_base;
-        if (!msg->all_specced())
+        // We don't need, or rather, shouldn't have, a server ID on a spawn
+        if (!msg->all_specced(1))
         {
             break;
         }
@@ -950,16 +951,19 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
             {
                 struct SmartPhysicsObject* s = (SPO*)o;
                 CollisionMsg cm;
-                cm.client_id = s->socket;
+                cm.client_id = s->client_id;
                 cm.server_id = o->phys_id; //! @todo Should this be the physID of object or beam
                 cm.direction = beam_result.d;
                 cm.position = beam_result.p;
                 cm.energy = beam_result.e;
                 cm.comm_msg = NULL;
+                cm.spec_all();
+                cm.specced[cm.num_el - 1] = false;
 
                 switch (b->type)
                 {
                 case BEAM_COMM:
+                    cm.specced[cm.num_el - 1] = true;
                     cm.set_colltype((char*)"COMM");
                     cm.comm_msg = b->comm_msg;
                     cm.send(s->socket);
@@ -975,6 +979,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     sqm.scan_id = b->phys_id;
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
+                    sqm.spec_all();
                     sqm.send(s->socket);
 
                     // Ignore multiple hits of the same beam/object pair.
@@ -1019,7 +1024,13 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
                     srm.obj_type = b->scan_target->obj_type;
                     srm.data = b->data;
+                    srm.spec_all();
                     srm.send(s->socket);
+                    
+                    // The message object will go out-of-scope, but is currently pointing to the beam's
+                    // target's object type, which we don't want to free in the message's constructor.
+                    // Re-point it to NULL here, so we don't try to free it in the next line.
+                    srm.obj_type = NULL;
 
                     break;
                 }

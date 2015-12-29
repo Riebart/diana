@@ -27,36 +27,36 @@ def testSimpleShip():
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
-    
 
-#test currently broken    
+
+#test currently broken
 def testVisData():
-    
+
     miss1 = spaceobj.Missile(osim)
     osim.spawn_object(miss1)
-    
+
     miss2 = spaceobj.Missile(osim)
     miss2.position[0] = 100.0
     osim.spawn_object(miss2)
-    
+
     print "miss1 osimid is: %d" % miss1.osim_id
     print "miss1 unisim is: %d" % miss1.phys_id
-    
+
     print "miss2 osimid is: %d" % miss2.osim_id
     print "miss2 unisim is: %d" % miss2.phys_id
-    
-    
+
+
     miss1.enable_visdata()
-    
+
     while True:
         print miss1.sock.recv(1024)
-    
+
     pass
 
 
 #spawns two stationary ships. The first fires a missile at the other
 def testShip():
-    
+
     ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
@@ -78,10 +78,10 @@ def testShip():
     print "miss1 osimid is: %d" % miss1.osim_id
     print "miss1 unisim is: %d" % miss1.phys_id
     sys.stdout.flush()
-    
+
 #spawns two stationary ships. The first fires a beam at the other
 def testBeam():
-    
+
     ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
@@ -99,16 +99,16 @@ def testBeam():
 
     dir = Vector3(1.0,0.0,0.0)
     ship1.fire_laser(dir, power = 1000)
-    
+
     sys.stdout.flush()
-    
-    
+
+
 def rand_vec(rand, rang):
     return Vector3((rand.random()*rang, rand.random()*rang, rand.random()*rang))
 
 
 def stressTest(ships=1000, area=10000):
-    
+
     for i in range(0,ships):
         ship1 = Firefly(osim)
         ship1.position = rand_vec(rand, area)
@@ -118,14 +118,18 @@ def stressTest(ships=1000, area=10000):
 
         direction = Vector3((1.0, 0.0,0.0))
         miss1 = ship1.fire_missile(direction, 500)
-    
+
         print "miss%d osimid is: %d" % (i, miss1.osim_id)
         print "miss%d unisim is: %d" % (i, miss1.phys_id)
 
 
 def testHoming():
+    print "Building ship ..."
     ship1 = Firefly(osim)
+    print "Building ship ... Done"
+    print "Spawning ship ..."
     osim.spawn_object(ship1)
+    print "Spawning ship ... Done"
 
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
@@ -152,11 +156,11 @@ def testHoming():
 class TThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        
+
     def run(self):
         while True:
             time.sleep(500)
-    
+
 
 def test_threads():
     for i in range (0, 10000):
@@ -164,7 +168,7 @@ def test_threads():
         t.start()
         print "Started thread %d" % i
 
-        
+
 def test_pbs():
     pass
     #for now, this is exampe code
@@ -177,10 +181,12 @@ def test_pbs():
         doStuff(msg.HelloMsg)
     else if (msg.MessageType is HELLO):
         doStuff(msg.PhysPropsMsg)
-""" 
-        
-        
+"""
+
+
+print "Spawning OSIM ..."
 osim = objectsim.ObjectSim()
+print "Spawning OSIM ... Done"
 rand = random.Random()
 rand.seed(0)
 

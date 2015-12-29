@@ -40,13 +40,16 @@ class ObjectSim:
         osim_id = msg.srv_id
         client_id = msg.cli_id
 
-        # Client connecting up and saying hi.
         if isinstance(msg, HelloMsg):
+            # A HelloMsg can come back to us from the unisim after spawning a ship,
+            # So wait for it, and pin the server-id to the ship associated with the osim_id.
+            #self.ship_list[msg.cli_id].phys_id = osim_id # This isn't actually the osim_id here.
             # Say Hello back with its client ID
             self.id_lock.acquire()
             osim_id = self.get_id()
             self.id_lock.release()
-            #HelloMsg.send(msg.socket, osim_id, client_id, {})
+            HelloMsg.send(msg.socket, osim_id, client_id, {})
+            pass
 
         elif isinstance(msg, DirectoryMsg):
             # ### TODO ### Update clients sitting at the directories as joinable
@@ -97,8 +100,8 @@ class ObjectSim:
         pass
 
     def get_id(self):
-        osim_id = self.total_objs
         self.total_objs += 1
+        osim_id = self.total_objs
         return osim_id
 
     def get_joinable_ships(self):
@@ -130,22 +133,6 @@ class ObjectSim:
 
         return newship
 
-    def get_phys_id(self, sock, osim_id):
-        sock.connect(self.unisim)
-        #message.HelloMsg.send(sock, None, osim_id, {})
-
-        try:
-            reply = message.Message.get_message(sock)
-        except TypeError:
-            print "Fail2!"
-            return None
-
-        if not isinstance(reply, message.HelloMsg):
-            print "Fail!"
-            return None
-        else:
-            return reply.srv_id
-
     def send_physprops(self, obj):
         if (obj.object_type == None or obj.mass == None or
             obj.radius == None or obj.position == None or
@@ -170,6 +157,7 @@ class ObjectSim:
 
     #assume object already constructed, with appropriate vals
     def spawn_object(self, obj):
+        obj.sock.connect(self.unisim)
         if isinstance(obj, SmartObject):
             sm = message.SpawnMsg()
             sm.srv_id = obj.phys_id
@@ -184,7 +172,23 @@ class ObjectSim:
             sm.orientation = [ obj.forward[0], obj.forward[1], obj.up[0], obj.up[1] ]
             message.SpawnMsg.send(obj.sock, sm.srv_id, sm.cli_id, sm.build())
 
-            # We now should wait for a Hello back
+            reply = None
+            try:
+                reply = message.Message.get_message(obj.sock)
+            except TypeError:
+                print "Fail2!"
+                return None
+
+            if not isinstance(reply, message.HelloMsg):
+                print "Fail!"
+                return None
+            else:
+                obj.phys_id = reply.srv_id
+
+            # We now should wait for a Hello back, so add this ship to the ship list
+            # so that we can grab the universe's HelloMsg when it comes.
+            print obj
+            self.ship_list[sm.cli_id] = obj
 
             if obj.tout_val > 0:
                 obj.sock.settimeout(obj.tout_val)

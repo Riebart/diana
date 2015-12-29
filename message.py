@@ -392,13 +392,14 @@ class ScanResultMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.mass = Message.ReadMsgEl('\x03', msg)
-        self.position = Message.ReadMsgEl(('\x04','\x05','\x06'), msg)
-        self.velocity = Message.ReadMsgEl(('\x07','\x08','\x09'), msg)
-        self.orientation = Message.ReadMsgEl(('\x0A','\x0B','\x0C','\x0D'), msg)
-        self.thrust = Message.ReadMsgEl(('\x0E','\x0F','\x10'), msg)
-        self.radius = Message.ReadMsgEl('\x11', msg)
-        self.data = Message.ReadMsgEl('\x12', msg)
+        self.object_type = Message.ReadMsgEl('\x03', msg)
+        self.mass = Message.ReadMsgEl('\x04', msg)
+        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
+        self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
+        self.radius = Message.ReadMsgEl('\x12', msg)
+        self.data = Message.ReadMsgEl('\x13', msg)
 
     def build(self):
         msg = {}
