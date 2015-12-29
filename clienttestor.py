@@ -164,20 +164,19 @@ def pool_rack():
     y_offset = 100.0
 
     sm = SpawnMsg()
+    sm.srv_id = -1
+    sm.cli_id = -1
+    sm.is_smart = False
     sm.velocity = [0.0,0.0,0.0]
     sm.thrust = [0.0,0.0,0.0]
     sm.orientation = [0.0,0.0,0.0,0.0]
 
     for i in range(0, num_rows):
         for j in range(0, i+1):
-            sm.srv_id = -1
-            sm.cli_id = -1
-            sm.is_smart = False
             sm.radius = ball_radius
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
             sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0.0 ]
-
             SpawnMsg.send(sock, -1, -1, sm.build())
 
     # This makes us a cue ball

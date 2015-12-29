@@ -23,7 +23,7 @@
 // Create a lambda reader for a 4D vector from the BSONReader, element by element.
 #define READ_VECTOR4(var, val) READ_ELEMENT(var.w, val) READ_ELEMENT(var.x, val) READ_ELEMENT(var.y, val) READ_ELEMENT(var.z, val) 
 // Perform prologue setup, and boilerplate stuff, including keeping track of the number of elements, and other such.
-#define READ_PROLOGUE(num_el_lit) int num_el = 2 + num_el_lit; \
+#define READ_PROLOGUE(num_el_lit) num_el = 2 + num_el_lit; \
     struct BSONReader::Element el = br->get_next_element(); \
     specced = (bool*)calloc(num_el, sizeof(bool)); \
     if (specced == NULL) { throw "OOM"; }\
