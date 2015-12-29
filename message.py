@@ -190,13 +190,13 @@ class PhysicalPropertiesMsg(Message):
         self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
         self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
         self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
-        self.radius = ReadMsgEl('\x12', msg)
+        self.radius = Message.ReadMsgEl('\x12', msg)
 
     def build(self):
         msg = {}
         vals = [ self.object_type, self.mass ] + \
-            self.position + self.velocity + \
-            self.orientation + self.thrust + [ self.radius ]
+            list(self.position) + list(self.velocity) + \
+            list(self.orientation) + list(self.thrust) + [ self.radius ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 

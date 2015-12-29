@@ -1031,6 +1031,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     // target's object type, which we don't want to free in the message's constructor.
                     // Re-point it to NULL here, so we don't try to free it in the next line.
                     srm.obj_type = NULL;
+                    srm.data = NULL;
 
                     break;
                 }

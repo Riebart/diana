@@ -150,7 +150,7 @@ class SmartObject(SpaceObject, threading.Thread):
         if (y==None):
             return self.set_thrust(x[0], x[1], x[2])
         self.thrust = Vector3(x,y,z)
-        pp = message.PhysicalPropertiesMsg()
+        pm = message.PhysicalPropertiesMsg()
         pm.thrust = [ x, y, z ]
         return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, pm.build())
 
@@ -159,7 +159,7 @@ class SmartObject(SpaceObject, threading.Thread):
             return self.set_orientation(osim_id, fX[0], fX[1], fX[2], fX[3])
 
         [ self.forward, self.up, self.right ] = [fX, fY, uX, uY]
-        pp = message.PhysicalPropertiesMsg()
+        pm = message.PhysicalPropertiesMsg()
         pm.orientation = [ fX, fY, uX, uY ]
         return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, pm.build())
 
