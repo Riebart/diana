@@ -651,8 +651,9 @@ void Universe::handle_message(int32_t socket)
 
         // We SHOULD be able to find the target in the map, and something is very
         // wrong if we can't.
-        std::map<Universe::scan_target, Universe::scan_origin>::iterator it = queries.find(st);
-        if (it != queries.end())
+        LOCK(query_lock);
+        const std::map<Universe::scan_target, Universe::scan_origin>::iterator it = queries.find(st);
+        if ((it != queries.end()) && (it->first == st))
         {
             struct scan_origin so = it->second;
             Beam* return_beam = Beam_make_return_beam(so.origin_beam, so.energy, &so.hit_position, PhysicsObjectType::BEAM_SCANRESULT);
@@ -670,6 +671,7 @@ void Universe::handle_message(int32_t socket)
             //! @todo Bad things? This should be handled gracefully
             throw "ShouldSendErrorMsg";
         }
+        UNLOCK(query_lock);
         break;
     }
     case BSONMessage::MessageType::Hello:
@@ -976,7 +978,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
 
                     ScanQueryMsg sqm;
                     sqm.client_id = s->client_id;
-                    sqm.server_id = s->pobj.phys_id;
+                    sqm.server_id = o->phys_id;
                     sqm.scan_id = b->phys_id;
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
@@ -986,7 +988,8 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     // Ignore multiple hits of the same beam/object pair.
                     // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
                     struct Universe::scan_target st = { b->phys_id, o->phys_id };
-                    std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
+                    LOCK(u->query_lock);
+                    const std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
                     if ((it == u->queries.end()) || !(st == (it->first)))
                     {
                         // Add the query to the universe so that it can send the response beam
@@ -1004,6 +1007,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                         b_copy->scan_target = o_copy;
                         u->queries[st] = { b_copy, cm.energy, cm.position };
                     }
+                    UNLOCK(u->query_lock);
                     break;
                 }
                 case BEAM_SCANRESULT:

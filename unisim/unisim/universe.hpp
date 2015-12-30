@@ -203,8 +203,7 @@ private:
 
         bool operator ==(const struct scan_target& rhs) const
         {
-            return ((beam_id == rhs.beam_id) &&
-                (target_id == rhs.target_id));
+            return ((beam_id == rhs.beam_id) && (target_id == rhs.target_id));
         }
     };
 
@@ -252,6 +251,7 @@ private:
     LOCK_T expire_lock;
     LOCK_T phys_lock;
     LOCK_T vis_lock;
+    LOCK_T query_lock;
 
     //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
     double rate;

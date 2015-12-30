@@ -74,10 +74,10 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
 	Vector3_fmad(&obj->position, dt, &obj->velocity);
 	Vector3_fmad(&obj->position, 0.5 * dt * dt, g);
 	Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
-
-	obj->velocity.x += dt * g->x;
-	obj->velocity.y += dt * g->y;
-	obj->velocity.z += dt * g->z;
+    
+    Vector3_fmad(&obj->velocity, dt, g);
+    // We account for the position delta above with the FMAD.
+    Vector3_fmad(&obj->velocity, dt / obj->mass, &obj->thrust);
 
 	V3 a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
 

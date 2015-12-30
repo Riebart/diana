@@ -320,7 +320,9 @@ class HomingMissile1(Missile):
                 #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
                 new_dir = tar_new_pos.unit()
                 new_dir.scale(self.thrust.length())
-                print ("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
+                print ("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + \
+                    (". Distance to target: %2f " % (distance-mess.radius)) + \
+                        ("Relative velocity: " + str(mess.velocity))
                 self.set_thrust(new_dir)
                 epos = enemy_pos.unit()
                 [ self.forward, self.up, self.right ] = Vector3.easy_look_at(epos)

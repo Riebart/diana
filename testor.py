@@ -145,7 +145,7 @@ def testHoming():
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
-    miss1 = ship1.fire_homing(direction, 50000.0)
+    miss1 = ship1.fire_homing(direction, 500000.0)
 
     print "miss1 osimid is: %d" % miss1.osim_id
     print "miss1 unisim is: %d" % miss1.phys_id
