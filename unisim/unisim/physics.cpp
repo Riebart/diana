@@ -415,33 +415,96 @@ PO* PhysicsObject_clone(PO* obj)
     case PHYSOBJECT:
     {
         ret = (PO*)malloc(sizeof(PO));
-        if (ret == NULL)
+        if (ret != NULL)
         {
-            return NULL;
+            *ret = *obj;
+            if (ret->obj_type != NULL)
+            {
+                size_t len = strlen(ret->obj_type) + 1;
+                char* obj_type = (char*)malloc(sizeof(char) * len);
+                if (obj_type == NULL)
+                {
+                    free(ret);
+                    ret = NULL;
+                }
+                else
+                {
+                    memcpy(obj_type, ret->obj_type, len);
+                    ret->obj_type = obj_type;
+                }
+            }
         }
-        *ret = *obj;
-        break;
     }
     case PHYSOBJECT_SMART:
     {
         ret = (PO*)malloc(sizeof(SPO));
-        if (ret == NULL)
+        if (ret != NULL)
         {
-            return NULL;
+            *(SPO*)ret = *(SPO*)obj;
+            if (ret->obj_type != NULL)
+            {
+                size_t len = strlen(ret->obj_type) + 1;
+                char* obj_type = (char*)malloc(sizeof(char) * len);
+                if (obj_type == NULL)
+                {
+                    free(ret);
+                    ret = NULL;
+                }
+                else
+                {
+                    memcpy(obj_type, ret->obj_type, len);
+                    ret->obj_type = obj_type;
+                }
+            }
         }
-        *(SPO*)ret = *(SPO*)obj;
         break;
     }
     case BEAM_COMM:
     case BEAM_WEAP:
     case BEAM_SCAN:
     {
-        ret = (PO*)malloc(sizeof(B));
-        if (ret == NULL)
+        Beam* rb = (B*)malloc(sizeof(B));
+        if (rb != NULL)
         {
-            return NULL;
+            *(B*)rb = *(B*)obj;
+            if (rb->comm_msg != NULL)
+            {
+                size_t len = strlen(rb->comm_msg) + 1;
+                char* comm_msg = (char*)malloc(sizeof(char) * len);
+                if (comm_msg == NULL)
+                {
+                    free(rb);
+                    rb = NULL;
+                }
+                else
+                {
+                    memcpy(comm_msg, rb->comm_msg, len);
+                    rb->comm_msg = comm_msg;
+                }
+            }
+
+            if (rb->data != NULL)
+            {
+                size_t len = strlen(rb->data) + 1;
+                char* data = (char*)malloc(sizeof(char) * len);
+                if (data == NULL)
+                {
+                    free(rb);
+                    rb = NULL;
+                }
+                else
+                {
+                    memcpy(data, rb->data, len);
+                    rb->data = data;
+                }
+            }
+
+            if (rb->scan_target != NULL)
+            {
+                rb->scan_target = PhysicsObject_clone(rb->scan_target);
+            }
         }
-        *(B*)ret = *(B*)obj;
+        ret = (PO*)rb;
     }
     default:
     {
@@ -574,8 +637,6 @@ void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
 	// Move the object position to a point32_t relative to the beam's origin.
 	// Then scale the velocity by dt, and add it to the position to get the
 	// start, end, and difference vectors.
-
-	//struct BeamCollisionResult* bcr = (struct BeamCollisionResult*)malloc(sizeof(struct BeamCollisionResult));
 	bcr->d = b->direction;
 
 	// Relative position of object to beam origin.

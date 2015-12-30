@@ -16,7 +16,12 @@ typedef struct Vector4 V4;
 
 V3* Vector3_alloc(int32_t n)
 {
-	return (V3*)malloc(sizeof(V3) * n);
+    V3* ret = (V3*)malloc(sizeof(V3) * n);
+    if (ret == NULL)
+    {
+        throw "OOM";
+    }
+    return ret;
 }
 
 V3* Vector3_clone(V3* v)

@@ -28,6 +28,10 @@ def testSimpleShip():
     print "ship1 osimid is: %d" % ship1.osim_id
     print "ship1 unisim is: %d" % ship1.phys_id
 
+    print "Sleeping for 5 seconds, then disconnecting the ship."
+    time.sleep(5)
+    print "Disconnecting ship."
+
 
 #test currently broken
 def testVisData():
@@ -145,7 +149,7 @@ def testHoming():
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
-    miss1 = ship1.fire_homing(direction, 500000.0)
+    miss1 = ship1.fire_homing(direction, 50000.0)
 
     print "miss1 osimid is: %d" % miss1.osim_id
     print "miss1 unisim is: %d" % miss1.phys_id

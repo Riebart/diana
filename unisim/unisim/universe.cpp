@@ -4,6 +4,78 @@
 #include <stdio.h>
 #include <algorithm>
 
+// Memory allocation practices in the universe simulation
+//
+// An instance of the Universe class takes almost responsibility for the compelte
+// management of the lifecycle of memory for physics objects in it's purview.
+// The only exception for the compelteness of control is when objects are added
+// directly by Universe::add_object(), in which case the allocation of memory
+// must be done outside of the universe, as add_object() assumes that memory is
+// already allocated.
+//
+// Memory allocation occurs in the following flows:
+//
+// - Constructor for worker-thread arguments
+//   > A runtime-sized array is allocated to hold return worker information, this
+//     array is deallocated in the destructor.
+//
+// - PhysicalPropertiesMsg received on the network containing a specified obj_type
+//   > A replacement obj_type string is allocated, and if allocation succeeds the
+//     existing array is freed, and the pointer set to the new array (which had the
+//     message's obj_type array copied in).
+//
+// - SpawnMsg message received on the network.
+//   > The new PhysicsObject (or SmartPhysicsObject) is allocated, filled with the
+//     parameters from the message object (which must be fully specified except for
+//     the server_id, which must be unspecified). The obj_type char* is also allocated
+//     and copied from message, since the memory allocated for that string in the
+//     message will be freed when the message is destroyed (in ~BSONMessage()).
+//
+// - BeamMsg message received on the network.
+//   > Similar to a SpawnMsg, Beams are allocated and filled from the message, which
+//     must he FULLY specified, including server_id which will point to the parent
+//     object for relative position/velocity composition. As with physical objects,
+//     the comm_msg char* string is reallocated and copied, although despite
+//     the message beam_type being a four-character string, it is an enumerated value
+//     in the Beam object and so no copies are necessary. Note that spawned beams
+//     cannot have anything in the data or scan_target pointers, so those are left
+//     NULL in this event.
+//
+// - Scan beam colliding with smart physics object.
+//   > Similar to physics.cpp::PhysicsObject_collision(), when a scan beam collides with
+//     an SPO, a shallow clone of the origin beam is made, as well as a clone of the 
+//     object it collided with (by physics.cpp::PhysicsObject_clone()), which is set as
+//     the scan_target of the origin beam. The data and comm_msg of the origin beam copy
+//     are set to NULL, since they are not required, only the geometric properties of the
+//     beam are needed. This event also triggers a ScanQueryMsg to the OSIM, the response
+//     to which triggers the next event.
+//
+// - ScanResponseMsg received on the network.
+//   > A response beam is constructed from the origin beam stored in the queries map(),
+//     the scan_target is set to that of the origin beam, the comm_msg is set to NULL, 
+//     the data field of the network message is set to a newly allocated string and the 
+//     contents of the message's data field copied in. The origin beam is freed, and the
+//     query erased from the map.
+//
+// Allocations are performed in auxiliary code, including physics and vector code:
+//
+// - physics.cpp::PhysicsObject_clone()
+//   > Performs a deep-clone of a physics object or beam, including all non-NUL pointers
+//     to referenced data. For physics objects, this includes the obj_type string, and
+//     for beams, this includes the comm_msg, data, and a deep clone of the scan_target
+//     via recursion.
+// - physics.cpp::Beam_make_return_beam()
+//   > Constructs a return beam, allocating a new beam object with return parameters,
+//     however does not perform deep-cloning of the comm_msg, data, or scan_target members.
+// - physics.cpp::PhysicsObject_collision()
+//   > If a beam collides with a (non-smart) physics object, a return beam is made on
+//     the spot and sent back as it does not require a query/response pair with the OSIM.
+//
+// - vector.cpp::Vector3_alloc(), vector.cpp::Vector3_clone()
+//   > Allocates a new Vector3 struct.
+// - vector.cpp::Vector3_easy_look_at(), vector.cpp::Vector3_easy_look_at2()
+//   > Calls vector.cpp:Vector3_alloc()
+
 #ifdef CPP11THREADS
 #include <chrono>
 #define LOCK(l) l.lock()
@@ -357,7 +429,7 @@ void Universe::add_object(PO* obj)
 void Universe::add_object(B* beam)
 {
     //! @todo Are there issues with casting between Beams and POs?
-    // Before pack()-ing the beam struct, the phys_id was being rearranged into a padding portion.
+    // Before #pragma pack()-ing the beam struct, the phys_id was being rearranged into a padding portion.
     add_object((PO*)beam);
 }
 
@@ -502,7 +574,7 @@ void Universe::handle_message(int32_t socket)
         if (smarty != NULL)
         {
             // Object type
-            if (msg->specced[3])
+            if (msg->specced[2])
             {
                 size_t new_type_len = strlen(msg->obj_type) + 1;
                 char* new_type = (char*)malloc(sizeof(char) * new_type_len);
@@ -540,17 +612,31 @@ void Universe::handle_message(int32_t socket)
         // We need all of the properties, except the last, if it's not a COMM beam,
         // If it's a COMM beam, we need them all.
         if (
-            ((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) || 
-              msg->all_specced(0, msg->num_el - 1))
+            ((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
+            msg->all_specced(0, msg->num_el - 1))
         {
             break;
         }
 
         B* b = (B*)malloc(sizeof(B));
+        if (b == NULL)
+        {
+            throw "OOM";
+        }
+
+        char* comm_msg = NULL;
         PhysicsObjectType btype;
         if (strcmp(msg->beam_type, "COMM") == 0)
         {
             btype = BEAM_COMM;
+            size_t len = strlen(msg->comm_msg) + 1;
+            comm_msg = (char*)malloc(sizeof(char) * len);
+            if (comm_msg != NULL)
+            {
+                memcpy(comm_msg, msg->comm_msg, len);
+                b->comm_msg = comm_msg;
+                //throw "OOM";
+            }
         }
         if (strcmp(msg->beam_type, "WEAP") == 0)
         {
@@ -573,8 +659,8 @@ void Universe::handle_message(int32_t socket)
             Vector3_add(&msg->velocity, &smarty->pobj.velocity);
         }
 
-        Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up, 
-            msg->spread_h, msg->spread_v, msg->energy, btype, msg->comm_msg, NULL);
+        Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
+            msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL);
         add_object(b);
         break;
     }
@@ -592,6 +678,10 @@ void Universe::handle_message(int32_t socket)
         if (msg->is_smart)
         {
             SPO* sobj = (SPO*)malloc(sizeof(struct SmartPhysicsObject));
+            if (sobj == NULL)
+            {
+                throw "OOM";
+            }
             obj = &sobj->pobj;
             sobj->client_id = (msg->specced[1] ? msg->client_id : -1);
             sobj->socket = socket;
@@ -599,14 +689,19 @@ void Universe::handle_message(int32_t socket)
         else
         {
             obj = (PO*)malloc(sizeof(struct PhysicsObject));
+            if (obj == NULL)
+            {
+                throw "OOM";
+            }
         }
 
-        char* obj_type = (char*)malloc(strlen(msg->obj_type));
+        size_t len = strlen(msg->obj_type) + 1;
+        char* obj_type = (char*)malloc(len);
         if (obj_type == NULL)
         {
             throw "OOM you twat";
         }
-        memcpy(obj_type, msg->obj_type, strlen(msg->obj_type) + 1);
+        memcpy(obj_type, msg->obj_type, len);
 
         PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
             const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
@@ -626,7 +721,7 @@ void Universe::handle_message(int32_t socket)
         {
             obj->type = PhysicsObjectType::PHYSOBJECT_SMART;
         }
-        
+
         add_object(obj);
 
         if (msg->is_smart)
@@ -658,18 +753,33 @@ void Universe::handle_message(int32_t socket)
             struct scan_origin so = it->second;
             Beam* return_beam = Beam_make_return_beam(so.origin_beam, so.energy, &so.hit_position, PhysicsObjectType::BEAM_SCANRESULT);
             return_beam->scan_target = so.origin_beam->scan_target;
-            char* data_copy = (char*)malloc(strlen(msg->data) + 1);
-            memcpy(data_copy, msg->data, strlen(msg->data) + 1);
+            size_t len = strlen(msg->data) + 1;
+            char* data_copy = (char*)malloc(len);
+            if (data_copy == NULL)
+            {
+                throw "OOM";
+            }
+            memcpy(data_copy, msg->data, len);
             //! @todo The value of the ->data member should be NULL here, verify that.
             return_beam->data = data_copy;
+
+            // Free any cloned bits and pieces as necessary.
+            // Don't free the scan target, that's also linked to the return beam.
+            // But we should nullify the pointer. Also note that the origin beam was a shallow
+            // clone, and so the comm_msg and data fields are NULL.
+            so.origin_beam->scan_target = NULL;
             free(so.origin_beam);
+
             add_object(return_beam);
+            //! @todo Potentially large leak here, queries that are never responded to won't get freed.
             queries.erase(it);
         }
         else
         {
             //! @todo Bad things? This should be handled gracefully
-            throw "ShouldSendErrorMsg";
+            // In the future, we'll get here if we've expired the query before we get a response
+            // from the OSIM.
+            throw "Universe::ExpiredQuery";
         }
         UNLOCK(query_lock);
         break;
@@ -755,18 +865,18 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
             // Alert the smarties that there was a collision
             // Only physical collisions are generated here, beams are elsewhere.
             CollisionMsg cm;
+            cm.set_colltype((char*)"PHYS");
+            cm.energy = phys_result.e;
             cm.comm_msg = NULL;
+            cm.spec_all();
 
             if (obj1->type == PHYSOBJECT_SMART)
             {
                 SPO* s = (SPO*)obj1;
                 cm.client_id = s->socket;
                 cm.server_id = obj1->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                cm.set_colltype((char*)"PHYS");
                 cm.direction = phys_result.pce1.d;
                 cm.position = phys_result.pce1.p;
-                cm.energy = phys_result.e;
-                cm.comm_msg = NULL;
                 cm.send(s->socket);
             }
 
@@ -775,15 +885,12 @@ void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct Phys
                 SPO* s = (SPO*)obj2;
                 cm.client_id = s->socket;
                 cm.server_id = obj2->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                cm.set_colltype((char*)"PHYS");
                 cm.direction = phys_result.pce2.d;
                 cm.position = phys_result.pce2.p;
-                cm.energy = phys_result.e;
-                cm.comm_msg = NULL;
                 cm.send(s->socket);
             }
+        }
     }
-}
 }
 
 //! Get the next collision, as ordered by time
@@ -1004,8 +1111,10 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                         }
 
                         *b_copy = *b;
+                        b_copy->data = NULL;
+                        b_copy->comm_msg = NULL;
                         b_copy->scan_target = o_copy;
-                        u->queries[st] = { b_copy, cm.energy, cm.position };
+                        u->queries[st] = { b_copy, cm.energy, beam_result.p };
                     }
                     UNLOCK(u->query_lock);
                     break;
@@ -1033,7 +1142,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     srm.data = b->data;
                     srm.spec_all();
                     srm.send(s->socket);
-                    
+
                     // The message object will go out-of-scope, but is currently pointing to the beam's
                     // target's object type, which we don't want to free in the message's constructor.
                     // Re-point it to NULL here, so we don't try to free it in the next line.
@@ -1130,12 +1239,53 @@ void Universe::tick(double dt)
     if (expired.size() > 0)
     {
         LOCK(expire_lock);
+        LOCK(add_lock);
         // Handle expiry queue
         // First sort the expiry queue, which is just a vector of phys_ids
         // Then we can binary search our way as we iterate over the list of phys IDs.
         // That might have a big constant though
         //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-        bool backtrack = false;
+        bool backtrack;
+        struct PhysicsObject* po;
+        struct Beam* b;
+
+        // See if any are a beam.
+        backtrack = false;
+        for (size_t i = 0; i < beams.size(); i++)
+        {
+            if (backtrack)
+            {
+                i--;
+                backtrack = false;
+            }
+
+            b = beams[i];
+            for (size_t j = 0; j < expired.size(); j++)
+            {
+                if (expired[j] == b->phys_id)
+                {
+                    free(b->data);
+                    free(b->comm_msg);
+
+                    // Remember, we cloned the object we're interested in into the scan_target
+                    // to prevent a use-after-free, so free that here.
+                    if (b->scan_target != NULL)
+                    {
+                        free(b->scan_target->obj_type);
+                        free(b->scan_target);
+                    }
+
+                    free(b);
+                    beams.erase(beams.begin() + i);
+                    expired.erase(expired.begin() + j);
+                    backtrack = true;
+                    break;
+                }
+            }
+        }
+
+        // See if any are a physical object.
+        backtrack = false;
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
             if (backtrack)
@@ -1144,69 +1294,46 @@ void Universe::tick(double dt)
                 backtrack = false;
             }
 
+            po = phys_objects[i];
             for (size_t j = 0; j < expired.size(); j++)
             {
-                if (expired[j] == phys_objects[i]->phys_id)
+                if (expired[j] == po->phys_id)
                 {
-                    // If it's a beam...
-                    if (phys_objects[i]->type >= BEAM_COMM)
+                    free(po->obj_type);
+
+                    if (po->type == PHYSOBJECT_SMART)
                     {
-                        for (size_t k = 0; k < beams.size(); k++)
+                        smarties.erase(expired[j]);
+                    }
+
+                    if (phys_objects[i]->emits_gravity)
+                    {
+                        // This is nicer to read than the iterator in the for loop method.
+                        for (size_t k = 0; k < attractors.size(); k++)
                         {
-                            if (beams[k]->phys_id == expired[j])
+                            if (attractors[k]->phys_id == expired[j])
                             {
-                                if (beams[k]->data != NULL)
-                                {
-                                    free(beams[k]->data);
-                                }
-
-                                if (beams[k]->scan_target != NULL)
-                                {
-                                    // Remember, we cloned the object we're interested in into the scan_target
-                                    // to prevent a use-after-free, so free that here.
-                                    free(beams[k]->scan_target);
-                                }
-
-                                if (beams[k]->comm_msg != NULL)
-                                {
-                                    free(beams[k]->comm_msg);
-                                }
-                                beams.erase(beams.begin() + k);
+                                attractors.erase(attractors.begin() + k);
                                 break;
                             }
                         }
                     }
-                    else
-                    {
-                        if (phys_objects[i]->type == PHYSOBJECT_SMART)
-                        {
-                            smarties.erase(expired[j]);
-                        }
-
-                        if (phys_objects[i]->emits_gravity)
-                        {
-                            // This is nicer to read than the iterator in the for loop method.
-                            for (size_t k = 0; k < attractors.size(); k++)
-                            {
-                                if (attractors[k]->phys_id == expired[j])
-                                {
-                                    attractors.erase(attractors.begin() + k);
-                                    break;
-                                }
-                            }
-                        }
-
-                        free(phys_objects[i]->obj_type);
-                    }
-                    free(phys_objects[i]);
+                    
+                    free(po);
                     phys_objects.erase(phys_objects.begin() + i);
+                    expired.erase(expired.begin() + j);
                     backtrack = true;
-                    continue;
+                    break;
                 }
             }
         }
 
+        if (expired.size() != 0)
+        {
+            throw "WAT";
+        }
         expired.clear();
+        UNLOCK(add_lock);
         UNLOCK(expire_lock);
     }
 

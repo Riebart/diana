@@ -112,14 +112,15 @@ class SmartObject(SpaceObject, threading.Thread):
     # ++++++++++++++++++++++++++++++++
 
     def make_explosion(self, position, energy):
-        message.BeamMsg.send(self.sock, self.phys_id, self.osim_id, [
-                position[0], position[1], position[2],
-                299792458.0, 0.0, 0.0,
-                0.0, 0.0, 0.0,
-                2*pi,
-                2*pi,
-                energy,
-                "WEAP" ])
+        bm = message.BeamMsg()
+        bm.velocity = [299792458.0, 0.0, 0.0]
+        bm.up = [ 0.0, 0.0, 1.0 ]
+        bm.origin = [ position[0], position[1], position[1] ]
+        bm.spread_h = 2*pi
+        bm.spread_v = 2*pi
+        bm.energy = energy
+        bm.beam_type = "WEAP"
+        message.BeamMsg.send(self.sock, self.phys_id, self.osim_id, bm.build())
 
     def init_beam(self, BeamClass, energy, speed, direction, up, h_focus, v_focus):
         direction = direction.unit()

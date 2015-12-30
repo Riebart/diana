@@ -105,7 +105,7 @@ class Message:
 
         msg_bytes = bytes + Message.big_read(client, msg_size - 4)
         msg = bson.loads(msg_bytes)
-        print "RECV", msg
+        #print "RECV", msg
 
         # Snag out the IDs
         srv_id = msg['\x01'] if '\x01' in msg else None
@@ -137,7 +137,7 @@ class Message:
             msg['\x02'] = cli_id
 
         omsg = OrderedDict(sorted(msg.items(), key=lambda t: t[0]))
-        print "SEND", omsg
+        #print "SEND", omsg
         num_sent = Message.big_send(client, bson.dumps(omsg))
         if num_sent == 0:
             return 0
