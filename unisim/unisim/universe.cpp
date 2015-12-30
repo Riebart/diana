@@ -443,6 +443,7 @@ void Universe::expire(int64_t phys_id)
 void Universe::hangup_objects(int32_t c)
 {
     LOCK(expire_lock);
+    LOCK(add_lock);
     //! @todo Add a second std::map to change out this linear search.
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it;
 
@@ -454,6 +455,7 @@ void Universe::hangup_objects(int32_t c)
         }
     }
     UNLOCK(expire_lock);
+    UNLOCK(add_lock);
 }
 
 void Universe::register_vis_client(struct vis_client vc, bool enabled)
@@ -495,6 +497,7 @@ void Universe::broadcast_vis_data()
     {
         vc = *it;
         visdata_msg.client_id = vc.client_id;
+        //! @todo Unlocked access to the smarties map.
         ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
         bool disconnect = false;
 
@@ -542,7 +545,11 @@ void Universe::handle_message(int32_t socket)
     // For objects spawned as 'children' from a parent, they should have the parent's phys_id in the server_id
     // field. That is used to find the parent, and adjust the position/velocity/whatever accordingly.
     // This only applies, right now, to smart parents.
+    LOCK(add_lock);
+    LOCK(expire_lock);
     std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+    UNLOCK(add_lock);
+    UNLOCK(expire_lock);
 
     // If this smarty is non-NULL, then this points to the PARENT
     SPO* smarty = (it != smarties.end() ? it->second : NULL);
@@ -800,9 +807,19 @@ void Universe::handle_message(int32_t socket)
     case BSONMessage::MessageType::Goodbye:
     {
         GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;
+        // Make sure it is speccing the server ID.
+        //! @todo Secure this so only associated clients can Goodbye smarties?
         if (msg->specced[0])
         {
-            expire(msg->server_id);
+            LOCK(add_lock);
+            LOCK(expire_lock);
+            std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+            UNLOCK(add_lock);
+            UNLOCK(expire_lock);
+            if ((it != smarties.end()) && (it->first == msg->server_id))
+            {
+                expire(msg->server_id);
+            }
         }
         break;
     }
@@ -1243,7 +1260,6 @@ void Universe::tick(double dt)
     if (expired.size() > 0)
     {
         LOCK(expire_lock);
-        LOCK(add_lock);
         // Handle expiry queue
         // First sort the expiry queue, which is just a vector of phys_ids
         // Then we can binary search our way as we iterate over the list of phys IDs.
@@ -1321,11 +1337,10 @@ void Universe::tick(double dt)
         {
             for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
             {
-                printf("%u\n", *it);
+                printf("%d\n", *it);
             }
             throw std::runtime_error("WAT");
         }
-        UNLOCK(add_lock);
         UNLOCK(expire_lock);
     }
 
