@@ -621,7 +621,7 @@ void Universe::handle_message(int32_t socket)
         B* b = (B*)malloc(sizeof(B));
         if (b == NULL)
         {
-            throw "OOM";
+            throw std::runtime_error("OOM");
         }
 
         char* comm_msg = NULL;
@@ -635,7 +635,7 @@ void Universe::handle_message(int32_t socket)
             {
                 memcpy(comm_msg, msg->comm_msg, len);
                 b->comm_msg = comm_msg;
-                //throw "OOM";
+                //throw std::runtime_error("OOM");
             }
         }
         if (strcmp(msg->beam_type, "WEAP") == 0)
@@ -680,7 +680,7 @@ void Universe::handle_message(int32_t socket)
             SPO* sobj = (SPO*)malloc(sizeof(struct SmartPhysicsObject));
             if (sobj == NULL)
             {
-                throw "OOM";
+                throw std::runtime_error("OOM");
             }
             obj = &sobj->pobj;
             sobj->client_id = (msg->specced[1] ? msg->client_id : -1);
@@ -691,7 +691,7 @@ void Universe::handle_message(int32_t socket)
             obj = (PO*)malloc(sizeof(struct PhysicsObject));
             if (obj == NULL)
             {
-                throw "OOM";
+                throw std::runtime_error("OOM");
             }
         }
 
@@ -699,7 +699,7 @@ void Universe::handle_message(int32_t socket)
         char* obj_type = (char*)malloc(len);
         if (obj_type == NULL)
         {
-            throw "OOM you twat";
+            throw std::runtime_error("OOM you twat");
         }
         memcpy(obj_type, msg->obj_type, len);
 
@@ -757,7 +757,7 @@ void Universe::handle_message(int32_t socket)
             char* data_copy = (char*)malloc(len);
             if (data_copy == NULL)
             {
-                throw "OOM";
+                throw std::runtime_error("OOM");
             }
             memcpy(data_copy, msg->data, len);
             //! @todo The value of the ->data member should be NULL here, verify that.
@@ -779,7 +779,7 @@ void Universe::handle_message(int32_t socket)
             //! @todo Bad things? This should be handled gracefully
             // In the future, we'll get here if we've expired the query before we get a response
             // from the OSIM.
-            throw "Universe::ExpiredQuery";
+            throw std::runtime_error("Universe::ExpiredQuery");
         }
         UNLOCK(query_lock);
         break;
@@ -807,7 +807,7 @@ void Universe::handle_message(int32_t socket)
         break;
     }
     default:
-        throw "Universe::UnrecognizedMessageType";
+        throw std::runtime_error("Universe::UnrecognizedMessageType");
     }
 
     //! @todo Check that this calls the right desstructors, specifically of the children.
@@ -1107,7 +1107,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                         PO* o_copy = PhysicsObject_clone(o);
                         if ((b_copy == NULL) || (o_copy == NULL))
                         {
-                            throw "OOM::Universe::BeamHitObjClone";
+                            throw std::runtime_error("OOM::Universe::BeamHitObjClone");
                         }
 
                         *b_copy = *b;
@@ -1315,7 +1315,7 @@ void Universe::tick(double dt)
 
         if (expired.size() != 0)
         {
-            throw "WAT";
+            throw std::runtime_error("WAT");
         }
         UNLOCK(add_lock);
         UNLOCK(expire_lock);
