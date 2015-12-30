@@ -75,7 +75,7 @@ class SmartObject(SpaceObject, threading.Thread):
             #self.handle_scanresult(collision)
             pass
         else:
-            print "Bad collision: " + str(collision)
+            print "Bad collision: " + str(collision) + " " + collision.collision_type
 
     def handle_phys(self, mess):
         pass
