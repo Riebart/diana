@@ -16,31 +16,31 @@ class Sensors(Observable):
         self.contacts = []
         self.scanners = []
         self.fade_time = 5.0
-        
+
         for i in xrange(0,num_beams):
             self.scanners.append(Laser(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
-            
+
     def perform_scan():
         pass
-    
+
     def send_state(self, client):
         cur_time = time.time()
-        
+
         for contact in contacts:
             if cur_time - contact.time_seen > self.fade_time:
                 self.contacts.remove(contact)
             else:
-                msg = "SENSORS\n"                
+                msg = "SENSORS\n"
                 #bug here that I don't want to fix. Using ';' as delimiter, plus an extra at front
                 msg = msg + ";" + contact
                 #TODO: figure out how cient and server ids are relevant here
                 Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-                    
+
     def send_update(self, client, contact):
         msg = "SENSORS\n%s" % str(contact)
         #TODO: figure out how cient and server ids are relevant here
         Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-        
+
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
@@ -63,10 +63,10 @@ class Comms(Observable):
         # testing the new-ship code.
         #self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
         self.fade_time = 600.0
-        
+
     def send_state(self, client):
         cur_time = time.time()
-        
+
         for message in messages:
             if cur_time - message.time_seen > self.fade_time:
                 self.contacts.remove(contact)
@@ -76,17 +76,17 @@ class Comms(Observable):
                 msg = msg + ";" + message
                 #TODO: figure out how cient and server ids are relevant here
                 Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-                    
-    
+
+
     def send_update(self, client, message):
         msg = "COMMS\n%s" % str(message)
         Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-        
-        
+
+
     def handle_message(self, mess):
         self.messages.append(CommMessage(mess))
         self.notify(self.messages[-1])
-    
+
 #basically a struct. Better than organizing it otherwise
 class CommMessage:
     def __init__(self, mess):
@@ -95,9 +95,9 @@ class CommMessage:
         self.msg = mess.msg
         self.position = mess.position
         self.time_seen = time.time()
-        
+
     def __repr__(self):
-        return ("%f,%f,%f,%f,%f,%s" % (self.time_seen, 
+        return ("%f,%f,%f,%f,%f,%s" % (self.time_seen,
             self.direction[0], self.direction[1], self.direction[2],
             self.energy, self.msg))
 
@@ -106,13 +106,13 @@ class Contact:
         self.name = name
         if (time_seen == 0):
             self.time_seen = time.time()
-        else:            
+        else:
             self.time_seen = time_seen
         self.position = position
         self.velocity = velocity
         self.radius = radius
         self.other_data = ""
-        
+
     def __repr__(self):
         return (self.name + "," +
             str(time.time() - self.time_seen) + "," +
@@ -120,7 +120,7 @@ class Contact:
             self.velocity[0] + "," + self.velocity[1] + "," + self.velocity[2] + "," +
             self.radius + "," +
             self.other_data)
-            
+
 
 class Laser:
     def __init__(self, bank_id, power, h_arc, v_arc, direction, recharge_time):
@@ -131,7 +131,7 @@ class Laser:
         self.direction = direction
         self.recharge_time = recharge_time
         self.time_fired = time.time()-recharge_time
-        
+
     #check if beam is ready to fire, and update the time_fired to current time
     def fire(self):
         cur_time = time.time()
@@ -172,7 +172,7 @@ class Ship(SmartObject):
         self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
-        
+
         self.joinable = 1
 
     # ++++++++++++++++++++++++++++++++
@@ -188,6 +188,7 @@ class Ship(SmartObject):
         pass
 
     def handle(self, client, msg):
+        print "SHIP HANDLING", msg, client
         if isinstance(msg, message.NameMsg):
             if msg.name != None:
                 self.name = msg.name
@@ -207,7 +208,7 @@ class Ship(SmartObject):
             msg.sendto(self.sock)
 
         elif isinstance(msg, message.VisualDataEnableMsg):
-            if msg.enabled == 1:
+            if msg.enabled:
                 if client not in self.vis_clients:
                     self.vis_clients[client] = msg.cli_id
                 if self.vis_enabled ==  False:
@@ -220,26 +221,27 @@ class Ship(SmartObject):
                 if self.vis_enabled and len(self.vis_clients) < 1:
                     self.disable_visdata()
                     self.vis_enabled = False
-                    
+
         elif isinstance(msg, message.RequestUpdateMsg):
             if msg.type == "SENSORS":
                 obs_type = self.sensors
             elif msg.type == "COMMS":
                 obs_type = self.comms
-                
+
             if msg.continuous == 1:
                 obs_type.add_observer(client)
             else:
                 obs_type.notify_once(client)
-                
-        
+
+
 
 
     # ++++++++++++++++++++++++++++++++
     # Now the rest of the handler functions
     # ++++++++++++++++++++++++++++++++
     def handle_scanresult(self, mess):
-        self.Sensors.handle_scanresult(mess)
+        pass
+        #self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         mess.srv_id = self.osim_id
@@ -247,7 +249,7 @@ class Ship(SmartObject):
 
         for client in self.vis_clients:
             mess.cli_id = self.vis_clients[client]
-            ret = mess.sendto(client)
+            ret = message.VisualDataMsg.send(client, mess.srv_id, mess.cli_id, mess.build())
 
             if ret == 0:
                 for_removal.append(client)
@@ -267,7 +269,7 @@ class Ship(SmartObject):
                 self.disable_visdata()
 
     # ++++++++++++++++++++++++++++++++
-    
+
     def handle_comm(self, mess):
         self.comms.handle_message(mess)
 
@@ -284,28 +286,28 @@ class Ship(SmartObject):
 
         laser = WeaponBeam(self.osim)
         self.init_beam(laser, power, 299792458.0, direction, h_focus, v_focus)
-        
+
         self.fire_beam(laser)
-        
+
     def fire_laser(self, bank_id, direction, h_focus, v_focus, power = None):
         if bank_id not in self.laser_list:
             return None
-        
+
         cur_time = time.time()
-        
+
         if self.laser_list[bank_id].time_fired + self.laser_list[bank_id].recharge_time > cur_time:
             return None
-            
+
         if power == None:
             power = self.laser_list[bank_id].power
-    
+
         #TODO: other checks that the beam is appropriate
-        
+
         self.laser_list[bank_id].time_fired = cur_time
-        
-        lsr = WeaponBeam(self.osim)        
+
+        lsr = WeaponBeam(self.osim)
         self.init_beam(lsr, power, 299792458.0, direction, h_focus, v_focus)
-        
+
         self.fire_beam(lsr)
 
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
@@ -317,25 +319,25 @@ class Ship(SmartObject):
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
             tmp.scale((self.radius + missile.radius) * -1.1)
             missile.position = self.position + tmp
-            
+
             #should missile have our initial velocity?
             missile.velocity = self.velocity
-            
+
             tmp = direction.ray(Vector3((0.0,0.0,0.0)))
-            tmp.scale(thrust_power * -1)                
-            missile.thrust = tmp        
+            tmp.scale(thrust_power * -1)
+            missile.thrust = tmp
             missile.orientation = [ direction.x, direction.y, 0 ]
-                    
+
             self.osim.spawn_object(missile)
-            
+
             self.cur_missiles -= 1
-            
-        
+
+
             #shouldn't really return this, but for now, testing, etc
             return missile
-        
+
         return None
-        
+
     def fire_homing(self, direction, thrust_power):
         missile = HomingMissile1(self.osim, direction.unit())
 
@@ -343,17 +345,16 @@ class Ship(SmartObject):
         tmp = direction.ray(Vector3((0.0,0.0,0.0)))
         tmp.scale((self.radius + missile.radius) * -1.1)
         missile.position = self.position + tmp
-        
+
         #should missile have our initial velocity?
         missile.velocity = self.velocity
-        
+
         tmp = direction.unit()
-        tmp.scale(thrust_power)                
-        missile.thrust = tmp        
+        tmp.scale(thrust_power)
+        missile.thrust = tmp
         missile.orientation = [ direction.x, direction.y, 0 ]
-                
+
         self.osim.spawn_object(missile)
-        
+
         return missile
         #self.cur_missiles -= 1
-    

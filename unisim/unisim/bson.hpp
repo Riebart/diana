@@ -30,7 +30,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = (int8_t)0xFF, MaxKey = 0x7F
+        MinKey = (int8_t)0xFF, MaxKey = 0x7F, NoMoreData = (int16_t)0x8001
     };
 
     // Every element is returned in this structure, with the type field and the relevant
@@ -63,10 +63,10 @@ public:
 
     struct Element get_next_element()
     {
-        // Return a sentinel MinKey type when we reach the end of the message
+        // Return a sentinel NoMoreData type when we reach the end of the message
         if ((int32_t)pos >= len)
         {
-            el.type = ElementType::MinKey;
+            el.type = ElementType::NoMoreData;
             return el;
         }
 
@@ -76,6 +76,7 @@ public:
         // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
         if (el.type == ElementType::EndOfDocument)
         {
+            el.name = msg + pos - 1;
             return el;
         }
         else
@@ -115,6 +116,10 @@ public:
             pos += 1;
             el.bin_val = (uint8_t*)(msg + pos);
             pos += el.bin_len;
+            // The Python BSON library has a habit of encoding strings as binary arrays.
+            // Fill in the string pointer and length in case we were expecting a string.
+            el.str_len = el.bin_len;
+            el.str_val = (char*)el.bin_val;
             break;
 
         case ElementType::Deprecatedx06:
@@ -143,11 +148,17 @@ public:
         case ElementType::MongoTimeStamp:
         case ElementType::Int64:
             el.i64_val = *(int64_t*)(msg + pos);
+            // The Python BSON library has a habit of not obeying integer types
+            // Fill in the i32_val from the parsed value, as best we can, in case we were expected an i32
+            el.i32_val = (int32_t)el.i64_val;
             pos += 8;
             break;
 
         case ElementType::Int32:
             el.i32_val = *(int32_t*)(msg + pos);
+            // The Python BSON library has a habit of not obeying integer types
+            // Fill in the i64_val from the parsed value, in case we were expected an i64
+            el.i64_val = el.i32_val;
             pos += 4;
             break;
         default:
@@ -204,6 +215,13 @@ public:
         
         pos = 4;
         child = NULL;
+    }
+
+    // Push a NOP, simply increment the tag_index.
+    bool push()
+    {
+        print_array_name(NULL);
+        return true;
     }
 
     bool push(bool v)
@@ -332,6 +350,11 @@ public:
         }
         else
         {
+            if (v == NULL)
+            {
+                return false;
+            }
+
             if (len < 0)
             {
                 len = strlen(v);
@@ -521,7 +544,7 @@ private:
 #else
             sprintf(array_name, "%d", tag_index);
 #endif
-            tag_index += 1;
+            tag_index++;
             return array_name;
         }
         // If the name is NULL, one was unspecified, so fill it in with a one-character

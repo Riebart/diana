@@ -24,6 +24,7 @@ namespace Diana2DClient
         bool reading = false;
         bool newData = false;
         int numSwaps = 0;
+        double averageFrameTime = 0;
         Thread readerThread;
 
         List<VisDataMessage> updateList = new List<VisDataMessage>();

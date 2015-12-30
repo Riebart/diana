@@ -10,7 +10,7 @@ import thread
 import threading
 import traceback
 import struct
-from protocols.universe_pb2 import MessageWrapper
+from message import Message
 
 # ==============================================================================
 # This implements sending serializable objects back and forth. We won't use it
@@ -75,27 +75,7 @@ class MIMOServer:
                 if not self.running:
                     break
 
-                try:
-                    data = self.client.recv(2)
-                    if not data:
-                        break
-                except socket.error, (errno, errstr):
-                    if self.client.fileno() >= -1:
-                        break
-
-                    print "There was an error reading from client %d" % self.client.fileno()
-                    print "Error:", sys.exc_info()
-                    sys.stdout.flush()
-                    break
-                    
-                data_size = struct.unpack("H", data)[0]
-                #check data_size?
-                
-                data = self.client.recv(data_size)
-                
-                response = MessageWrapper()
-                response.ParseFromString(data) #can this throw an error?
-
+                response = Message.get_message(self.client)
                 self.handler(response)
 
             sys.stdout.flush()

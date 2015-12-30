@@ -7,13 +7,13 @@ using System.IO;
 
 class BSONReader
 {
-    public enum ElementType : byte
+    public enum ElementType : int
     {
         EndOfDocument = 0, Double = 1, String = 2, SubDocument = 3, Array = 4,
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = (int)0xFF, MaxKey = 0x7F
+        MinKey = (int)0xFF, MaxKey = 0x7F, NoMoreData = (int)0x8001
     }
 
     public struct Element
@@ -53,21 +53,22 @@ class BSONReader
     String ReadString(int len)
     {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < len; i++)
+        // Don't copy in the null terminator, we'll eat it later as part of skipping pos
+        // along by item_len
+        for (int i = 0; i < len - 1; i++)
         {
             sb.Append((char)msg[pos + i]);
         }
-        pos += 1; // Also skip the trailing 0x00
         return sb.ToString();
 
     }
 
     public Element GetNextElement()
     {
-        // Return a sentinel MinKey type when we reach the end of the message.
+        // Return a sentinel NoMoreData type when we reach the end of the message.
         if (pos >= len)
         {
-            el.type = ElementType.MinKey;
+            el.type = ElementType.NoMoreData;
             return el;
         }
 
@@ -76,6 +77,7 @@ class BSONReader
 
         if (el.type == ElementType.EndOfDocument)
         {
+            el.name = "\x00";
             return el;
         }
         else
@@ -112,6 +114,7 @@ class BSONReader
                 el.subtype = (int)msg[pos];
                 pos += 1;
                 el.bin_val = msg.Skip(pos).Take(item_len).ToArray();
+                el.str_val = new String(Encoding.ASCII.GetChars(el.bin_val));
                 pos += item_len;
                 break;
 
@@ -140,11 +143,13 @@ class BSONReader
             case ElementType.MongoTimeStamp:
             case ElementType.Int64:
                 el.i64_val = BitConverter.ToInt64(msg, pos);
+                el.i32_val = (Int32)el.i64_val;
                 pos += 8;
                 break;
 
             case ElementType.Int32:
                 el.i32_val = BitConverter.ToInt32(msg, pos);
+                el.i64_val = el.i32_val;
                 pos += 4;
                 break;
         }
@@ -203,6 +208,13 @@ class BSONWriter
         bw.Write((byte)0);
     }
 
+    // Performa a NOP, just increment the tag_index.
+    public bool Push()
+    {
+        PrintArrayName(null);
+        return true;
+    }
+
     public bool Push(bool v)
     {
         return Push(null, v);
@@ -258,6 +270,12 @@ class BSONWriter
         }
         else
         {
+            // This would be here for consistency, but is always false, since IntX types are non-nullable value types.
+            //if (v == null)
+            //{
+            //    return false;
+            //}
+
             switch (type)
             {
                 case BSONReader.ElementType.Int64:

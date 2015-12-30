@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
+import bson
+import struct # Needed to unpack the first four bytes of the BSON message for read-length.
 import sys
 import socket
 from vector import Vector3, zero3d
 from cStringIO import StringIO
+from collections import OrderedDict
 
 class Message:
     def __init__(self, client):
@@ -12,26 +15,21 @@ class Message:
     @staticmethod
     def get_message_size(client):
         try:
-            raw = Message.big_read(client, 10).rstrip()
-            #raw = client.recv(10).rstrip()
-            msg_length = int(raw)
-            # We really don't want zero-length messages
-            if msg_length > 0:
-                return msg_length
-            else:
-                return None
+            bytes = Message.big_read(client, 4)
+            msg_length = struct.unpack('<l', bytes)[0]
+            return (bytes, msg_length)
         except ValueError:
             print "Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno())
-            return None
+            return (None, None)
         except socket.timeout as e:
             raise e
         except socket.error, (errno, errmsg):
             if client.fileno() == -1 or errno == 10054 or errno == 10053:
-                return None
+                return (None, None)
 
             print "There was an error getting message size header from client %d" % client.fileno()
             print "Error:", sys.exc_info()
-            return None
+            return (None, None)
 
     @staticmethod
     def big_read(client, num_bytes):
@@ -101,31 +99,24 @@ class Message:
     # Reads a single message from the socket and returns that object.
     def get_message(client):
         # First grab the message size
-        msg_size = Message.get_message_size(client)
+        bytes, msg_size = Message.get_message_size(client)
         if msg_size == None:
             return None
 
-        msg = Message.big_read(client, msg_size).split("\n")
-
-        #print msg
+        msg_bytes = bytes + Message.big_read(client, msg_size - 4)
+        msg = bson.loads(msg_bytes)
+        #print "RECV", msg
 
         # Snag out the IDs
-        try:
-            srv_id = None if msg[0] == "" else int(msg[0])
-            del msg[0]
-            cli_id = None if msg[0] == "" else int(msg[0])
-            del msg[0]
-        except:
-            print "Couldn't parse the IDs from the message header from %d" % client.fileno()
-            sys.stdout.flush()
-            return None
+        srv_id = msg['\x01'] if '\x01' in msg else None
+        cli_id = msg['\x02'] if '\x02' in msg else None
 
         if not msg == None:
-            msgtype = msg[0]
-            del msg[0]
+            msgtype = msg['']
 
-            if msgtype in MessageTypes:
-                m = MessageTypes[msgtype](msg, srv_id, cli_id)
+            if msgtype in MessageTypeClasses:
+                m = MessageTypeClasses[msgtype](msg, msgtype, srv_id, cli_id)
+                m.socket = client
                 return m
             else:
                 print "Unknown message type: \"%s\"" % msgtype
@@ -140,689 +131,553 @@ class Message:
         if client.fileno() == -1:
             return 0
 
-        if srv_id == None and cli_id == None:
-            id_str = "\n\n"
-        else:
-            if srv_id == None:
-                id_str = "\n%d\n" % cli_id
-            elif cli_id == None:
-                id_str = "%d\n\n" % srv_id
-            else:
-                id_str = "%d\n%d\n" % (srv_id, cli_id)
+        if srv_id != None:
+            msg['\x01'] = srv_id
+        if cli_id != None:
+            msg['\x02'] = cli_id
 
-        msg_hdr = "%09d\n%s" % (len(msg) + len(id_str), id_str)
-        full_msg = msg_hdr + msg
-
-        #print full_msg
-
-        num_sent = Message.big_send(client, full_msg)
+        omsg = OrderedDict(sorted(msg.items(), key=lambda t: t[0]))
+        #print "SEND", omsg
+        num_sent = Message.big_send(client, bson.dumps(omsg))
         if num_sent == 0:
             return 0
 
         return 1
 
     @staticmethod
-    def prep_double(d):
-        if d != None and d != "":
-            s = "%.55f" % d
+    def ReadMsgEl(key, msg):
+        if isinstance(key, list) or isinstance(key, tuple):
+            return tuple([ (msg[k] if k in msg else None) for k in key])
         else:
-            s = ""
-        return s
+            return msg[key] if key in msg else None
 
     @staticmethod
-    def prep_double3(d1, d2, d3):
-        s = ""
-        s.append(Message.prep_double(d1))
-        s.append(Message.prep_double(d2))
-        s.append(Message.prep_double(d3))
-        return s
-
-    @staticmethod
-    def read_double(sa):
-        s = sa[0]
-        del sa[0]
-
-        if s != "":
-            try:
-                f = float(s)
-                return f
-            except:
-                print "Error parsing double"
-                print "Error:", sys.exc_info()
-                return None
-        else:
-            return None
-
-    @staticmethod
-    def read_double3(sa):
-        tmp = [ Message.read_double(sa),
-                Message.read_double(sa),
-                Message.read_double(sa) ]
-        if tmp[0] != None and tmp[1] != None and tmp[2] != None:
-            return tmp
-        else:
-            return None
-
-    @staticmethod
-    def read_double4(sa):
-        tmp = [ Message.read_double(sa),
-                Message.read_double(sa),
-                Message.read_double(sa),
-                Message.read_double(sa) ]
-        if tmp[0] != None and tmp[1] != None and tmp[2] != None and tmp[3] != None:
-            return tmp
-        else:
-            return None
-
-    @staticmethod
-    def read_int(sa):
-        s = sa[0]
-        del sa[0]
-
-        if s != "":
-            try:
-                f = int(s)
-                return f
-            except:
-                print "Error parsing int"
-                print "Error:", sys.exc_info()
-                return None
-        else:
-            return None
-
-    @staticmethod
-    def prep_mesh(m):
-        return m
-
-    @staticmethod
-    def read_mesh(sa):
-        m = sa[0]
-        del sa[0]
-
-        if m != "":
-            return m
-        else:
-            return None
-
-    @staticmethod
-    def prep_texture(t):
-        return t
-
-    @staticmethod
-    def read_texture(sa):
-        t = sa[0]
-        del sa[0]
-
-        if t != "":
-            return t
-        else:
-            return None
+    def SendMsgEl(key, val, msg):
+        if isinstance(key, list) or isinstance(key, tuple):
+            for k, v in zip(key, val):
+                if v != None:
+                    msg[k] = v
+        elif val != None:
+            msg[key] = val
 
 class UnknownMsg(Message):
     def __init__(self, msgtype):
         self.msgtype = msgtype
 
 class HelloMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
 
-    #def sendto(self, client):
-        #HelloMsg.send(client, self.srv_id, self.cli_id)
+    def build(self):
+        return {}
 
     @staticmethod
-    def send(client, srv_id, cli_id):
-        msg = "HELLO\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[HelloMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class PhysicalPropertiesMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.object_type = s[0]
-        del s[0]
-        self.mass = Message.read_double(s)
-        self.position = Message.read_double3(s)
-        self.velocity = Message.read_double3(s)
-        self.orientation = Message.read_double4(s)
-        self.thrust = Message.read_double3(s)
-        self.radius = Message.read_double(s)
+        self.object_type = Message.ReadMsgEl('\x03', msg)
+        self.mass = Message.ReadMsgEl('\x04', msg)
+        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
+        self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
+        self.radius = Message.ReadMsgEl('\x12', msg)
 
-    def sendto(self, client):
-        args = [(self.object_type if self.object_type != None else ""),
-                (self.mass if self.mass != None else "") ]
-        args += (self.position if self.position != None else ["","",""])
-        args += (self.velocity if self.velocity != None else ["","",""])
-        args += (self.orientation if self.orientation != None else ["","","",""])
-        args += (self.thrust if self.thrust != None else ["","",""])
-        args += [ (self.radius if self.radius != None else "") ]
-
-        PhysicalPropertiesMsg.send(client, self.srv_id, self.cli_id, args)
+    def build(self):
+        msg = {}
+        vals = [ self.object_type, self.mass ] + \
+            list(self.position) + list(self.velocity) + \
+            list(self.orientation) + list(self.thrust) + [ self.radius ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "PHYSPROPS\n%s\n" % args[0]
-
-        for i in range(1,16):
-            msg += Message.prep_double(args[i]) + "\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[PhysicalPropertiesMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
     @staticmethod
-    def make_from_object(obj, p = zero3d, v = zero3d, o = zero3d):
-        # ### TODO ### Make this relative to orientation?
-        orientation = [ obj.forward.x, obj.forward.y, obj.up.x, obj.up.z ]
+    def make_from_object(obj, p = zero3d, v = zero3d):
+        msg = {}
+        vals = [ obj.object_type, obj.mass ] + \
+            [a-b for a,b in zip(obj.position,p)] + \
+            [a-b for a,b in zip(obj.velocity,v)] + \
+            obj.orientation + obj.thrust + [ obj.radius ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
 
-        return [ obj.object_type, obj.mass,
-                    obj.position.x - p.x, obj.position.y - p.y, obj.position.z - p.z,
-                    obj.velocity.x - v.x, obj.velocity.y - v.y, obj.velocity.z - v.z,
-                    orientation[0], orientation[1], orientation[2], orientation[3],
-                    obj.thrust.x, obj.thrust.y, obj.thrust.z,
-                    obj.radius ]
-
-
-#class RotationMsg(Message):
-    #def __init__(self, s, srv_id, cli_id):
-        #self.srv_id = srv_id
-        #self.cli_id = cli_id
-        #self.is_velocity = Message.read_int(s)
-        #self.angles = Message.read_double3(s)
-
-    #def sendto(self, client):
-        #RotationMsg.send(client, self.srv_id, self.cli_id, [ self.is_velocity ] + self.angles)
-
-    #@staticmethod
-    #def send(client, srv_id, cli_id, args):
-        #msg = "ROTATE\n%d\n" % args[0]
-        #msg += Message.prep_double3(args[1]) + "\n"
-
-        #Message.sendall(client, srv_id, cli_id, msg)
+        return msg
 
 class VisualPropertiesMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.mesh = Message.read_mesh(s)
-        self.texture = Message.read_texture(s)
+        #self.mesh = Message.read_mesh(s)
+        #self.texture = Message.read_texture(s)
 
-    #def sendto(self, client):
-        #VisualPropertiesMsg.send(client, self.srv_id, self.cli_id,
-            #[ self.mesh, self.texture ])
+    def build(self):
+        msg = {}
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "VISPROPS\n"
-        msg += Message.prep_mesh(args[0])
-        msg += Message.prep_texture(args[1])
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualPropertiesMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
-        return ret
 
 class VisualDataEnableMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
         self.srv_id = srv_id
         self.cli_id = cli_id
-        sys.stdout.flush()
-        self.enabled = Message.read_int(s)
+        self.enabled = Message.ReadMsgEl('\x03', msg)
 
-    #def sendto(self, client):
-        #VisualDataEnableMsg.send(client, self.srv_id, self.cli_id, self.enabled)
+    def build(self):
+        msg = {}
+        Message.SendMsgEl('\x03', self.enabled, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, arg):
-        msg = "VISDATAENABLE\n%d\n" % arg
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualDataEnableMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class VisualMetaDataEnableMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.enabled = Message.read_int(s)
+        #self.art_id = Message.read_int(s)
+        #self.mesh = Message.read_mesh(s)
+        #self.texture = Message.read_texture(s)
 
-    #def sendto(self, client):
-        #VisualMetaDataEnableMsg.send(client, self.srv_id, self.cli_id, self.enabled)
+    def build(self):
+        msg = {}
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, arg):
-        msg = "VISMETADATAENABLE\n%d\n" % arg
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualMetaDataEnableMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
-        return ret
 
 class VisualMetaDataMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.art_id = Message.read_int(s)
-        self.mesh = Message.read_mesh(s)
-        self.texture = Message.read_texture(s)
+        #self.art_id = Message.read_int(s)
+        #self.mesh = Message.read_mesh(s)
+        #self.texture = Message.read_texture(s)
 
-    #def sendto(self, client):
-        #VisualMetaDataMsg.send(client, self.srv_id, self.cli_id, [ self.art_id, self.mesh, self.texture ])
+    def build(self):
+        msg = {}
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "VISMETADATA\n"
-
-        art_id = args[0]
-        mesh = args[1]
-        texture = args[2]
-        msg += "%d\n" % art_id
-        msg += Message.prep_mesh(mesh) + "\n"
-        msg += Message.prep_texture(texture) + "\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualMetaDataMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
-        return ret
 
 class VisualDataMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.phys_id = Message.read_int(s)
-        self.radius = Message.read_double(s)
-        self.position = Message.read_double3(s)
-        self.orientation = Message.read_double3(s)
+        self.phys_id = Message.ReadMsgEl('\x03', msg)
+        self.radius = Message.ReadMsgEl('\x04', msg)
+        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
 
-    def sendto(self, client):
-        if self.phys_id == -1:
-            return VisualDataMsg.send(client, self.srv_id, self.cli_id, "VISDATA\n-1\n\n\n\n\n\n\n\n")
-        else:
-            return VisualDataMsg.send(client, self.srv_id, self.cli_id,
-                "VISDATA\n" +
-                str(self.phys_id) + "\n" +
-                str(self.radius) + "\n" +
-                str(self.position[0]) + "\n" + str(self.position[1]) + "\n" + str(self.position[2]) + "\n" +
-                str(self.orientation[0]) + "\n" + str(self.orientation[1]) + "\n" + str(self.orientation[2]) + "\n")
+    def build(self):
+        msg = {}
+        vals = [ self.phys_id, self.radius ] + list(self.position) + list(self.orientation)
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    # This is special in that the args are exactly the string we want to send.
-    def send(client, srv_id, cli_id, args):
-        ret = Message.sendall(client, srv_id, cli_id, args)
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VisualDataMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class BeamMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.origin = Message.read_double3(s)
-        self.velocity = Message.read_double3(s)
-        self.up = Message.read_double3(s)
-        self.spread_h = Message.read_double(s)
-        self.spread_v = Message.read_double(s)
-        self.energy = Message.read_double(s)
+        self.origin = Message.ReadMsgEl(('\x03','\x04','\x05'), msg)
+        self.velocity = Message.ReadMsgEl(('\x06','\x07','\x08'), msg)
+        self.up = Message.ReadMsgEl(('\x09','\x0A','\x0B'), msg)
+        self.spread_h = Message.ReadMsgEl('\x0C', msg)
+        self.spread_v = Message.ReadMsgEl('\x0D', msg)
+        self.energy = Message.ReadMsgEl('\x0E', msg)
+        self.beam_type = Message.ReadMsgEl('\x0F', msg)
+        self.comm_msg = Message.ReadMsgEl('\x10', msg)
 
-        if s[0] == "SCAN":
-            self.beam_type = s[0]
-        elif s[0] == "WEAP":
-            self.beam_type = s[0]
-        elif s[0] == "COMM":
-            self.beam_type = s[0]
-            self.msg = ""
-            del s[0]
-            for line in s:
-                msg += line + "\n"
-        else:
-            self.beam_type = None
-
-    #def sendto(self, client):
-        #args = self.origin + self.velocity + self.up + [ self.spread_h, self.spread_v, self.energy, self.beam_type ]
-
-        #if s[0] == "SCAN":
-            #pass
-        #elif s[0] == "WEAP":
-            #pass
-        #elif s[0] == "COMM":
-            #args += self.msg
-
-        #BeamMsg.send(client, self.srv_id, self.cli_id, args)
+    def build(self):
+        msg = {}
+        vals = self.origin + self.velocity + self.up + \
+            [ self.spread_h, self.spread_v, self.energy, self.beam_type, self.comm_msg ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "BEAM\n"
-        for i in range(0,12):
-            msg += Message.prep_double(args[i]) + "\n"
-
-        msg += args[12] + "\n"
-
-        if args[12] == "SCAN":
-            pass
-        elif args[12] == "WEAP":
-            pass
-        elif args[12] == "COMM":
-            for i in range(13, len(args)):
-                msg += args[i] + "\n"
-        else:
-            print "Unknown beam subtype \"%s\"." % args[12]
-            return 0
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[BeamMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class CollisionMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.position = Message.read_double3(s)
-        self.direction = Message.read_double3(s)
-        self.energy = Message.read_double(s)
+        self.position = Message.ReadMsgEl(('\x03','\x04','\x05'), msg)
+        self.direction = Message.ReadMsgEl(('\x06','\x07','\x08'), msg)
+        self.energy = Message.ReadMsgEl('\x09', msg)
+        self.collision_type = Message.ReadMsgEl('\x0A', msg)
+        self.comm_msg = Message.ReadMsgEl('\x0B', msg)
 
-        if s[0] == "PHYS":
-            self.collision_type = s[0]
-        elif s[0] == "SCAN":
-            self.collision_type = s[0]
-        elif s[0] == "WEAP":
-            self.collision_type = s[0]
-        elif s[0] == "COMM":
-            self.collision_type = s[0]
-            self.msg = ""
-            del s[0]
-            for line in s:
-                msg += line + "\n"
-        else:
-            self.collision_type = None
-
-    #def sendto(self, client):
-        #args = self.position + self.direction + [ self.energy ]
-
-        #if s[0] == "SCAN":
-            #pass
-        #elif s[0] == "WEAP":
-            #pass
-        #elif s[0] == "COMM":
-            #args += self.msg
-
-        #CollisionMsg.send(client, self.srv_id, self.cli_id, args)
+    def build(self):
+        msg = {}
+        vals = self.position + self.direction + [ self.energy + self.beam_type, self.comm_msg ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "COLLISION\n"
-
-        for i in range(0,7):
-            msg += Message.prep_double(args[i]) + "\n"
-
-        msg += args[7] + "\n"
-
-        if args[7] == "PHYS":
-            pass
-        elif args[7] == "SCAN":
-            pass
-        elif args[7] == "WEAP":
-            pass
-        elif args[7] == "COMM":
-            for i in range(8, len(args)):
-                msg += args[i] + "\n"
-        else:
-            print "Unknown beam subtype \"%s\"." % args[7]
-            return 0
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[CollisionMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class SpawnMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.object_type = s[0]
-        del s[0]
-        self.mass = Message.read_double(s)
-        self.position = Message.read_double3(s)
-        self.velocity = Message.read_double3(s)
-        self.orientation = Message.read_double4(s)
-        self.thrust = Message.read_double3(s)
-        self.radius = Message.read_double(s)
+        self.is_smart = Message.ReadMsgEl('\x03', msg)
+        self.object_type = Message.ReadMsgEl('\x04', msg)
+        self.mass = Message.ReadMsgEl('\x05', msg)
+        self.position = Message.ReadMsgEl(('\x06','\x07','\x08'), msg)
+        self.velocity = Message.ReadMsgEl(('\x09','\x0A','\x0B'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0C','\x0D','\x0E','\x0F'), msg)
+        self.thrust = Message.ReadMsgEl(('\x10','\x11','\x12'), msg)
+        self.radius = Message.ReadMsgEl('\x13', msg)
 
-    #def sendto(self, client):
-        #SpawnMsg.send(client, self.srv_id, self.cli_id,
-            #[ self.object_type, self.mass ] + self.position + self.velocity +
-                #self.orientation + self.thrust + [ self.radius ])
+    def build(self):
+        msg = {}
+        vals = [ self.is_smart, str(self.object_type), self.mass ] + \
+            list(self.position) + list(self.velocity) + list(self.orientation) + list(self.thrust) + \
+            [ self.radius ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "SPAWN\n%s\n" % args[0]
-
-        for i in range(1,16):
-            msg += Message.prep_double(args[i]) + "\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[SpawnMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class ScanResultMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.object_type = s[0]
-        del s[0]
-        self.mass = Message.read_double(s)
-        self.position = Message.read_double3(s)
-        self.velocity = Message.read_double3(s)
-        self.orientation = Message.read_double3(s)
-        self.thrust = Message.read_double3(s)
-        self.radius = Message.read_double(s)
-        self.extra_parms = s
+        self.object_type = Message.ReadMsgEl('\x03', msg)
+        self.mass = Message.ReadMsgEl('\x04', msg)
+        self.position = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        self.velocity = Message.ReadMsgEl(('\x08','\x09','\x0A'), msg)
+        self.orientation = Message.ReadMsgEl(('\x0B','\x0C','\x0D','\x0E'), msg)
+        self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
+        self.radius = Message.ReadMsgEl('\x12', msg)
+        self.data = Message.ReadMsgEl('\x13', msg)
 
-    #def sendto(self, client):
-        #ScanResultMsg.send(client, self.srv_id, self.cli_id,
-            #[ self.object_type, self.mass ] + self.position + self.velocity +
-                #self.orientation + self.thrust + [ self.radius ] + self.extra_parms)
+    def build(self):
+        msg = {}
+        vals = [ self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius, self.data ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "SCANRESULT\n%s\n" % args[0]
-
-        for i in range(1,15):
-            msg += Message.prep_double(args[i]) + "\n"
-
-        if (len(args) > 15):
-            msg += str(args[15])
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[ScanResultMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class ScanQueryMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.scan_id = Message.read_int(s)
-        self.scan_power = Message.read_double(s)
-        self.scan_dir = Message.read_double3(s)
+        self.scan_id = Message.ReadMsgEl('\x03', msg)
+        self.scan_energy = Message.ReadMsgEl('\x04', msg)
+        self.scan_dir = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
 
-    #def sendto(self, client):
-        #ScanQueryMsg.send(client, self.srv_id, self.cli_id, [self.scan_id, self.scan_power] + self.scan_dir)
+    def build(self):
+        msg = {}
+        vals = [ self.scan_id, self.scan_energy ] + self.scan_dir
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "SCANQUERY\n%d\n" % args[0]
-        for i in range (1,5):
-            msg += Message.prep_double(args[i]) + "\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[ScanQueryMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class ScanResponseMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.scan_id = Message.read_int(s)
-        self.parms = s
+        self.scan_id = Message.ReadMsgEl('\x03', msg)
+        self.data = Message.ReadMsgEl('\x04', msg)
 
-    #def sendto(self, client):
-        #ScanResponseMsg.send(client, self.srv_id, self.cli_id, [ self.scan_id ] + self.parms)
+    def build(self):
+        msg = {}
+        vals = [ self.scan_id, self.data ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "SCANRESP\n%d\n" % args[0]
-
-        for i in args[1:]:
-            msg += str(i)
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[ScanResponseMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
 
 class GoodbyeMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
 
-    #def sendto(self, client):
-        #GoodbyeMsg.send(client, self.srv_id, self.cli_id)
+    def build(self):
+        return {}
 
     @staticmethod
-    def send(client, srv_id, cli_id):
-        msg = "GOODBYE\n"
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[GoodbyeMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class DirectoryMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.item_type = s[0]
-        del s[0]
+        self.item_type = Message.ReadMsgEl('\x03', msg)
+        item_count = Message.ReadMsgEl('\x04', msg)
 
-        self.items = []
-        for i in range(0, len(s) - (len(s) % 2), 2):
-            self.items.append([int(s[i]), s[i+1]])
+        # Item 5 is an array of IDs, and item 6 is an array of names
+        ids = Message.ReadMsgEl('\x05', msg)
+        names = Message.ReadMsgEl('\x06', msg)
+        if ids != None and names != None and len(ids) == len(names):
+            self.items = zip(ids, names)
+        else:
+            self.items = None
 
-    #def sendto(self, client):
-        #DirectoryMsg.send(client, self.srv_id, self.cli_id, [self.item_type] + self.items)
+    def build(self):
+        msg = {}
+        Message.SendMsgEl('\x03', self.item_type, msg)
+        Message.SendMsgEl('\x04', 0 if self.items == None else len(self.items), msg)
+        Message.SendMsgEl('\x05', [] if self.items == None else [ i[0] for i in self.items ], msg)
+        Message.SendMsgEl('\x06', [] if self.items == None else [ i[1] for i in self.items ], msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "DIRECTORY\n%s\n" % args[0]
-
-        del args[0]
-        for a in args:
-            msg += "%d\n%s\n" % (a[0], a[1])
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[DirectoryMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class NameMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.name = s[0]
+        self.name = Message.ReadMsgEl('\x03', msg)
 
-    #def sendto(self, client):
-        #NameMsg.send(client, self.srv_id, self.cli_id, self.name)
+    def build(self):
+        msg = {}
+        val = [ self.name ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "NAME\n%s\n" % args
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[NameMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class ReadyMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.ready = int(s[0])
+        self.ready = Message.ReadMsgEl('\x03', msg)
 
-    #def sendto(self, client):
-        #NameMsg.send(client, self.srv_id, self.cli_id, self.name)
+    def build(self):
+        msg = {}
+        val = [ self.ready ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "READY\n%s\n" % args
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[ReadyMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 
 ##Here begins the client <-> ship messages
 class ThrustMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.thrust = Message.read_double3(s)
+        self.thrust = Message.ReadMsgEl(('\x03','\x04','\x05'), msg)
+
+    def build(self):
+        msg = {}
+        val = [ self.thrust ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "CMDTHRUST\n%s\n" % prep_double3(args)
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[ThrustMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class VelocityMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.velocity = Message.read_double3(s)
+        self.velocity = Message.ReadMsgEl(('\x03','\x04','\x05'), msg)
+
+    def build(self):
+        msg = {}
+        val = [ self.velocity ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "CMDVELOCITY\n%s\n" % prep_double3(args)
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[VelocityMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class JumpMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.new_position = Message.read_double3(s)
+        self.new_position = Message.ReadMsgEl(('\x03','\x04','\x05'), msg)
+
+    def build(self):
+        msg = {}
+        val = [ self.new_position ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "CMDJUMP\n%s\n" % prep_double3(args)
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[JumpMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class InfoUpdateMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.type = s[0]
-        self.data = s[1]
+        self.type = Message.ReadMsgEl('\x03', msg)
+        self.data = Message.ReadMsgEl('\x04', msg)
+
+    def build(self):
+        msg = {}
+        val = [ self.type, self.data ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "INFO\n%s\n" % args[0]
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[InfoUpdateMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
 class RequestUpdateMsg(Message):
-    def __init__(self, s, srv_id, cli_id):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.continuous = Message.read_int(s)
-        self.type = s
+        self.type = Message.ReadMsgEl('\x03', msg)
+        self.continuous = Message.ReadMsgEl('\x04', msg)
+
+    def build(self):
+        msg = {}
+        val = [ self.type, self.continuous ]
+        Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
+        return msg
 
     @staticmethod
-    def send(client, srv_id, cli_id, args):
-        msg = "REQUEST\n%d\n%s" % (args[0], args[1])
-
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[RequestUpdateMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+MessageTypeClasses = {1: HelloMsg,
+                      2: PhysicalPropertiesMsg,
+#                      3: VisualPropertiesMsg,
+                      4: VisualDataEnableMsg,
+#                      5: VisualMetaDataEnableMsg,
+#                      6: VisualMetaDataMsg,
+                      7: VisualDataMsg,
+                      8: BeamMsg,
+                      9: CollisionMsg,
+                      10: SpawnMsg,
+                      11: ScanResultMsg,
+                      12: ScanQueryMsg,
+                      13: ScanResponseMsg,
+                      14: GoodbyeMsg,
+                      15: DirectoryMsg,
+                      16: NameMsg,
+                      17: ReadyMsg,
+                      18: ThrustMsg,
+                      19: VelocityMsg,
+                      20: JumpMsg,
+                      21: InfoUpdateMsg,
+                      22: RequestUpdateMsg
+                      }
 
-MessageTypes = { "HELLO": HelloMsg,
-                "PHYSPROPS": PhysicalPropertiesMsg,
-                #"ROTATE": RotationMsg,
-                "VISPROPS": VisualPropertiesMsg,
-                "VISDATAENABLE": VisualDataEnableMsg,
-                "VISMETADATAENABLE": VisualMetaDataEnableMsg,
-                "VISMETADATA": VisualMetaDataMsg,
-                "VISDATA": VisualDataMsg,
-                "BEAM": BeamMsg,
-                "COLLISION": CollisionMsg,
-                "SPAWN": SpawnMsg,
-                "SCANRESULT": ScanResultMsg,
-                "SCANQUERY": ScanQueryMsg,
-                "SCANRESP": ScanResponseMsg,
-                "GOODBYE": GoodbyeMsg,
-                "DIRECTORY": DirectoryMsg,
-                "NAME": NameMsg,
-                "READY": ReadyMsg,
-                "CMDTHRUST": ThrustMsg,
-                "CMDVELOCITY": VelocityMsg,
-                "CMDJUMP": JumpMsg,
-                "INFO": InfoUpdateMsg,
-                "REQUEST": RequestUpdateMsg}
+MessageTypeIDs = { HelloMsg: 1,
+                  PhysicalPropertiesMsg: 2,
+#                  VisualPropertiesMsg: 3,
+                  VisualDataEnableMsg: 4,
+#                  VisualMetaDataEnableMsg: 5,
+#                  VisualMetaDataMsg: 6,
+                  VisualDataMsg: 7,
+                  BeamMsg: 8,
+                  CollisionMsg: 9,
+                  SpawnMsg: 10,
+                  ScanResultMsg: 11,
+                  ScanQueryMsg: 12,
+                  ScanResponseMsg: 13,
+                  GoodbyeMsg: 14,
+                  DirectoryMsg: 15,
+                  NameMsg: 16,
+                  ReadyMsg: 17,
+                  ThrustMsg: 18,
+                  VelocityMsg: 19,
+                  JumpMsg: 20,
+                  InfoUpdateMsg: 21,
+                  RequestUpdateMsg: 22
+                  }

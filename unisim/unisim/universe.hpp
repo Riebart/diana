@@ -9,6 +9,7 @@
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
+#include <set>
 #include <list>
 
 #ifdef CPP11THREADS
@@ -160,15 +161,26 @@ private:
         bool operator <(const struct vis_client& rhs) const
         {
             // Could also use std::tie
-            return (socket < rhs.socket ? true :
-                (client_id < rhs.client_id ? true : phys_id < rhs.client_id));
+            if (socket == rhs.socket)
+            {
+                if (client_id == rhs.client_id)
+                {
+                    return phys_id < rhs.phys_id;
+                }
+                else
+                {
+                    return client_id < rhs.client_id;
+                }
+            }
+            else
+            {
+                return socket < rhs.socket;
+            }
         }
 
         bool operator ==(const struct vis_client& rhs) const
         {
-            return ((socket == rhs.socket) &&
-                (client_id == rhs.client_id) &&
-                (phys_id == rhs.phys_id));
+            return ((socket == rhs.socket) && (client_id == rhs.client_id) && (phys_id == rhs.phys_id));
         }
     };
 
@@ -185,7 +197,7 @@ private:
     std::vector<struct PhysicsObject*> attractors;
     std::vector<struct PhysicsObject*> phys_objects;
     std::vector<struct Beam*> beams;
-    std::vector<int64_t> expired;
+    std::set<int64_t> expired;
     std::vector<struct PhysicsObject*> added;
 
     // Represents the pair of IDs that uniquely identifies a beam/object collision event.
@@ -198,13 +210,12 @@ private:
         bool operator <(const struct scan_target& rhs) const
         {
             // Could also use std::tie
-            return (beam_id < rhs.beam_id ? true : target_id < rhs.target_id);
+            return (beam_id == rhs.beam_id ? target_id < rhs.target_id : beam_id < rhs.beam_id);
         }
 
         bool operator ==(const struct scan_target& rhs) const
         {
-            return ((beam_id == rhs.beam_id) &&
-                (target_id == rhs.target_id));
+            return ((beam_id == rhs.beam_id) && (target_id == rhs.target_id));
         }
     };
 
@@ -252,6 +263,7 @@ private:
     LOCK_T expire_lock;
     LOCK_T phys_lock;
     LOCK_T vis_lock;
+    LOCK_T query_lock;
 
     //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
     double rate;

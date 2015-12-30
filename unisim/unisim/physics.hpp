@@ -163,6 +163,8 @@ void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Ve
 struct PhysicsObject* PhysicsObject_clone(struct PhysicsObject* obj);
 void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
 
+void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation);
+
 void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
 void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, double dt, struct PhysCollisionEffect* args);
 void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
