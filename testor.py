@@ -141,7 +141,7 @@ def testHoming():
 
     ship2 = Firefly(osim)
     ship2.position = Vector3( (50000.0,0.0,0.0) )
-    ship2.velocity = Vector3( (0, 1000, 0) )
+    ship2.velocity = Vector3( (0.0, 1000.0, 0.0) )
     osim.spawn_object(ship2)
 
     print "ship2 osimid is: %d" % ship2.osim_id
