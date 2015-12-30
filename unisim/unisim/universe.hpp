@@ -9,6 +9,7 @@
 // We get these from MIMOServer.hpp too
 #include <map>
 #include <vector>
+#include <set>
 #include <list>
 
 #ifdef CPP11THREADS
@@ -196,7 +197,7 @@ private:
     std::vector<struct PhysicsObject*> attractors;
     std::vector<struct PhysicsObject*> phys_objects;
     std::vector<struct Beam*> beams;
-    std::vector<int64_t> expired;
+    std::set<int64_t> expired;
     std::vector<struct PhysicsObject*> added;
 
     // Represents the pair of IDs that uniquely identifies a beam/object collision event.

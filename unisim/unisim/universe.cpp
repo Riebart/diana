@@ -436,7 +436,7 @@ void Universe::add_object(B* beam)
 void Universe::expire(int64_t phys_id)
 {
     LOCK(expire_lock);
-    expired.push_back(phys_id);
+    expired.insert(phys_id);
     UNLOCK(expire_lock);
 }
 
@@ -450,7 +450,7 @@ void Universe::hangup_objects(int32_t c)
     {
         if ((it->second != NULL) && (it->second->socket == c))
         {
-            expired.push_back(it->first);
+            expired.insert(it->first);
         }
     }
     UNLOCK(expire_lock);
@@ -1121,7 +1121,7 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                 }
                 case BEAM_SCANRESULT:
                 {
-                    //! @todo This feels forced, ugh...
+                    //! @todo This feels forced, ugh... Enum?
                     cm.set_colltype((char*)"SCRE");
                     cm.send(s->socket);
 
@@ -1245,24 +1245,16 @@ void Universe::tick(double dt)
         // Then we can binary search our way as we iterate over the list of phys IDs.
         // That might have a big constant though
         //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-        bool backtrack;
         struct PhysicsObject* po;
         struct Beam* b;
 
         // See if any are a beam.
-        backtrack = false;
         for (size_t i = 0; i < beams.size(); i++)
         {
-            if (backtrack)
-            {
-                i--;
-                backtrack = false;
-            }
-
             b = beams[i];
-            for (size_t j = 0; j < expired.size(); j++)
+            for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
             {
-                if (expired[j] == b->phys_id)
+                if (*it == b->phys_id)
                 {
                     free(b->data);
                     free(b->comm_msg);
@@ -1277,33 +1269,26 @@ void Universe::tick(double dt)
 
                     free(b);
                     beams.erase(beams.begin() + i);
-                    expired.erase(expired.begin() + j);
-                    backtrack = true;
+                    expired.erase(it);
+                    i--;
                     break;
                 }
             }
         }
 
         // See if any are a physical object.
-        backtrack = false;
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
-            if (backtrack)
-            {
-                i--;
-                backtrack = false;
-            }
-
             po = phys_objects[i];
-            for (size_t j = 0; j < expired.size(); j++)
+            for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
             {
-                if (expired[j] == po->phys_id)
+                if (*it == po->phys_id)
                 {
                     free(po->obj_type);
 
                     if (po->type == PHYSOBJECT_SMART)
                     {
-                        smarties.erase(expired[j]);
+                        smarties.erase(*it);
                     }
 
                     if (phys_objects[i]->emits_gravity)
@@ -1311,7 +1296,7 @@ void Universe::tick(double dt)
                         // This is nicer to read than the iterator in the for loop method.
                         for (size_t k = 0; k < attractors.size(); k++)
                         {
-                            if (attractors[k]->phys_id == expired[j])
+                            if (attractors[k]->phys_id == *it)
                             {
                                 attractors.erase(attractors.begin() + k);
                                 break;
@@ -1321,8 +1306,8 @@ void Universe::tick(double dt)
                     
                     free(po);
                     phys_objects.erase(phys_objects.begin() + i);
-                    expired.erase(expired.begin() + j);
-                    backtrack = true;
+                    expired.erase(it);
+                    i--;
                     break;
                 }
             }
@@ -1332,7 +1317,6 @@ void Universe::tick(double dt)
         {
             throw "WAT";
         }
-        expired.clear();
         UNLOCK(add_lock);
         UNLOCK(expire_lock);
     }
