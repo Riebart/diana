@@ -1090,8 +1090,10 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
                     sqm.spec_all();
-                    sqm.send(s->socket);
 
+                    // Note that we need to ensure that the queries map is ready for a response before sending
+                    // the query, otherwise we're in one hell of a race condition.
+                    
                     // Ignore multiple hits of the same beam/object pair.
                     // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
                     struct Universe::scan_target st = { b->phys_id, o->phys_id };
@@ -1117,6 +1119,8 @@ void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
                         u->queries[st] = { b_copy, cm.energy, beam_result.p };
                     }
                     UNLOCK(u->query_lock);
+
+                    sqm.send(s->socket);
                     break;
                 }
                 case BEAM_SCANRESULT:
@@ -1315,6 +1319,10 @@ void Universe::tick(double dt)
 
         if (expired.size() != 0)
         {
+            for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+            {
+                printf("%u\n", *it);
+            }
             throw std::runtime_error("WAT");
         }
         UNLOCK(add_lock);
