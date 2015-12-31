@@ -836,6 +836,12 @@ void Universe::get_grav_pull(V3* g, PO* obj)
     V3 cg;
     for (size_t i = 0; i < attractors.size(); i++)
     {
+        // An object can't attract itself.
+        if (attractors[i]->phys_id == obj->phys_id)
+        {
+            continue;
+        }
+        
         gravity(&cg, attractors[i], obj);
         Vector3_add(g, &cg);
     }

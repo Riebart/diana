@@ -228,16 +228,16 @@ def spawn_sol():
         for l in fp:
             parts = l.strip().split(",")
             obj_id = int(parts[1])
+            # The units are in KM and KM/S, so scale to metres.
             if obj_id not in objects:
                 objects[obj_id] = { "name": parts[2] + " (" + str(obj_id) + ")" }
             if parts[0] == "R":
-                objects[obj_id]["radius"] = float(parts[3])
+                objects[obj_id]["radius"] = 1000*float(parts[3])
             if parts[0] == "M":
                 objects[obj_id]["mass"] = float(parts[3])
             if parts[0] == "P":
                 objects[obj_id]["date-J2000"] = float(parts[3])
                 objects[obj_id]["date-str"] = parts[4]
-                # The units are in KM and KM/S, so scale to metres.
                 objects[obj_id]["position"] = [ 1000*float(parts[5]), 1000*float(parts[6]), 1000*float(parts[7]) ]
                 objects[obj_id]["velocity"] = [ 1000*float(parts[8]), 1000*float(parts[9]), 1000*float(parts[10]) ]
 

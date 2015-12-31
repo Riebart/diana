@@ -259,7 +259,14 @@ namespace Diana2DClient
                         if ((y + 2 * rY < 0) || (y - 2 * rY > this.ClientSize.Height))
                             continue;
 
-                        g.DrawEllipse(pen, (float)x, (float)y, 2 * (float)rX, 2 * (float)rY);
+                        try
+                        {
+                            g.DrawEllipse(pen, (float)x, (float)y, 2 * (float)rX, 2 * (float)rY);
+                        }
+                        catch(OverflowException)
+                        {
+
+                        }
                     }
 
                     this.lblNumMessages.Text = "" + numSwaps;

@@ -72,10 +72,11 @@ void PhysicsObject_tick(PO* obj, V3* g, double dt)
 	// something we can do, so we'll have to settle with something simpler.
 
 	Vector3_fmad(&obj->position, dt, &obj->velocity);
-	Vector3_fmad(&obj->position, 0.5 * dt * dt, g);
+    //! @todo We can save these divisions by not multiplying by mass when we calcualte g
+	Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, g);
 	Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
     
-    Vector3_fmad(&obj->velocity, dt, g);
+    Vector3_fmad(&obj->velocity, dt / obj->mass, g);
     // We account for the position delta above with the FMAD.
     Vector3_fmad(&obj->velocity, dt / obj->mass, &obj->thrust);
 
