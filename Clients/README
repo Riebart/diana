@@ -1,0 +1,17 @@
+
+
+LINUX USERS:
+===============
+
+Pre-compiled binaries can be found in 
+./Clients/Diana2DClient/Diana2DClient/bin/Debug/
+
+To run the client, on Ubuntu, you will need to install
+
+mono-complete
+mono-vbnc (apparently mono-complete is not that complete)
+
+
+Then run the .exe with mono, a la
+
+mono Clients/Diana2DClient/Diana2DClient/bin/Debug/Diana2DClient.exe
