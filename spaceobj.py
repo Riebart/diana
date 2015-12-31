@@ -41,7 +41,7 @@ class SmartObject(SpaceObject, threading.Thread):
         self.phys_id = None
         
         #Empty vis_clients list - should maybe be done in ship.py
-        self.vis_clients = []
+        self.vis_clients = dict()
 
         #self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
 
