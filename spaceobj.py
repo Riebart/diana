@@ -39,6 +39,9 @@ class SmartObject(SpaceObject, threading.Thread):
         self.done = False
         self.tout_val = 0
         self.phys_id = None
+        
+        #Empty vis_clients list - should maybe be done in ship.py
+        self.vis_clients = []
 
         #self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
 
