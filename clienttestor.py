@@ -221,7 +221,7 @@ def spawn_sol():
     sock.connect( ("localhost", 5505) )
 
     objects = {}
-    from message import SpawnMsg
+    import message
     import json
 
     with open('sol.csv','r') as fp:
@@ -241,21 +241,24 @@ def spawn_sol():
                 objects[obj_id]["position"] = [ 1000*float(parts[5]), 1000*float(parts[6]), 1000*float(parts[7]) ]
                 objects[obj_id]["velocity"] = [ 1000*float(parts[8]), 1000*float(parts[9]), 1000*float(parts[10]) ]
 
-    sm = SpawnMsg()
+    sm = message.SpawnMsg()
     sm.srv_id = None
     sm.cli_id = -1
     sm.is_smart = False
     sm.thrust = [0.0,0.0,0.0]
     sm.orientation = [0.0,0.0,0.0,0.0]
 
-    for k in objects:
+    phys_id = 1
+    for k in sorted(objects.keys()):
         sm.object_type = objects[k]["name"]
         sm.mass = objects[k]["mass"]
         sm.radius = objects[k]["radius"]
         sm.position = objects[k]["position"]
         sm.velocity = objects[k]["velocity"]
-        print "Spawning: " + sm.object_type
-        SpawnMsg.send(sock, None, -1, sm.build())
+        print str(phys_id) + ": " + sm.object_type
+        message.SpawnMsg.send(sock, None, -1, sm.build())
+        phys_id += 1
+
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
