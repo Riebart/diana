@@ -96,7 +96,6 @@ class SmartObject(SpaceObject, threading.Thread):
 
     def handle_scanresult(self, mess):
         print "Got a scanresult for %s" % mess.object_type
-        self.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         print str(mess)
