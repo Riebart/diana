@@ -1,0 +1,6 @@
+There is a custom macro OGRE_HOME set to the root directory of the Ogre SDK >= 1.9.0.
+
+To change this based on your environment: 
+    View->Property Manager (May need to expand "Other Windows")->double-click User Macros
+
+You'll also, if you're building on VS2013, probably need to isntall Boost for MSVC12 into the OgreSDK Boost library folder
