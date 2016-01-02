@@ -10,7 +10,7 @@ This source file is part of the
 / \_// (_| | | |  __/  \  /\  /| |   <| |
 \___/ \__, |_|  \___|   \/  \/ |_|_|\_\_|
       |___/
-Tutorial Framework (for Ogre 1.10)
+Tutorial Framework (for Ogre 1.9)
 http://www.ogre3d.org/wiki/
 -----------------------------------------------------------------------------
 */
@@ -26,9 +26,6 @@ http://www.ogre3d.org/wiki/
 #include <OgreSceneManager.h>
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
-#include <OgreMaterialManager.h>
-#include <OgreTextureManager.h>
-#include <OgreWindowEventUtilities.h>
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #  include <OIS/OISEvents.h>

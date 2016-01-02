@@ -4,3 +4,4 @@ To change this based on your environment:
     View->Property Manager (May need to expand "Other Windows")->double-click User Macros
 
 You'll also, if you're building on VS2013, probably need to isntall Boost for MSVC12 into the OgreSDK Boost library folder
+You'll also need to add the programs/GLSL folder to the resourced[_d].cfg in bin/* in the OgreSDK tree.
