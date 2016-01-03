@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 #define GET_ERROR errno
 #define SOCKET_ERROR -1

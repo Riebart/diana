@@ -11,12 +11,6 @@
 typedef std::mutex LOCK_T;
 typedef std::thread THREAD_T;
 
-#ifdef _WIN32
-
-#else
-typedef int32_t SOCKET
-#endif
-
 namespace Diana
 {
     class SocketThread;

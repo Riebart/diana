@@ -19,7 +19,7 @@
 
 typedef std::mutex LOCK_T;
 typedef std::thread THREAD_T;
-typedef std::atomic_uint64_t ATOMIC_T;
+typedef std::atomic<int64_t> ATOMIC_T;
 
 #include "vector.hpp"
 #include "physics.hpp"

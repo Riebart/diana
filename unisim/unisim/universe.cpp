@@ -360,7 +360,7 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
-        uint64_t r = total_objs.fetch_add(1);
+        int64_t r = total_objs.fetch_add(1);
         return r;
     }
 

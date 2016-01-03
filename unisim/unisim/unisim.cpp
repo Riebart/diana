@@ -293,19 +293,32 @@ void print_positions()
 {
 	for (size_t i = 0; i < objs.size(); i++)
 	{
+#if __x86_64__
+        fprintf(stderr, "PO%lu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
+#else
         fprintf(stderr, "PO%llu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
+#endif
 	}
 
 	for (size_t i = 0; i < beams.size(); i++)
 	{
-		fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#if __x86_64__
+        fprintf(stderr, "BM%lu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#else
+        fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#endif
 	}
 }
 
 void check_packing()
 {
 	struct PhysicsObject p;
+// On g++ 64-bit, we need %lu, all other times we need %llu
+#if __x86_64__
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+#else
     printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+#endif
 		(uint64_t)&p.type - (uint64_t)&p,
 		(uint64_t)&p.phys_id - (uint64_t)&p,
 		(uint64_t)&p.universe - (uint64_t)&p,
@@ -326,12 +339,20 @@ void check_packing()
 		(uint64_t)&p.emits_gravity - (uint64_t)&p);
 
 	struct SmartPhysicsObject s;
+#if __x86_64__
+    printf("%lu %lu\n",
+#else
 	printf("%llu %llu\n",
+#endif
 		(uint64_t)&s.pobj - (uint64_t)&s,
         (uint64_t)&s.socket - (uint64_t)&s);
 
 	struct Beam b;
-	printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+#if __x86_64__
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+#else
+    printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+#endif
 		(uint64_t)&b.type - (uint64_t)&b,
 		(uint64_t)&b.phys_id - (uint64_t)&b,
 		(uint64_t)&b.universe - (uint64_t)&b,
@@ -384,7 +405,11 @@ int main(int32_t argc, char** argv)
 		{
 			u->get_frametime(frametimes);
 			cur_ticks = u->get_ticks();
-			fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#if __x86_64__
+            fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#else
+            fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#endif
 			if (objs.size() < 10)
 			{
 				print_positions();
