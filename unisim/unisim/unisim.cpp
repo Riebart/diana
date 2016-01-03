@@ -14,6 +14,8 @@
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
+using namespace Diana;
+
 bool running = true;
 Universe* u;
 std::vector<struct PhysicsObject*> objs;
