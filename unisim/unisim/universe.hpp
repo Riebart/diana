@@ -12,7 +12,6 @@
 #include <set>
 #include <list>
 
-#ifdef CPP11THREADS
 // GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
 #include <atomic>
 #include <thread>
@@ -21,12 +20,6 @@
 typedef std::mutex LOCK_T;
 typedef std::thread THREAD_T;
 typedef std::atomic_uint64_t ATOMIC_T;
-#else
-#include <pthread.h>
-typedef pthread_rwlock_t LOCK_T;
-typedef pthread_t THREAD_T;
-typedef uint64_t ATOMIC_T;
-#endif
 
 #include "vector.hpp"
 #include "physics.hpp"
@@ -34,7 +27,7 @@ typedef uint64_t ATOMIC_T;
 #include "messaging.hpp"
 #include "bson.hpp"
 
-#include "scheduler.hpp"
+//#include "scheduler.hpp"
 
 namespace Diana
 {
@@ -193,7 +186,7 @@ namespace Diana
         std::vector<struct vis_client> vis_clients;
 
         MIMOServer* net;
-        libodb::Scheduler* sched;
+        //libodb::Scheduler* sched;
 
         std::map<int64_t, struct SmartPhysicsObject*> smarties;
         std::vector<struct PhysicsObject*> attractors;

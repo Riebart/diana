@@ -2,31 +2,23 @@
 
 #include <stdio.h>
 
-#ifdef CPP11THREADS
 #define LOCK(l) l.lock()
 #define UNLOCK(l) l.unlock()
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
 #define THREAD_JOIN(t) if (t.joinable()) t.join()
-#else
-#include <errno.h>
-#include <stdlib.h>
-#include <unistd.h>
-#define LOCK(l) pthread_rwlock_wrlock(&l)
-#define UNLOCK(l) pthread_rwlock_unlock(&l)
-#define THREAD_CREATE(t, f, a) pthread_create(&t, NULL, &f, a)
-#define THREAD_JOIN(t) pthread_join(t, NULL)
-#endif
 
 //! @todo #ifdef between perror() and WSAGetLastErrorMessage()
 
 // We can actually use Berkeley style sockets everywhere, just need to include the right stuff
 // http://en.wikipedia.org/wiki/Berkeley_sockets
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 // http://stackoverflow.com/questions/15660203/inet-pton-identifier-not-found
 // Make sure to link with ws2_32.lib
 #include <ws2tcpip.h>
+#pragma comment(lib, "wsock32.lib")
+#pragma comment(lib, "ws2_32.lib")
 #define SHUT_RDWR SD_BOTH
 #define GET_ERROR WSAGetLastError()
 #define CLOSESOCKET closesocket
@@ -230,7 +222,7 @@ namespace Diana
 
         fd_set fds;
 
-#ifdef WIN32
+#ifdef _WIN32
         const timeval timeout = { 0, 10000 };
 #else
         timeval timeout = { 0, 10000 };
@@ -242,7 +234,7 @@ namespace Diana
 
         while (server->running)
         {
-#ifdef WIN32
+#ifdef _WIN32
             fds.fd_count = 2;
             fds.fd_array[0] = server->server4;
             fds.fd_array[1] = server->server6;
@@ -293,7 +285,7 @@ namespace Diana
             {
                 struct sockaddr_storage addr = { 0 };
 
-#ifdef WIN32
+#ifdef _WIN32
                 int32_t addrlen = sizeof(struct sockaddr_storage);
 
                 for (uint32_t i = 0; i < fds.fd_count; i++)
@@ -469,7 +461,7 @@ namespace Diana
         }
         case AF_INET6:
         {
-#ifndef WIN32
+#ifndef _WIN32
             sockopts = 1;
             ret = setsockopt(server, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&sockopts, 4);
 
@@ -549,7 +541,7 @@ namespace Diana
     {
         if (!running)
         {
-#ifdef WIN32
+#ifdef _WIN32
             WSADATA wsad;
             int ret = WSAStartup(22, &wsad);
             if (ret != 0)

@@ -6,15 +6,15 @@
 #include <vector>
 #include <stdint.h>
 
-#ifdef WIN32
 #include <thread>
 #include <mutex>
 typedef std::mutex LOCK_T;
 typedef std::thread THREAD_T;
+
+#ifdef _WIN32
+
 #else
-#include <pthread.h>
-typedef pthread_rwlock_t LOCK_T;
-typedef pthread_t THREAD_T;
+typedef int32_t SOCKET
 #endif
 
 namespace Diana
