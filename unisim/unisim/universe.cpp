@@ -1291,7 +1291,11 @@ namespace Diana
             {
                 for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
                 {
+#if __x86_64__
+                    printf("%ld\n", *it);
+#else
                     printf("%lld\n", *it);
+#endif
                 }
                 throw std::runtime_error("WAT");
             }
