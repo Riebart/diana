@@ -76,20 +76,11 @@
 // - vector.cpp::Vector3_easy_look_at(), vector.cpp::Vector3_easy_look_at2()
 //   > Calls vector.cpp:Vector3_alloc()
 
-#ifdef CPP11THREADS
 #include <chrono>
 #define LOCK(l) l.lock()
 #define UNLOCK(l) l.unlock()
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
 #define THREAD_JOIN(t) if (t.joinable()) t.join()
-#else
-#include <sys/timeb.h>
-#include <unistd.h>
-#define LOCK(l) pthread_rwlock_wrlock(&l)
-#define UNLOCK(l) pthread_rwlock_unlock(&l)
-#define THREAD_CREATE(t, f, a) pthread_create(&t, NULL, &f, a)
-#define THREAD_JOIN(t) pthread_join(t, NULL)
-#endif
 
 #define GRAVITATIONAL_CONSTANT  6.67384e-11
 #define COLLISION_ENERGY_CUTOFF 1e-9
@@ -121,12 +112,8 @@ namespace Diana
         // dt is the amount of time that will pass in the game world during the next tick.
         double dt = u->min_frametime;
 
-#ifdef CPP11THREADS
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
-#else
-        struct timeb start, end;
-#endif
 
         while (u->running)
         {
@@ -135,27 +122,16 @@ namespace Diana
             // waking up too often.
             if (u->paused)
             {
-#ifdef CPP11THREADS
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
-#else
-                usleep((uint32_t)(1000000 * u->max_frametime));
-#endif
                 continue;
             }
 
-#ifdef CPP11THREADS
             start = std::chrono::high_resolution_clock::now();
             u->tick(u->rate * dt);
             end = std::chrono::high_resolution_clock::now();
 
             elapsed = end - start;
             double e = elapsed.count();
-#else
-            ftime(&start);
-            u->tick(u->rate * dt);
-            ftime(&end);
-            double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
-#endif
             u->phys_frametime = e;
 
             // If we're simulating in real time, make sure that we aren't going too fast
@@ -170,16 +146,10 @@ namespace Diana
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-#ifdef CPP11THREADS
                 std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
-#else
-                usleep((uint32_t)(1000000 * (u->min_frametime - e)));
-                ftime(&end);
-                e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
-#endif
 
                 // If the tick lasted less than the max, let it pass by in 'real' time.
                 // Otherwise, clamp it down which is where we get the slowdown effect.
@@ -209,12 +179,8 @@ namespace Diana
     {
         Universe* u = (Universe*)argV;
 
-#ifdef CPP11THREADS
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
-#else
-        struct timeb start, end;
-#endif
 
         while (u->running)
         {
@@ -223,41 +189,24 @@ namespace Diana
             // waking up too often.
             if (u->visdata_paused)
             {
-#ifdef CPP11THREADS
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
-#else
-                usleep((uint32_t)(1000000 * u->max_frametime));
-#endif
                 continue;
             }
 
-#ifdef CPP11THREADS
             start = std::chrono::high_resolution_clock::now();
             u->broadcast_vis_data();
             end = std::chrono::high_resolution_clock::now();
 
             elapsed = end - start;
             double e = elapsed.count();
-#else
-            ftime(&start);
-            u->broadcast_vis_data();
-            ftime(&end);
-            double e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
-#endif
 
             // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
             if (e < u->min_vis_frametime)
             {
-#ifdef CPP11THREADS
                 std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_vis_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
-#else
-                usleep((uint32_t)(1000000 * (u->min_vis_frametime - e)));
-                ftime(&end);
-                e = (end.time - start.time) + 0.001 * (end.millitm - start.millitm);
-#endif
             }
         }
 
@@ -300,7 +249,7 @@ namespace Diana
         }
 
         this->num_threads = num_threads;
-        sched = new libodb::Scheduler(this->num_threads - 1);
+        //sched = new libodb::Scheduler(this->num_threads - 1);
 
         phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
         for (int i = 0; i < this->num_threads; i++)
@@ -344,12 +293,12 @@ namespace Diana
             phys_worker_args[i].done = false;
         }
 
-        sched->block_until_done();
+        //sched->block_until_done();
         free(phys_worker_args);
 
         stop_net();
         stop_sim();
-        delete sched;
+        //delete sched;
     }
 
     void Universe::start_net()
@@ -411,11 +360,7 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
-#ifdef CPP11THREADS
-        uint64_t r = total_objs.fetch_add(1);
-#else
-        uint64_t r = __sync_fetch_and_add(&total_objs, 1);
-#endif
+        int64_t r = total_objs.fetch_add(1);
         return r;
     }
 
@@ -590,7 +535,7 @@ namespace Diana
                     if (new_type != NULL)
                     {
                         free(smarty->pobj.obj_type);
-#ifdef WIN32
+#ifdef _WIN32
                         strncpy_s(new_type, new_type_len, msg->obj_type, new_type_len);
 #else
                         strncpy(new_type, msg->obj_type, new_type_len);
@@ -875,7 +820,7 @@ namespace Diana
                 (phys_result.e > COLLISION_ENERGY_CUTOFF))
             {
                 //! @todo Messaging in the tick is going to be bad for performance.
-#if _WIN64 || __x86_64__
+#if __x86_64__
                 fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
                 fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
@@ -1072,7 +1017,7 @@ namespace Diana
                 phys_result.pce1.d = beam_result.d;
                 phys_result.pce1.p = beam_result.p;
 
-#if _WIN64 || __x86_64__
+#if __x86_64__
                 fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
                 fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
@@ -1231,8 +1176,9 @@ namespace Diana
                 phys_worker_args[i].offset = i * d;
                 phys_worker_args[i].stride = d;
                 phys_worker_args[i].dt = dt;
-                sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
                 phys_worker_args[i].done = false;
+                //sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
+                check_collision_loop(&phys_worker_args[n]);
             }
 
             // Save one work unit for this thread, so it isn't just sitting doing nothing useful.
@@ -1345,7 +1291,11 @@ namespace Diana
             {
                 for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
                 {
-                    printf("%d\n", *it);
+#if __x86_64__
+                    printf("%ld\n", *it);
+#else
+                    printf("%lld\n", *it);
+#endif
                 }
                 throw std::runtime_error("WAT");
             }

@@ -357,7 +357,7 @@ public:
 
             if (len < 0)
             {
-                len = strlen(v);
+                len = (int32_t)strlen(v);
             }
             name = print_array_name(name);
             int32_t name_len = (int32_t)(strlen(name) + 1);
@@ -539,7 +539,7 @@ private:
         if (is_array)
         {
             // Windows notes that sprintf_s is available.
-#ifdef WIN32
+#ifdef _WIN32
             sprintf_s(array_name, "%d", tag_index);
 #else
             sprintf(array_name, "%d", tag_index);

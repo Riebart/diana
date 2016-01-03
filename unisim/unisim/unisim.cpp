@@ -5,11 +5,7 @@
 #include <math.h>
 #include <signal.h>
 
-#ifdef CPP11THREADS
 #include <chrono>
-#else
-#include <unistd.h>
-#endif
 
 #include "universe.hpp"
 #include "MIMOServer.hpp"
@@ -297,19 +293,19 @@ void print_positions()
 {
 	for (size_t i = 0; i < objs.size(); i++)
 	{
-#if _WIN64 || __x86_64__
+#if __x86_64__
         fprintf(stderr, "PO%lu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
 #else
-		fprintf(stderr, "PO%llu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
+        fprintf(stderr, "PO%llu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
 #endif
 	}
 
 	for (size_t i = 0; i < beams.size(); i++)
 	{
-#if _WIN64 || __x86_64__
-		fprintf(stderr, "BM%lu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+#if __x86_64__
+        fprintf(stderr, "BM%lu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
 #else
-		fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
+        fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
 #endif
 	}
 }
@@ -317,7 +313,12 @@ void print_positions()
 void check_packing()
 {
 	struct PhysicsObject p;
-	printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+// On g++ 64-bit, we need %lu, all other times we need %llu
+#if __x86_64__
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+#else
+    printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+#endif
 		(uint64_t)&p.type - (uint64_t)&p,
 		(uint64_t)&p.phys_id - (uint64_t)&p,
 		(uint64_t)&p.universe - (uint64_t)&p,
@@ -338,12 +339,20 @@ void check_packing()
 		(uint64_t)&p.emits_gravity - (uint64_t)&p);
 
 	struct SmartPhysicsObject s;
-	printf("%lu %lu\n",
+#if __x86_64__
+    printf("%lu %lu\n",
+#else
+	printf("%llu %llu\n",
+#endif
 		(uint64_t)&s.pobj - (uint64_t)&s,
         (uint64_t)&s.socket - (uint64_t)&s);
 
 	struct Beam b;
-	printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+#if __x86_64__
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+#else
+    printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+#endif
 		(uint64_t)&b.type - (uint64_t)&b,
 		(uint64_t)&b.phys_id - (uint64_t)&b,
 		(uint64_t)&b.universe - (uint64_t)&b,
@@ -366,7 +375,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.01, 0.01, 0.1, 5505, 3, 1.0, true);
+    u = new Universe(0.01, 0.01, 0.05, 5505, 1, 1.0, true);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
@@ -389,19 +398,17 @@ int main(int32_t argc, char** argv)
 		uint64_t last_ticks = u->get_ticks();
 		uint64_t cur_ticks;
 
-#ifdef CPP11THREADS
 		std::chrono::seconds dura(1);
-#endif
 
         fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
 		while (running)
 		{
 			u->get_frametime(frametimes);
 			cur_ticks = u->get_ticks();
-#if _WIN64 || __x86_64__
-			fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+#if __x86_64__
+            fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #else
-			fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+            fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
 			if (objs.size() < 10)
 			{
@@ -409,11 +416,7 @@ int main(int32_t argc, char** argv)
 			}
 			last_ticks = cur_ticks;
 
-#ifdef CPP11THREADS
 			std::this_thread::sleep_for(dura);
-#else
-			usleep(1000000);
-#endif
 		}
 
 		u->stop_net();

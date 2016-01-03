@@ -24,7 +24,7 @@ namespace Diana2DClient
         bool reading = false;
         bool newData = false;
         int numSwaps = 0;
-        double averageFrameTime = 0;
+        DateTime start_time;
         Thread readerThread;
 
         List<VisDataMessage> updateList = new List<VisDataMessage>();
@@ -61,6 +61,8 @@ namespace Diana2DClient
 
             g = this.CreateGraphics();
             pen = new Pen(Color.Black, 1);
+
+            start_time = DateTime.Now;
 
             StartReaderThread(smarty);
         }
@@ -269,7 +271,7 @@ namespace Diana2DClient
                         }
                     }
 
-                    this.lblNumMessages.Text = "" + numSwaps;
+                    lblNumMessages.Text = "" + numSwaps + " (" + (int)(1000 * DateTime.Now.Subtract(start_time).TotalSeconds / numSwaps) + " ms)";
                     //numSwaps = 0;
                 }
             }

@@ -358,7 +358,7 @@ namespace Diana
 
         if (obj->health <= 0)
         {
-#if _WIN64 || __x86_64__
+#if __x86_64__
             printf("%lu has been destroyed\n", obj->phys_id);
 #else
             printf("%llu has been destroyed\n", obj->phys_id);
