@@ -412,7 +412,7 @@ namespace Diana
         // Double-check that the threadmap is empty
         if (threadmap.size() > 0)
         {
-#if _WIN64 || __x86_64__
+#if __x86_64__
             fprintf(stderr, "The threadmap still has %lu things at the end of the destructor!\n", (uint64_t)threadmap.size());
 #else
             fprintf(stderr, "The threadmap still has %llu things at the end of the destructor!\n", (uint64_t)threadmap.size());
@@ -609,7 +609,7 @@ namespace Diana
             bool stubborn = false;
             while (inputs.size() > 0)
             {
-#if _WIN64 || __x86_64__
+#if __x86_64__
                 fprintf(stderr, "Hanging up %lu %sclients%s\n", (uint64_t)inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));
 #else
                 fprintf(stderr, "Hanging up %llu %sclients%s\n", (uint64_t)inputs.size(), (stubborn ? "stubborn " : ""), (inputs.size() > 1 ? "s" : ""));

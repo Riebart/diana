@@ -820,7 +820,7 @@ namespace Diana
                 (phys_result.e > COLLISION_ENERGY_CUTOFF))
             {
                 //! @todo Messaging in the tick is going to be bad for performance.
-#if _WIN64 || __x86_64__
+#if __x86_64__
                 fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
                 fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
@@ -1017,7 +1017,7 @@ namespace Diana
                 phys_result.pce1.d = beam_result.d;
                 phys_result.pce1.p = beam_result.p;
 
-#if _WIN64 || __x86_64__
+#if __x86_64__
                 fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
                 fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);

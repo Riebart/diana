@@ -349,9 +349,9 @@ void check_packing()
 
 	struct Beam b;
 #if __x86_64__
-    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+    printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
 #else
-    printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+    printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
 #endif
 		(uint64_t)&b.type - (uint64_t)&b,
 		(uint64_t)&b.phys_id - (uint64_t)&b,

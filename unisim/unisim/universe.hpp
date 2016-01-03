@@ -240,9 +240,9 @@ namespace Diana
             //! Universe to check
             Universe* u;
             //! Position in the sorted list to start at, 0-based
-            uint32_t offset;
+            size_t offset;
             //! Amount to move along the sorted list after processing.
-            uint32_t stride;
+            size_t stride;
             //! Time tick to use for real collision testing.
             double dt;
             //! Whether or not this worker has finished its work
