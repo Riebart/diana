@@ -118,7 +118,11 @@ namespace Diana
         int32_t message_len = 0;
         int64_t nbytes = MIMOServer::socket_read(sock, (char*)(&message_len), 4);
 
-        //! @todo Do the right thing, and check that nbytes matches what it should.
+        
+        if (nbytes != 4)
+        {
+            //! @todo Do the right thing, and check that nbytes matches what it should.
+        }
 
         char* buf = (char*)malloc(message_len);
         if (buf == NULL)
