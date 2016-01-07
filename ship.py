@@ -6,86 +6,11 @@ import math
 from mimosrv import MIMOServer
 import message
 import time
-from observer import Observable
+from shipparts import *
+from shipsystems import *
 
 import sys
 
-class Sensors(Observable):
-    def __init__(self, num_beams = 10, power = 10000.0, recharge_time=2.0):
-        Observable.__init__(self)
-        self.contacts = []
-        self.scanners = []
-        self.fade_time = 5.0
-
-        for i in xrange(0,num_beams):
-            self.scanners.append(Laser(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
-
-    def perform_scan():
-        pass
-
-    def send_state(self, client):
-        cur_time = time.time()
-
-        for contact in contacts:
-            if cur_time - contact.time_seen > self.fade_time:
-                self.contacts.remove(contact)
-            else:
-                msg = "SENSORS\n"
-                #bug here that I don't want to fix. Using ';' as delimiter, plus an extra at front
-                msg = msg + ";" + contact
-                #TODO: figure out how cient and server ids are relevant here
-                Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-
-    def send_update(self, client, contact):
-        msg = "SENSORS\n%s" % str(contact)
-        #TODO: figure out how cient and server ids are relevant here
-        Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-
-    def handle_scanresult(self, mess):
-        #on reception of a scan result, check if contact is in the contact_list,
-        #and add or update it
-        #if (mess.object_type in self.contact):
-            #pass
-        #else:
-        contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
-        contact.other_data = mess.extra_parms
-        self.contact_list[contact.name] = contact
-
-        self.notify(contact)
-
-
-class Comms(Observable):
-    def __init__(self, power=10000.0, recharge_time=2.0):
-        Observable.__init__(self)
-        self.messages = []
-        # What the hell was the 'i' supposed to mean? Why are there lasers in the
-        # Comm observable object? Commenting this out so that I can continue
-        # testing the new-ship code.
-        #self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
-        self.fade_time = 600.0
-
-    def send_state(self, client):
-        cur_time = time.time()
-
-        for message in messages:
-            if cur_time - message.time_seen > self.fade_time:
-                self.contacts.remove(contact)
-            else:
-                msg = "COMMS\n"
-                #bug here that I don't want to fix. Using ';' as delimiter, plus an extra at front
-                msg = msg + ";" + message
-                #TODO: figure out how cient and server ids are relevant here
-                Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-
-
-    def send_update(self, client, message):
-        msg = "COMMS\n%s" % str(message)
-        Message.InfoUpdateMsg.sendall(client, 0, 0, [msg])
-
-
-    def handle_message(self, mess):
-        self.messages.append(CommMessage(mess))
-        self.notify(self.messages[-1])
 
 #basically a struct. Better than organizing it otherwise
 class CommMessage:
@@ -101,45 +26,6 @@ class CommMessage:
             self.direction[0], self.direction[1], self.direction[2],
             self.energy, self.msg))
 
-class Contact:
-    def __init__(self, name, position, velocity, radius, time_seen=0):
-        self.name = name
-        if (time_seen == 0):
-            self.time_seen = time.time()
-        else:
-            self.time_seen = time_seen
-        self.position = position
-        self.velocity = velocity
-        self.radius = radius
-        self.other_data = ""
-
-    def __repr__(self):
-        return (self.name + "," +
-            str(time.time() - self.time_seen) + "," +
-            self.position[0] + "," + self.position[1] + "," + self.position[2] + "," +
-            self.velocity[0] + "," + self.velocity[1] + "," + self.velocity[2] + "," +
-            self.radius + "," +
-            self.other_data)
-
-
-class Laser:
-    def __init__(self, bank_id, power, h_arc, v_arc, direction, recharge_time):
-        self.bank_id = bank_id
-        self.power = power
-        self.h_arc = h_arc
-        self.v_arc = v_arc
-        self.direction = direction
-        self.recharge_time = recharge_time
-        self.time_fired = time.time()-recharge_time
-
-    #check if beam is ready to fire, and update the time_fired to current time
-    def fire(self):
-        cur_time = time.time()
-        if self.time_fired+self.recharge_time < cur_time:
-            self.time_fired = cur_time
-            return True
-        else:
-            return False
 
 class Ship(SmartObject):
     name = "Default Player Ship"
@@ -153,25 +39,26 @@ class Ship(SmartObject):
         self.name = None
         self.object_type = None
 
+        self.sensors = Sensors(10)
+        self.comms = Comms()
+        self.helm = Helm()
+        self.weapons = Weapons()
+        self.spawned = 0
+        
+        self.systems = [self.sensors, self.comms, self.helm, self.weaspons]
+
         #Items not common to all ships. See shiptypes.py
-        self.max_missiles = 10
-        self.cur_missiles = self.max_missiles
+        self.weapons.max_missiles = 10
+        self.weapons.cur_missiles = self.weapons.max_missiles
         self.max_energy = 1000
         self.cur_energy = self.max_energy
         self.health = 0
-        self.num_scan_beams = 10 #might need to abstract these into separate objects
-        self.scan_beam_power = 10000.0 #10kJ?
-        self.scan_beam_recharge = 5.0 #5s?
 
-        self.sensors = Sensors(10)
-        self.comms = Comms()
-        self.spawned = 0
-
-        self.laser_list = dict()
-        self.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
-        self.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
-        self.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
-        self.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
+        self.weapons.laser_list = dict()
+        self.weapons.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
+        self.weapons.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
+        self.weapons.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
+        self.weapons.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
 
         self.joinable = 1
 
