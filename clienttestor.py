@@ -5,6 +5,7 @@ import message
 import socket
 import objectsim
 import random
+import bson
 from vector import Vector3
 
 #def test_vis_data():
@@ -260,6 +261,41 @@ def spawn_sol():
         phys_id += 1
 
 
+def dirmsg(sock, msg):
+    message.DirectoryMsg.send(sock, 0,0, msg)    
+    res = sock.recv(1024)
+    print bson.loads(res)
+
+
+def test_systems():
+    sock = socket.socket()
+    sock.connect( ("localhost", 5506) )
+
+    objects = {}
+
+    
+    msg = {'\x03':"CLASS", '\x04':0, '\x05': {}, '\x06':{}}
+    dirmsg(sock, msg)
+    
+    msg = {'\x03':"SHIP", '\x04':0, '\x05': {}, '\x06':{}}
+    dirmsg(sock, msg)
+
+
+    
+    msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
+    dirmsg(sock, msg)
+    
+    ship_id = msg['\x01']
+    client_id = msg['\x02']
+    
+    
+    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
+    dirmsg(sock, msg)
+
+    
+    sock.close()
+
+
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
 #rand.seed(0)
@@ -282,4 +318,5 @@ if __name__ == "__main__":
 
     #all_moving()
 
-    spawn_sol()
+    #spawn_sol()
+    test_systems()

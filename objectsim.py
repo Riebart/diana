@@ -67,6 +67,9 @@ class ObjectSim:
                 elif msg.item_type == "CLASS":
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
+                elif osm_id != None and msg.item_type == "SYSTEMS":
+                    dm.item_type = msg.item_type
+                    dm.items = self.ship_list[osim_id].get_systems()
                 DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
 
             # If they send back one item, then they have made a choice.
@@ -88,6 +91,18 @@ class ObjectSim:
                     self.client_list[newship.osim_id] = [[msg.socket, client_id]]
                     newship.new_client(msg.socket, client_id)
 
+
+                elif osim_id != None and msg.item_type == "SYSTEMS":
+                    # They chose a system to observe, so register the client with that system.
+                    self.ship_list[ship_id].systems[msg.items[0][0]].add_observer(msg.socket)
+                        
+                    #HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
+                    #self.client_list[newship.osim_id] = [[msg.socket, client_id]]
+                    #newship.new_client(msg.socket, client_id)
+
+
+
+        #Pass all other messages up to the ship logic
         elif osim_id != None and client_id != None:
             self.ship_list[osim_id].handle(msg.socket, msg)
 

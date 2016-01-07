@@ -45,7 +45,9 @@ class Ship(SmartObject):
         self.weapons = Weapons()
         self.spawned = 0
         
-        self.systems = [self.sensors, self.comms, self.helm, self.weapons]
+        #Currently a static dict mapping
+        self.systems = { 0:self.sensors, 1:self.comms, 2:self.helm, 3:self.weapons}
+        
 
         #Items not common to all ships. See shiptypes.py
         self.weapons.max_missiles = 10
@@ -66,6 +68,9 @@ class Ship(SmartObject):
     # ++++++++++++++++++++++++++++++++
     # These are the functions that are required by the object sim of any ships
     # that are going to be player-controlled
+    
+    #TODO: Inform client about available systems
+    #NOTTODO - this is now done via directory messages
     def new_client(self, client, client_id):
         pass
 
