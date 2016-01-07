@@ -25,6 +25,13 @@ class SpaceObject:
         self.up = Vector3([0.0,0.0,1.0])
         self.right = Vector3([0.0,1.0,0.0])
         self.radius = None
+        self.joinable = False
+
+
+    # Return a 1 if there is room for some other player (even as a viz client)
+    # Return 0 if there is no more room.
+    def is_joinable(self):
+        return self.joinable
 
 class SmartObject(SpaceObject, threading.Thread):
 #class SmartObject(SpaceObject, multiprocessing.Process):

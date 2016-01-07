@@ -462,7 +462,7 @@ class GoodbyeMsg(Message):
         return {}
 
     @staticmethod
-    def send(client, srv_id, cli_id, msg):
+    def send(client, srv_id, cli_id, msg = {}):
         msg[''] = MessageTypeIDs[GoodbyeMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret

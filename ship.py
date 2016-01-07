@@ -45,7 +45,7 @@ class Ship(SmartObject):
         self.weapons = Weapons()
         self.spawned = 0
         
-        self.systems = [self.sensors, self.comms, self.helm, self.weaspons]
+        self.systems = [self.sensors, self.comms, self.helm, self.weapons]
 
         #Items not common to all ships. See shiptypes.py
         self.weapons.max_missiles = 10
@@ -54,23 +54,18 @@ class Ship(SmartObject):
         self.cur_energy = self.max_energy
         self.health = 0
 
+        #TODO: Fix Laser() constructor and decide on methof for defining firing arcs
         self.weapons.laser_list = dict()
         self.weapons.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
         self.weapons.laser_list[1] = Laser(1, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.weapons.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.weapons.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
 
-        self.joinable = 1
+        self.joinable = True
 
     # ++++++++++++++++++++++++++++++++
     # These are the functions that are required by the object sim of any ships
     # that are going to be player-controlled
-
-    # Return a 1 if there is room for some other player (even as a viz client)
-    # Return 0 if there is no more room.
-    def is_joinable(self):
-        return self.joinable
-
     def new_client(self, client, client_id):
         pass
 
