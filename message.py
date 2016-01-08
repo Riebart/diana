@@ -536,6 +536,7 @@ class ReadyMsg(Message):
         return ret
 
 
+
 ##Here begins the client <-> ship messages
 class ThrustMsg(Message):
     def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
@@ -634,6 +635,22 @@ class RequestUpdateMsg(Message):
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
 
+class SystemUpdateMsg(Message):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+
+    #message is Osim -> client only at this time
+    def build(self):
+        pass
+    
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[SystemUpdateMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+
 MessageTypeClasses = {1: HelloMsg,
                       2: PhysicalPropertiesMsg,
 #                      3: VisualPropertiesMsg,
@@ -655,7 +672,8 @@ MessageTypeClasses = {1: HelloMsg,
                       19: VelocityMsg,
                       20: JumpMsg,
                       21: InfoUpdateMsg,
-                      22: RequestUpdateMsg
+                      22: RequestUpdateMsg,
+                      23: SystemUpdateMsg
                       }
 
 MessageTypeIDs = { HelloMsg: 1,
@@ -679,5 +697,6 @@ MessageTypeIDs = { HelloMsg: 1,
                   VelocityMsg: 19,
                   JumpMsg: 20,
                   InfoUpdateMsg: 21,
-                  RequestUpdateMsg: 22
+                  RequestUpdateMsg: 22,
+                  SystemUpdateMsg: 23
                   }

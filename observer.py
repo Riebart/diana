@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import bson
+import message
 
 
 def nest_dict(obj, classkey=None):
@@ -40,8 +41,8 @@ class Observable:
         self.send_state(observer)
             
     def send_state(self, observer):
-        print nest_dict(self.__dict__)
-        observer.send(bson.dumps(nest_dict(self.__dict__)))
+        #print nest_dict(self.__dict__)
+        message.SystemUpdateMsg.send(observer, 0, 0, (nest_dict(self.__dict__)))
     
     def add_observer(self, observer):
         self.observers.append(observer)
