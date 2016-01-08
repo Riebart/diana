@@ -93,8 +93,6 @@ class ObjectSim:
 
 
                 elif osim_id != None and msg.item_type == "SYSTEMS":
-		    print msg.__dict__
-		    print self.ship_list
                     # They chose a system to observe, so register the client with that system.
                     self.ship_list[msg.items[0][0]].systems[msg.items[0][1]].add_observer(msg.socket)
                         
