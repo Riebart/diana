@@ -263,7 +263,7 @@ def spawn_sol():
 
 def dirmsg(sock, msg):
     message.DirectoryMsg.send(sock, 0,0, msg)    
-    res = sock.recv(1024)
+    res = sock.recv(5000)
     newmsg = bson.loads(res)
     print newmsg
     return newmsg
