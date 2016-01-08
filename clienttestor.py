@@ -264,7 +264,9 @@ def spawn_sol():
 def dirmsg(sock, msg):
     message.DirectoryMsg.send(sock, 0,0, msg)    
     res = sock.recv(1024)
-    print bson.loads(res)
+    newmsg = bson.loads(res)
+    print newmsg
+    return newmsg
 
 
 def test_systems():
@@ -283,14 +285,15 @@ def test_systems():
 
     
     msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
-    dirmsg(sock, msg)
+    newmsg = dirmsg(sock, msg)
     
-    ship_id = msg['\x01']
-    client_id = msg['\x02']
+    ship_id = newmsg['\x01']
+    client_id = newmsg['\x02']
     
-    
-    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
-    dirmsg(sock, msg)
+    #get all the systems info
+    for i in range(0,4):
+        msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[i]}
+        dirmsg(sock, msg)
 
     
     sock.close()

@@ -40,7 +40,8 @@ class Observable:
         self.send_state(observer)
             
     def send_state(self, observer):
-        observer.send(bson.dumps(nest_dicts(self.__dict__)))
+        print nest_dict(self.__dict__)
+        observer.send(bson.dumps(nest_dict(self.__dict__)))
     
     def add_observer(self, observer):
         self.observers.append(observer)
@@ -51,6 +52,6 @@ class Observable:
             self.observers.remove(observer)
             
     def notify_once(self, client):
-        send_state(self, client)
+        self.send_state(client)
         
         

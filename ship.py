@@ -39,7 +39,7 @@ class Ship(SmartObject):
         self.name = None
         self.object_type = None
 
-        self.sensors = Sensors(10)
+        self.sensors = Sensors(4)
         self.comms = Comms()
         self.helm = Helm()
         self.weapons = Weapons()

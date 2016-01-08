@@ -8,7 +8,8 @@ class System(Observable):
     def __init__(self):
         Observable.__init__(self)
         self.controlled = 0
-        self.observers = 0
+        self.name = "ERROR: Default system object"
+
 
 
 class Contact:
@@ -50,12 +51,12 @@ class Sensors(System):
         cur_time = time.time()
 
         #remove any expired contacts before sending the current list
-        for contact in contacts:
+        for contact in self.contacts:
             if cur_time - contact.time_seen > self.fade_time:
                 self.contacts.remove(contact)
         
         
-        System.send_state(client)
+        System.send_state(self, client)
 
 
     #for now, just send complete state
@@ -84,16 +85,17 @@ class Comms(System):
         # testing the new-ship code.
         #self.beam = Laser(i, power, 2*math.pi, 2*math,pi, Vector3(1,0,0), recharge_time)
         self.fade_time = 600.0
+        self.name = "Comms"
 
     def send_state(self, client):
         cur_time = time.time()
 
         #expire old messages
-        for message in messages:
+        for message in self.messages:
             if cur_time - message.time_seen > self.fade_time:
                 self.messages.remove(message)
         
-        System.send_state(client)
+        System.send_state(self, client)
 
 
     def send_update(self, client, message):
