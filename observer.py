@@ -50,7 +50,7 @@ class Observable:
         
     def remove_observer(self, observer):
         if observer in self.__observers:
-            self._observers.remove(observer)
+            self.__observers.remove(observer)
             
     def notify_once(self, client):
         self.send_state(client)
