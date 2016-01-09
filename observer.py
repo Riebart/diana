@@ -3,7 +3,7 @@
 import bson
 import message
 
-
+#ripped this off from somwhere on StackOverflow
 def nest_dict(obj, classkey=None):
     if isinstance(obj, dict):
         data = {}
