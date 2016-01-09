@@ -34,15 +34,12 @@ class Contact:
 
 
 class Sensors(System):
-    def __init__(self, num_beams = 10, power = 10000.0, recharge_time=2.0):
+    def __init__(self):
         System.__init__(self)
         self.name = "Sensors"
         self.contacts = []
         self.scanners = []
         self.fade_time = 5.0
-
-        for i in xrange(0,num_beams):
-            self.scanners.append(ScanEmitter(i, power, 2*math.pi, 2*math.pi, Vector3(1,0,0), recharge_time))
 
     def perform_scan():
         pass
@@ -115,16 +112,24 @@ class Weapons(System):
     def __init__(self):
         System.__init__(self)
         self.name = "Weapons"
+        self.cur_target = None
 
 class Helm(System):
     def __init__(self):
         System.__init__(self)
         self.name = "Helm"
+        self.cur_thrust = Vector3(0,0,0)
+        self.throttle = 0.0
         
 class Engineering(System):
     def __init__(self):
         System.__init__(self)
         self.name = "Engineering"
+
+class Shields(System):
+    def __init__(self):
+        System.__init__(self)
+        self.name = "Shields"
 
 if __name__ == "__main__":
     print nest_dict(Sensors())

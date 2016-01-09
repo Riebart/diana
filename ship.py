@@ -39,23 +39,47 @@ class Ship(SmartObject):
         self.name = None
         self.object_type = None
 
-        self.sensors = Sensors(4)
+        self.sensors = Sensors()
         self.comms = Comms()
         self.helm = Helm()
         self.weapons = Weapons()
+        self.engineering = Engineering()
         self.spawned = 0
         
         #Currently a static dict mapping
-        self.systems = { 0:self.sensors, 1:self.comms, 2:self.helm, 3:self.weapons}
+        self.systems = { 0:self.sensors, 1:self.comms, 2:self.helm, 3:self.weapons, 4:self.engineering}
         
+        self.init_weapons()
+        self.init_helm()
+        self.init_engineering()
 
+        self.sensors.scanners.append(ScanEmitter(max_power = 10000, h_max=2*math.pi, v_max=2*math.pi, recharge_time = 2.0))
+
+        self.joinable = True
+
+    def init_engineering(self):
+        self.engineering.power_plants = dict()
+        self.engineering.power_plants = PowerPlant()
+
+
+    def init_helm(self):
+        self.helm.sub_light_engines = dict()
+        self.helm.sub_light_engines = SubLightEngine()
+        self.helm.warp_engines = dict()
+        self.helm.warp_engines = WarpEngine()
+        self.helm.jump_engines = dict()
+        self.helm.jump_engines = JumpEngine()
+
+
+    def init_weapons(self):
+        
         #Items not common to all ships. See shiptypes.py
         self.weapons.max_missiles = 10
         self.weapons.cur_missiles = self.weapons.max_missiles
-        self.max_energy = 1000
-        self.cur_energy = self.max_energy
-        self.health = 0
-
+        
+        self.weapons.launchers = dict()
+        self.weapons.launchers[0] = Launcher()
+        
         #TODO: Fix Laser() constructor and decide on methof for defining firing arcs
         self.weapons.laser_list = dict()
         self.weapons.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
@@ -63,7 +87,6 @@ class Ship(SmartObject):
         self.weapons.laser_list[2] = Laser(2, 10000.0, pi/4, pi/4, Vector3(1,0,0), 5.0)
         self.weapons.laser_list[3] = Laser(3, 5000.0, pi/4, pi/4, Vector3(-1,0,0), 5.0)
 
-        self.joinable = True
 
     # ++++++++++++++++++++++++++++++++
     # These are the functions that are required by the object sim of any ships
@@ -74,6 +97,8 @@ class Ship(SmartObject):
     def new_client(self, client, client_id):
         pass
 
+
+    #this function handles messages from the clients
     def handle(self, client, msg):
         print "SHIP HANDLING", msg, client
         if isinstance(msg, message.NameMsg):
@@ -126,6 +151,8 @@ class Ship(SmartObject):
     # ++++++++++++++++++++++++++++++++
     # Now the rest of the handler functions
     # ++++++++++++++++++++++++++++++++
+    
+    #these are defined by the handler function in SmartObject (spaceobj.py)
     def handle_scanresult(self, mess):
         pass
         #self.Sensors.handle_scanresult(mess)

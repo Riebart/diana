@@ -291,7 +291,7 @@ def test_systems():
     client_id = newmsg['\x02']
     
     #get all the systems info
-    for i in range(0,4):
+    for i in range(0,5):
         msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[i]}
         dirmsg(sock, msg)
 

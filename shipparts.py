@@ -1,5 +1,6 @@
 import math
 import time
+from vector import Vector3
 
 ##The objects in this file are used for keeping track of the state of parts of the ship,
 ##in a way that facilitates BSON messaging. Very little logic is performed here.
@@ -15,10 +16,11 @@ class PowerPlant(ShipPart):
         ShipPart.__init__(self)
         self.max_power = max_power
     
-class SublightEngine(ShipPart):
+class SubLightEngine(ShipPart):
     #TODO: Add thrust direction restrictions?
     def __init__(self, max_thrust = 1000.0):
         self.max_thrust = max_thrust
+        self.cur_thrust = Vector3(0,0,0)
 
 #currently no different than SublightEngine    
 class WarpEngine(ShipPart):
