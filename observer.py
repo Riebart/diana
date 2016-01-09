@@ -27,10 +27,10 @@ def nest_dict(obj, classkey=None):
 
 class Observable:
     def __init__(self):
-        self.observers = []
+        self.__observers = []
 
     def notify(self, data = None):
-        for observer in observers:
+        for observer in self.__observers:
             if (data == None):
                 self.send_state(observer)
             else:
@@ -45,12 +45,12 @@ class Observable:
         message.SystemUpdateMsg.send(observer, 0, 0, (nest_dict(self.__dict__)))
     
     def add_observer(self, observer):
-        self.observers.append(observer)
+        self.__observers.append(observer)
         self.notify_once(observer)
         
     def remove_observer(self, observer):
-        if observer in self.observers:
-            self.observers.remove(observer)
+        if observer in self.__observers:
+            self._observers.remove(observer)
             
     def notify_once(self, client):
         self.send_state(client)
