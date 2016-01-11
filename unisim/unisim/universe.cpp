@@ -412,7 +412,7 @@ namespace Diana
 
         // Try to find the one we're looking for.
         std::vector<struct vis_client>::iterator it = std::lower_bound(vis_clients.begin(), vis_clients.end(), vc);
-        bool found = (vis_clients.size() == 0 ? false : (vc == *it));
+        bool found = (((vis_clients.size() == 0) || (it == vis_clients.end())) ? false : (vc == *it));
 
         if (enabled && !found)
         {

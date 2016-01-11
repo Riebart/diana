@@ -1,4 +1,23 @@
+UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SendVisDataEnableMsg::%d"), enable);
+
 // -----------------------------------------------------------------------------
+
+PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "Networking", "Sockets" });
+
+// -----------------------------------------------------------------------------
+
+UFUNCTION(BlueprintCallable, Category = "Diana Messagig")
+void RegisterForVisData(FString host, int32 port, bool enable);
+
+// See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
+UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (FriendlyName = "Received Vis Data Message"))
+void ReceivedVisData(int32 PhysID, FVector Position);
+
+private:
+bool ConnectSocket();
+FString host = "";
+int32 port = -1;
+FSocket* sock;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server Address")
     FString host;
