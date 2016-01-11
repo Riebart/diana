@@ -9,6 +9,13 @@
 class FSocket;
 class AEventedActor;
 
+struct DianaVDM
+{
+    int32 server_id;
+    float world_time;
+    FVector pos;
+};
+
 struct DianaActor
 {
     int32 server_id;
@@ -86,7 +93,10 @@ private:
     FSocket* sock = NULL;
 
     // See: http://www.slideserve.com/maine/concurrency-parallelism-in-ue4
-    TQueue<struct DianaActor> new_objects;
-    TQueue<struct DianaActor> updated_objects;
+    TQueue<struct DianaVDM> messages;
+
+    // See: https://answers.unrealengine.com/questions/207675/fcriticalsection-lock-causes-crash.html
+    FCriticalSection map_cs;
+    std::map<int32, struct DianaActor>::iterator it;
     std::map<int32, struct DianaActor> oa_map;
 };

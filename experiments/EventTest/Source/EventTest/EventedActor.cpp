@@ -38,74 +38,49 @@ bool FVisDataReceiver::Init()
 uint32 FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
-    
+
     int32 sleep_ms = 10;
     // Timespan representing 1 second as 10-million 0.1us (100ns) ticks.
     FTimespan sock_wait_time(10000000);
     bool read_available = false;
     Diana::BSONMessage* m = NULL;
     Diana::VisualDataMsg* vdm = NULL;
-    std::map<int32, struct DianaActor>::iterator it;
-    struct DianaActor da;
+    struct DianaVDM dm;
     uint32 nmessages = 0;
-    
+    UWorld* world = parent->GetWorld();
+
     while (running)
     {
         read_available = sock->Wait(ESocketWaitConditions::Type::WaitForRead, sock_wait_time);
         if (read_available)
         {
             m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
-            
+
             // Only consider messages that are VisualData, and have our client_id
-            if ((m != NULL) && 
+            if ((m != NULL) &&
                 (m->msg_type == Diana::BSONMessage::VisualData) &&
                 (m->client_id == parent->client_id))
             {
                 //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::GoodMessage"));
                 vdm = (Diana::VisualDataMsg*)m;
                 int32 server_id = (int32)vdm->server_id;
-                da.server_id = server_id;
-                float wt = parent->GetWorld()->RealTimeSeconds;
+                dm.server_id = server_id;
+                dm.world_time = world->RealTimeSeconds;
+                dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
+                parent->messages.Enqueue(dm);
 
-                // Look up the server ID in the map
-                it = oa_map->find(server_id);
-                if (it == oa_map->end())
-                {
-                    da.last_time = wt;
-                    da.cur_time = wt;
-                    da.a = NULL;
-                    da.last_pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
-                    da.cur_pos = da.last_pos;
-                    oa_map->operator[](server_id) = da;
-                    //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::QueueNew"));
-                    parent->new_objects.Enqueue(da);
-                }
-                else
-                {
-                    da = oa_map->at(server_id);
-                    da.last_time = da.cur_time;
-                    da.cur_time = wt;
-                    da.last_pos = da.cur_pos;
-                    da.cur_pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
-                    if (da.a != NULL)
-                    {
-                        //da.a->SetActorLocation(da.cur_pos);
-                        oa_map->operator[](server_id) = da;
-                    }
-                    //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::QueueUpdated"));
-                    parent->updated_objects.Enqueue(da);
-                }
+                // We handled a message, so immediately repeat, skip the Sleep()
+                delete vdm;
+                continue;
             }
-            else
+
+            if (m != NULL)
             {
-                Sleep(sleep_ms);
+                delete m;
             }
         }
-        else
-        {
-            Sleep(sleep_ms);
-        }
 
+        Sleep(sleep_ms);
     }
     return nmessages;
 }
@@ -129,17 +104,6 @@ bool AEventedActor::ConnectSocket()
         bool connected = sock->Connect(*endpoint.ToInternetAddr());
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::ConnectSocket::%d"), connected);
         return connected;
-
-        //// See: https://wiki.unrealengine.com/Third_Party_Socket_Server_Connection
-        //sock = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream, TEXT("xSIMConn"), false);
-        //FIPv4Address ip;
-        //FIPv4Address::Parse(host, ip);
-
-        //TSharedRef<FInternetAddr> addr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
-        //addr->SetIp(ip.GetValue());
-        //addr->SetPort(port);
-        //
-        //return sock->Connect(*addr);
     }
     else
     {
@@ -159,8 +123,8 @@ void AEventedActor::DisconnectSocket()
 // Sets default values
 AEventedActor::AEventedActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
 }
 
@@ -174,41 +138,68 @@ AEventedActor::~AEventedActor()
 void AEventedActor::BeginPlay()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging:BeginPlay"));
-	Super::BeginPlay();
+    Super::BeginPlay();
 }
 
 // Called every frame
-void AEventedActor::Tick( float DeltaTime )
+void AEventedActor::Tick(float DeltaTime)
 {
-	Super::Tick( DeltaTime );
+    Super::Tick(DeltaTime);
+    struct DianaVDM dm;
     struct DianaActor da;
 
-    while (!new_objects.IsEmpty())
+    while (!messages.IsEmpty())
     {
-        //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleNew"));
-        new_objects.Dequeue(da);
-        NewVisDataObject(da.server_id, da.cur_pos);
-    }
+        messages.Dequeue(dm);
+        da.server_id = dm.server_id;
 
-    while (!updated_objects.IsEmpty())
-    {
-        //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleUpdated"));
-        updated_objects.Dequeue(da);
-        ExistingVisDataObject(da.server_id, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
+        // Look up the server ID in the map
+        it = oa_map.find(dm.server_id);
+        if (it == oa_map.end())
+        {
+            // The object is new
+            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleNew"));
+            da.last_time = dm.world_time;
+            da.cur_time = dm.world_time;
+            da.a = NULL;
+            da.last_pos = dm.pos;
+            da.cur_pos = da.last_pos;
+            {
+                FScopeLock Lock(&map_cs);
+                oa_map[da.server_id] = da;
+            }
+            NewVisDataObject(da.server_id, da.cur_pos);
+        }
+        else
+        {
+            // The object is being updated
+            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleUpdated"));
+            da = oa_map[da.server_id];
+            da.last_time = da.cur_time;
+            da.cur_time = dm.world_time;
+            da.last_pos = da.cur_pos;
+            da.cur_pos = dm.pos;
+            if (da.a != NULL)
+            {
+                //da.a->SetActorLocation(da.cur_pos);
+                oa_map[da.server_id] = da;
+            }
+            ExistingVisDataObject(da.server_id, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
+        }
     }
 }
 
 bool AEventedActor::RegisterForVisData(bool enable)
 {
     ConnectSocket();
-    
+
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin"));
     if (sock == NULL)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::NULLSocket"));
         return false;
     }
-    
+
     Diana::VisualDataEnableMsg vdm;
     vdm.enabled = enable;
     vdm.client_id = client_id;
@@ -225,7 +216,7 @@ bool AEventedActor::RegisterForVisData(bool enable)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Disable"));
         vdm.send(sock);
-        
+
         if (vdr_thread != NULL)
         {
             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle:Disable::ThreadStop"));
@@ -239,5 +230,6 @@ bool AEventedActor::RegisterForVisData(bool enable)
 
 void AEventedActor::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef)
 {
+    FScopeLock Lock(&map_cs);
     oa_map[PhysID].a = ActorRef;
 }
