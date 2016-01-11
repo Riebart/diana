@@ -375,7 +375,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.01, 0.01, 0.05, 5505, 1, 1.0, true);
+    u = new Universe(0.01, 0.01, 0.016, 5505, 1, 1.0, true);
 	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
 
 	try
