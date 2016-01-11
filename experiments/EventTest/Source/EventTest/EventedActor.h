@@ -56,13 +56,13 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (FriendlyName = "Server IPv4 Address"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server IPv4 Address"))
         FString host = "127.0.0.1";
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (FriendlyName = "Server TCP Port"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server TCP Port"))
         int32 port = 5505;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (FriendlyName = "Client ID"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Client ID"))
         int32 client_id = -1;
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
@@ -73,10 +73,10 @@ public:
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
-    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (FriendlyName = "Received Vis Data Message for New Object"))
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Vis Data Message for New Object"))
         void NewVisDataObject(int32 PhysID, FVector Position);
     
-    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (FriendlyName = "Received Vis Data Message for Existing Object"))
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Vis Data Message for Existing Object"))
         void ExistingVisDataObject(int32 PhysID, FVector CurrentPosition, FVector LastPosition, float CurrentRealTime, float LastRealTime, AActor* ActorRef);
 
 private:
