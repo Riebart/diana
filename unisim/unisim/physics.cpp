@@ -1,4 +1,5 @@
 #include "physics.hpp"
+#include "universe.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,12 +60,7 @@ namespace Diana
 
     void PhysicsObject_tick(PO* obj, V3* g, double dt)
     {
-        // If we've already ticked something due to a collision, chop that off and reset it.
-        dt -= obj->t;
-        obj->t = 0.0;
-
         //! @todo Relativistic mass
-
         // Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
         // Verlet integration performs the position incrementing accounting for second derivative
         // (acceleration), but handles the velocity incrementing a little differently as it considers
@@ -73,7 +69,15 @@ namespace Diana
         // Since we don't have the acceleration (thrust) in the previous frame, this isn't
         // something we can do, so we'll have to settle with something simpler.
 
-        Vector3_fmad(&obj->position, dt, &obj->velocity);
+        // @todo Separate this into separate position deltas, so that the acceleration distance
+        // travelled is more accurate, and then add the position delta to the position at the
+        // start of the tick at the end of this (which is called at the end of the tick).
+        
+        // Note that velocity components are handled in the collision portion, so subtract off any
+        // portion of the tick time that's already been handled by the collision events.
+        Vector3_fmad(&obj->position, dt - obj->t, &obj->velocity);
+        obj->t = 0.0;
+        
         //! @todo We can save these divisions by not multiplying by mass when we calcualte g
         Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, g);
         Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
@@ -219,6 +223,10 @@ namespace Diana
         {
             t = -(t + od) / dd;
         }
+
+        // Note that for almost exactly touching objects, t might chop to zero here.
+        //  - This arose during multi-pass collision testing during a pool break.
+        t = (Vector3_almost_zeroS(t) ? 0.0 : t);
 
         // We only accept t in [0,1] here. All other results do not help us.
         // Also check for NaN.
@@ -369,8 +377,22 @@ namespace Diana
 
     void PhysicsObject_resolve_phys_collision(PO* obj, double energy, double dt, struct PhysCollisionEffect* pce)
     {
+        // Increment the real-time seconds that this object has been ticked through.
         obj->t += dt;
+
+        // Tick along the object at the velocity it had prior to the collision.
+        // Note that the force (thrust, gravity) will be applied across the entire tick
+        // at the end of the tick
+        // @warning Note that, because of this, there will be slight inaccuracies as the
+        // gravity calculations will not be integrated across the path the object took
+        // across the tick, but rather assuming that it stayed at the last position it
+        // had before the end of the tick (if it was in a collision, the position of the
+        // last collision, otherwise, the position at the start of the tick).
+        // The error will be minimal, so I think that's fine.
         Vector3_fmad(&obj->position, dt, &obj->velocity);
+
+        // Adjust the velocity accordingly to be the sum of the new tangential and normal
+        // components.
         Vector3_add(&obj->velocity, &pce->t, &pce->n);
     }
 

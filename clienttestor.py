@@ -144,7 +144,7 @@ def pool_rack():
     ball_mass = 10000.0
     ball_radius = 1.0
 
-    num_rows = 2
+    num_rows = 10
 
     # This loop produces a trangle of balls that points down the negative y axis.
     #
@@ -178,6 +178,7 @@ def pool_rack():
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
             sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0.0 ]
+            print sm.position
             SpawnMsg.send(sock, None, -1, sm.build())
 
     # This makes us a cue ball
@@ -186,8 +187,8 @@ def pool_rack():
     sm.is_smart = False
     sm.object_type = "Cue ball"
     sm.mass = ball_mass
-    sm.position = [0.0,25.0,0.0]
-    sm.velocity = [0.0,-1.0,0.0]
+    sm.position = [0.0,75.0,0.0]
+    sm.velocity = [0.0,-5.0,0.0]
     sm.radius = ball_radius
     SpawnMsg.send(sock, None, -1, sm.build())
 

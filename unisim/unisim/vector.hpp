@@ -39,6 +39,9 @@ namespace Diana
     bool Vector3_almost_zeroS(double v);
     bool Vector3_almost_zero(struct Vector3* v);
 
+    void Vector3_round(struct Vector3* v, double e);
+    void Vector3_roundS(double v, double e);
+
     void Vector3_add(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);
     void Vector3_add(struct Vector3* v1, struct Vector3* v2);
     void Vector3_subtract(struct Vector3* out, struct Vector3* v1, struct Vector3* v2);

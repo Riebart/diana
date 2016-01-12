@@ -422,7 +422,7 @@ namespace Diana
         }
         else if (!enabled && found)
         {
-            vis_clients.erase(it);
+            it = vis_clients.erase(it);
         }
         UNLOCK(vis_lock);
     }
@@ -469,7 +469,7 @@ namespace Diana
 
                 if (nbytes < 0)
                 {
-                    vis_clients.erase(it);
+                    it = vis_clients.erase(it);
                     printf("Client %d erased due to failed network send", vc.socket);
                     disconnect = true;
                     break;
@@ -794,7 +794,7 @@ namespace Diana
         }
     }
 
-    void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt)
+    bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
     {
         struct PhysCollisionResult phys_result;
 
@@ -804,9 +804,17 @@ namespace Diana
         // energy is obvious.
         // d1 is the direction obj2 was travelling relative to obj1 whe they collided
         // p1 is a vector from obj1's position to the collision sport on its bounding ball.
+        // Note that dt here is the remainder of the interval
         PhysicsObject_collide(&phys_result, obj1, obj2, dt);
 
-        if (phys_result.t >= 0.0)
+        // We need to make sure that this is in the 'future' of both objects, so we should test it against the
+        // 't' component of both.
+        // Recall that the object's 't' component is in real-time seconds, so compare with the real-time seconds
+        // that the collision happened at. Ensure that the time of the collision is within the time
+        // remaining in the tick of each of the objects.
+        if ((phys_result.t >= 0) && 
+            (phys_result.t * dt <= (dt - obj1->t)) && 
+            (phys_result.t * dt <= (dt - obj2->t)))
         {
             // By comparing the energy to a cutoff, this will help prevent
             // spurious collision notifications due to physics time step
@@ -819,53 +827,14 @@ namespace Diana
             if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
                 (phys_result.e > COLLISION_ENERGY_CUTOFF))
             {
-                //! @todo Messaging in the tick is going to be bad for performance.
-#if __x86_64__
-                fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#else
-                fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
-#endif
-                PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
-                PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
-
-                //! @todo This should probably be done asynchronously, out of the physics code,
-                //! But I don't think, in general, this will cause much of a problem for a 60hz
-                //! physics refresh rate.
-
-                // Alert the smarties that there was a collision
-                // Only physical collisions are generated here, beams are elsewhere.
-                CollisionMsg cm;
-                cm.set_colltype((char*)"PHYS");
-                cm.energy = phys_result.e;
-                cm.comm_msg = NULL;
-                cm.spec_all();
-
-                if (obj1->type == PHYSOBJECT_SMART)
-                {
-                    SPO* s = (SPO*)obj1;
-                    cm.client_id = s->socket;
-                    cm.server_id = obj1->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                    cm.direction = phys_result.pce1.d;
-                    cm.position = phys_result.pce1.p;
-                    cm.send(s->socket);
-                }
-
-                if (obj2->type == PHYSOBJECT_SMART)
-                {
-                    SPO* s = (SPO*)obj2;
-                    cm.client_id = s->socket;
-                    cm.server_id = obj2->phys_id; //! @todo Should this be the physID of obj1 or obj2
-                    cm.direction = phys_result.pce2.d;
-                    cm.position = phys_result.pce2.p;
-                    cm.send(s->socket);
-                }
+                ev.obj1 = obj1;
+                ev.obj2 = obj2;
+                ev.pcr = phys_result;
+                return true;
             }
         }
-    }
 
-    //! Get the next collision, as ordered by time
-    void Universe::get_next_collision(double dt, struct PhysCollisionResult* phys_result)
-    {
+        return false;
     }
 
     void check_collision_loop(void* argsV)
@@ -891,8 +860,13 @@ namespace Diana
             // First test to see if the X projections intersect. If they do, then test the others.
 
             a = &u->phys_objects[i]->box;
-            for (size_t j = i + 1; j < u->phys_objects.size(); j++)
+            for (size_t j = (args->test_all ? 0 : i + 1); j < u->phys_objects.size(); j++)
             {
+                if (i == j)
+                {
+                    continue;
+                }
+
                 b = &u->phys_objects[j]->box;
 
                 double d;
@@ -919,7 +893,15 @@ namespace Diana
                     // If we succeeded on both, count this as a potential collision for
                     // honest-to-goodness testing and hand it off to bounding-ball testing
                     // followed by collision effect calculation.
-                    check_collision_single(u, u->phys_objects[i], u->phys_objects[j], args->dt);
+                    struct Universe::PhysCollisionEvent ev;
+                    if (check_collision_single(u, u->phys_objects[i], u->phys_objects[j], args->dt, ev))
+                    {
+                        ev.obj1_index = i;
+                        ev.obj2_index = j;
+                        LOCK(u->collision_lock);
+                        u->collisions.push_back(ev);
+                        UNLOCK(u->collision_lock);
+                    }
                 }
                 else
                 {
@@ -937,14 +919,14 @@ namespace Diana
 
         // Spin until we get the signal to start going.
         // The universe will flip this after the next workload is ready to go.
-        while (args->done){}
+        while (args->done) {}
 
         check_collision_loop(argsV);
 
         // Indicate that we're done, and spin until we get the signal to stop.
         // The universe will flip this after the next workload is ready to go.
         args->done = true;
-        while (args->done){}
+        while (args->done) {}
 
         return NULL;
     }
@@ -1177,6 +1159,7 @@ namespace Diana
                 phys_worker_args[i].stride = d;
                 phys_worker_args[i].dt = dt;
                 phys_worker_args[i].done = false;
+                phys_worker_args[i].test_all = false;
                 //sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
                 check_collision_loop(&phys_worker_args[n]);
             }
@@ -1187,6 +1170,8 @@ namespace Diana
             // There's at most num_threads-1 such slack, so it isn't going to affect computation time a lot.
             phys_worker_args[n].stride = phys_objects.size() - (n * d);
             phys_worker_args[n].dt = dt;
+            phys_worker_args[n].done = false;
+            phys_worker_args[n].test_all = false;
             check_collision_loop(&phys_worker_args[n]);
 
             // Wait for the workers to report that they are done.
@@ -1196,6 +1181,128 @@ namespace Diana
             {
                 while (!phys_worker_args[i].done) {}
             }
+
+            // Set this once, we'll use it in all loops in the following.
+            phys_worker_args[0].dt = dt;
+            phys_worker_args[0].stride = 1;
+            phys_worker_args[0].done = false;
+            phys_worker_args[0].test_all = true;
+
+            // At this point all collisions should be in the collision list.
+            // Sort it by time of collisions (everything should be >= 0), and then resolve them one by one
+            // Each collision resolution should have the following steps:
+            // - The effects are applied to the two objects, including updating how 'far' into the tick
+            //    the collisions have taken the objects ths far.
+            // - Any collisions involving either of the two involved objects are discarded from the vector
+            // - The two objects are re-collided with all other objects
+            //   > Test the sizes of the vector before and after the re-collid, any collisions resulting
+            //     from that operation will require a re-sort of the list. Don't re-sort if there's no new events.
+            while (collisions.size() != 0)
+            {
+                // Sort collisions by time in the interval.
+                std::sort(collisions.begin(), collisions.end(),
+                    [](struct PhysCollisionEvent& a, struct PhysCollisionEvent& b) { return a.pcr.t < b.pcr.t; });
+
+                // Retrieve the earliest collision details.
+                struct PhysCollisionEvent collision_event = collisions[0];
+                struct PhysicsObject* obj1 = collision_event.obj1;
+                struct PhysicsObject* obj2 = collision_event.obj2;
+                struct PhysCollisionResult phys_result = collision_event.pcr;
+
+#if __x86_64__
+                fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#else
+                fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+#endif
+
+                // Now resolve the collisions on the objects, setting the time-delta to be the time from the last-moved
+                // time of the object we're moving, to the time that this collision happened
+                // Note that we're setting the object's ticked time to an actual amount of simulated time, not a
+                // proportion of the interval.
+                //
+                // The proportional time-interval value, 't' in the physics collicion result, is the proportion of the
+                // original total interval. We want to pass the time elapsed since the last notable event to the
+                // collision resolution code. This elapsed time is the proportion times dt, since we do the consideration
+                // earlier that ensures that any collisions that we're considering are happening in the future, and
+                // within the remainder of the time interval, of ALL objects involved.
+                PhysicsObject_collision(obj1, obj2, phys_result.e, phys_result.t * dt, &phys_result.pce1);
+                PhysicsObject_collision(obj2, obj1, phys_result.e, phys_result.t * dt, &phys_result.pce2);
+
+                // Throw away any collisions left that include either of these objects, they're probably incorrect now.
+                // @todo There's a bunch of O(N) events happening here, mabe use a <list> instead?
+                struct PhysCollisionEvent other_c;
+                for (std::vector<struct PhysCollisionEvent>::iterator it = collisions.begin(); it != collisions.end();)
+                {
+                    other_c = *it;
+                    if ((other_c.obj1 == obj1) || (other_c.obj1 == obj2) || (other_c.obj2 == obj1) || (other_c.obj2 == obj2))
+                    {
+                        it = collisions.erase(it);
+                    }
+                    else
+                    {
+                        it++;
+                    }
+                }
+
+                // Re-collide the affected objects by calling back to check_collision_loop() with appropriate args.
+
+                // Remaining time left in the tick is the total time minus what has been accounted for so far.
+                // Note that obj1 and obj2 should have identical values here, that should be assert()-able
+                //
+                // Note that, really, EVERY physics object should be ticked to this point. All further comparisons
+                // can assume that other physics objects are 'valid' up until the point of the collision we just
+                // resolved. It's important to note, as well, that we have to consider the whole tick event for every
+                // object, and we will have to consider the 't' parameter of objects, to make sure we're still within
+                // the interval of the objects of interest.
+
+                // This also requires recomputing the AABBs of the two objects.
+                PhysicsObject_estimate_aabb(obj1, &obj1->box, phys_worker_args[0].dt);
+                PhysicsObject_estimate_aabb(obj2, &obj2->box, phys_worker_args[0].dt);
+
+                // Now re-do the collisions
+                phys_worker_args[0].offset = collision_event.obj1_index;
+                check_collision_loop(&phys_worker_args[0]);
+                phys_worker_args[0].offset = collision_event.obj2_index;
+                check_collision_loop(&phys_worker_args[0]);
+
+                //! @todo This should probably be done asynchronously, out of the physics code,
+                //! But I don't think, in general, this will cause much of a problem for a 60hz
+                //! physics refresh rate.
+
+                // Alert the smarties that there was a collision
+                // Only physical collisions are generated here, beams are elsewhere.
+                CollisionMsg cm;
+                cm.set_colltype((char*)"PHYS");
+                cm.energy = phys_result.e;
+                cm.comm_msg = NULL;
+                cm.spec_all();
+
+                if (obj1->type == PHYSOBJECT_SMART)
+                {
+                    SPO* s = (SPO*)obj1;
+                    cm.client_id = s->socket;
+                    cm.server_id = obj1->phys_id;
+                    cm.direction = phys_result.pce1.d;
+                    cm.position = phys_result.pce1.p;
+                    cm.send(s->socket);
+                }
+
+                if (obj2->type == PHYSOBJECT_SMART)
+                {
+                    SPO* s = (SPO*)obj2;
+                    cm.client_id = s->socket;
+                    cm.server_id = obj2->phys_id;
+                    cm.direction = phys_result.pce2.d;
+                    cm.position = phys_result.pce2.p;
+                    cm.send(s->socket);
+                }
+            }
+        }
+
+        // The vector should be empty at this point, we should be able to assert on it's size.
+        if (collisions.size() != 0)
+        {
+            throw std::runtime_error("NonEmptyCollisionList");
         }
 
         // Now tick along each object
@@ -1243,7 +1350,7 @@ namespace Diana
 
                         free(b);
                         beams.erase(beams.begin() + i);
-                        expired.erase(it);
+                        it = expired.erase(it);
                         i--;
                         break;
                     }
@@ -1280,7 +1387,7 @@ namespace Diana
 
                         free(po);
                         phys_objects.erase(phys_objects.begin() + i);
-                        expired.erase(it);
+                        it = expired.erase(it);
                         i--;
                         break;
                     }
@@ -1298,9 +1405,9 @@ namespace Diana
 #endif
                 }
                 throw std::runtime_error("WAT");
-            }
-            UNLOCK(expire_lock);
         }
+            UNLOCK(expire_lock);
+    }
 
         if (added.size() > 0)
         {
@@ -1349,7 +1456,7 @@ namespace Diana
 
         // Unlock everything
         UNLOCK(phys_lock);
-    }
+}
 
     void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
     {
