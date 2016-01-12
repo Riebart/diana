@@ -12,7 +12,7 @@
 #include <set>
 #include <list>
 
-// GCC doesn't have C++11 atomics, but WIN32 does from VS2012+
+// g++ has C++11 atomics with --std=c++11, and WIN32 does from VS2012+
 #include <atomic>
 #include <thread>
 #include <mutex>
@@ -84,6 +84,8 @@ namespace Diana
     //! constraints and are, perhaps, not interactive.
     class Universe
     {
+        struct PhysCollisionEvent;
+        
         friend void* sim(void* u);
 
         friend void Universe_hangup_objects(int32_t c, void* arg);
@@ -93,7 +95,7 @@ namespace Diana
         friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
         friend void* thread_check_collisions(void* argsV);
         friend void check_collision_loop(void* argsV);
-        friend void check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
+        friend bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev);
 
         friend void* vis_data_thread(void* argv);
 
@@ -142,8 +144,6 @@ namespace Diana
         void broadcast_vis_data();
         void tick(double dt);
         void sort_aabb(double dt, bool calc);
-        //void get_collisions();
-        void get_next_collision(double dt, struct PhysCollisionResult* phys_result);
         void handle_message(int32_t socket);
         void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
@@ -194,6 +194,17 @@ namespace Diana
         std::vector<struct Beam*> beams;
         std::set<int64_t> expired;
         std::vector<struct PhysicsObject*> added;
+
+        struct PhysCollisionEvent
+        {
+            struct PhysicsObject* obj1;
+            size_t obj1_index;
+            struct PhysicsObject* obj2;
+            size_t obj2_index;
+            struct PhysCollisionResult pcr;
+        };
+        // Vector of all collisions encountered in the current tick
+        std::vector<struct PhysCollisionEvent> collisions;
 
         // Represents the pair of IDs that uniquely identifies a beam/object collision event.
         // This is used as the index object for SCAN queries sent to the OSIM.
@@ -259,6 +270,7 @@ namespace Diana
         LOCK_T phys_lock;
         LOCK_T vis_lock;
         LOCK_T query_lock;
+        LOCK_T collision_lock;
 
         //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
         double rate;
