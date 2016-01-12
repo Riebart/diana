@@ -256,6 +256,8 @@ namespace Diana
             size_t stride;
             //! Time tick to use for real collision testing.
             double dt;
+            //! Whether to test all objects against the original offset object, used in multipass-collision testing.
+            bool test_all;
             //! Whether or not this worker has finished its work
             volatile bool done;
         };

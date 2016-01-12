@@ -224,6 +224,10 @@ namespace Diana
             t = -(t + od) / dd;
         }
 
+        // Note that for almost exactly touching objects, t might chop to zero here.
+        //  - This arose during multi-pass collision testing during a pool break.
+        t = (Vector3_almost_zeroS(t) ? 0.0 : t);
+
         // We only accept t in [0,1] here. All other results do not help us.
         // Also check for NaN.
         if ((t < 0) || (t > 1) || (t != t))

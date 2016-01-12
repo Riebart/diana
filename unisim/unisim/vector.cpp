@@ -77,6 +77,14 @@ namespace Diana
         return (Vector3_almost_zeroS(v->x) && Vector3_almost_zeroS(v->y) && Vector3_almost_zeroS(v->z));
     }
 
+    void Vector3_round(struct Vector3* v, double e)
+    {
+    }
+    
+    void Vector3_roundS(double v, double e)
+    {
+    }
+
     void Vector3_add(V3* out, V3* v1, V3* v2)
     {
         out->x = v1->x + v2->x;
