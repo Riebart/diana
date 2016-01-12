@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include "vector.hpp"
-#include "universe.hpp"
 
 namespace Diana
 {
