@@ -160,7 +160,7 @@ def pool_rack():
         # ]][[2]][[1]];
     # Graphics[balls]
 
-    C = 1.1
+    C = 1.0
     y_scale = sqrt(3) / 2
     y_offset = 0.0
 

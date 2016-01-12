@@ -87,6 +87,7 @@
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define CLAMP(m, v, M) MIN((M), MAX((v), (m)))
 
 namespace Diana
 {
@@ -111,6 +112,7 @@ namespace Diana
 
         // dt is the amount of time that will pass in the game world during the next tick.
         double dt = u->min_frametime;
+        double dt_cutoff = 0.001 * u->min_frametime;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
@@ -138,29 +140,30 @@ namespace Diana
             // If the physics took less time than the minimum we're allowing, sleep for
             // at least the remainder. The precision is nanoseconds, because that's the smallest
             // interval we can represent with std::chrono.
-            if (u->realtime && ((u->min_frametime - e) > 1e-9))
+            while (u->realtime && ((u->min_frametime - e) > dt_cutoff))
             {
                 // C++11 sleep_for is guaranteed to sleep for AT LEAST as long as requested.
-                // As opposed to Python's sleep which may wake up early.
                 //
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
+                //
+                // Since we'll frequently over-sleep, just scale the sleep time by some arbitrary factor.
+                //std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
+                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (u->min_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
+            }
 
-                // If the tick lasted less than the max, let it pass by in 'real' time.
-                // Otherwise, clamp it down which is where we get the slowdown effect.
-                dt = MIN(u->max_frametime, e);
-            }
-            // If we're not simulating then just make sure that the time step next time
-            // is at least the min_frametime.
-            else if (!u->realtime)
-            {
-                dt = MIN(u->max_frametime, MAX(e, u->min_frametime));
-            }
+            // Regardless of what we did, we need to clamp the time-delta for the next tick to be
+            // in the acceptable range.
+            // - If the elapsed time is too small, bring it up to the minimum
+            //   > If realtime is off, this will result in a faster-than-realtime simulation
+            //   > If realtime is on, this should never happen as we should be sleeping to get e close to max_frametime
+            // - If the elapsed time is too large, bring it down to the max.
+            //   > Regardless of realtime setting, his will result in a slower-than-realtime simulation.
+            dt = CLAMP(u->min_frametime, e, u->max_frametime);
 
             // The wall frametime is how long it took to actually do the physics plus
             // any sleeping to get us up to the min_frametime
@@ -1146,7 +1149,8 @@ namespace Diana
             sort_aabb(dt, true);
 
             int32_t n = (int32_t)(phys_objects.size() / MIN_OBJECTS_PER_THREAD);
-            n = MAX(0, MIN(num_threads - 1, n));
+            n = CLAMP(0, n, num_threads - 1);
+            //n = MAX(0, MIN(num_threads - 1, n));
 
             // If we're using more than 1 thread, try to split them evenly.
             // Note that this clamps (rounds) down in absolute value, so we'll have extra slack
