@@ -112,6 +112,8 @@ namespace Diana
 
         // dt is the amount of time that will pass in the game world during the next tick.
         double dt = u->min_frametime;
+
+        // Cutoff to determine whether we're close enough to the end of the tick to justify sleeping.
         double dt_cutoff = 0.001 * u->min_frametime;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -147,9 +149,6 @@ namespace Diana
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-                //
-                // Since we'll frequently over-sleep, just scale the sleep time by some arbitrary factor.
-                //std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (u->min_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
