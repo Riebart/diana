@@ -371,14 +371,11 @@ void check_packing()
 
 int main(int32_t argc, char** argv)
 {
-    //printf("%u %u\n", sizeof(struct PhysicsObject), sizeof(struct Beam));
-    //return 0;
-
     signal(SIGABRT, &sighandler);
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.002, 0.002, 0.01, 5505, 1, 1.0, true);
+    u = new Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, false);
 
 	//pool_rack();
 	//simple_collision();

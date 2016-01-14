@@ -166,6 +166,8 @@ namespace Diana
         //
         // So, here we go!
 
+        //! @todo Scale the velocity bu the time-step (in essence turning it into a position delta), aftet
+        //! we check to see if it's too small. dt could cause a small velocity to shrink past the cutoff.
         V3 v1 = obj1->velocity;
         Vector3_scale(&v1, dt);
 
@@ -309,6 +311,11 @@ namespace Diana
         cr->pce2.n = n;
         Vector3_scale(&cr->pce1.n, vdn1);
         Vector3_scale(&cr->pce2.n, vdn2);
+        
+        // Clone te normal vector here, we're going to use this later after we calculate the
+        // new normal velcoity, we'll subtract off the old one (this) to find the contribution (stored here).
+        cr->pce1.dn = cr->pce1.n;
+        cr->pce2.dn = cr->pce2.n;
 
         // Set the tangential velocity to the original velocity minus the portion along the normal
         Vector3_subtract(&cr->pce1.t, &obj1->velocity, &cr->pce1.n);
@@ -325,8 +332,34 @@ namespace Diana
 
         // Now do the elastic velocity composition a-la http://en.wikipedia.org/wiki/Elastic_collision
         // This is eventually where we'd implement relativistic velocity composition.
+        //
+        // To summarize the above article, the following calculations are derived by solving a system of 
+        // two equations. Since we've converted this from three dimensions, and reduced it to a 1D
+        // system along the normal vector, and so velocities in this transformed system are scalars, not
+        // vectors, this gets a lot easier. To derive the following equations, solve the conservation of
+        // momentum, and conservation of kinetic energy equations in a perfectly elastic scenario (zero
+        // deformation of the objects means zero deformation energy loss, and zero deofrmation time-latency
+        // for rebound forces).
+        //
+        // Optionally, one can apply a scalar constant to the post-collision momentum and energy, to simulate
+        // deformation losses, in the following derivation, represented by k. Note that, in this use, k >= 1
+        // since we want the final momentum/energy values to be less than the original. If it makes more sense
+        // to have the constant in [0,1], then put it (k', say) on the left side of the original equations,
+        // and k'=1/k.
+        //
+        //     m1 v1 + m2 v2 = k (m1 v1' + m2 v2')
+        //     m1 v1^2 + m2 v2^2 = k^2 (m1 v1'^2 + m2 v2'^2)
+        //
+        // Solving these results in two solutions, one where {v1'=v1/k, v2'=v2/k}, which is the degenerate case,
+        // and the other, far more interesting solutions:
+        //
+        //            v1 (m1 - m2) + 2 m2 v2
+        //     v1' = ------------------------
+        //                 k (m1 + m2)
 
-        double mscale = 1.0 / (obj1->mass + obj2->mass);
+        double k = 1.0;
+        double mscale = k / (obj1->mass + obj2->mass);
+        
         // Back up the first object's pre-impact velocity, because we'll need that to compute
         // the second object's velocity.
         n = cr->pce1.n;
@@ -334,10 +367,12 @@ namespace Diana
         Vector3_scale(&cr->pce1.n, (obj1->mass - obj2->mass));
         Vector3_fmad(&cr->pce1.n, 2 * obj2->mass, &cr->pce2.n);
         Vector3_scale(&cr->pce1.n, mscale);
+        Vector3_subtract(&cr->pce1.dn, &cr->pce1.n, &cr->pce1.dn);
 
         Vector3_scale(&cr->pce2.n, (obj2->mass - obj1->mass));
         Vector3_fmad(&cr->pce2.n, 2 * obj1->mass, &n); // We use the backed-up velocity here, see the third argument to fmad()
         Vector3_scale(&cr->pce2.n, mscale);
+        Vector3_subtract(&cr->pce2.dn, &cr->pce2.n, &cr->pce2.dn);
 
         // Now set the direction of original trajectory
         Vector3_subtract(&cr->pce1.d, &obj2->velocity, &obj1->velocity);
@@ -392,8 +427,10 @@ namespace Diana
         Vector3_fmad(&obj->position, dt, &obj->velocity);
 
         // Adjust the velocity accordingly to be the sum of the new tangential and normal
-        // components.
-        Vector3_add(&obj->velocity, &pce->t, &pce->n);
+        // components, which is equivalent to adding the delta in velocity along the normal
+        // to the current velocity.
+        //Vector3_add(&obj->velocity, &pce->t, &pce->n);
+        Vector3_add(&obj->velocity, &pce->dn);
     }
 
     void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)

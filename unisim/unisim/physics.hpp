@@ -126,10 +126,12 @@ namespace Diana
         struct Vector3 d;
         //! Position of impact on object's bounding sphere, relative to centre.
         struct Vector3 p;
-        //! Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n=v'
+        //! Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n+dn=v'
         struct Vector3 t;
-        //! New velocity along the normal of impact imparted due to impact. t+n=v'
+        //! Existing velocity along the normal of impact imparted due to impact. t+n+dn=v'
         struct Vector3 n;
+        //! New velocity CONTRIBUTION along the normal of impact imparted due to impact. t+n+dn=v'
+        struct Vector3 dn;
     };
 
     //! The structure that holds the effects of a phys-phys collision
