@@ -144,7 +144,7 @@ def pool_rack():
     ball_mass = 15.0
     ball_radius = 1.0
 
-    num_rows = 5
+    num_rows = 15
 
     # This loop produces a trangle of balls that points down the negative y axis.
     #

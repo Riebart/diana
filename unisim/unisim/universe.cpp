@@ -1232,7 +1232,15 @@ namespace Diana
             cm.comm_msg = NULL;
             cm.spec_all();
 
+            // This constant defines the number of rounds that we'll consider multiple collision at the same instant.
+            // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
+            // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
+            // negligible.
+#define COLLISION_ROUNDS_CUTOFF 100
+            
+            // Number of rounds of collisions we've gone through.
             uint32_t n_rounds = 0;
+
             while (collisions.size() != 0)
             {
                 n_rounds++;
@@ -1359,6 +1367,13 @@ namespace Diana
                     }
 
                     n_simultaneous++;
+
+                    // To prevent hanging in the situation where there's a constant feedback of collisions,
+                    // limit the number of rounds we'll support.
+                    if (n_rounds > COLLISION_ROUNDS_CUTOFF)
+                    {
+                        break;
+                    }
                 }
 
                 // Post-collision system energy
