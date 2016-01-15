@@ -1232,8 +1232,10 @@ namespace Diana
             cm.comm_msg = NULL;
             cm.spec_all();
 
+            uint32_t n_rounds = 0;
             while (collisions.size() != 0)
             {
+                n_rounds++;
                 // If we need to, re-sort collisions by time in the interval.
                 if (re_sort && (collisions.size() > 1))
                 {
@@ -1253,9 +1255,16 @@ namespace Diana
                 // are easy to solve, and the solution conserves momentum and energy in that two-object system.
                 // This can be extended to address N-body collisions, but considering all necessary two-body
                 // collisions, each of which conserves energy/momentum, and applying all of their effects in
-                // summation. That is, each collisions results in a delta-v for each object, and so applying the
-                // sum of all delta-v (to both objects) in all collisions involving an object will result in a
-                // conserved system still.
+                // summation only gets us part way. That is, each collisions results in a delta-v for each object, 
+                // and so applying the sum of all delta-v (to both objects) in all collisions involving an object 
+                // will result in a conserved system still MOMENTUM conserved system, but not energy.
+                //
+                // To regain energy conservation, it is important to realize that, in a collision, an object
+                // exchanges more energy with it's neighbours than it possessed in the original system. This results
+                // in a final system that contains more energy than the original system possessed. To reconcile this
+                // it is possible to calculate the energy in the final system, and original system, which will be
+                // related by E'=kE, with k>=1. Conservation can be regained by scaling all resulting velocities 
+                // by 1/sqrt(k).
                 //
                 // The only tricky part is ensuring that we're keeping the dt stepping of each object correct.
 
@@ -1283,6 +1292,7 @@ namespace Diana
 
                 // Number of distinct objects we've encountered so far.
                 size_t n_objs = 0;
+                double energy0 = 0.0;
 
                 while ((n_simultaneous < collisions.size()) &&
                     (Vector3_almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
@@ -1308,13 +1318,16 @@ namespace Diana
                     // if this is a new object not in the array.
                     bool never_seen;
 
-                    //While we're at it, keep track of all distinct objects that we've collided by adding/counting them
-                    // in the array, in case we haven't seen them already.
+                    // While we're at it, keep track of all distinct objects that we've collided by adding/counting them
+                    // in the array, in case we haven't seen them already. Additionally, take this time to calculate the
+                    // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
+                    energy0 += (never_seen ? obj1->mass * Vector3_length2(&obj1->velocity) : 0.0);
                     PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
+                    energy0 += (never_seen ? obj2->mass * Vector3_length2(&obj2->velocity) : 0.0);
                     PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
@@ -1346,17 +1359,27 @@ namespace Diana
                     }
 
                     n_simultaneous++;
-                    break;
                 }
+
+                // Post-collision system energy
+                double energy1 = 0.0;
+                for (size_t i = 0; i < n_objs; i++)
+                {
+                    energy1 += phys_objects[objs[i]]->mass * Vector3_length2(&phys_objects[objs[i]]->velocity);
+                }
+
+                // The scaling factor for the post-collision velocities to restore energy conservation.
+                double k = sqrt(energy0 / energy1);
 
                 // Note that these collisions have invalidated the correctness of future collisions, so we need to discard
                 // all future collisions that involve any object that we've already considered, as well as the first
                 // n_simultaneous events, because those have been applied to the world.
                 // @todo There's a bunch of O(N) and other expensive events happening here...
                 // Only both if there's collisions that didn't happen 'now'.
-                if (collisions.size() > n_simultaneous)
+                for (size_t i = 0; i < n_objs; i++)
                 {
-                    for (size_t i = 0; i < n_objs; i++)
+                    Vector3_scale(&phys_objects[objs[i]]->velocity, k);
+                    if (collisions.size() > n_simultaneous)
                     {
                         for (std::vector<struct PhysCollisionEvent>::iterator it = collisions.begin() + n_simultaneous; it != collisions.end();)
                         {
@@ -1400,6 +1423,11 @@ namespace Diana
                 //! @todo This is inefficient, realloc()?
                 free(objs);
                 objs = NULL;
+            }
+
+            if (n_rounds > 1)
+            {
+                printf("Collision set required %u rounds\n", n_rounds);
             }
         }
 
