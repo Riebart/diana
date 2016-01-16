@@ -1238,7 +1238,7 @@ namespace Diana
             // negligible.
 #define COLLISION_ROUNDS_CUTOFF 100
             
-            // Number of rounds of collisions we've gone through.
+            // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
 
             while (collisions.size() != 0)
@@ -1273,6 +1273,11 @@ namespace Diana
                 // it is possible to calculate the energy in the final system, and original system, which will be
                 // related by E'=kE, with k>=1. Conservation can be regained by scaling all resulting velocities 
                 // by 1/sqrt(k).
+                //
+                // IMPORTANT NOTE: This approximation is physically incorrect, since it will return conservation of
+                // energy, but destroy conservation of momentum. This is a fine approximation, since it results in
+                // a system that has a slightly too 'spread-out' (in some sense) set of resulting velocities. But
+                // at least the magnitudes, directions, and energiers are approximately, and qualitatively, right.
                 //
                 // The only tricky part is ensuring that we're keeping the dt stepping of each object correct.
 
@@ -1312,9 +1317,9 @@ namespace Diana
                     struct PhysicsObject* obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
 #if __x86_64__
-                    //fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
-                    //fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
                     // Note that when applying the collision, we need to make sure that each object is observing the
                     // correct time-delta to have elapsed since their last physics event. This is why we take the
@@ -1376,15 +1381,22 @@ namespace Diana
                     }
                 }
 
-                // Post-collision system energy
-                double energy1 = 0.0;
-                for (size_t i = 0; i < n_objs; i++)
+                // The scaling factor for the post-collision velocities to restore energy conservation, if there is
+                // only one collision, then the two-body solution conserves energy.
+                double k = 1.0;
+                if (n_simultaneous > 1)
                 {
-                    energy1 += phys_objects[objs[i]]->mass * Vector3_length2(&phys_objects[objs[i]]->velocity);
-                }
+                    // Post-collision system energy
+                    double energy1 = 0.0;
+                    for (size_t i = 0; i < n_objs; i++)
+                    {
+                        energy1 += phys_objects[objs[i]]->mass * Vector3_length2(&phys_objects[objs[i]]->velocity);
+                    }
 
-                // The scaling factor for the post-collision velocities to restore energy conservation.
-                double k = sqrt(energy0 / energy1);
+                    // If there's more than one collision, then this factor is the ratio of original to final
+                    // energy.
+                    k = sqrt(energy0 / energy1);
+                }
 
                 // Note that these collisions have invalidated the correctness of future collisions, so we need to discard
                 // all future collisions that involve any object that we've already considered, as well as the first

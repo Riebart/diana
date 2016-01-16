@@ -318,9 +318,9 @@ if __name__ == "__main__":
     #spawn_some_planets()
 
     #basic_collision()
-    pool_rack()
+    #pool_rack()
 
     #all_moving()
 
-    #spawn_sol()
+    spawn_sol()
     #test_systems()

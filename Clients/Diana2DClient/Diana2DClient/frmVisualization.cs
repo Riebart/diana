@@ -27,6 +27,9 @@ namespace Diana2DClient
         DateTime start_time;
         Thread readerThread;
 
+        Color bgColor = Color.Black;
+        Color fgColor = Color.White;
+
         List<VisDataMessage> updateList = new List<VisDataMessage>();
         List<VisDataMessage> bufferList = new List<VisDataMessage>();
         List<VisDataMessage> drawList = new List<VisDataMessage>();
@@ -55,12 +58,15 @@ namespace Diana2DClient
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.UpdateStyles();
 
-            lblNumMessages.BackColor = Color.LightGray;
-            lblViewCoords.BackColor = Color.LightGray;
-            lblThrust.BackColor = Color.LightGray;
+            lblNumMessages.BackColor = bgColor;
+            lblNumMessages.ForeColor = fgColor;
+            lblViewCoords.BackColor = bgColor;
+            lblViewCoords.ForeColor = fgColor;
+            lblThrust.BackColor = bgColor;
+            lblThrust.ForeColor = fgColor;
 
             g = this.CreateGraphics();
-            pen = new Pen(Color.Black, 1);
+            pen = new Pen(fgColor, 1);
 
             start_time = DateTime.Now;
 
@@ -208,7 +214,7 @@ namespace Diana2DClient
                         newData = false;
                     }
 
-                    g.Clear(Color.LightGray);
+                    g.Clear(bgColor);
 
                     int border = 0;
                     int canvasWidth = this.ClientSize.Width / 2 - border;
@@ -241,6 +247,8 @@ namespace Diana2DClient
                     }
 
                     lblViewCoords.Text = "(" + (int)(focusX - xExtent) + "," + (int)(focusX + xExtent) + ") , (" + (int)(focusY - yExtent) + "," + (int)(focusY + yExtent) + ")";
+                    lblNumMessages.BackColor = bgColor;
+                    lblNumMessages.ForeColor = fgColor;
 
                     foreach (VisDataMessage v in drawList)
                     {
@@ -272,6 +280,8 @@ namespace Diana2DClient
                     }
 
                     lblNumMessages.Text = "" + numSwaps + " (" + (int)(1000 * DateTime.Now.Subtract(start_time).TotalSeconds / numSwaps) + " ms)";
+                    lblNumMessages.BackColor = bgColor;
+                    lblNumMessages.ForeColor = fgColor;
                     //numSwaps = 0;
                 }
             }
