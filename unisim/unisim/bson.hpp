@@ -30,7 +30,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = (int8_t)0xFF, MaxKey = 0x7F, NoMoreData = (int16_t)0x8001
+        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32768
     };
 
     // Every element is returned in this structure, with the type field and the relevant
