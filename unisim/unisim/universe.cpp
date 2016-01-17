@@ -616,7 +616,7 @@ namespace Diana
             }
 
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL);
+                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, NULL);
             add_object(b);
             break;
         }
@@ -661,7 +661,7 @@ namespace Diana
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
-                msg->mass, msg->radius, obj_type);
+                msg->mass, msg->radius, obj_type, NULL);
 
             // If the object creating the object is a smarty, it's position and velocity
             // are relative.

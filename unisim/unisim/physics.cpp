@@ -67,7 +67,7 @@ namespace Diana
         return ((total / (4 * M_PI * r * r)) >= RADIATION_ENERGY_CUTOFF);
     }
 
-    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
     {
         obj->type = PHYSOBJECT;
         obj->phys_id = 0;
@@ -90,8 +90,11 @@ namespace Diana
         obj->health = mass * 1000000;
         obj->emits_gravity = is_big_enough(mass, radius);
 
-        obj->dangerous_radiation = false;
-        obj->spectrum = NULL;
+        obj->spectrum = spectrum;
+        if (spectrum != NULL)
+        {
+            obj->dangerous_radiation = radiates_strong_enough(spectrum, obj->radius);
+        }
     }
 
     void PhysicsObject_tick(PO* obj, V3* g, double dt)
@@ -136,6 +139,16 @@ namespace Diana
         obj->up.x = orientation->y;
         obj->up.y = orientation->z;
         obj->up.z = 1 - sqrt(obj->up.x*obj->up.x + obj->up.x*obj->up.y);
+    }
+
+    struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* energies)
+    {
+        return NULL;
+    }
+
+    struct Spectrum* Spectrum_clone(struct Spectrum* src)
+    {
+        return NULL;
     }
 
     //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
@@ -507,6 +520,7 @@ namespace Diana
 
     PO* PhysicsObject_clone(PO* obj)
     {
+        //! @todo There's a bunch of code reuse here that should be taken care of.
         PO* ret = NULL;
         switch (obj->type)
         {
@@ -531,6 +545,10 @@ namespace Diana
                         ret->obj_type = obj_type;
                     }
                 }
+                if (ret->spectrum != NULL)
+                {
+
+                }
             }
         }
         case PHYSOBJECT_SMART:
@@ -553,6 +571,10 @@ namespace Diana
                         memcpy(obj_type, ret->obj_type, len);
                         ret->obj_type = obj_type;
                     }
+                }
+                if (ret->spectrum != NULL)
+                {
+
                 }
             }
             break;
@@ -670,9 +692,9 @@ namespace Diana
         }
     }
 
-    void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
+    void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
     {
-        PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type);
+        PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type, spectrum);
         obj->pobj.type = PHYSOBJECT_SMART;
 
         obj->socket = socket;
@@ -683,7 +705,7 @@ namespace Diana
         //obj->parent_phys_id = 0;
     }
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data)
+    void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)
     {
         beam->phys_id = 0;
         beam->universe = universe;
@@ -708,7 +730,7 @@ namespace Diana
         beam->spectrum = NULL;
     }
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data)
+    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
     {
         V3 direction = *velocity;
         Vector3_normalize(&direction);
@@ -723,7 +745,7 @@ namespace Diana
         double cosh = cos(angle_h / 2);
         double cosv = cos(angle_v / 2);
 
-        Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg, data);
+        Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg, data, spectrum);
     }
 
     void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
@@ -910,7 +932,7 @@ namespace Diana
         Vector3_cross(&right, &d, &up);
 
         B* ret = (B*)malloc(sizeof(B));
-        Beam_init(ret, beam->universe, origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type);
+        Beam_init(ret, beam->universe, origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
         return ret;
     }
 }

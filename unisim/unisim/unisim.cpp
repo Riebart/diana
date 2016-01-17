@@ -60,7 +60,7 @@ void pool_rack()
 			position.x = C * (i - 2 * j) * ball_radius;
 			position.y = y_offset - C * y_scale * (1 + 2 * i) * ball_radius;
 
-			PhysicsObject_init(obj, u, &position, &vector3_zero, &vector3_zero, &vector3_zero, ball_mass, ball_radius, NULL);
+			PhysicsObject_init(obj, u, &position, &vector3_zero, &vector3_zero, &vector3_zero, ball_mass, ball_radius, NULL, NULL);
 			u->add_object(obj);
 		}
 	}
@@ -69,7 +69,7 @@ void pool_rack()
 	position.x = 0.0;
     position.y = 10;
 	position.z = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, cue_ball_mass, cue_ball_radius, NULL, NULL);
 	u->add_object(obj);
 	objs.push_back(obj);
 }
@@ -86,7 +86,7 @@ void simple_collision()
 	position.x = 10;
 	position.y = 0.2;
 	velocity.x = -1.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL, NULL);
 	u->add_object(obj);
 
 	obj = (struct PhysicsObject*)malloc(sizeof(struct PhysicsObject));
@@ -94,7 +94,7 @@ void simple_collision()
 	position.x = -1.0;
 	position.y = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL, NULL);
 	u->add_object(obj);
 }
 
@@ -111,7 +111,7 @@ void fast_collision()
 	position.x = 0.0;
 	position.y = 0.0;
 	velocity.x = -500000.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 
@@ -120,7 +120,7 @@ void fast_collision()
 	position.x = -20;
 	position.y = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, 1, 1, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 }
@@ -135,7 +135,7 @@ void beam_collision()
 
 	beam = (struct Beam*)malloc(sizeof(struct Beam));
 	beams.push_back(beam);
-	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_SCAN);
+	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_SCAN, NULL, NULL, NULL);
 	u->add_object((struct PhysicsObject*)beam);
 
 	double mass = 1.0;
@@ -146,7 +146,7 @@ void beam_collision()
 	position.x = 0.0;
 	position.y = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 
@@ -155,7 +155,7 @@ void beam_collision()
 	position.x = -20;
 	position.y = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 1, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 }
@@ -170,7 +170,7 @@ void beam_multi_collision()
 
 	beam = (struct Beam*)malloc(sizeof(struct Beam));
 	beams.push_back(beam);
-	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_WEAP);
+	Beam_init(beam, u, &position, &velocity, &up, 1, 1, 1000, BEAM_WEAP, NULL, NULL, NULL);
 	u->add_object((struct PhysicsObject*)beam);
 
 	double mass = 1.0;
@@ -183,7 +183,7 @@ void beam_multi_collision()
 	position.y = 0.0;
 	position.z = 0.0;
 	velocity.x = 0.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 
@@ -195,7 +195,7 @@ void beam_multi_collision()
 		position.y = 10 * i;
 		position.z = 1.0 + 2 * i * radius;
 		velocity.x = 0.0;
-		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 		obj->health = 1e10;
 		u->add_object(obj);
 
@@ -205,7 +205,7 @@ void beam_multi_collision()
 		position.y = i * i;
 		position.z = -1.0 - 2 * i * radius;
 		velocity.x = 0.0;
-		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 		obj->health = 1e10;
 		u->add_object(obj);
 	}
@@ -233,7 +233,7 @@ void shifting()
 		position.x = 0;
 		position.y = i * (2 * radius + spacingY);
 		velocity.x = (2 * (i % 2) - 1) * 1.0;
-		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+		PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 		obj->health = 1e10;
 		u->add_object(obj);
 
@@ -244,7 +244,7 @@ void shifting()
 			position.x = -1 * j * (2 * radius + spacingX);
 			position.y = i * (2 * radius + spacingY);
 			velocity.x = (2 * (i % 2) - 1) * 1.0;
-			PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+			PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 			obj->health = 1e10;
 			u->add_object(obj);
 
@@ -253,7 +253,7 @@ void shifting()
 			position.x = j * (2 * radius + spacingX);
 			position.y = i * (2 * radius + spacingY);
 			velocity.x = (2 * (i % 2) - 1) * 1.0;
-			PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+			PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 			obj->health = 1e10;
 			u->add_object(obj);
 		}
@@ -275,7 +275,7 @@ void collision_exit()
 	position.x = 0.0;
 	position.y = 0.0;
 	velocity.x = 1.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 10 * radius, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, 10 * radius, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 
@@ -284,7 +284,7 @@ void collision_exit()
 	position.x = 1.0;
 	position.y = 0.0;
 	velocity.x = 3.0;
-	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL);
+	PhysicsObject_init(obj, u, &position, &velocity, &vector3_zero, &vector3_zero, mass, radius, NULL, NULL);
 	obj->health = 1e10;
 	u->add_object(obj);
 }

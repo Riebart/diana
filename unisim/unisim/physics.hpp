@@ -185,9 +185,12 @@ namespace Diana
         void* occlusion;
     };
 
-    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
     struct PhysicsObject* PhysicsObject_clone(struct PhysicsObject* obj);
     void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
+
+    struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* energies);
+    struct Spectrum* Spectrum_clone(struct Spectrum* src);
 
     void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation);
 
@@ -197,10 +200,10 @@ namespace Diana
     void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, double dt, struct PhysCollisionEffect* pce);
     void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
-    void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
 
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg = 0, char* data = 0);
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg = 0, char* data = 0);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
     void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
     void Beam_tick(struct Beam* beam, double dt);
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
