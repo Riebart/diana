@@ -241,6 +241,13 @@ namespace Diana
     /// The constructor to initialize a universe for physics simulation.
     Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
     {
+        this->radiation = (struct Spectrum*)malloc(sizeof(struct Spectrum));
+        if (this->radiation == NULL)
+        {
+            throw std::runtime_error("Universe::UnableToAllocateSpectrum");
+        }
+        this->radiation->n = 0;
+
         this->rate = rate;
 
         if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
@@ -297,6 +304,7 @@ namespace Diana
 
         //sched->block_until_done();
         free(phys_worker_args);
+        free(radiation);
 
         stop_net();
         stop_sim();
@@ -546,6 +554,17 @@ namespace Diana
                     }
                 }
 
+                // If the mass or radius changes, we need to update attractors if the values changes
+                if ((msg->specced[3] && !Vector3_almost_zeroS(smarty->pobj.mass - msg->mass)) ||
+                    (msg->specced[17] && !Vector3_almost_zeroS(smarty->pobj.radius - msg->radius)))
+                {
+                    // The mass and/or radius changed, so we need to recalculate whether or not
+                    // it can be a gravity source now. Probably not, but who knows.
+                    this->update_list(&smarty->pobj, &attractors, 
+                        is_big_enough(smarty->pobj.mass, smarty->pobj.radius), 
+                        smarty->pobj.emits_gravity);
+                }
+
 #define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
 #define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
                 ASSIGN_VAL(3, mass);
@@ -616,7 +635,8 @@ namespace Diana
             }
 
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, NULL);
+                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL,
+                Spectrum_build(0, NULL, NULL));
             add_object(b);
             break;
         }
@@ -661,7 +681,11 @@ namespace Diana
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
-                msg->mass, msg->radius, obj_type, NULL);
+                msg->mass, msg->radius, obj_type, Spectrum_build(0, NULL, NULL));
+
+            // The update_list() function should take care of doing the right thing
+            // based on the truth-values of the emits_gravity value.
+            update_list(obj, &attractors, obj->emits_gravity, false);
 
             // If the object creating the object is a smarty, it's position and velocity
             // are relative.
@@ -794,6 +818,15 @@ namespace Diana
             gravity(&cg, attractors[i], obj);
             Vector3_add(g, &cg);
         }
+    }
+
+    struct Spectrum* Universe::get_radiation_spectrum(struct PhysicsObject* obj)
+    {
+        //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
+        for (size_t i = 0; i < radiators.size(); i++)
+        {
+        }
+        return NULL;
     }
 
     bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
@@ -981,6 +1014,7 @@ namespace Diana
         }
     }
 
+    //! @todo Convert this to a private member function.
     void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     {
         V3 g = { 0.0, 0.0, 0.0 };
@@ -1022,6 +1056,7 @@ namespace Diana
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
                     cm.spec_all();
+                    // Note that there is no comm message, so that's unspecced.
                     cm.specced[cm.num_el - 1] = false;
 
                     switch (b->type)
@@ -1120,7 +1155,9 @@ namespace Diana
             }
         }
 
+        //! @todo Multithread this.
         u->get_grav_pull(&g, o);
+        u->get_radiation_spectrum(o);
         PhysicsObject_tick(o, &g, dt);
     }
 
@@ -1139,6 +1176,169 @@ namespace Diana
 
         list[max_index] = val;
         return true;
+    }
+
+    void Universe::handle_expired()
+    {
+        if (expired.size() > 0)
+        {
+            LOCK(expire_lock);
+            // Handle expiry queue
+            // First sort the expiry queue, which is just a vector of phys_ids
+            // Then we can binary search our way as we iterate over the list of phys IDs.
+            // That might have a big constant though
+            //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
+            struct PhysicsObject* po;
+            struct Beam* b;
+
+            // See if any are a beam.
+            for (size_t i = 0; i < beams.size(); i++)
+            {
+                b = beams[i];
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+                    if (*it == b->phys_id)
+                    {
+                        free(b->data);
+                        free(b->comm_msg);
+
+                        // Remember, we cloned the object we're interested in into the scan_target
+                        // to prevent a use-after-free, so free that here.
+                        if (b->scan_target != NULL)
+                        {
+                            free(b->scan_target->obj_type);
+                            free(b->scan_target);
+                        }
+
+                        free(b);
+                        beams.erase(beams.begin() + i);
+                        it = expired.erase(it);
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            // See if any are a physical object.
+            for (size_t i = 0; i < phys_objects.size(); i++)
+            {
+                po = phys_objects[i];
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+                    if (*it == po->phys_id)
+                    {
+                        free(po->obj_type);
+
+                        if (po->type == PHYSOBJECT_SMART)
+                        {
+                            smarties.erase(*it);
+                        }
+
+                        if (phys_objects[i]->emits_gravity)
+                        {
+                            // This is nicer to read than the iterator in the for loop method.
+                            for (size_t k = 0; k < attractors.size(); k++)
+                            {
+                                if (attractors[k]->phys_id == *it)
+                                {
+                                    attractors.erase(attractors.begin() + k);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (phys_objects[i]->dangerous_radiation)
+                        {
+                            // This is nicer to read than the iterator in the for loop method.
+                            for (size_t k = 0; k < radiators.size(); k++)
+                            {
+                                if (radiators[k]->phys_id == *it)
+                                {
+                                    radiators.erase(radiators.begin() + k);
+                                    break;
+                                }
+                            }
+                        }
+
+                        free(po);
+                        phys_objects.erase(phys_objects.begin() + i);
+                        it = expired.erase(it);
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            if (expired.size() != 0)
+            {
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+#if __x86_64__
+                    printf("%ld\n", *it);
+#else
+                    printf("%lld\n", *it);
+#endif
+                }
+                throw std::runtime_error("WAT");
+            }
+            UNLOCK(expire_lock);
+        }
+    }
+
+    void Universe::handle_added()
+    {
+        if (added.size() > 0)
+        {
+            LOCK(add_lock);
+            // Handle added queue
+            for (size_t i = 0; i < added.size(); i++)
+            {
+                switch (added[i]->type)
+                {
+                case PHYSOBJECT:
+                {
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
+                    if (added[i]->dangerous_radiation)
+                    {
+                        radiators.push_back(added[i]);
+                    }
+                    break;
+                }
+                case PHYSOBJECT_SMART:
+                {
+                    SPO* obj = (SPO*)added[i];
+                    //! @todo Check to make sure this smarty adding is right.
+                    smarties[obj->pobj.phys_id] = obj;
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
+                    if (added[i]->dangerous_radiation)
+                    {
+                        radiators.push_back(added[i]);
+                    }
+                    break;
+                }
+                case BEAM_COMM:
+                case BEAM_SCAN:
+                case BEAM_SCANRESULT:
+                case BEAM_WEAP:
+                {
+                    beams.push_back((B*)added[i]);
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            added.clear();
+            UNLOCK(add_lock);
+        }
     }
 
     void Universe::tick(double dt)
@@ -1237,7 +1437,7 @@ namespace Diana
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
             // negligible.
 #define COLLISION_ROUNDS_CUTOFF 100
-            
+
             // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
 
@@ -1458,13 +1658,7 @@ namespace Diana
             }
         }
 
-        // The vector should be empty at this point, we should be able to assert on it's size.
-        if (collisions.size() != 0)
-        {
-            throw std::runtime_error("NonEmptyCollisionList");
-        }
-
-        // Now tick along each object
+        // Now tick along each object, handling any gravity and radiation while we're at it
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
             obj_tick(this, phys_objects[i], dt);
@@ -1477,192 +1671,32 @@ namespace Diana
             Beam_tick(beams[bi], dt);
         }
 
-        if (expired.size() > 0)
-        {
-            LOCK(expire_lock);
-            // Handle expiry queue
-            // First sort the expiry queue, which is just a vector of phys_ids
-            // Then we can binary search our way as we iterate over the list of phys IDs.
-            // That might have a big constant though
-            //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-            struct PhysicsObject* po;
-            struct Beam* b;
-
-            // See if any are a beam.
-            for (size_t i = 0; i < beams.size(); i++)
-            {
-                b = beams[i];
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-                    if (*it == b->phys_id)
-                    {
-                        free(b->data);
-                        free(b->comm_msg);
-
-                        // Remember, we cloned the object we're interested in into the scan_target
-                        // to prevent a use-after-free, so free that here.
-                        if (b->scan_target != NULL)
-                        {
-                            free(b->scan_target->obj_type);
-                            free(b->scan_target);
-                        }
-
-                        free(b);
-                        beams.erase(beams.begin() + i);
-                        it = expired.erase(it);
-                        i--;
-                        break;
-                    }
-                }
-            }
-
-            // See if any are a physical object.
-            for (size_t i = 0; i < phys_objects.size(); i++)
-            {
-                po = phys_objects[i];
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-                    if (*it == po->phys_id)
-                    {
-                        free(po->obj_type);
-
-                        if (po->type == PHYSOBJECT_SMART)
-                        {
-                            smarties.erase(*it);
-                        }
-
-                        if (phys_objects[i]->emits_gravity)
-                        {
-                            // This is nicer to read than the iterator in the for loop method.
-                            for (size_t k = 0; k < attractors.size(); k++)
-                            {
-                                if (attractors[k]->phys_id == *it)
-                                {
-                                    attractors.erase(attractors.begin() + k);
-                                    break;
-                                }
-                            }
-                        }
-
-                        free(po);
-                        phys_objects.erase(phys_objects.begin() + i);
-                        it = expired.erase(it);
-                        i--;
-                        break;
-                    }
-                }
-            }
-
-            if (expired.size() != 0)
-            {
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-#if __x86_64__
-                    printf("%ld\n", *it);
-#else
-                    printf("%lld\n", *it);
-#endif
-                }
-                throw std::runtime_error("WAT");
-            }
-            UNLOCK(expire_lock);
-        }
-
-        if (added.size() > 0)
-        {
-            LOCK(add_lock);
-            // Handle added queue
-            for (size_t i = 0; i < added.size(); i++)
-            {
-                switch (added[i]->type)
-                {
-                case PHYSOBJECT:
-                {
-                    phys_objects.push_back(added[i]);
-                    if (added[i]->emits_gravity)
-                    {
-                        attractors.push_back(added[i]);
-                    }
-                    break;
-                }
-                case PHYSOBJECT_SMART:
-                {
-                    SPO* obj = (SPO*)added[i];
-                    //! @todo Check to make sure this smarty adding is right.
-                    smarties[obj->pobj.phys_id] = obj;
-                    phys_objects.push_back(added[i]);
-                    if (added[i]->emits_gravity)
-                    {
-                        attractors.push_back(added[i]);
-                    }
-                    break;
-                }
-                case BEAM_COMM:
-                case BEAM_SCAN:
-                case BEAM_SCANRESULT:
-                case BEAM_WEAP:
-                {
-                    beams.push_back((B*)added[i]);
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
-            added.clear();
-            UNLOCK(add_lock);
-        }
+        handle_expired();
+        handle_added();
 
         // Unlock everything
         UNLOCK(phys_lock);
     }
-
-    void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
+    
+    void Universe::update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval)
     {
-        // This requires a linear search of the attractors, but whatever.
-        if (calculate)
+        // If it's a current candidate, and the old value indicates it wasn't before, then
+        // we can safely just add it.
+        if (newval && !oldval)
         {
-            // If 
-            bool newval = is_big_enough(obj->mass, obj->radius);
-
-            // If we're a new attractor, assume that obj->emits_gravity hasn't been changed out of band
-            // And just push it onto the list
-            if (newval && !obj->emits_gravity)
-            {
-                attractors.push_back(obj);
-            }
-            else if (!newval && obj->emits_gravity)
-            {
-                for (size_t i = 0; i < attractors.size(); i++)
-                {
-                    if (attractors[i]->phys_id == obj->phys_id)
-                    {
-                        attractors.erase(attractors.begin() + i);
-                        break;
-                    }
-                }
-            }
+            attractors.push_back(obj);
         }
-        else
+        // If we're an existing member, and the new value indicates we should no longer be,
+        // then find it and remove it.
+        else if (!newval && oldval)
         {
-            // Here we have no idea what oldval was, so we need to iterate every time.
-            bool in = false;
-            for (size_t i = 0; i < attractors.size(); i++)
+            // Then linear searches here shouldn't be problematic, because 
+            for (size_t i = 0; i < list->size(); i++)
             {
-                if (attractors[i]->phys_id == obj->phys_id)
+                if (list->at(i)->phys_id == obj->phys_id)
                 {
-                    if (!obj->emits_gravity)
-                    {
-                        attractors.erase(attractors.begin() + i);
-                    }
-                    in = true;
+                    list->erase(list->begin() + i);
                     break;
-                }
-
-                // If we didn't find it, and we want it in there, push it back.
-                if (!in && obj->emits_gravity)
-                {
-                    attractors.push_back(obj);
                 }
             }
         }

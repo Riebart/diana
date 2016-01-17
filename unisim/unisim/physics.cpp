@@ -34,6 +34,9 @@ namespace Diana
                                     // at which steel melts, and most ceramic tiles break down), this results in
                                     // a radiative power of about 290kW/m^2. This is absolutely dangerous, but 
                                     // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
+    //! At what percented of the total health does damage start to apply.
+#define HEALTH_DAMAGE_CUTOFF 0.1
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -475,7 +478,7 @@ namespace Diana
             return;
         }
 
-        double t = 0.1 * obj->health;
+        double t = HEALTH_DAMAGE_CUTOFF * obj->health;
 
         if (energy > t)
         {
@@ -733,10 +736,6 @@ namespace Diana
 
         obj->socket = socket;
         obj->client_id = client_id;
-        //obj->vis_data = false;
-        //obj->vis_meta_data = false;
-        //obj->exists = true;
-        //obj->parent_phys_id = 0;
     }
 
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)

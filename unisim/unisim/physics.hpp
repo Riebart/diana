@@ -100,15 +100,18 @@ namespace Diana
     {
         //! Physical object that forms the base of the object
         struct PhysicsObject pobj;
+        //! Client FD to talk out of.
+        int32_t socket;
+        //! ID on the client-side of the socket (not our side) that was supplied in the
+        //! SpawnMsg that spawned this object.
+        int64_t client_id;
+        
         //!// OSim ID (UNUSED)
         //int64_t osim_id,
         //    //! Parent physical ID (UNUSED)
         //    parent_phys_id,
         //    //! Query ID (UNUSED)
         //    query_id;
-        //! Client FD to talk out of.
-        int32_t socket;
-        int64_t client_id;
         //!// Is this client registered for vis data
         //bool vis_data,
         //    //! Is this client registered for vis meta data
@@ -211,5 +214,6 @@ namespace Diana
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
 
     bool is_big_enough(double m, double r);
+    bool radiates_strong_enough(struct Spectrum* spectrum, double r);
 }
 #endif

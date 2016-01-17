@@ -321,33 +321,6 @@ namespace Diana
             READ_VECTOR3(thrust, el.dbl_val)
             READ_ELEMENT(radius, el.dbl_val)
             READ_BEGIN();
-        //obj_type = NULL;
-        //int num_el = 2 + PHYSICALPROPERTIES_MSG_LEN;
-        //struct BSONReader::Element el = br->get_next_element();
-        //specced = (bool*)calloc(num_el, sizeof(bool));
-        //if (specced == NULL) 
-        //{
-        //    throw "OOM";
-        //}
-        //std::function<void(int)> fps[PHYSICALPROPERTIES_MSG_LEN + 2 + 1] = { 
-        //    [this, &el](int i){ this->server_id = el.i64_val; this->specced[i] = true; }, 
-        //    [this, &el](int i){ this->client_id = el.i64_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->obj_type = ReadString(el); this->specced[i] = true; },
-        //    [this, &el](int i){ this->mass = el.dbl_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->position.x = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->position.y = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->position.z = el.dbl_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->velocity.x = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->velocity.y = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->velocity.z = el.dbl_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->orientation.w = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->orientation.x = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->orientation.y = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->orientation.z = el.dbl_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->thrust.x = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->thrust.y = el.dbl_val; this->specced[i] = true; }, [this, &el](int i){ this->thrust.z = el.dbl_val; this->specced[i] = true; },
-        //    [this, &el](int i){ this->radius = el.dbl_val; this->specced[i] = true; },
-        //    [](int i){} }; 
-        //while (el.type != BSONReader::ElementType::NoMoreData)
-        //{ 
-        //    if ((el.name[0] > 0) && (el.name[0] <= num_el))
-        //    { 
-        //        fps[el.name[0] - 1](el.name[0] - 1);
-        //    } 
-        //    el = br->get_next_element();
-        //};
     }
 
     PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
