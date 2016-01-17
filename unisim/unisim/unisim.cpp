@@ -375,59 +375,50 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.01, 0.01, 0.05, 5505, 1, 1.0, true);
-	//u = new Universe(1e-6, 1e-6, 0.5, 5505, 4, 1.0, false);
+    u = new Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, true);
 
-	try
+	//pool_rack();
+	//simple_collision();
+	//fast_collision();
+	//shifting();
+	//collision_exit();
+
+	//beam_collision();
+	//beam_multi_collision();
+
+	//print_positions();
+
+	u->start_net();
+	u->start_sim();
+
+	double frametimes[4];
+	uint64_t last_ticks = u->get_ticks();
+	uint64_t cur_ticks;
+
+	std::chrono::seconds dura(1);
+
+    fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
+	while (running)
 	{
-		//pool_rack();
-		//simple_collision();
-		//fast_collision();
-		//shifting();
-		//collision_exit();
-
-		//beam_collision();
-		//beam_multi_collision();
-
-		//print_positions();
-
-		u->start_net();
-		u->start_sim();
-
-		double frametimes[4];
-		uint64_t last_ticks = u->get_ticks();
-		uint64_t cur_ticks;
-
-		std::chrono::seconds dura(1);
-
-        fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
-		while (running)
-		{
-			u->get_frametime(frametimes);
-			cur_ticks = u->get_ticks();
+		u->get_frametime(frametimes);
+		cur_ticks = u->get_ticks();
 #if __x86_64__
-            fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+        fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #else
-            fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
+        fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
-			if (objs.size() < 10)
-			{
-				print_positions();
-			}
-			last_ticks = cur_ticks;
-
-			std::this_thread::sleep_for(dura);
+		if (objs.size() < 10)
+		{
+			print_positions();
 		}
+		last_ticks = cur_ticks;
 
-		u->stop_net();
-		u->stop_sim();
-		delete u;
+		std::this_thread::sleep_for(dura);
+	}
 
-		return 0;
-	}
-	catch (char* e)
-	{
-		fprintf(stderr, "Caught error: %s\n", e);
-		return 1;
-	}
+	u->stop_net();
+	u->stop_sim();
+	delete u;
+
+	return 0;
 }

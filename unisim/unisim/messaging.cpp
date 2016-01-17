@@ -3,7 +3,91 @@
 
 #include "messaging.hpp"
 #include "bson.hpp"
+
+#ifdef UE_NETWORKING
+#include "Networking.h"
+#include "Sockets.h"
+#include "SocketSubsystem.h"
+#include "SocketTypes.h"
+
+#define SOCKET_WRITE socket_write
+#define SOCKET_READ socket_read
+
+namespace Diana
+{
+    int32 socket_write(FSocket* s, char* srcC, int32_t countS)
+    {
+        int32 count = (uint32)countS;
+        uint8* src = (uint8*)srcC;
+        int32 nbytes = 0;
+        int32 curbytes;
+        bool read_success;
+        while (nbytes < count)
+        {
+            //! @todo Maybe use recvmsg()?
+            // Try to wait for all of the data, if possible.
+            read_success = s->Send(src + nbytes, count - nbytes, curbytes);
+            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketSend::Post::(%d,%d,%d)"), count, curbytes, (int32)read_success);
+            if (!read_success)
+            {
+                // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
+                nbytes *= -1;
+                if (nbytes == 0)
+                {
+                    nbytes = -1;
+                }
+                break;
+            }
+            nbytes += curbytes;
+        }
+
+        return nbytes;
+    }
+
+    int32 socket_read(FSocket* s, char* dstC, int32_t countS)
+    {
+        uint32 count = (uint32)countS;
+        uint8* dst = (uint8*)dstC;
+        uint32 nbytes = 0;
+        bool read_success;
+        uint32 pending_bytes;
+
+        // See if there's pending data
+        read_success = s->HasPendingData(pending_bytes);
+        if (!read_success || (pending_bytes < count))
+        {
+            return 0;
+        }
+        //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::PostPendingCheck::(%d,%u,%d)"), count, pending_bytes, (int32)read_success);
+
+        int32 curbytes = 0;
+        while (nbytes < count)
+        {
+            //! @todo Maybe use recvmsg()?
+            // Try to wait for all of the data, if possible.
+            read_success = s->Recv(dst + nbytes, count - nbytes, curbytes, ESocketReceiveFlags::Type::None);
+            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::Post::(%d,%d,%d,%d)"), count, nbytes, curbytes, (int32)read_success);
+            if (!read_success)
+            {
+                // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
+                nbytes *= -1;
+                if (nbytes == 0)
+                {
+                    nbytes = -1;
+                }
+                break;
+            }
+            nbytes += curbytes;
+        }
+
+        return nbytes;
+    }
+}
+#else
 #include "MIMOServer.hpp"
+#define SOCKET_WRITE MIMOServer::socket_write
+#define SOCKET_READ MIMOServer::socket_read
+#endif
 
 namespace Diana
 {
@@ -16,7 +100,7 @@ namespace Diana
     // Prepare the necessary writers and index variables for writing elements.
 #define SEND_PROLOGUE() BSONWriter bw; bw.push((char*)"", (int32_t)msg_type); int spec_check = 0; SEND_ELEMENT(server_id); SEND_ELEMENT(client_id);
     // Finish off by pushing an end, and writing the bytes to the socket.
-#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return MIMOServer::socket_write(sock, (char*)bytes, *(int32_t*)bytes);
+#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return SOCKET_WRITE(sock, (char*)bytes, *(int32_t*)bytes);
 
     //! @todo Move these to be static in the source file, so they aren't build for every message read. Leave that until later, because premature optimization=bad.
     // Read a single value of the specified type from the BSONReader, and assign it to the variable specified.
@@ -112,13 +196,13 @@ namespace Diana
         return ret;
     }
 
-    BSONMessage* BSONMessage::ReadMessage(int sock)
+    BSONMessage* BSONMessage::ReadMessage(sock_t sock)
     {
         // First start by reading the whole BSON message
         int32_t message_len = 0;
-        int64_t nbytes = MIMOServer::socket_read(sock, (char*)(&message_len), 4);
+        int64_t nbytes = SOCKET_READ(sock, (char*)(&message_len), 4);
 
-        
+
         if (nbytes != 4)
         {
             //! @todo Do the right thing, and check that nbytes matches what it should.
@@ -130,7 +214,7 @@ namespace Diana
             throw "OOM You twat";
         }
         *(int32_t*)buf = message_len;
-        nbytes = MIMOServer::socket_read(sock, buf + 4, message_len - 4);
+        nbytes = SOCKET_READ(sock, buf + 4, message_len - 4);
 
         BSONReader br(buf);
         struct BSONReader::Element el = br.get_next_element();
@@ -211,7 +295,7 @@ namespace Diana
             READ_BEGIN();
     }
 
-    int64_t HelloMsg::send(int sock)
+    int64_t HelloMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_EPILOGUE();
@@ -271,7 +355,7 @@ namespace Diana
         free(obj_type);
     }
 
-    int64_t PhysicalPropertiesMsg::send(int sock)
+    int64_t PhysicalPropertiesMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(obj_type);
@@ -290,7 +374,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t VisualPropertiesMsg::send(int sock)
+    int64_t VisualPropertiesMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -310,7 +394,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t VisualDataEnableMsg::send(int sock)
+    int64_t VisualDataEnableMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(enabled);
@@ -332,7 +416,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t VisualMetaDataEnableMsg::send(int sock)
+    int64_t VisualMetaDataEnableMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(enabled);
@@ -345,7 +429,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t VisualMetaDataMsg::send(int sock)
+    int64_t VisualMetaDataMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -368,7 +452,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t VisualDataMsg::send(int sock)
+    int64_t VisualDataMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(phys_id);
@@ -406,7 +490,7 @@ namespace Diana
         free(comm_msg);
     }
 
-    int64_t BeamMsg::send(int sock)
+    int64_t BeamMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_VECTOR3(origin);
@@ -454,7 +538,7 @@ namespace Diana
         coll_type[4] = type[4];
     }
 
-    int64_t CollisionMsg::send(int sock)
+    int64_t CollisionMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_VECTOR3(position);
@@ -492,7 +576,7 @@ namespace Diana
         free(obj_type);
     }
 
-    int64_t SpawnMsg::send(int sock)
+    int64_t SpawnMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(is_smart);
@@ -536,7 +620,7 @@ namespace Diana
         free(data);
     }
 
-    int64_t ScanResultMsg::send(int sock)
+    int64_t ScanResultMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(obj_type);
@@ -567,7 +651,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t ScanQueryMsg::send(int sock)
+    int64_t ScanQueryMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(scan_id);
@@ -598,7 +682,7 @@ namespace Diana
         free(data);
     }
 
-    int64_t ScanResponseMsg::send(int sock)
+    int64_t ScanResponseMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(data);
@@ -620,7 +704,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t GoodbyeMsg::send(int sock)
+    int64_t GoodbyeMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_EPILOGUE();
@@ -641,7 +725,7 @@ namespace Diana
         READ_PROLOGUE(DIRECTORY_MSG_LEN)
             READ_ELEMENT(item_type, ReadString(el))
             READ_ELEMENT(item_count, el.i64_val; \
-            this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
+                this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
             // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
             READ_ELEMENT_IP(;)
             READ_ELEMENT_IP(;)
@@ -658,7 +742,7 @@ namespace Diana
         free(item_type);
     }
 
-    int64_t DirectoryMsg::send(int sock)
+    int64_t DirectoryMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(item_type);
@@ -700,7 +784,7 @@ namespace Diana
         free(name);
     }
 
-    int64_t NameMsg::send(int sock)
+    int64_t NameMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(name);
@@ -722,7 +806,7 @@ namespace Diana
             READ_BEGIN()
     }
 
-    int64_t ReadyMsg::send(int sock)
+    int64_t ReadyMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_ELEMENT(ready);
@@ -734,7 +818,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t ThrustMsg::send(int sock)
+    int64_t ThrustMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -744,7 +828,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t VelocityMsg::send(int sock)
+    int64_t VelocityMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -754,7 +838,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t JumpMsg::send(int sock)
+    int64_t JumpMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -764,7 +848,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t InfoUpdateMsg::send(int sock)
+    int64_t InfoUpdateMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
@@ -774,7 +858,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    int64_t RequestUpdateMsg::send(int sock)
+    int64_t RequestUpdateMsg::send(sock_t sock)
     {
         throw "NotImplemented";
     }
