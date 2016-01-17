@@ -59,9 +59,10 @@ namespace Diana
         double total = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
+        struct SpectrumComponent* components = &(spectrum->components);
         for (int i = 0; i < spectrum->n; i++)
         {
-            total += spectrum->components[i].energy;
+            total += components[i].energy;
         }
 
         return ((total / (4 * M_PI * r * r)) >= RADIATION_ENERGY_CUTOFF);
@@ -143,12 +144,45 @@ namespace Diana
 
     struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* energies)
     {
-        return NULL;
+        if (n > 0)
+        {
+            struct Spectrum* ret = (struct Spectrum*)malloc(sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent));
+            if (ret == NULL)
+            {
+                throw std::runtime_error("Spectrum_build::UnableToAllocate");
+            }
+            ret->n = n;
+            struct SpectrumComponent* components = &(ret->components);
+            for (int i = 0; i < n; i++)
+            {
+                components[i].wavelength = wavelengths[i];
+                components[i].energy = energies[i];
+            }
+            return ret;
+        }
+        else
+        {
+            return NULL;
+        }
     }
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src)
     {
-        return NULL;
+        if (src->n > 0)
+        {
+            size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
+            struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
+            if (ret == NULL)
+            {
+                throw std::runtime_error("Spectrum_clone::UnableToAllocate");
+            }
+            memcpy(ret, src, spectrum_size);
+            return ret;
+        }
+        else
+        {
+            return NULL;
+        }
     }
 
     //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)

@@ -38,7 +38,9 @@ namespace Diana
         // Number of components in the spectrum
         uint32_t n;
         // Array of spectrum components, precisely n components long.
-        struct SpectrumComponent* components;
+        // This is actually the first in an array of components, to get the array (pointer), 
+        // use &components. There's some allocation magic here.
+        struct SpectrumComponent components;
     };
 
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
