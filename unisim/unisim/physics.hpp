@@ -24,6 +24,23 @@ namespace Diana
     //! Enumeration of the types of physics objects to allow for branching and basic polymorphics with structs.
     enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP };
 
+    struct SpectrumComponent
+    {
+        // The wavelength of the component, in metres. (green visible light = 550e-9)
+        double wavelength;
+        // The energy of the emission at the given wavelength, in Watts.
+        double energy;
+    };
+
+    //! @todo This doesn't account for high-energy mass particles that are ionizing
+    struct Spectrum
+    {
+        // Number of components in the spectrum
+        uint32_t n;
+        // Array of spectrum components, precisely n components long.
+        struct SpectrumComponent* components;
+    };
+
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
 #pragma pack(1)
     struct PhysicsObject
@@ -65,6 +82,10 @@ namespace Diana
         //! Whether or not this object should be considered an attractor by the Universe.
         //! Make sure to call Universe::update_attractor if you set this or change the mass/radius.
         bool emits_gravity;
+        //! Whether or not this object's radiation spectrum is powerful enough to be harmful.
+        bool dangerous_radiation;
+        //! The radiation spectrum of this object.
+        struct Spectrum* spectrum;
     };
 #pragma pack()
 
@@ -103,6 +124,8 @@ namespace Diana
         int64_t phys_id;
         Universe* universe;
         PhysicsObject* scan_target;
+        //! Tha radiation spectrum of this object.
+        struct Spectrum* spectrum;
         struct Vector3 origin,
             direction,
             front_position,

@@ -423,7 +423,15 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define VISUALMETADATA_MSG_LEN
+#define VISUALMETADATA_MSG_LEN 0
+    VisualMetaDataMsg::VisualMetaDataMsg()
+    {
+        msg_type = VisualMetaData;
+        num_el = 2 + VISUALMETADATA_MSG_LEN;
+        specced = (bool*)calloc(num_el, sizeof(bool));
+        throw "NotImplemented";
+    }
+
     VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
         throw "NotImplemented";

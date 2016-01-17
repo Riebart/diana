@@ -13,7 +13,27 @@ namespace Diana
     //! Multiplying two angles to give a solid angle area results in sa=2 pi^2 square radians for a full sphere
     //! Converting that to are square length units means multiplying by sa*((2/pi) r^2)=c where sa=Solid Angle, c=cutoff
 #define BEAM_SOLID_ANGLE_FACTOR (2 / M_PI)
+
+    //! If the gravitational acceleration of a body at it's surface (radius) is less than this,
+    //! then the body is ignored as an insignificant gravitational source. This has units of m/s^2
 #define GRAVITY_CUTOFF 0.01
+
+    //! If the energy per square metre of beam wavefront is fewer than this many joules, the beam
+    //! is expired from the universe. This is a detection threshold, derived from typical consumer
+    //! wireless antennae that can detect at -70 dBmW.
+#define BEAM_ENERGY_CUTOFF 1e-10
+
+    //! If the radiation energy per square metre at an object's radius is less than this amount
+    //! (in Watts), the radiation source is considered too insignificant to be harmful. This is a
+    //! threshold, derived from industrial laser cutting appliances.
+    //!
+    //! To compare, Sol outputs 61.7MW/m^2 at it's surface.
+#define RADIATION_ENERGY_CUTOFF 1e4 // A 6000W cutting laser uses a beam about 0.5mm across.
+                                    // Using the Stefan-Boltzmann radiative energy equations for a black body,
+                                    // and the fact that a 'good' temperature is about 1500K (the temperature
+                                    // at which steel melts, and most ceramic tiles break down), this results in
+                                    // a radiative power of about 290kW/m^2. This is absolutely dangerous, but 
+                                    // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -31,7 +51,20 @@ namespace Diana
 
     bool is_big_enough(double m, double r)
     {
-        return ((6.67384e-11 * m / r) >= GRAVITY_CUTOFF);
+        return ((6.67384e-11 * m / (r * r)) >= GRAVITY_CUTOFF);
+    }
+
+    bool radiates_strong_enough(struct Spectrum* spectrum, double r)
+    {
+        double total = 0.0;
+        // The energy of a photon is proportional to it's frequency, or inversely to it's
+        // wavelength. The energy components of the spectrum, though, can just be summed up.
+        for (int i = 0; i < spectrum->n; i++)
+        {
+            total += spectrum->components[i].energy;
+        }
+
+        return ((total / (4 * M_PI * r * r)) >= RADIATION_ENERGY_CUTOFF);
     }
 
     void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type)
@@ -56,6 +89,9 @@ namespace Diana
 
         obj->health = mass * 1000000;
         obj->emits_gravity = is_big_enough(mass, radius);
+
+        obj->dangerous_radiation = false;
+        obj->spectrum = NULL;
     }
 
     void PhysicsObject_tick(PO* obj, V3* g, double dt)
@@ -667,7 +703,9 @@ namespace Diana
         beam->data = data;
 
         beam->distance_travelled = 0;
-        beam->max_distance = sqrt(energy / (area_factor * 1e-10));
+        beam->max_distance = sqrt(energy / (area_factor * BEAM_ENERGY_CUTOFF));
+
+        beam->spectrum = NULL;
     }
 
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data)
