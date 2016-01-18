@@ -83,6 +83,10 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+        
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class VisualPropertiesMsg : public BSONMessage
@@ -132,6 +136,8 @@ namespace Diana
         double radius;
         struct Vector3 position;
         struct Vector4 orientation;
+        
+        double red, green, blue;
     };
 
     class BeamMsg : public BSONMessage
@@ -146,6 +152,10 @@ namespace Diana
         char* comm_msg;
         double spread_h, spread_v, energy;
         struct Vector3 origin, velocity, up;
+
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class CollisionMsg : public BSONMessage
@@ -161,6 +171,10 @@ namespace Diana
         char* comm_msg;
         double energy;
         struct Vector3 position, direction;
+        
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class SpawnMsg : public BSONMessage
@@ -176,6 +190,10 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+        
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class ScanResultMsg : public BSONMessage
@@ -191,6 +209,10 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class ScanQueryMsg : public BSONMessage
@@ -203,6 +225,10 @@ namespace Diana
         int64_t scan_id;
         double energy;
         struct Vector3 direction;
+        
+        uint32_t n_pairs;
+        double* wavelengths;
+        double* powers;
     };
 
     class ScanResponseMsg : public BSONMessage
