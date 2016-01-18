@@ -571,6 +571,22 @@ namespace Diana
                 ASSIGN_VAL(17, radius);
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
+                
+                // It is sufficient to verify that the spectrum is NULL, we don't need to worry
+                // about checking the specced[] members, this will be NULL if it was unspecified.
+                // This is special because it is a NULLABLE type, which the others aren't.
+                if (msg->spectrum != NULL)
+                {
+                    struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
+                    spectrum = Spectrum_perturb(spectrum);
+                    spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
+                    smarty->pobj.spectrum = spectrum;
+                    
+                    radiates_strong_enough(spectrum, smarty->pobj.radius);
+                    bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
+                    update_list(&smarty->pobj, &radiators, newval, smarty->pobj.dangerous_radiation);
+                    smarty->pobj.dangerous_radiation = newval;
+                }
             }
             break;
         }
@@ -579,9 +595,8 @@ namespace Diana
             BeamMsg* msg = (BeamMsg*)msg_base;
             // We need all of the properties, except the last, if it's not a COMM beam,
             // If it's a COMM beam, we need them all.
-            if (
-                ((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
-                msg->all_specced(0, msg->num_el - 1))
+            if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
+                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 1)))
             {
                 break;
             }
@@ -627,16 +642,21 @@ namespace Diana
                 Vector3_add(&msg->velocity, &smarty->pobj.velocity);
             }
 
+            // Note that the spectrum is a non-optional component, so we can assume it exists
+            // as enforcement of that condition occurs earlier with the all_specced() call.
+            struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
+            spectrum = Spectrum_perturb(spectrum);
+            
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL,
-                Spectrum_build(0, NULL, NULL));
+                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, spectrum);
             add_object(b);
             break;
         }
         case BSONMessage::MessageType::Spawn:
         {
             SpawnMsg* msg = (SpawnMsg*)msg_base;
-            // We don't need, or rather, shouldn't have, a server ID on a spawn
+            // We don't need, or rather, shouldn't have, a server ID on a spawn, but we should
+            // have everything else.
             if (!msg->all_specced(1))
             {
                 break;
@@ -672,13 +692,21 @@ namespace Diana
             }
             memcpy(obj_type, msg->obj_type, len);
 
+            struct Spectrum* spectrum = NULL;
+            if (msg->spectrum != NULL)
+            {
+                spectrum = Spectrum_clone(msg->spectrum);
+                spectrum = Spectrum_perturb(spectrum);
+            }
+
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
-                msg->mass, msg->radius, obj_type, Spectrum_build(0, NULL, NULL));
+                msg->mass, msg->radius, obj_type, spectrum);
 
             // The update_list() function should take care of doing the right thing
             // based on the truth-values of the emits_gravity value.
             update_list(obj, &attractors, obj->emits_gravity, false);
+            update_list(obj, &radiators, obj->dangerous_radiation, false);
 
             // If the object creating the object is a smarty, it's position and velocity
             // are relative.
@@ -1041,6 +1069,7 @@ namespace Diana
                     cm.comm_msg = NULL;
                     cm.spec_all();
                     // Note that there is no comm message, so that's unspecced.
+                    cm.spectrum = Spectrum_clone(b->spectrum);
                     cm.specced[cm.num_el - 1] = false;
 
                     switch (b->type)
@@ -1062,6 +1091,7 @@ namespace Diana
                         sqm.scan_id = b->phys_id;
                         sqm.energy = cm.energy;
                         sqm.direction = cm.direction;
+                        sqm.spectrum = Spectrum_clone(b->spectrum);
                         sqm.spec_all();
 
                         // Note that we need to ensure that the queries map is ready for a response before sending
@@ -1117,7 +1147,19 @@ namespace Diana
                         srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
                         srm.obj_type = b->scan_target->obj_type;
                         srm.data = b->data;
+                        srm.spectrum = b->scan_target->spectrum;
                         srm.spec_all();
+
+                        // If the spectrum we're specifying is NULL, then we should unmark the spectrum
+                        // parts of the message. This is the last 3 parts, the number of components, 
+                        // and the two arrays of doubles (wavelengths and powers).
+                        if (srm.spectrum == NULL)
+                        {
+                            srm.specced[srm.num_el - 3] = false;
+                            srm.specced[srm.num_el - 2] = false;
+                            srm.specced[srm.num_el - 1] = false;
+                        }
+
                         srm.send(s->socket);
 
                         // The message object will go out-of-scope, but is currently pointing to the beam's
@@ -1170,6 +1212,7 @@ namespace Diana
                         cm.spec_all();
                         // Note that there is no comm message, so that's unspecced.
                         cm.specced[cm.num_el - 1] = false;
+                        cm.spectrum = Spectrum_clone(other->spectrum);
                         //! @todo Ok, this four-character string is starting to feel forced.
                         cm.set_colltype((char*)"RADN");
                         cm.send(s->socket);

@@ -326,6 +326,7 @@ namespace Diana
     PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
     {
         free(obj_type);
+        free(spectrum);
     }
 
     int64_t PhysicalPropertiesMsg::send(sock_t sock)
@@ -469,6 +470,7 @@ namespace Diana
     BeamMsg::~BeamMsg()
     {
         free(comm_msg);
+        free(spectrum);
     }
 
     int64_t BeamMsg::send(sock_t sock)
@@ -508,6 +510,7 @@ namespace Diana
     CollisionMsg::~CollisionMsg()
     {
         free(comm_msg);
+        free(spectrum);
     }
 
     void CollisionMsg::set_colltype(char* type)
@@ -555,6 +558,7 @@ namespace Diana
     SpawnMsg::~SpawnMsg()
     {
         free(obj_type);
+        free(spectrum);
     }
 
     int64_t SpawnMsg::send(sock_t sock)
@@ -639,6 +643,11 @@ namespace Diana
         SEND_ELEMENT(energy);
         SEND_VECTOR3(direction);
         SEND_EPILOGUE();
+    }
+
+    ScanQueryMsg::~ScanQueryMsg()
+    {
+        free(spectrum);
     }
 
 #define SCANRESPONSE_MSG_LEN 1 + 1

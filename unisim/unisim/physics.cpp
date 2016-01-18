@@ -103,7 +103,9 @@ namespace Diana
         if (spectrum != NULL)
         {
             radiates_strong_enough(spectrum, obj->radius);
-            obj->dangerous_radiation = (spectrum->safe_distance_sq < (obj->radius * obj->radius));
+            // If the safe distance is more than the radius, then it's possible to be
+            // in a situation where the radiation levels are dangerous.
+            obj->dangerous_radiation = (spectrum->safe_distance_sq > (obj->radius * obj->radius));
         }
     }
 
@@ -151,31 +153,6 @@ namespace Diana
         obj->up.z = 1 - sqrt(obj->up.x*obj->up.x + obj->up.x*obj->up.y);
     }
 
-    struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* powers)
-    {
-        if (n > 0)
-        {
-            struct Spectrum* ret = (struct Spectrum*)malloc(sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent));
-            if (ret == NULL)
-            {
-                throw std::runtime_error("Spectrum_build::UnableToAllocate");
-            }
-            ret->n = n;
-
-            struct SpectrumComponent* components = &(ret->components);
-            for (uint32_t i = 0; i < n; i++)
-            {
-                components[i].wavelength = wavelengths[i];
-                components[i].power = powers[i];
-            }
-            return ret;
-        }
-        else
-        {
-            return NULL;
-        }
-    }
-
     struct Spectrum* Spectrum_clone(struct Spectrum* src)
     {
         if (src->n > 0)
@@ -193,6 +170,16 @@ namespace Diana
         {
             return NULL;
         }
+    }
+
+    struct Spectrum* Spectrum_perturb(struct Spectrum* src)
+    {
+        return NULL;
+    }
+
+    struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment)
+    {
+        return dst;
     }
 
     //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
@@ -790,9 +777,13 @@ namespace Diana
 
     void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
     {
-        //! @todo Take radius into account
+        //! @todo Take radius into account, which will also require triage for multiple ticks
+        //! that intersect the same object.
+        
         //! @todo Add in proper occlusion
+        
         //! @todo Take into account how much of the object is in the beam's path.
+        
         //! @todo There might be a way to more quickly reject from here based on distance,
         //! which could be easier to computer. The problem is that t comes from angle calcs.
 

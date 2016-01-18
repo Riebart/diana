@@ -11,7 +11,10 @@ typedef int sock_t;
 #include <stdlib.h>
 #include <stdint.h>
 
+// For Vector3
 #include "vector.hpp"
+// For Spectrum/SpectrumComponent
+#include "physics.hpp"
 
 class BSONReader;
 
@@ -83,10 +86,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;  //! @todo convert the spectrum into a subdocument BSON dict.
     };
 
     class VisualPropertiesMsg : public BSONMessage
@@ -152,10 +152,7 @@ namespace Diana
         char* comm_msg;
         double spread_h, spread_v, energy;
         struct Vector3 origin, velocity, up;
-
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;
     };
 
     class CollisionMsg : public BSONMessage
@@ -171,10 +168,7 @@ namespace Diana
         char* comm_msg;
         double energy;
         struct Vector3 position, direction;
-        
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;
     };
 
     class SpawnMsg : public BSONMessage
@@ -190,10 +184,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;
     };
 
     class ScanResultMsg : public BSONMessage
@@ -209,10 +200,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;
     };
 
     class ScanQueryMsg : public BSONMessage
@@ -220,15 +208,13 @@ namespace Diana
     public:
         ScanQueryMsg();
         ScanQueryMsg(BSONReader* _br, MessageType _msg_type);
+        ~ScanQueryMsg();
         int64_t send(sock_t sock);
 
         int64_t scan_id;
         double energy;
         struct Vector3 direction;
-        
-        uint32_t n_pairs;
-        double* wavelengths;
-        double* powers;
+        struct Spectrum* spectrum = NULL;
     };
 
     class ScanResponseMsg : public BSONMessage
