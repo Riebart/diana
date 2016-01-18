@@ -29,8 +29,8 @@ namespace Diana
         // The wavelength of the component, in metres. (green visible light = 550e-9)
         double wavelength;
         
-        // The energy of the emission at the given wavelength, in Watts.
-        double energy;
+        // The power of the emission at the given wavelength, in Watts.
+        double power;
     };
 
     //! @todo This doesn't account for high-energy mass particles that are ionizing
@@ -46,8 +46,12 @@ namespace Diana
         struct SpectrumComponent components;
         
         // How far away do we need to be before notifications start to arrive for radiation
-        // impacts, this is the minimum safe distance.
-        double safe_distance;
+        // impacts, this is the SQUARE of the minimum safe distance, to avoid the need for
+        // sqrt() when working with it.
+        double safe_distance_sq;
+
+        // Cache of the total power of the spectrum across all wavelengths.
+        double total_power;
     };
 
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
@@ -216,6 +220,7 @@ namespace Diana
 
     void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
     void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    
     void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
     void Beam_tick(struct Beam* beam, double dt);
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);

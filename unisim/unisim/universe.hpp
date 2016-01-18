@@ -287,6 +287,9 @@ namespace Diana
         double rate;
         //! Total time elapsed in the game world
         double total_time;
+        //! Last persitent environmental effect time. Total simulation time that the last event was
+        //! triggered for the last environment effect (radiation, etc...)
+        double last_effect_time;
         //! The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks.
         double min_frametime;
         //! The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse.

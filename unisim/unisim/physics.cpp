@@ -27,6 +27,7 @@ namespace Diana
     //! (in Watts), the radiation source is considered too insignificant to be harmful. This is a
     //! threshold, derived from industrial laser cutting appliances and solar irradiance of Mercury.
     //! See: http://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
+    //! See: https://en.wikipedia.org/wiki/Mercury_(planet)#Surface_conditions_and_exosphere
     //!
     //! To compare, Sol outputs 61.7MW/m^2 at it's surface.
 #define RADIATION_ENERGY_CUTOFF 1.5e4 // A 6000W cutting laser uses a beam about 0.5mm across.
@@ -61,18 +62,18 @@ namespace Diana
 
     double radiates_strong_enough(struct Spectrum* spectrum, double r)
     {
-        double total = 0.0;
+        spectrum->total_power = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
         struct SpectrumComponent* components = &(spectrum->components);
         for (uint32_t i = 0; i < spectrum->n; i++)
         {
-            total += components[i].energy;
+            spectrum->total_power += components[i].power;
         }
 
         // Calculate the minimum safe distance from teh radiation source.
-        spectrum->safe_distance = sqrt(total / (4 * M_PI * RADIATION_ENERGY_CUTOFF));
-        return spectrum->safe_distance;
+        spectrum->safe_distance_sq = spectrum->total_power / (4 * M_PI * RADIATION_ENERGY_CUTOFF);
+        return spectrum->safe_distance_sq;
     }
 
     void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
@@ -102,7 +103,7 @@ namespace Diana
         if (spectrum != NULL)
         {
             radiates_strong_enough(spectrum, obj->radius);
-            obj->dangerous_radiation = (spectrum->safe_distance < obj->radius);
+            obj->dangerous_radiation = (spectrum->safe_distance_sq < (obj->radius * obj->radius));
         }
     }
 
@@ -150,7 +151,7 @@ namespace Diana
         obj->up.z = 1 - sqrt(obj->up.x*obj->up.x + obj->up.x*obj->up.y);
     }
 
-    struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* energies)
+    struct Spectrum* Spectrum_build(uint32_t n, double* wavelengths, double* powers)
     {
         if (n > 0)
         {
@@ -165,7 +166,7 @@ namespace Diana
             for (uint32_t i = 0; i < n; i++)
             {
                 components[i].wavelength = wavelengths[i];
-                components[i].energy = energies[i];
+                components[i].power = powers[i];
             }
             return ret;
         }

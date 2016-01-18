@@ -272,6 +272,7 @@ namespace Diana
         visdata_msg.spec_all(true);
 
         total_time = 0.0;
+        last_effect_time = 0.0;
         phys_frametime = 0.0;
         wall_frametime = 0.0;
         game_frametime = 0.0;
@@ -1139,7 +1140,47 @@ namespace Diana
         }
 
         //! @todo Multithread this.
-
+        V3 pd;
+        PO* other;
+        
+        if ((u->total_time - u->last_effect_time) >= 1.0)
+        {
+            u->last_effect_time = u->total_time;
+            for (size_t i = 0; i < u->radiators.size(); i++)
+            {
+                other = u->radiators[i];
+                Vector3_subtract(&pd, &other->position, &o->position);
+                
+                if (Vector3_length2(&pd) < other->spectrum->safe_distance_sq)
+                {
+                    double energy = other->spectrum->total_power;
+                    
+                    if (o->type == PHYSOBJECT_SMART)
+                    {
+                        struct SmartPhysicsObject* s = (SPO*)o;
+                        CollisionMsg cm;
+                        cm.client_id = s->client_id;
+                        cm.server_id = o->phys_id;
+                        Vector3_scale(&pd, 1.0 / Vector3_length(&pd));
+                        cm.direction = pd;
+                        Vector3_scale(&pd, o->radius);
+                        cm.position = pd;
+                        cm.energy = energy;
+                        cm.comm_msg = NULL;
+                        cm.spec_all();
+                        // Note that there is no comm message, so that's unspecced.
+                        cm.specced[cm.num_el - 1] = false;
+                        //! @todo Ok, this four-character string is starting to feel forced.
+                        cm.set_colltype((char*)"RADN");
+                        cm.send(s->socket);
+                    }
+                    else if (o->type == PHYSOBJECT)
+                    {
+                        PhysicsObject_resolve_damage(o, energy);
+                    }
+                }
+            }
+        }
 
         u->get_grav_pull(&g, o);
         PhysicsObject_tick(o, &g, dt);
@@ -1167,6 +1208,9 @@ namespace Diana
         if (expired.size() > 0)
         {
             LOCK(expire_lock);
+            //! @todo Promote this into a function that'll make this a LOT simpler here.
+            //! Use something like PhysicsObject_free() and Beam_free()
+            
             // Handle expiry queue
             // First sort the expiry queue, which is just a vector of phys_ids
             // Then we can binary search our way as we iterate over the list of phys IDs.
@@ -1194,6 +1238,7 @@ namespace Diana
                             free(b->scan_target);
                         }
 
+                        free(b->spectrum);
                         free(b);
                         beams.erase(beams.begin() + i);
                         it = expired.erase(it);
@@ -1244,6 +1289,7 @@ namespace Diana
                             }
                         }
 
+                        free(po->spectrum);
                         free(po);
                         phys_objects.erase(phys_objects.begin() + i);
                         it = expired.erase(it);
