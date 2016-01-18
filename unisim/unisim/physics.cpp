@@ -25,16 +25,18 @@ namespace Diana
 
     //! If the radiation energy per square metre at an object's radius is less than this amount
     //! (in Watts), the radiation source is considered too insignificant to be harmful. This is a
-    //! threshold, derived from industrial laser cutting appliances.
+    //! threshold, derived from industrial laser cutting appliances and solar irradiance of Mercury.
+    //! See: http://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
     //!
     //! To compare, Sol outputs 61.7MW/m^2 at it's surface.
-#define RADIATION_ENERGY_CUTOFF 1e4 // A 6000W cutting laser uses a beam about 0.5mm across.
-                                    // Using the Stefan-Boltzmann radiative energy equations for a black body,
-                                    // and the fact that a 'good' temperature is about 1500K (the temperature
-                                    // at which steel melts, and most ceramic tiles break down), this results in
-                                    // a radiative power of about 290kW/m^2. This is absolutely dangerous, but 
-                                    // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
-    //! At what percented of the total health does damage start to apply.
+#define RADIATION_ENERGY_CUTOFF 1.5e4 // A 6000W cutting laser uses a beam about 0.5mm across.
+                                      // Using the Stefan-Boltzmann radiative energy equations for a black body,
+                                      // and the fact that a 'good' temperature is about 1500K (the temperature
+                                      // at which steel melts, and most ceramic tiles break down), this results in
+                                      // a radiative power of about 290kW/m^2. This is absolutely dangerous, but 
+                                      // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
+
+    //! At what percentage of the total health does damage start to apply.
 #define HEALTH_DAMAGE_CUTOFF 0.1
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -57,18 +59,20 @@ namespace Diana
         return ((6.67384e-11 * m / (r * r)) >= GRAVITY_CUTOFF);
     }
 
-    bool radiates_strong_enough(struct Spectrum* spectrum, double r)
+    double radiates_strong_enough(struct Spectrum* spectrum, double r)
     {
         double total = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
         struct SpectrumComponent* components = &(spectrum->components);
-        for (int i = 0; i < spectrum->n; i++)
+        for (uint32_t i = 0; i < spectrum->n; i++)
         {
             total += components[i].energy;
         }
 
-        return ((total / (4 * M_PI * r * r)) >= RADIATION_ENERGY_CUTOFF);
+        // Calculate the minimum safe distance from teh radiation source.
+        spectrum->safe_distance = sqrt(total / (4 * M_PI * RADIATION_ENERGY_CUTOFF));
+        return spectrum->safe_distance;
     }
 
     void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
@@ -97,7 +101,8 @@ namespace Diana
         obj->spectrum = spectrum;
         if (spectrum != NULL)
         {
-            obj->dangerous_radiation = radiates_strong_enough(spectrum, obj->radius);
+            radiates_strong_enough(spectrum, obj->radius);
+            obj->dangerous_radiation = (spectrum->safe_distance < obj->radius);
         }
     }
 
@@ -155,8 +160,9 @@ namespace Diana
                 throw std::runtime_error("Spectrum_build::UnableToAllocate");
             }
             ret->n = n;
+
             struct SpectrumComponent* components = &(ret->components);
-            for (int i = 0; i < n; i++)
+            for (uint32_t i = 0; i < n; i++)
             {
                 components[i].wavelength = wavelengths[i];
                 components[i].energy = energies[i];

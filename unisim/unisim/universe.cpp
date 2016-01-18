@@ -241,13 +241,6 @@ namespace Diana
     /// The constructor to initialize a universe for physics simulation.
     Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
     {
-        this->radiation = (struct Spectrum*)malloc(sizeof(struct Spectrum));
-        if (this->radiation == NULL)
-        {
-            throw std::runtime_error("Universe::UnableToAllocateSpectrum");
-        }
-        this->radiation->n = 0;
-
         this->rate = rate;
 
         if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
@@ -304,7 +297,6 @@ namespace Diana
 
         //sched->block_until_done();
         free(phys_worker_args);
-        free(radiation);
 
         stop_net();
         stop_sim();
@@ -820,15 +812,6 @@ namespace Diana
         }
     }
 
-    struct Spectrum* Universe::get_radiation_spectrum(struct PhysicsObject* obj)
-    {
-        //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
-        for (size_t i = 0; i < radiators.size(); i++)
-        {
-        }
-        return NULL;
-    }
-
     bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
     {
         struct PhysCollisionResult phys_result;
@@ -1156,8 +1139,9 @@ namespace Diana
         }
 
         //! @todo Multithread this.
+
+
         u->get_grav_pull(&g, o);
-        u->get_radiation_spectrum(o);
         PhysicsObject_tick(o, &g, dt);
     }
 

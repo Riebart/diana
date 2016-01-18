@@ -154,8 +154,6 @@ namespace Diana
         void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
         
         void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
-        struct Spectrum* get_radiation_spectrum(struct PhysicsObject* obj);
-        struct Spectrum* radiation;
 
         struct vis_client
         {

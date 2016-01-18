@@ -28,19 +28,26 @@ namespace Diana
     {
         // The wavelength of the component, in metres. (green visible light = 550e-9)
         double wavelength;
+        
         // The energy of the emission at the given wavelength, in Watts.
         double energy;
     };
 
     //! @todo This doesn't account for high-energy mass particles that are ionizing
+    //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
     struct Spectrum
     {
         // Number of components in the spectrum
         uint32_t n;
+        
         // Array of spectrum components, precisely n components long.
         // This is actually the first in an array of components, to get the array (pointer), 
         // use &components. There's some allocation magic here.
         struct SpectrumComponent components;
+        
+        // How far away do we need to be before notifications start to arrive for radiation
+        // impacts, this is the minimum safe distance.
+        double safe_distance;
     };
 
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
@@ -214,6 +221,6 @@ namespace Diana
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
 
     bool is_big_enough(double m, double r);
-    bool radiates_strong_enough(struct Spectrum* spectrum, double r);
+    double radiates_strong_enough(struct Spectrum* spectrum, double r);
 }
 #endif
