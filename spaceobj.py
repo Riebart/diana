@@ -129,6 +129,7 @@ class SmartObject(SpaceObject, threading.Thread):
         bm.spread_v = 2*pi
         bm.energy = energy
         bm.beam_type = "WEAP"
+        bm.spectrum = message.Spectrum([1e-6],[energy])
         message.BeamMsg.send(self.sock, self.phys_id, self.osim_id, bm.build())
 
     def init_beam(self, BeamClass, energy, speed, direction, up, h_focus, v_focus):
@@ -213,6 +214,7 @@ class Beam(SpaceObject):
         self.up = up
         self.h_focus = h_focus
         self.v_focus = v_focus
+        self.spectrum = message.Spectrum([550e-9], [energy])
 
     def build_common(self):
         bm = message.BeamMsg()
@@ -223,6 +225,7 @@ class Beam(SpaceObject):
         bm.spread_v = self.v_focus
         bm.energy = self.energy
         bm.beam_type = self.beam_type
+        bm.spectrum = self.spectrum
         return bm
 
     def send_it(self, sock):

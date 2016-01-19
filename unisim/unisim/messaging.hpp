@@ -67,7 +67,7 @@ namespace Diana
         BSONMessage() { }
         virtual ~BSONMessage();
         virtual int spec_all(bool spec = true);
-        virtual bool all_specced(int start_index = 0, int stop_index = -1);
+        virtual bool all_specced(int start_index = 0, int stop_index = -1, int except = -1);
 
     protected:
         BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
@@ -96,7 +96,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* spectrum;
     
     protected:
         const read_lambda* handlers();
@@ -172,7 +172,7 @@ namespace Diana
         char* comm_msg;
         double spread_h, spread_v, energy;
         struct Vector3 origin, velocity, up;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* spectrum;
 
     protected:
         const read_lambda* handlers();
@@ -190,7 +190,7 @@ namespace Diana
         char* comm_msg;
         double energy;
         struct Vector3 position, direction;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* spectrum;
 
     protected:
         const read_lambda* handlers();
@@ -208,7 +208,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* spectrum;
 
     protected:
         const read_lambda* handlers();
@@ -217,7 +217,7 @@ namespace Diana
     class ScanResultMsg : public BSONMessage
     {
     public:
-        ScanResultMsg(BSONReader* _br = NULL) : BSONMessage(_br, 20, handlers(), ScanResult) { }
+        ScanResultMsg(BSONReader* _br = NULL) : BSONMessage(_br, 23, handlers(), ScanResult) { }
         ~ScanResultMsg();
         int64_t send(sock_t sock);
 
@@ -226,7 +226,8 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* obj_spectrum;
+        struct Spectrum* beam_spectrum;
 
     protected:
         const read_lambda* handlers();
@@ -242,7 +243,7 @@ namespace Diana
         int64_t scan_id;
         double energy;
         struct Vector3 direction;
-        struct Spectrum* spectrum = NULL;
+        struct Spectrum* spectrum;
 
     protected:
         const read_lambda* handlers();

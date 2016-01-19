@@ -97,6 +97,10 @@ namespace Diana
 #define SEND_VECTOR3(var) SEND_ELEMENT(var.x) SEND_ELEMENT(var.y) SEND_ELEMENT(var.z)
     // Send a 4D vector to the writer.
 #define SEND_VECTOR4(var) SEND_ELEMENT(var.w) SEND_ELEMENT(var.x) SEND_ELEMENT(var.y) SEND_ELEMENT(var.z)
+    // Send an array using the templated SendArray
+#define SEND_ARRAY(type, src, n, stride) if (specced[spec_check++]) { SendArray<type>(&bw, src, n, stride); } else { bw.push(); }
+    // Helper function to send a full spectrum, calling the three necessary SEND_* macros to send the full object.
+#define SEND_SPECTRUM(spec) SEND_ELEMENT((int32_t)spec->n); SEND_ARRAY(double, &(spec->components.wavelength), spec->n, 2); SEND_ARRAY(double, &(spec->components.power), spec->n, 2)
     // Prepare the necessary writers and index variables for writing elements.
 #define SEND_PROLOGUE() BSONWriter bw; bw.push((char*)"", (int32_t)msg_type); int spec_check = 0; SEND_ELEMENT(server_id); SEND_ELEMENT(client_id);
     // Finish off by pushing an end, and writing the bytes to the socket.
@@ -115,12 +119,13 @@ namespace Diana
 #define READER_LAMBDA4(var, val, type) READER_LAMBDA(var.w, val, type), READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
     // Read a spectrum from the BSONReader into a message object, this just knits together the
     // actual reading of the size, allocating the structure, and reading arrays into the components
-#define READER_LAMBDA_SPECTRUM(type) \
-    READER_LAMBDA_IP(((type*)msg)->spectrum = Spectrum_allocate(el.i32_val)), \
-    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->spectrum; \
-                     ReadArray<double>((double*)(&s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true)), \
-    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->spectrum; \
-                     ReadArray<double>((double*)(&s->components.power), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true))
+#define READER_LAMBDA_SPECTRUM(var, type) \
+    READER_LAMBDA_IP(((type*)msg)->var = Spectrum_allocate(el.i32_val)), \
+    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->var; \
+                     ReadArray<double>(&(s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true)), \
+    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->var; \
+                     ReadArray<double>(&(s->components.power), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true); \
+                     radiates_strong_enough(s))
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
@@ -144,7 +149,7 @@ namespace Diana
 
         // Consider, and gracefully handle, the case where there aren't enough elements in
         // the array to meet our quota.
-        for (nread = 0; ((nread < n) && (el.type == BSONReader::EndOfDocument)); nread++)
+        for (nread = 0; ((nread < n) && (el.type != BSONReader::EndOfDocument)); nread++)
         {
             dst[nread * stride] = get_val(el);
             el = br->get_next_element();
@@ -163,6 +168,16 @@ namespace Diana
         // in the quota, if it is negative, there was more consumed than the target, and if it
         // is zero, then exactly the quote was consumed from the array.
         return (int32_t)(n - nread);
+    }
+
+    template<typename T> void SendArray(BSONWriter* bw, T* src, uint32_t n, uint32_t stride = 1)
+    {
+        bw->push_array();
+        for (uint32_t i = 0; i < n; i++)
+        {
+            bw->push(src[i * stride]);
+        }
+        bw->push_end();
     }
 
     //! @todo Support things other than C strings
@@ -240,7 +255,7 @@ namespace Diana
         return num_el;
     }
 
-    bool BSONMessage::all_specced(int start_index, int stop_index)
+    bool BSONMessage::all_specced(int start_index, int stop_index, int except)
     {
         if (stop_index == -1)
         {
@@ -249,7 +264,8 @@ namespace Diana
         bool ret = true;
         for (int i = start_index; i <= stop_index; i++)
         {
-            ret &= specced[i];
+            // If we're at the excepted position, ignore it's specced value.
+            ret &= ((i == except) || specced[i]);
         }
         return ret;
     }
@@ -370,7 +386,7 @@ namespace Diana
         READER_LAMBDA4(orientation, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA3(thrust, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg),
-        READER_LAMBDA_SPECTRUM(PhysicalPropertiesMsg)
+        READER_LAMBDA_SPECTRUM(spectrum, PhysicalPropertiesMsg)
     };
     const read_lambda* PhysicalPropertiesMsg::handlers()
     {
@@ -393,6 +409,7 @@ namespace Diana
         SEND_VECTOR4(orientation);
         SEND_VECTOR3(thrust);
         SEND_ELEMENT(radius);
+        SEND_SPECTRUM(spectrum);
         SEND_EPILOGUE();
     }
 
@@ -498,7 +515,7 @@ namespace Diana
         READER_LAMBDA(energy, el.dbl_val, BeamMsg),
         READER_LAMBDA_IP(ReadString(el, ((BeamMsg*)msg)->beam_type, 5)),
         READER_LAMBDA(comm_msg, ReadString(el), BeamMsg),
-        READER_LAMBDA_SPECTRUM(BeamMsg)
+        READER_LAMBDA_SPECTRUM(spectrum, BeamMsg)
     };
     const read_lambda* BeamMsg::handlers()
     {
@@ -522,6 +539,7 @@ namespace Diana
         SEND_ELEMENT(energy);
         SEND_ELEMENT(beam_type);
         SEND_ELEMENT(comm_msg);
+        SEND_SPECTRUM(spectrum);
         SEND_EPILOGUE();
     }
 
@@ -534,7 +552,7 @@ namespace Diana
         READER_LAMBDA(energy, el.dbl_val, CollisionMsg),
         READER_LAMBDA_IP(ReadString(el, ((CollisionMsg*)msg)->coll_type, 5)),
         READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg),
-        READER_LAMBDA_SPECTRUM(CollisionMsg)
+        READER_LAMBDA_SPECTRUM(spectrum, CollisionMsg)
     };
     const read_lambda* CollisionMsg::handlers()
     {
@@ -564,6 +582,7 @@ namespace Diana
         SEND_ELEMENT(energy);
         SEND_ELEMENT(coll_type);
         SEND_ELEMENT(comm_msg);
+        SEND_SPECTRUM(spectrum);
         SEND_EPILOGUE();
     }
 
@@ -579,7 +598,7 @@ namespace Diana
         READER_LAMBDA4(orientation, el.dbl_val, SpawnMsg),
         READER_LAMBDA3(thrust, el.dbl_val, SpawnMsg),
         READER_LAMBDA(radius, el.dbl_val, SpawnMsg),
-        READER_LAMBDA_SPECTRUM(SpawnMsg)
+        READER_LAMBDA_SPECTRUM(spectrum, SpawnMsg)
     };
     const read_lambda* SpawnMsg::handlers()
     {
@@ -603,6 +622,7 @@ namespace Diana
         SEND_VECTOR4(orientation);
         SEND_VECTOR3(thrust);
         SEND_ELEMENT(radius);
+        SEND_SPECTRUM(spectrum);
         SEND_EPILOGUE();
     }
 
@@ -617,7 +637,9 @@ namespace Diana
         READER_LAMBDA4(orientation, el.dbl_val, ScanResultMsg),
         READER_LAMBDA3(thrust, el.dbl_val, ScanResultMsg),
         READER_LAMBDA(radius, el.dbl_val, ScanResultMsg),
-        READER_LAMBDA(data, ReadString(el), ScanResultMsg)
+        READER_LAMBDA(data, ReadString(el), ScanResultMsg),
+        READER_LAMBDA_SPECTRUM(beam_spectrum, ScanResultMsg),
+        READER_LAMBDA_SPECTRUM(obj_spectrum, ScanResultMsg)
     };
     const read_lambda* ScanResultMsg::handlers()
     {
@@ -641,6 +663,8 @@ namespace Diana
         SEND_VECTOR3(thrust);
         SEND_ELEMENT(radius);
         SEND_ELEMENT(data);
+        SEND_SPECTRUM(beam_spectrum);
+        SEND_SPECTRUM(obj_spectrum);
         SEND_EPILOGUE();
     }
 
@@ -651,7 +675,7 @@ namespace Diana
         READER_LAMBDA(scan_id, el.i64_val, ScanQueryMsg),
         READER_LAMBDA(energy, el.dbl_val, ScanQueryMsg),
         READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg),
-        READER_LAMBDA_SPECTRUM(ScanQueryMsg)
+        READER_LAMBDA_SPECTRUM(spectrum, ScanQueryMsg)
     };
     const read_lambda* ScanQueryMsg::handlers()
     {
@@ -664,6 +688,7 @@ namespace Diana
         SEND_ELEMENT(scan_id);
         SEND_ELEMENT(energy);
         SEND_VECTOR3(direction);
+        SEND_SPECTRUM(spectrum);
         SEND_EPILOGUE();
     }
 

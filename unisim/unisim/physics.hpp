@@ -230,6 +230,6 @@ namespace Diana
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
 
     bool is_big_enough(double m, double r);
-    double radiates_strong_enough(struct Spectrum* spectrum, double r);
+    double radiates_strong_enough(struct Spectrum* spectrum);
 }
 #endif

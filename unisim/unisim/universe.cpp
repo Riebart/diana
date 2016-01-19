@@ -580,20 +580,18 @@ namespace Diana
                 ASSIGN_VAL(17, radius);
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
-                
-                // It is sufficient to verify that the spectrum is NULL, we don't need to worry
-                // about checking the specced[] members, this will be NULL if it was unspecified.
-                // This is special because it is a NULLABLE type, which the others aren't.
-                if (msg->spectrum != NULL)
+
+                // Ensure that the spectrum was specified in the message
+                if (msg->all_specced(msg->num_el - 3))
                 {
                     struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
                     spectrum = Spectrum_perturb(spectrum);
                     spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
                     smarty->pobj.spectrum = spectrum;
-                    
-                    radiates_strong_enough(spectrum, smarty->pobj.radius);
+
+                    radiates_strong_enough(spectrum);
                     bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
-                    
+
                     if (newval != smarty->pobj.dangerous_radiation)
                     {
                         LOCK(add_lock);
@@ -610,10 +608,10 @@ namespace Diana
         case BSONMessage::Beam:
         {
             BeamMsg* msg = (BeamMsg*)msg_base;
-            // We need all of the properties, except the last, if it's not a COMM beam,
+            // We need all of the properties, except message, if it's not a COMM beam,
             // If it's a COMM beam, we need them all.
             if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
-                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 2)))
+                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 1, msg->num_el - 4)))
             {
                 break;
             }
@@ -661,11 +659,12 @@ namespace Diana
 
             // Note that the spectrum is a non-optional component, so we can assume it exists
             // as enforcement of that condition occurs earlier with the all_specced() call.
-            struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
-            spectrum = Spectrum_perturb(spectrum);
-            
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, spectrum);
+                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
+
+            // Now that the beam has a cloned version of the spectrum, perturb it.
+            b->spectrum = Spectrum_perturb(b->spectrum);
+
             add_object(b);
             break;
         }
@@ -673,8 +672,8 @@ namespace Diana
         {
             SpawnMsg* msg = (SpawnMsg*)msg_base;
             // We don't need, or rather, shouldn't have, a server ID on a spawn, but we should
-            // have everything else.
-            if (!msg->all_specced(1))
+            // have everything else. Similarly, spectrum specification is optional.
+            if (!msg->all_specced(1, msg->num_el - 4))
             {
                 break;
             }
@@ -710,15 +709,21 @@ namespace Diana
             memcpy(obj_type, msg->obj_type, len);
 
             struct Spectrum* spectrum = NULL;
-            if (msg->spectrum != NULL)
+            // If the message specifies a spectrum, use it
+            if (msg->all_specced(msg->num_el - 3))
             {
-                spectrum = Spectrum_clone(msg->spectrum);
-                spectrum = Spectrum_perturb(spectrum);
+                spectrum = msg->spectrum;
             }
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
                 msg->mass, msg->radius, obj_type, spectrum);
+
+            // Now that the object contains a cloned version of the spectrum, perturb it.
+            if (obj->spectrum != NULL)
+            {
+                obj->spectrum = Spectrum_perturb(obj->spectrum);
+            }
 
             // Note that adding the object to the attractors and radiators lists is handled
             // at the end of the physics tick when the added vector is emptied.
@@ -1082,15 +1087,16 @@ namespace Diana
                     Vector3_subtract(&cm.position, &o->position);
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
-                    cm.spec_all();
-                    // Note that there is no comm message, so that's unspecced.
                     cm.spectrum = Spectrum_clone(b->spectrum);
-                    cm.specced[cm.num_el - 1] = false;
+                    cm.spec_all();
+
+                    // Note that there is no comm message (yet, maybe), so that's unspecced.
+                    cm.specced[cm.num_el - 4] = false;
 
                     switch (b->type)
                     {
                     case BEAM_COMM:
-                        cm.specced[cm.num_el - 1] = true;
+                        cm.specced[cm.num_el - 4] = true;
                         cm.set_colltype((char*)"COMM");
                         cm.comm_msg = b->comm_msg;
                         cm.send(s->socket);
@@ -1134,6 +1140,7 @@ namespace Diana
                             b_copy->data = NULL;
                             b_copy->comm_msg = NULL;
                             b_copy->scan_target = o_copy;
+                            b_copy->spectrum = Spectrum_clone(b->spectrum);
                             u->queries[st] = { b_copy, cm.energy, beam_result.p };
                         }
                         UNLOCK(u->query_lock);
@@ -1161,19 +1168,23 @@ namespace Diana
                         srm.radius = b->scan_target->radius;
                         srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
                         srm.obj_type = b->scan_target->obj_type;
+                        srm.beam_spectrum = Spectrum_clone(b->spectrum);
                         srm.data = b->data;
-                        srm.spectrum = b->scan_target->spectrum;
                         srm.spec_all();
 
-                        // If the spectrum we're specifying is NULL, then we should unmark the spectrum
-                        // parts of the message. This is the last 3 parts, the number of components, 
-                        // and the two arrays of doubles (wavelengths and powers).
-                        /*if (srm.spectrum == NULL)
+                        // If the spectrum for the object we hit is NULL, then we should unmark
+                        // the spectrum parts of the message.
+                        if (b->scan_target->spectrum == NULL)
                         {
                             srm.specced[srm.num_el - 3] = false;
                             srm.specced[srm.num_el - 2] = false;
                             srm.specced[srm.num_el - 1] = false;
-                        }*/
+                            srm.obj_spectrum = NULL;
+                        }
+                        else
+                        {
+                            srm.obj_spectrum = Spectrum_clone(b->scan_target->spectrum);
+                        }
 
                         srm.send(s->socket);
 
@@ -1199,7 +1210,7 @@ namespace Diana
         //! @todo Multithread this.
         V3 pd;
         PO* other;
-        
+
         if ((u->total_time - u->last_effect_time) >= 1.0)
         {
             u->last_effect_time = u->total_time;
@@ -1207,11 +1218,11 @@ namespace Diana
             {
                 other = u->radiators[i];
                 Vector3_subtract(&pd, &other->position, &o->position);
-                
+
                 if (Vector3_length2(&pd) < other->spectrum->safe_distance_sq)
                 {
                     double energy = other->spectrum->total_power;
-                    
+
                     if (o->type == PHYSOBJECT_SMART)
                     {
                         struct SmartPhysicsObject* s = (SPO*)o;
@@ -1268,7 +1279,7 @@ namespace Diana
             LOCK(expire_lock);
             //! @todo Promote this into a function that'll make this a LOT simpler here.
             //! Use something like PhysicsObject_free() and Beam_free()
-            
+
             // Handle expiry queue
             // First sort the expiry queue, which is just a vector of phys_ids
             // Then we can binary search our way as we iterate over the list of phys IDs.
@@ -1370,8 +1381,8 @@ namespace Diana
                 throw std::runtime_error("WAT");
             }
             UNLOCK(expire_lock);
+            }
         }
-    }
 
     void Universe::handle_added()
     {
@@ -1520,6 +1531,12 @@ namespace Diana
             cm.comm_msg = NULL;
             cm.spec_all();
 
+            // Since this is a physical collision, there's no spectrum attached.
+            cm.spectrum = NULL;
+            cm.specced[cm.num_el - 1] = false;
+            cm.specced[cm.num_el - 2] = false;
+            cm.specced[cm.num_el - 3] = false;
+
             // This constant defines the number of rounds that we'll consider multiple collision at the same instant.
             // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
@@ -1633,7 +1650,7 @@ namespace Diana
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
                     //! but I don't think, in general, this will cause much of a problem for a 60hz
-                    //! physics refresh rate.
+                    //! physics refrecsh rate.
 
                     // Alert the smarties that there was a collision, if either re smart.
                     // Only physical collisions are generated here, beams are elsewhere.
@@ -1765,7 +1782,7 @@ namespace Diana
         // Unlock everything
         UNLOCK(phys_lock);
     }
-    
+
     void Universe::update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval)
     {
         // If it's a current candidate, and the old value indicates it wasn't before, then
@@ -1789,4 +1806,4 @@ namespace Diana
             }
         }
     }
-}
+    }

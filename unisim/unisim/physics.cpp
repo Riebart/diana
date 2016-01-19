@@ -60,7 +60,7 @@ namespace Diana
         return ((6.67384e-11 * m / (r * r)) >= GRAVITY_CUTOFF);
     }
 
-    double radiates_strong_enough(struct Spectrum* spectrum, double r)
+    double radiates_strong_enough(struct Spectrum* spectrum)
     {
         spectrum->total_power = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
@@ -99,10 +99,10 @@ namespace Diana
         obj->health = mass * 1000000;
         obj->emits_gravity = is_big_enough(mass, radius);
 
-        obj->spectrum = spectrum;
+        obj->spectrum = Spectrum_clone(spectrum);
         if (spectrum != NULL)
         {
-            radiates_strong_enough(spectrum, obj->radius);
+            radiates_strong_enough(spectrum);
             // If the safe distance is more than the radius, then it's possible to be
             // in a situation where the radiation levels are dangerous.
             obj->dangerous_radiation = (spectrum->safe_distance_sq > (obj->radius * obj->radius));
@@ -127,12 +127,12 @@ namespace Diana
         // @todo Separate this into separate position deltas, so that the acceleration distance
         // travelled is more accurate, and then add the position delta to the position at the
         // start of the tick at the end of this (which is called at the end of the tick).
-        
+
         // Note that velocity components are handled in the collision portion, so subtract off any
         // portion of the tick time that's already been handled by the collision events.
         Vector3_fmad(&obj->position, dt - obj->t, &obj->velocity);
         obj->t = 0.0;
-        
+
         //! @todo We can save these divisions by not multiplying by mass when we calcualte g
         Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, g);
         Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
@@ -181,14 +181,14 @@ namespace Diana
             struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
             if (ret == NULL)
             {
-                throw std::runtime_error("Spectrum_clone::UnableToAllocate");
+                throw std::runtime_error("Spectrum_allocate::UnableToAllocate");
             }
 
             if (total_size != NULL)
             {
                 *total_size = spectrum_size;
             }
-            
+
             ret->n = n;
             return ret;
         }
@@ -200,7 +200,7 @@ namespace Diana
 
     struct Spectrum* Spectrum_perturb(struct Spectrum* src)
     {
-        return NULL;
+        return src;
     }
 
     struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment)
@@ -417,7 +417,7 @@ namespace Diana
         cr->pce2.n = n;
         Vector3_scale(&cr->pce1.n, vdn1);
         Vector3_scale(&cr->pce2.n, vdn2);
-        
+
         // Clone te normal vector here, we're going to use this later after we calculate the
         // new normal velcoity, we'll subtract off the old one (this) to find the contribution (stored here).
         cr->pce1.dn = cr->pce1.n;
@@ -465,7 +465,7 @@ namespace Diana
 
         double k = 1.0;
         double mscale = k / (obj1->mass + obj2->mass);
-        
+
         // Back up the first object's pre-impact velocity, because we'll need that to compute
         // the second object's velocity.
         n = cr->pce1.n;
@@ -602,10 +602,7 @@ namespace Diana
                         ret->obj_type = obj_type;
                     }
                 }
-                if (ret->spectrum != NULL)
-                {
-                    ret->spectrum = Spectrum_clone(obj->spectrum);
-                }
+                ret->spectrum = Spectrum_clone(obj->spectrum);
             }
         }
         case PHYSOBJECT_SMART:
@@ -629,10 +626,7 @@ namespace Diana
                         ret->obj_type = obj_type;
                     }
                 }
-                if (ret->spectrum != NULL)
-                {
-                    ret->spectrum = Spectrum_clone(obj->spectrum);
-                }
+                ret->spectrum = Spectrum_clone(obj->spectrum);
             }
             break;
         }
@@ -680,6 +674,7 @@ namespace Diana
                 {
                     rb->scan_target = PhysicsObject_clone(rb->scan_target);
                 }
+                rb->spectrum = Spectrum_clone(rb->spectrum);
             }
             ret = (PO*)rb;
         }
@@ -780,7 +775,7 @@ namespace Diana
         beam->distance_travelled = 0;
         beam->max_distance = sqrt(energy / (area_factor * BEAM_ENERGY_CUTOFF));
 
-        beam->spectrum = NULL;
+        beam->spectrum = Spectrum_clone(spectrum);
     }
 
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
@@ -805,11 +800,11 @@ namespace Diana
     {
         //! @todo Take radius into account, which will also require triage for multiple ticks
         //! that intersect the same object.
-        
+
         //! @todo Add in proper occlusion
-        
+
         //! @todo Take into account how much of the object is in the beam's path.
-        
+
         //! @todo There might be a way to more quickly reject from here based on distance,
         //! which could be easier to computer. The problem is that t comes from angle calcs.
 
