@@ -107,6 +107,10 @@ namespace Diana
             // in a situation where the radiation levels are dangerous.
             obj->dangerous_radiation = (spectrum->safe_distance_sq > (obj->radius * obj->radius));
         }
+        else
+        {
+            obj->dangerous_radiation = false;
+        }
     }
 
     void PhysicsObject_tick(PO* obj, V3* g, double dt)

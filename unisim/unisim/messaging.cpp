@@ -1,5 +1,6 @@
 #include <limits>
 #include <functional>
+#include <stdexcept>
 
 #include "messaging.hpp"
 #include "bson.hpp"
@@ -104,7 +105,9 @@ namespace Diana
 
     // Read a single element from the reader, into the specified member variable of a message
     // that is of the specified message type.
-#define READER_LAMBDA(var, val, type) [](uint32_t i, BSONMessage* msg, struct BSONReader::Element& el) {((type*)msg)->var = val; msg->specced[i] = true; }
+#define READER_LAMBDA(var, val, type) [](uint32_t i, const BSONMessage* msg, struct BSONReader::Element& el) {((type*)msg)->var = val; msg->specced[i] = true; }
+    // Run a particular piece of code on the element and message object.
+#define READER_LAMBDA_IP(call) [](uint32_t i, const BSONMessage* msg, struct BSONReader::Element& el) { call; msg->specced[i] = true; }
     // Read a 3D vector from the reader, into the specified member variable of a message
     // that is of the specified message type.
 #define READER_LAMBDA3(var, val, type) READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
@@ -167,34 +170,33 @@ namespace Diana
         return ret;
     }
 
-    BSONMessage::BSONMessage(BSONReader* _br, uint32_t _num_el)
+    // Static lambdas for reading IDs from the message, to supplement the 
+    static read_lambda id_readers[2] = { 
+        READER_LAMBDA(server_id, el.i64_val, BSONMessage),
+        READER_LAMBDA(client_id, el.i64_val, BSONMessage) };
+
+    BSONMessage::BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, BSONMessage::MessageType _msg_type)
     {
         // Note that we don't have to delete the BSONReader, since it's
         // being allocated (probably on the stack) outside of this class.
         this->br = _br;
+        this->msg_type = _msg_type;
         server_id = -1;
         client_id = -1;
 
-        this->num_el = num_el;
-        specced = new bool[num_el + 2]();
-    }
+        this->num_el = _num_el + 2;
+        specced = new bool[num_el]();
 
-    // Static lambdas for reading IDs from the message, to supplement the 
-    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
-        id_readers[2] = { READER_LAMBDA(server_id, el.i64_val, BSONMessage), READER_LAMBDA(client_id, el.i64_val, BSONMessage) };
-
-    void BSONMessage::ReadElements()
-    {
         if (br != NULL)
         {
             int8_t i;
             struct BSONReader::Element el = br->get_next_element();;
             while (el.type != BSONReader::ElementType::NoMoreData)
             {
-                i = el.name[0];
-                if ((i > 0) && ((uint32_t)i <= num_el))
+                i = el.name[0] - 1;
+                if ((i >= 0) && ((uint32_t)i < num_el))
                 {
-                    (i < 2 ? id_readers[i](i, this, el) : this->handlers[i](i, this, el));
+                    (i < 2 ? id_readers[i](i, this, el) : handlers[i - 2](i, this, el));
                 }
                 el = br->get_next_element();
             }
@@ -314,14 +316,20 @@ namespace Diana
         }
     }
 
-    // ================================================================================
-    // ================================================================================
-
-    HelloMsg::HelloMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    const read_lambda* handlers()
     {
-        ReadElements();
+        return NULL;
     }
 
+    // ================================================================================
+    // ================================================================================
+
+    static const read_lambda* HelloMsg_handlers = NULL;
+    const read_lambda* HelloMsg::handlers()
+    {
+        return HelloMsg_handlers;
+    }
+    
     int64_t HelloMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
@@ -331,8 +339,7 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
-        physicalproperties_readers[16] = {
+    static const read_lambda PhysicalPropertiesMsg_handlers[] = {
         READER_LAMBDA(obj_type, ReadString(el), PhysicalPropertiesMsg),
         READER_LAMBDA(mass, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA3(position, el.dbl_val, PhysicalPropertiesMsg),
@@ -341,11 +348,9 @@ namespace Diana
         READER_LAMBDA3(thrust, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg)
     };
-
-    PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br) : BSONMessage(_br, 16)
+    const read_lambda* PhysicalPropertiesMsg::handlers()
     {
-        handlers = physicalproperties_readers;
-        ReadElements();
+        return PhysicalPropertiesMsg_handlers;
     }
 
     PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
@@ -370,28 +375,27 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    static const read_lambda* VisualPropertiesMsg_handlers = NULL;
+    const read_lambda* VisualPropertiesMsg::handlers()
     {
-        throw "NotImplemented";
+        throw std::runtime_error("VisualPropertiesMsg::NotImplemented");
+        return VisualPropertiesMsg_handlers;
     }
 
     int64_t VisualPropertiesMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        throw std::runtime_error("VisualPropertiesMsg::NotImplemented");
     }
 
     // ================================================================================
     // ================================================================================
 
-    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
-        visualdataenable_readers[1] = {
+    static const read_lambda VisualDataEnableMsg_handlers[] = {
         READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
     };
-
-    VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br) : BSONMessage(_br, 1)
+    const read_lambda* VisualDataEnableMsg::handlers()
     {
-        handlers = visualdataenable_readers;
-        ReadElements();
+        return VisualDataEnableMsg_handlers;
     }
 
     int64_t VisualDataEnableMsg::send(sock_t sock)
@@ -404,15 +408,12 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
-        visualmetadataenable_readers[1] = {
-        READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
+    static const read_lambda VisualMetaDataEnableMsg_handlers[] = {
+        READER_LAMBDA(enabled, el.bln_val, VisualMetaDataEnableMsg)
     };
-
-    VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br) : BSONMessage(_br, 1)
+    const read_lambda* VisualMetaDataEnableMsg::handlers()
     {
-        handlers = visualmetadataenable_readers;
-        ReadElements();
+        return VisualMetaDataEnableMsg_handlers;
     }
 
     int64_t VisualMetaDataEnableMsg::send(sock_t sock)
@@ -425,34 +426,32 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
-        visualmetadata_readers[1] = {
-        READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
-    };
-
-    VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    static read_lambda* VisualMetaDataMsg_handlers = NULL;
+    const read_lambda* VisualMetaDataMsg::handlers()
     {
-        handlers = visualmetadata_readers;
-        throw "NotImplemented";
-        ReadElements();
+        throw std::runtime_error("VisualMetaDataMsg::NotImplemented");
+        return VisualMetaDataMsg_handlers;
     }
 
     int64_t VisualMetaDataMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        throw std::runtime_error("VisualMetaDataMsg::NotImplemented");
     }
 
-#define VISUALDATA_MSG_LEN 1 + 1 + 3 + 4
-    VisualDataMsg::VisualDataMsg(BSONReader* _br) : BSONMessage(_br, VISUALDATA_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda VisualDataMsg_handlers[] = {
+        READER_LAMBDA(phys_id, el.i64_val, VisualDataMsg),
+        READER_LAMBDA(radius, el.dbl_val, VisualDataMsg),
+        READER_LAMBDA3(position, el.dbl_val, VisualDataMsg),
+        READER_LAMBDA4(orientation, el.dbl_val, VisualDataMsg)
+    };
+    const read_lambda* VisualDataMsg::handlers()
     {
-        READ_PROLOGUE(VISUALDATA_MSG_LEN)
-            READ_ELEMENT(phys_id, el.i64_val)
-            READ_ELEMENT(radius, el.dbl_val)
-            READ_VECTOR3(position, el.dbl_val)
-            READ_VECTOR4(orientation, el.dbl_val)
-            READ_BEGIN()
+        return VisualDataMsg_handlers;
     }
-
+    
     int64_t VisualDataMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
@@ -463,20 +462,22 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define BEAM_MSG_LEN 3 * 3 + 5 * 1
-    BeamMsg::BeamMsg(BSONReader* _br) : BSONMessage(_br, BEAM_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda BeamMsg_handlers[] = {
+        READER_LAMBDA3(origin, el.dbl_val, BeamMsg),
+        READER_LAMBDA3(velocity, el.dbl_val, BeamMsg),
+        READER_LAMBDA3(up, el.dbl_val, BeamMsg),
+        READER_LAMBDA(spread_h, el.dbl_val, BeamMsg),
+        READER_LAMBDA(spread_v, el.dbl_val, BeamMsg),
+        READER_LAMBDA(energy, el.dbl_val, BeamMsg),
+        READER_LAMBDA_IP(ReadString(el, ((BeamMsg*)msg)->beam_type, 5)),
+        READER_LAMBDA(comm_msg, ReadString(el), BeamMsg)
+    };
+    const read_lambda* BeamMsg::handlers()
     {
-        comm_msg = NULL;
-        READ_PROLOGUE(BEAM_MSG_LEN)
-            READ_VECTOR3(origin, el.dbl_val)
-            READ_VECTOR3(velocity, el.dbl_val)
-            READ_VECTOR3(up, el.dbl_val)
-            READ_ELEMENT(spread_h, el.dbl_val)
-            READ_ELEMENT(spread_v, el.dbl_val)
-            READ_ELEMENT(energy, el.dbl_val)
-            READ_ELEMENT_IP(ReadString(el, this->beam_type, 5)) //! @todo Move these to an enum?
-            READ_ELEMENT(comm_msg, ReadString(el))
-            READ_BEGIN()
+        return BeamMsg_handlers;
     }
 
     BeamMsg::~BeamMsg()
@@ -499,17 +500,19 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define COLLISION_MSG_LEN 3 * 2 + 1 * 3
-    CollisionMsg::CollisionMsg(BSONReader* _br) : BSONMessage(_br, COLLISION_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda CollisionMsg_handlers[] = {
+        READER_LAMBDA3(position, el.dbl_val, CollisionMsg),
+        READER_LAMBDA3(direction, el.dbl_val, CollisionMsg),
+        READER_LAMBDA(energy, el.dbl_val, CollisionMsg),
+        READER_LAMBDA_IP(ReadString(el, ((CollisionMsg*)msg)->coll_type, 5)),
+        READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg)
+    };
+    const read_lambda* CollisionMsg::handlers()
     {
-        comm_msg = NULL;
-        READ_PROLOGUE(COLLISION_MSG_LEN)
-            READ_VECTOR3(position, el.dbl_val)
-            READ_VECTOR3(direction, el.dbl_val)
-            READ_ELEMENT(energy, el.dbl_val)
-            READ_ELEMENT_IP(ReadString(el, this->coll_type, 5))
-            READ_ELEMENT(comm_msg, ReadString(el))
-            READ_BEGIN()
+        return CollisionMsg_handlers;
     }
 
     CollisionMsg::~CollisionMsg()
@@ -538,20 +541,22 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define SPAWN_MSG_LEN 3 * 3 + 4 + 4 * 1
-    SpawnMsg::SpawnMsg(BSONReader* _br) : BSONMessage(_br, SPAWN_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda SpawnMsg_handlers[] = {
+        READER_LAMBDA(is_smart, el.bln_val, SpawnMsg),
+        READER_LAMBDA(obj_type, ReadString(el), SpawnMsg),
+        READER_LAMBDA(mass, el.dbl_val, SpawnMsg),
+        READER_LAMBDA3(position, el.dbl_val, SpawnMsg),
+        READER_LAMBDA3(velocity, el.dbl_val, SpawnMsg),
+        READER_LAMBDA4(orientation, el.dbl_val, SpawnMsg),
+        READER_LAMBDA3(thrust, el.dbl_val, SpawnMsg),
+        READER_LAMBDA(radius, el.dbl_val, SpawnMsg)
+    };
+    const read_lambda* SpawnMsg::handlers()
     {
-        obj_type = NULL;
-        READ_PROLOGUE(SPAWN_MSG_LEN)
-            READ_ELEMENT(is_smart, el.bln_val)
-            READ_ELEMENT(obj_type, ReadString(el))
-            READ_ELEMENT(mass, el.dbl_val)
-            READ_VECTOR3(position, el.dbl_val)
-            READ_VECTOR3(velocity, el.dbl_val)
-            READ_VECTOR4(orientation, el.dbl_val)
-            READ_VECTOR3(thrust, el.dbl_val)
-            READ_ELEMENT(radius, el.dbl_val)
-            READ_BEGIN()
+        return SpawnMsg_handlers;
     }
 
     SpawnMsg::~SpawnMsg()
@@ -574,21 +579,22 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define SCANRESULT_MSG_LEN 3 * 3 + 4 + 4 * 1
-    ScanResultMsg::ScanResultMsg(BSONReader* _br) : BSONMessage(_br, SCANRESULT_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda ScanResultMsg_handlers[] = {
+        READER_LAMBDA(obj_type, ReadString(el), ScanResultMsg),
+        READER_LAMBDA(mass, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA3(position, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA3(velocity, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA4(orientation, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA3(thrust, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA(radius, el.dbl_val, ScanResultMsg),
+        READER_LAMBDA(data, ReadString(el), ScanResultMsg)
+    };
+    const read_lambda* ScanResultMsg::handlers()
     {
-        obj_type = NULL;
-        data = NULL;
-        READ_PROLOGUE(SCANRESULT_MSG_LEN)
-            READ_ELEMENT(obj_type, ReadString(el))
-            READ_ELEMENT(mass, el.dbl_val)
-            READ_VECTOR3(position, el.dbl_val)
-            READ_VECTOR3(velocity, el.dbl_val)
-            READ_VECTOR4(orientation, el.dbl_val)
-            READ_VECTOR3(thrust, el.dbl_val)
-            READ_ELEMENT(radius, el.dbl_val)
-            READ_ELEMENT(data, ReadString(el))
-            READ_BEGIN()
+        return ScanResultMsg_handlers;
     }
 
     ScanResultMsg::~ScanResultMsg()
@@ -611,14 +617,17 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define SCANQUERY_MSG_LEN 1 + 1 + 3
-    ScanQueryMsg::ScanQueryMsg(BSONReader* _br) : BSONMessage(_br, SCANQUERY_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda ScanQueryMsg_handlers[] = {
+        READER_LAMBDA(scan_id, el.i64_val, ScanQueryMsg),
+        READER_LAMBDA(energy, el.dbl_val, ScanQueryMsg),
+        READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg)
+    };
+    const read_lambda* ScanQueryMsg::handlers()
     {
-        READ_PROLOGUE(SCANQUERY_MSG_LEN)
-            READ_ELEMENT(scan_id, el.i64_val)
-            READ_ELEMENT(energy, el.dbl_val)
-            READ_VECTOR3(direction, el.dbl_val)
-            READ_BEGIN()
+        return ScanQueryMsg_handlers;
     }
 
     int64_t ScanQueryMsg::send(sock_t sock)
@@ -635,14 +644,16 @@ namespace Diana
         free(spectrum);
     }
 
-#define SCANRESPONSE_MSG_LEN 1 + 1
-    ScanResponseMsg::ScanResponseMsg(BSONReader* _br) : BSONMessage(_br, SCANRESPONSE_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda ScanResponseMsg_handlers[] = {
+        READER_LAMBDA(scan_id, el.i64_val, ScanResponseMsg),
+        READER_LAMBDA(data, ReadString(el), ScanResponseMsg)
+    };
+    const read_lambda* ScanResponseMsg::handlers()
     {
-        data = NULL;
-        READ_PROLOGUE(SCANRESPONSE_MSG_LEN)
-            READ_ELEMENT(scan_id, el.i64_val)
-            READ_ELEMENT(data, ReadString(el))
-            READ_BEGIN()
+        return ScanResponseMsg_handlers;
     }
 
     ScanResponseMsg::~ScanResponseMsg()
@@ -657,34 +668,44 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define GOODBYE_MSG_LEN 0
-    GoodbyeMsg::GoodbyeMsg(BSONReader* _br) : BSONMessage(_br, GOODBYE_MSG_LEN)
-    {
-        // A generic FIN, indicating a smarty is disconnecting, or otherwise leaving.
-        READ_PROLOGUE(GOODBYE_MSG_LEN)
-            READ_BEGIN()
-    }
+    // ================================================================================
+    // ================================================================================
 
+    static read_lambda* GoodbyeMsg_handlers = NULL;
+    const read_lambda* GoodbyeMsg::handlers()
+    {
+        return GoodbyeMsg_handlers;
+    }
+    
     int64_t GoodbyeMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
         SEND_EPILOGUE();
     }
 
-#define DIRECTORY_MSG_LEN 4
-    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda* DirectoryMsg_handlers = NULL;
+    const read_lambda* DirectoryMsg::handlers()
     {
-        throw "NotImplemented";
-        item_type = NULL;
-        READ_PROLOGUE(DIRECTORY_MSG_LEN)
-            READ_ELEMENT(item_type, ReadString(el))
-            READ_ELEMENT(item_count, el.i64_val; \
-                this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
-            // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
-            READ_ELEMENT_IP(;)
-            READ_ELEMENT_IP(;)
-            READ_BEGIN()
+        throw std::runtime_error("DirectoryMsg::NotImplemented");
+        return DirectoryMsg_handlers;
     }
+
+    //DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
+    //{
+    //    throw "NotImplemented";
+    //    item_type = NULL;
+    //    READ_PROLOGUE(DIRECTORY_MSG_LEN)
+    //        READ_ELEMENT(item_type, ReadString(el))
+    //        READ_ELEMENT(item_count, el.i64_val; \
+    //            this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
+    //        // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
+    //        READ_ELEMENT_IP(;)
+    //        READ_ELEMENT_IP(;)
+    //        READ_BEGIN()
+    //}
 
     DirectoryMsg::~DirectoryMsg()
     {
@@ -717,13 +738,15 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define NAME_MSG_LEN 1
-    NameMsg::NameMsg(BSONReader* _br) : BSONMessage(_br, NAME_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda NameMsg_handlers[] = {
+        READER_LAMBDA(name, ReadString(el), NameMsg)
+    };
+    const read_lambda* NameMsg::handlers()
     {
-        name = NULL;
-        READ_PROLOGUE(NAME_MSG_LEN)
-            READ_ELEMENT(name, ReadString(el))
-            READ_BEGIN()
+        return NameMsg_handlers;
     }
 
     NameMsg::~NameMsg()
@@ -738,12 +761,15 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define READY_MSG_LEN 1
-    ReadyMsg::ReadyMsg(BSONReader* _br) : BSONMessage(_br, READY_MSG_LEN)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda ReadyMsg_handlers[] = {
+        READER_LAMBDA(ready, el.bln_val, ReadyMsg)
+    };
+    const read_lambda* ReadyMsg::handlers()
     {
-        READ_PROLOGUE(READY_MSG_LEN)
-            READ_ELEMENT(ready, el.bln_val)
-            READ_BEGIN()
+        return ReadyMsg_handlers;
     }
 
     int64_t ReadyMsg::send(sock_t sock)
@@ -753,9 +779,15 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-    ThrustMsg::ThrustMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda ThrustMsg_handlers[] = {
+        READER_LAMBDA3(thrust, el.dbl_val, ThrustMsg)
+    };
+    const read_lambda* ThrustMsg::handlers()
     {
-        throw "NotImplemented";
+        return ThrustMsg_handlers;
     }
 
     int64_t ThrustMsg::send(sock_t sock)
@@ -763,9 +795,15 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    VelocityMsg::VelocityMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda VelocityMsg_handlers[] = {
+        READER_LAMBDA3(velocity, el.dbl_val, VelocityMsg)
+    };
+    const read_lambda* VelocityMsg::handlers()
     {
-        throw "NotImplemented";
+        return VelocityMsg_handlers;
     }
 
     int64_t VelocityMsg::send(sock_t sock)
@@ -773,9 +811,15 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    JumpMsg::JumpMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda JumpMsg_handlers[] = {
+        READER_LAMBDA3(destination, el.dbl_val, JumpMsg)
+    };
+    const read_lambda* JumpMsg::handlers()
     {
-        throw "NotImplemented";
+        return JumpMsg_handlers;
     }
 
     int64_t JumpMsg::send(sock_t sock)
@@ -783,23 +827,33 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda* InfoUpdateMsg_handlers = NULL;
+    const read_lambda* InfoUpdateMsg::handlers()
     {
-        throw "NotImplemented";
+        throw std::runtime_error("InfoUpdateMsg::NotImplemented");
+        return InfoUpdateMsg_handlers;
     }
 
     int64_t InfoUpdateMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        throw std::runtime_error("InfoUpdateMsg::NotImplemented");
     }
 
-    RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br) : BSONMessage(_br, 0)
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda* RequestUpdateMsg_handlers = NULL;
+    const read_lambda* RequestUpdateMsg::handlers()
     {
-        throw "NotImplemented";
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        return RequestUpdateMsg_handlers;
     }
 
     int64_t RequestUpdateMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
     }
 }

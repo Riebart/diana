@@ -553,9 +553,18 @@ namespace Diana
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
-                    this->update_list(&smarty->pobj, &attractors, 
-                        is_big_enough(smarty->pobj.mass, smarty->pobj.radius), 
-                        smarty->pobj.emits_gravity);
+                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius);
+
+                    // We don't want to grab the lock unnecessarily
+                    if (newval != smarty->pobj.emits_gravity)
+                    {
+                        LOCK(add_lock);
+                        LOCK(expire_lock);
+                        update_list(&smarty->pobj, &attractors, newval, smarty->pobj.emits_gravity);
+                        UNLOCK(add_lock);
+                        UNLOCK(expire_lock);
+                        smarty->pobj.emits_gravity = newval;
+                    }
                 }
 
 #define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
@@ -584,8 +593,16 @@ namespace Diana
                     
                     radiates_strong_enough(spectrum, smarty->pobj.radius);
                     bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
-                    update_list(&smarty->pobj, &radiators, newval, smarty->pobj.dangerous_radiation);
-                    smarty->pobj.dangerous_radiation = newval;
+                    
+                    if (newval != smarty->pobj.dangerous_radiation)
+                    {
+                        LOCK(add_lock);
+                        LOCK(expire_lock);
+                        update_list(&smarty->pobj, &radiators, newval, smarty->pobj.dangerous_radiation);
+                        UNLOCK(add_lock);
+                        UNLOCK(expire_lock);
+                        smarty->pobj.dangerous_radiation = newval;
+                    }
                 }
             }
             break;
@@ -703,10 +720,8 @@ namespace Diana
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
                 msg->mass, msg->radius, obj_type, spectrum);
 
-            // The update_list() function should take care of doing the right thing
-            // based on the truth-values of the emits_gravity value.
-            update_list(obj, &attractors, obj->emits_gravity, false);
-            update_list(obj, &radiators, obj->dangerous_radiation, false);
+            // Note that adding the object to the attractors and radiators lists is handled
+            // at the end of the physics tick when the added vector is emptied.
 
             // If the object creating the object is a smarty, it's position and velocity
             // are relative.
@@ -1757,7 +1772,7 @@ namespace Diana
         // we can safely just add it.
         if (newval && !oldval)
         {
-            attractors.push_back(obj);
+            list->push_back(obj);
         }
         // If we're an existing member, and the new value indicates we should no longer be,
         // then find it and remove it.
