@@ -159,20 +159,37 @@ namespace Diana
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src)
     {
-        if (src == NULL)
+        if ((src != NULL) && (src->n > 0))
+        {
+            size_t spectrum_size;
+            struct Spectrum* ret = Spectrum_allocate(src->n, &spectrum_size);
+            //size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
+            memcpy(ret, src, spectrum_size);
+            return ret;
+        }
+        else
         {
             return NULL;
         }
+    }
 
-        if (src->n > 0)
+    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size)
+    {
+        if (n > 0)
         {
-            size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
+            size_t spectrum_size = sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent);
             struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
             if (ret == NULL)
             {
                 throw std::runtime_error("Spectrum_clone::UnableToAllocate");
             }
-            memcpy(ret, src, spectrum_size);
+
+            if (total_size != NULL)
+            {
+                *total_size = spectrum_size;
+            }
+            
+            ret->n = n;
             return ret;
         }
         else

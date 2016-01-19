@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 #include "messaging.hpp"
-#include "bson.hpp"
 
 #ifdef UE_NETWORKING
 #include "Networking.h"
@@ -114,11 +113,57 @@ namespace Diana
     // Read a 4D vector from the reader, into the specified member variable of a message
     // that is of the specified message type.
 #define READER_LAMBDA4(var, val, type) READER_LAMBDA(var.w, val, type), READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
+    // Read a spectrum from the BSONReader into a message object, this just knits together the
+    // actual reading of the size, allocating the structure, and reading arrays into the components
+#define READER_LAMBDA_SPECTRUM(type) \
+    READER_LAMBDA_IP(((type*)msg)->spectrum = Spectrum_allocate(el.i32_val)), \
+    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->spectrum; \
+                     ReadArray<double>((double*)(&s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true)), \
+    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->spectrum; \
+                     ReadArray<double>((double*)(&s->components.power), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true))
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
     const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
     const struct Vector4 v4_nan = { dbl_nan, dbl_nan, dbl_nan, dbl_nan };
+
+    // Static lambdas for reading IDs from the message, to supplement the 
+    static read_lambda id_readers[2] = {
+        READER_LAMBDA(server_id, el.i64_val, BSONMessage),
+        READER_LAMBDA(client_id, el.i64_val, BSONMessage) };
+
+    // Attempt to read exactly n elements of type T into the destination array, which may be
+    // interleaved (stride > 1), applying the given function to each BSON element to retrieve
+    // the desired value.
+    template<typename T> int32_t ReadArray(T* dst, uint32_t n, 
+        BSONReader* br, std::function<T(struct BSONReader::Element&)> get_val, 
+        uint32_t stride = 1, bool consume_extra = true)
+    {
+        struct BSONReader::Element el = br->get_next_element();
+        uint32_t nread;
+
+        // Consider, and gracefully handle, the case where there aren't enough elements in
+        // the array to meet our quota.
+        for (nread = 0; ((nread < n) && (el.type == BSONReader::EndOfDocument)); nread++)
+        {
+            dst[nread * stride] = get_val(el);
+            el = br->get_next_element();
+        }
+
+        // If, for whatever reason, we're at our max (n), but not yet at an end of document
+        // read up the rest if we're told to do so (the default)
+        while (consume_extra && (el.type != BSONReader::EndOfDocument))
+        {
+            el = br->get_next_element();
+            nread++;
+        }
+
+        // Return the difference between the number of items consumed, whether or not they
+        // were stored, and the target number. If the number is positive, there was remainder
+        // in the quota, if it is negative, there was more consumed than the target, and if it
+        // is zero, then exactly the quote was consumed from the array.
+        return (int32_t)(n - nread);
+    }
 
     //! @todo Support things other than C strings
     void ReadString(BSONReader::Element& el, char* dst, int32_t dstlen)
@@ -150,11 +195,6 @@ namespace Diana
         return ret;
     }
 
-    // Static lambdas for reading IDs from the message, to supplement the 
-    static read_lambda id_readers[2] = { 
-        READER_LAMBDA(server_id, el.i64_val, BSONMessage),
-        READER_LAMBDA(client_id, el.i64_val, BSONMessage) };
-
     BSONMessage::BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, BSONMessage::MessageType _msg_type)
     {
         // Note that we don't have to delete the BSONReader, since it's
@@ -181,6 +221,9 @@ namespace Diana
                 el = br->get_next_element();
             }
         }
+
+        // So we're not tempted to use it after we're done reading things.
+        br = NULL;
     }
 
     BSONMessage::~BSONMessage()
@@ -309,7 +352,7 @@ namespace Diana
     {
         return HelloMsg_handlers;
     }
-    
+
     int64_t HelloMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
@@ -326,7 +369,8 @@ namespace Diana
         READER_LAMBDA3(velocity, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA4(orientation, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA3(thrust, el.dbl_val, PhysicalPropertiesMsg),
-        READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg)
+        READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA_SPECTRUM(PhysicalPropertiesMsg)
     };
     const read_lambda* PhysicalPropertiesMsg::handlers()
     {
@@ -431,7 +475,7 @@ namespace Diana
     {
         return VisualDataMsg_handlers;
     }
-    
+
     int64_t VisualDataMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
@@ -453,7 +497,8 @@ namespace Diana
         READER_LAMBDA(spread_v, el.dbl_val, BeamMsg),
         READER_LAMBDA(energy, el.dbl_val, BeamMsg),
         READER_LAMBDA_IP(ReadString(el, ((BeamMsg*)msg)->beam_type, 5)),
-        READER_LAMBDA(comm_msg, ReadString(el), BeamMsg)
+        READER_LAMBDA(comm_msg, ReadString(el), BeamMsg),
+        READER_LAMBDA_SPECTRUM(BeamMsg)
     };
     const read_lambda* BeamMsg::handlers()
     {
@@ -488,7 +533,8 @@ namespace Diana
         READER_LAMBDA3(direction, el.dbl_val, CollisionMsg),
         READER_LAMBDA(energy, el.dbl_val, CollisionMsg),
         READER_LAMBDA_IP(ReadString(el, ((CollisionMsg*)msg)->coll_type, 5)),
-        READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg)
+        READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg),
+        READER_LAMBDA_SPECTRUM(CollisionMsg)
     };
     const read_lambda* CollisionMsg::handlers()
     {
@@ -532,7 +578,8 @@ namespace Diana
         READER_LAMBDA3(velocity, el.dbl_val, SpawnMsg),
         READER_LAMBDA4(orientation, el.dbl_val, SpawnMsg),
         READER_LAMBDA3(thrust, el.dbl_val, SpawnMsg),
-        READER_LAMBDA(radius, el.dbl_val, SpawnMsg)
+        READER_LAMBDA(radius, el.dbl_val, SpawnMsg),
+        READER_LAMBDA_SPECTRUM(SpawnMsg)
     };
     const read_lambda* SpawnMsg::handlers()
     {
@@ -603,7 +650,8 @@ namespace Diana
     static read_lambda ScanQueryMsg_handlers[] = {
         READER_LAMBDA(scan_id, el.i64_val, ScanQueryMsg),
         READER_LAMBDA(energy, el.dbl_val, ScanQueryMsg),
-        READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg)
+        READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg),
+        READER_LAMBDA_SPECTRUM(ScanQueryMsg)
     };
     const read_lambda* ScanQueryMsg::handlers()
     {
@@ -656,7 +704,7 @@ namespace Diana
     {
         return GoodbyeMsg_handlers;
     }
-    
+
     int64_t GoodbyeMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();

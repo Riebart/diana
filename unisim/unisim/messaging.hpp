@@ -59,6 +59,9 @@ namespace Diana
         // just the message specific fields. Can be 0.
         uint32_t num_el;
 
+        // A pointer to an externally allocated/destroyed BSONReader object.
+        BSONReader* br;
+
         // Read a BSON message form a socket and return a pointer to a newly allocated object.
         static BSONMessage* ReadMessage(sock_t sock);
         BSONMessage() { }
@@ -67,7 +70,6 @@ namespace Diana
         virtual bool all_specced(int start_index = 0, int stop_index = -1);
 
     protected:
-        BSONReader* br;
         BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
 
         virtual const read_lambda* handlers() { return NULL; };
@@ -86,7 +88,7 @@ namespace Diana
     class PhysicalPropertiesMsg : public BSONMessage
     {
     public:
-        PhysicalPropertiesMsg(BSONReader* _br = NULL) : BSONMessage(_br, 16, handlers(), PhysicalProperties) { }
+        PhysicalPropertiesMsg(BSONReader* _br = NULL) : BSONMessage(_br, 19, handlers(), PhysicalProperties) { }
         ~PhysicalPropertiesMsg();
         int64_t send(sock_t sock);
 
@@ -94,7 +96,7 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
-        struct Spectrum* spectrum = NULL;  //! @todo convert the spectrum into a subdocument BSON dict.
+        struct Spectrum* spectrum = NULL;
     
     protected:
         const read_lambda* handlers();
@@ -162,7 +164,7 @@ namespace Diana
     class BeamMsg : public BSONMessage
     {
     public:
-        BeamMsg(BSONReader* _br = NULL) : BSONMessage(_br, 14, handlers(), Beam) { }
+        BeamMsg(BSONReader* _br = NULL) : BSONMessage(_br, 17, handlers(), Beam) { }
         ~BeamMsg();
         int64_t send(sock_t sock);
 
@@ -179,7 +181,7 @@ namespace Diana
     class CollisionMsg : public BSONMessage
     {
     public:
-        CollisionMsg(BSONReader* _br = NULL) : BSONMessage(_br, 9, handlers(), Collision) { }
+        CollisionMsg(BSONReader* _br = NULL) : BSONMessage(_br, 12, handlers(), Collision) { }
         ~CollisionMsg();
         int64_t send(sock_t sock);
         void set_colltype(char* type);
@@ -197,7 +199,7 @@ namespace Diana
     class SpawnMsg : public BSONMessage
     {
     public:
-        SpawnMsg(BSONReader* _br = NULL) : BSONMessage(_br, 17, handlers(), Spawn) { }
+        SpawnMsg(BSONReader* _br = NULL) : BSONMessage(_br, 20, handlers(), Spawn) { }
         ~SpawnMsg();
         int64_t send(sock_t sock);
 
@@ -215,7 +217,7 @@ namespace Diana
     class ScanResultMsg : public BSONMessage
     {
     public:
-        ScanResultMsg(BSONReader* _br = NULL) : BSONMessage(_br, 17, handlers(), ScanResult) { }
+        ScanResultMsg(BSONReader* _br = NULL) : BSONMessage(_br, 20, handlers(), ScanResult) { }
         ~ScanResultMsg();
         int64_t send(sock_t sock);
 
@@ -233,7 +235,7 @@ namespace Diana
     class ScanQueryMsg : public BSONMessage
     {
     public:
-        ScanQueryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 5, handlers(), ScanQuery) { }
+        ScanQueryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 8, handlers(), ScanQuery) { }
         ~ScanQueryMsg();
         int64_t send(sock_t sock);
 

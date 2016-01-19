@@ -208,6 +208,7 @@ namespace Diana
     void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src);
+    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size = NULL);
     struct Spectrum* Spectrum_perturb(struct Spectrum* src);
     struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment);
 
