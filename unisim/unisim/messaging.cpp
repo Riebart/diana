@@ -115,26 +115,6 @@ namespace Diana
     // that is of the specified message type.
 #define READER_LAMBDA4(var, val, type) READER_LAMBDA(var.w, val, type), READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
 
-    //! @todo Move these to be static in the source file, so they aren't build for every message read. Leave that until later, because premature optimization=bad.
-    // Read a single value of the specified type from the BSONReader, and assign it to the variable specified.
-#define READ_ELEMENT(var, val) [this, &el](int i){ this->var = val; this->specced[i] = true; },
-    // Insert arbitrary code into the lambda to operate on the lement, and modify the object.
-#define READ_ELEMENT_IP(call) [this, &el](int i){ call; this->specced[i] = true; },
-    // Create a lambda reader for a 3D vector from the BSONReader, element by element.
-#define READ_VECTOR3(var, val) READ_ELEMENT(var.x, val) READ_ELEMENT(var.y, val) READ_ELEMENT(var.z, val) 
-    // Create a lambda reader for a 4D vector from the BSONReader, element by element.
-#define READ_VECTOR4(var, val) READ_ELEMENT(var.w, val) READ_ELEMENT(var.x, val) READ_ELEMENT(var.y, val) READ_ELEMENT(var.z, val) 
-    // Perform prologue setup, and boilerplate stuff, including keeping track of the number of elements, and other such.
-#define READ_PROLOGUE(num_el_lit) num_el = 2 + num_el_lit; \
-    struct BSONReader::Element el = br->get_next_element(); \
-    specced = (bool*)calloc(num_el, sizeof(bool)); \
-    if (specced == NULL) { throw "OOM"; }\
-    std::function<void(int)> fps[num_el_lit + 2 + 1] = { \
-        READ_ELEMENT(server_id, el.i64_val) READ_ELEMENT(client_id, el.i64_val)
-    // Begin the reading of objects from the BSONReader, calling the lambdas as we go, calling the 'last' lambda for every element that has an index too large.
-#define READ_BEGIN() [](int i){}}; while (el.type != BSONReader::ElementType::NoMoreData) { \
-    if ((el.name[0] > 0) && ((uint32_t)el.name[0] <= num_el)) { fps[el.name[0] - 1](el.name[0] - 1); } el = br->get_next_element(); }
-
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
     const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
