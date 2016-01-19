@@ -1,6 +1,9 @@
 #include "universe.hpp"
 #include "messaging.hpp"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <stdio.h>
 #include <algorithm>
 
@@ -85,6 +88,7 @@
 #define GRAVITATIONAL_CONSTANT  6.67384e-11
 #define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define CLAMP(m, v, M) MIN((M), MAX((v), (m)))
@@ -753,6 +757,75 @@ namespace Diana
                 hm.spec_all();
                 hm.send(socket);
             }
+            break;
+        }
+        case BSONMessage::MessageType::ScanQuery:
+        {
+            ScanQueryMsg* msg = (ScanQueryMsg*)msg_base;
+            // The only time we should receive this is when a ship is querying for a passive
+            // scan. We expect the query to have no parameters, as it simply begins an event.
+
+            // A passive scan result contains the signature and direction.
+            //
+            // The signature's power levels are scaled based on the distance (the area of the 
+            // wave front, total power amortized across the area, times the area of the object
+            // intersection with that).
+            
+            if (smarty != NULL)
+            {
+                // The message to send back.
+                ScanResultMsg srm;
+
+                // Spec the position (which will be a unit vector in the direction of the source
+                srm.specced[4] = true;
+                srm.specced[5] = true;
+                srm.specced[6] = true;
+
+                // Spec the obj_spectrum component, which will be the same spectrum as the object
+                // with the power levels scaled inverse-quadratically by distance.
+                srm.specced[22] = true;
+                srm.specced[23] = true;
+                srm.specced[24] = true;
+
+                PO* other;
+                V3 dp;
+                double distance_sq;
+                double power_scale;
+ 
+                //! @todo Move all objects with spectra to their own vector
+                for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
+                {
+                    other = *it;
+                    if (other->spectrum == NULL)
+                    {
+                        continue;
+                    }
+                    
+                    Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
+                    distance_sq = Vector3_length2(&dp);
+                    
+                    power_scale = smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq);
+                    if ((power_scale * other->spectrum->total_power) < COLLISION_ENERGY_CUTOFF)
+                    {
+                        continue;
+                    }
+
+                    srm.obj_spectrum = Spectrum_clone(other->spectrum);
+                    struct SpectrumComponent* components = &(srm.obj_spectrum->components);
+                    for (size_t i = 0; i < srm.obj_spectrum->n; i++)
+                    {
+                        components[i].power *= power_scale;
+                    }
+
+                    srm.position = dp;
+                    // Make the position a unit direction vector.
+                    Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
+                    srm.send(smarty->socket);
+                    free(srm.obj_spectrum);
+                }
+                srm.obj_spectrum = NULL;
+            }
+
             break;
         }
         case BSONMessage::MessageType::ScanResponse:

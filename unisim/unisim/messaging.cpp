@@ -655,16 +655,16 @@ namespace Diana
     int64_t ScanResultMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
-        SEND_ELEMENT(obj_type);
-        SEND_ELEMENT(mass);
-        SEND_VECTOR3(position);
-        SEND_VECTOR3(velocity);
-        SEND_VECTOR4(orientation);
-        SEND_VECTOR3(thrust);
-        SEND_ELEMENT(radius);
-        SEND_ELEMENT(data);
-        SEND_SPECTRUM(beam_spectrum);
-        SEND_SPECTRUM(obj_spectrum);
+        SEND_ELEMENT(obj_type); // 2
+        SEND_ELEMENT(mass); // 3
+        SEND_VECTOR3(position); // 4,5,6
+        SEND_VECTOR3(velocity); // 7,8,9
+        SEND_VECTOR4(orientation); // 10,11,12,13
+        SEND_VECTOR3(thrust); // 14,15,16
+        SEND_ELEMENT(radius); // 17
+        SEND_ELEMENT(data); // 18
+        SEND_SPECTRUM(beam_spectrum); // 19,20,21
+        SEND_SPECTRUM(obj_spectrum); // 22,23,24
         SEND_EPILOGUE();
     }
 
