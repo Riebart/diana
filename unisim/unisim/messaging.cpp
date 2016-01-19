@@ -276,10 +276,10 @@ namespace Diana
         int32_t message_len = 0;
         int64_t nbytes = SOCKET_READ(sock, (char*)(&message_len), 4);
 
-
+        // There's no good reason why this would return anything other than 4 bytes.
         if (nbytes != 4)
         {
-            //! @todo Do the right thing, and check that nbytes matches what it should.
+            return NULL;
         }
 
         char* buf = (char*)malloc(message_len);
