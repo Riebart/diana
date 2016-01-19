@@ -159,6 +159,11 @@ namespace Diana
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src)
     {
+        if (src == NULL)
+        {
+            return NULL;
+        }
+
         if (src->n > 0)
         {
             size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
@@ -582,7 +587,7 @@ namespace Diana
                 }
                 if (ret->spectrum != NULL)
                 {
-
+                    ret->spectrum = Spectrum_clone(obj->spectrum);
                 }
             }
         }
@@ -609,7 +614,7 @@ namespace Diana
                 }
                 if (ret->spectrum != NULL)
                 {
-
+                    ret->spectrum = Spectrum_clone(obj->spectrum);
                 }
             }
             break;

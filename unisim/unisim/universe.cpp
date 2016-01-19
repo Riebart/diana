@@ -613,7 +613,7 @@ namespace Diana
             // We need all of the properties, except the last, if it's not a COMM beam,
             // If it's a COMM beam, we need them all.
             if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
-                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 1)))
+                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 2)))
             {
                 break;
             }
@@ -1168,12 +1168,12 @@ namespace Diana
                         // If the spectrum we're specifying is NULL, then we should unmark the spectrum
                         // parts of the message. This is the last 3 parts, the number of components, 
                         // and the two arrays of doubles (wavelengths and powers).
-                        if (srm.spectrum == NULL)
+                        /*if (srm.spectrum == NULL)
                         {
                             srm.specced[srm.num_el - 3] = false;
                             srm.specced[srm.num_el - 2] = false;
                             srm.specced[srm.num_el - 1] = false;
-                        }
+                        }*/
 
                         srm.send(s->socket);
 
