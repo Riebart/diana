@@ -102,6 +102,16 @@ namespace Diana
     // Finish off by pushing an end, and writing the bytes to the socket.
 #define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return SOCKET_WRITE(sock, (char*)bytes, *(int32_t*)bytes);
 
+    // Read a single element from the reader, into the specified member variable of a message
+    // that is of the specified message type.
+#define READER_LAMBDA(var, val, type) [](uint32_t i, BSONMessage* msg, struct BSONReader::Element& el) {((type*)msg)->var = val; msg->specced[i] = true; }
+    // Read a 3D vector from the reader, into the specified member variable of a message
+    // that is of the specified message type.
+#define READER_LAMBDA3(var, val, type) READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
+    // Read a 4D vector from the reader, into the specified member variable of a message
+    // that is of the specified message type.
+#define READER_LAMBDA4(var, val, type) READER_LAMBDA(var.w, val, type), READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
+
     //! @todo Move these to be static in the source file, so they aren't build for every message read. Leave that until later, because premature optimization=bad.
     // Read a single value of the specified type from the BSONReader, and assign it to the variable specified.
 #define READ_ELEMENT(var, val) [this, &el](int i){ this->var = val; this->specced[i] = true; },
@@ -120,7 +130,7 @@ namespace Diana
         READ_ELEMENT(server_id, el.i64_val) READ_ELEMENT(client_id, el.i64_val)
     // Begin the reading of objects from the BSONReader, calling the lambdas as we go, calling the 'last' lambda for every element that has an index too large.
 #define READ_BEGIN() [](int i){}}; while (el.type != BSONReader::ElementType::NoMoreData) { \
-    if ((el.name[0] > 0) && (el.name[0] <= num_el)) { fps[el.name[0] - 1](el.name[0] - 1); } el = br->get_next_element(); }
+    if ((el.name[0] > 0) && ((uint32_t)el.name[0] <= num_el)) { fps[el.name[0] - 1](el.name[0] - 1); } el = br->get_next_element(); }
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
@@ -157,25 +167,48 @@ namespace Diana
         return ret;
     }
 
-    BSONMessage::BSONMessage(BSONReader* _br, MessageType _msg_type)
+    BSONMessage::BSONMessage(BSONReader* _br, uint32_t _num_el)
     {
         // Note that we don't have to delete the BSONReader, since it's
         // being allocated (probably on the stack) outside of this class.
         this->br = _br;
-        this->msg_type = _msg_type;
         server_id = -1;
         client_id = -1;
-        specced = NULL;
+
+        this->num_el = num_el;
+        specced = new bool[num_el + 2]();
+    }
+
+    // Static lambdas for reading IDs from the message, to supplement the 
+    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
+        id_readers[2] = { READER_LAMBDA(server_id, el.i64_val, BSONMessage), READER_LAMBDA(client_id, el.i64_val, BSONMessage) };
+
+    void BSONMessage::ReadElements()
+    {
+        if (br != NULL)
+        {
+            int8_t i;
+            struct BSONReader::Element el = br->get_next_element();;
+            while (el.type != BSONReader::ElementType::NoMoreData)
+            {
+                i = el.name[0];
+                if ((i > 0) && ((uint32_t)i <= num_el))
+                {
+                    (i < 2 ? id_readers[i](i, this, el) : this->handlers[i](i, this, el));
+                }
+                el = br->get_next_element();
+            }
+        }
     }
 
     BSONMessage::~BSONMessage()
     {
-        free(specced);
+        delete specced;
     }
 
     int BSONMessage::spec_all(bool spec)
     {
-        for (int i = 0; i < num_el; i++)
+        for (uint32_t i = 0; i < num_el; i++)
         {
             specced[i] = spec;
         }
@@ -232,67 +265,61 @@ namespace Diana
             switch (mt)
             {
             case MessageType::Hello:
-                return new HelloMsg(&br, mt);
+                return new HelloMsg(&br);
             case MessageType::PhysicalProperties:
-                return new PhysicalPropertiesMsg(&br, mt);
+                return new PhysicalPropertiesMsg(&br);
             case MessageType::VisualProperties:
-                return new VisualPropertiesMsg(&br, mt);
+                return new VisualPropertiesMsg(&br);
             case MessageType::VisualDataEnable:
-                return new VisualDataEnableMsg(&br, mt);
+                return new VisualDataEnableMsg(&br);
             case MessageType::VisualMetaDataEnable:
-                return new VisualMetaDataEnableMsg(&br, mt);
+                return new VisualMetaDataEnableMsg(&br);
             case MessageType::VisualMetaData:
-                return new VisualMetaDataMsg(&br, mt);
+                return new VisualMetaDataMsg(&br);
             case MessageType::VisualData:
-                return new VisualDataMsg(&br, mt);
+                return new VisualDataMsg(&br);
             case MessageType::Beam:
-                return new BeamMsg(&br, mt);
+                return new BeamMsg(&br);
             case MessageType::Collision:
-                return new CollisionMsg(&br, mt);
+                return new CollisionMsg(&br);
             case MessageType::Spawn:
-                return new SpawnMsg(&br, mt);
+                return new SpawnMsg(&br);
             case MessageType::ScanResult:
-                return new ScanResultMsg(&br, mt);
+                return new ScanResultMsg(&br);
             case MessageType::ScanQuery:
-                return new ScanQueryMsg(&br, mt);
+                return new ScanQueryMsg(&br);
             case MessageType::ScanResponse:
-                return new ScanResponseMsg(&br, mt);
+                return new ScanResponseMsg(&br);
             case MessageType::Goodbye:
-                return new GoodbyeMsg(&br, mt);
+                return new GoodbyeMsg(&br);
             case MessageType::Directory:
-                return new DirectoryMsg(&br, mt);
+                return new DirectoryMsg(&br);
             case MessageType::Name:
-                return new NameMsg(&br, mt);
+                return new NameMsg(&br);
             case MessageType::Ready:
-                return new ReadyMsg(&br, mt);
+                return new ReadyMsg(&br);
             case MessageType::Thrust:
-                return new ThrustMsg(&br, mt);
+                return new ThrustMsg(&br);
             case MessageType::Velocity:
-                return new VelocityMsg(&br, mt);
+                return new VelocityMsg(&br);
             case MessageType::Jump:
-                return new JumpMsg(&br, mt);
+                return new JumpMsg(&br);
             case MessageType::InfoUpdate:
-                return new InfoUpdateMsg(&br, mt);
+                return new InfoUpdateMsg(&br);
             case MessageType::RequestUpdate:
-                return new RequestUpdateMsg(&br, mt);
+                return new RequestUpdateMsg(&br);
             default:
                 return NULL;
             }
         }
     }
 
-#define HELLO_MSG_LEN 0
-    HelloMsg::HelloMsg()
-    {
-        msg_type = Hello;
-        num_el = 2 + HELLO_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
+    // ================================================================================
+    // ================================================================================
 
-    HelloMsg::HelloMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    HelloMsg::HelloMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
-        READ_PROLOGUE(HELLO_MSG_LEN)
-            READ_BEGIN();
+        ReadElements();
     }
 
     int64_t HelloMsg::send(sock_t sock)
@@ -301,26 +328,24 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define PHYSICALPROPERTIES_MSG_LEN 1 * 3 + 3 * 3 + 4
-    PhysicalPropertiesMsg::PhysicalPropertiesMsg()
-    {
-        msg_type = PhysicalProperties;
-        num_el = 2 + PHYSICALPROPERTIES_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
+    // ================================================================================
+    // ================================================================================
 
-    PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
+        physicalproperties_readers[16] = {
+        READER_LAMBDA(obj_type, ReadString(el), PhysicalPropertiesMsg),
+        READER_LAMBDA(mass, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA3(position, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA3(velocity, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA4(orientation, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA3(thrust, el.dbl_val, PhysicalPropertiesMsg),
+        READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg)
+    };
+
+    PhysicalPropertiesMsg::PhysicalPropertiesMsg(BSONReader* _br) : BSONMessage(_br, 16)
     {
-        obj_type = NULL;
-        READ_PROLOGUE(PHYSICALPROPERTIES_MSG_LEN)
-            READ_ELEMENT(obj_type, ReadString(el))
-            READ_ELEMENT(mass, el.dbl_val)
-            READ_VECTOR3(position, el.dbl_val)
-            READ_VECTOR3(velocity, el.dbl_val)
-            READ_VECTOR4(orientation, el.dbl_val)
-            READ_VECTOR3(thrust, el.dbl_val)
-            READ_ELEMENT(radius, el.dbl_val)
-            READ_BEGIN();
+        handlers = physicalproperties_readers;
+        ReadElements();
     }
 
     PhysicalPropertiesMsg::~PhysicalPropertiesMsg()
@@ -342,8 +367,10 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define VISUALPROPERTIES_MSG_LEN 
-    VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    // ================================================================================
+    // ================================================================================
+
+    VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }
@@ -353,19 +380,18 @@ namespace Diana
         throw "NotImplemented";
     }
 
-#define VISUALDATAENABLE_MSG_LEN 1
-    VisualDataEnableMsg::VisualDataEnableMsg()
-    {
-        msg_type = VisualDataEnable;
-        num_el = 2 + VISUALDATAENABLE_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
+    // ================================================================================
+    // ================================================================================
 
-    VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
+        visualdataenable_readers[1] = {
+        READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
+    };
+
+    VisualDataEnableMsg::VisualDataEnableMsg(BSONReader* _br) : BSONMessage(_br, 1)
     {
-        READ_PROLOGUE(VISUALDATAENABLE_MSG_LEN)
-            READ_ELEMENT(enabled, el.bln_val)
-            READ_BEGIN()
+        handlers = visualdataenable_readers;
+        ReadElements();
     }
 
     int64_t VisualDataEnableMsg::send(sock_t sock)
@@ -375,19 +401,18 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define VISUALMETADATAENABLE_MSG_LEN 1
-    VisualMetaDataEnableMsg::VisualMetaDataEnableMsg()
-    {
-        msg_type = VisualDataEnable;
-        num_el = 2 + VISUALMETADATAENABLE_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
+    // ================================================================================
+    // ================================================================================
 
-    VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
+        visualmetadataenable_readers[1] = {
+        READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
+    };
+
+    VisualMetaDataEnableMsg::VisualMetaDataEnableMsg(BSONReader* _br) : BSONMessage(_br, 1)
     {
-        READ_PROLOGUE(VISUALMETADATAENABLE_MSG_LEN)
-            READ_ELEMENT(enabled, el.bln_val)
-            READ_BEGIN()
+        handlers = visualmetadataenable_readers;
+        ReadElements();
     }
 
     int64_t VisualMetaDataEnableMsg::send(sock_t sock)
@@ -397,18 +422,19 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-#define VISUALMETADATA_MSG_LEN 0
-    VisualMetaDataMsg::VisualMetaDataMsg()
-    {
-        msg_type = VisualMetaData;
-        num_el = 2 + VISUALMETADATA_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-        throw "NotImplemented";
-    }
+    // ================================================================================
+    // ================================================================================
 
-    VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    static std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)>
+        visualmetadata_readers[1] = {
+        READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
+    };
+
+    VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
+        handlers = visualmetadata_readers;
         throw "NotImplemented";
+        ReadElements();
     }
 
     int64_t VisualMetaDataMsg::send(sock_t sock)
@@ -417,14 +443,7 @@ namespace Diana
     }
 
 #define VISUALDATA_MSG_LEN 1 + 1 + 3 + 4
-    VisualDataMsg::VisualDataMsg()
-    {
-        msg_type = VisualData;
-        num_el = 2 + VISUALDATA_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    VisualDataMsg::VisualDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    VisualDataMsg::VisualDataMsg(BSONReader* _br) : BSONMessage(_br, VISUALDATA_MSG_LEN)
     {
         READ_PROLOGUE(VISUALDATA_MSG_LEN)
             READ_ELEMENT(phys_id, el.i64_val)
@@ -445,14 +464,7 @@ namespace Diana
     }
 
 #define BEAM_MSG_LEN 3 * 3 + 5 * 1
-    BeamMsg::BeamMsg()
-    {
-        msg_type = Beam;
-        num_el = 2 + BEAM_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    BeamMsg::BeamMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    BeamMsg::BeamMsg(BSONReader* _br) : BSONMessage(_br, BEAM_MSG_LEN)
     {
         comm_msg = NULL;
         READ_PROLOGUE(BEAM_MSG_LEN)
@@ -488,14 +500,7 @@ namespace Diana
     }
 
 #define COLLISION_MSG_LEN 3 * 2 + 1 * 3
-    CollisionMsg::CollisionMsg()
-    {
-        msg_type = Collision;
-        num_el = 2 + COLLISION_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    CollisionMsg::CollisionMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    CollisionMsg::CollisionMsg(BSONReader* _br) : BSONMessage(_br, COLLISION_MSG_LEN)
     {
         comm_msg = NULL;
         READ_PROLOGUE(COLLISION_MSG_LEN)
@@ -534,13 +539,7 @@ namespace Diana
     }
 
 #define SPAWN_MSG_LEN 3 * 3 + 4 + 4 * 1
-    SpawnMsg::SpawnMsg()
-    {
-        msg_type = Spawn;
-        num_el = 2 + SPAWN_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-    SpawnMsg::SpawnMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    SpawnMsg::SpawnMsg(BSONReader* _br) : BSONMessage(_br, SPAWN_MSG_LEN)
     {
         obj_type = NULL;
         READ_PROLOGUE(SPAWN_MSG_LEN)
@@ -576,14 +575,7 @@ namespace Diana
     }
 
 #define SCANRESULT_MSG_LEN 3 * 3 + 4 + 4 * 1
-    ScanResultMsg::ScanResultMsg()
-    {
-        msg_type = ScanResult;
-        num_el = 2 + SCANRESULT_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    ScanResultMsg::ScanResultMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    ScanResultMsg::ScanResultMsg(BSONReader* _br) : BSONMessage(_br, SCANRESULT_MSG_LEN)
     {
         obj_type = NULL;
         data = NULL;
@@ -620,14 +612,7 @@ namespace Diana
     }
 
 #define SCANQUERY_MSG_LEN 1 + 1 + 3
-    ScanQueryMsg::ScanQueryMsg()
-    {
-        msg_type = ScanQuery;
-        num_el = 2 + SCANQUERY_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    ScanQueryMsg::ScanQueryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    ScanQueryMsg::ScanQueryMsg(BSONReader* _br) : BSONMessage(_br, SCANQUERY_MSG_LEN)
     {
         READ_PROLOGUE(SCANQUERY_MSG_LEN)
             READ_ELEMENT(scan_id, el.i64_val)
@@ -651,14 +636,7 @@ namespace Diana
     }
 
 #define SCANRESPONSE_MSG_LEN 1 + 1
-    ScanResponseMsg::ScanResponseMsg()
-    {
-        msg_type = ScanResponse;
-        num_el = 2 + SCANRESPONSE_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    ScanResponseMsg::ScanResponseMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    ScanResponseMsg::ScanResponseMsg(BSONReader* _br) : BSONMessage(_br, SCANRESPONSE_MSG_LEN)
     {
         data = NULL;
         READ_PROLOGUE(SCANRESPONSE_MSG_LEN)
@@ -680,14 +658,7 @@ namespace Diana
     }
 
 #define GOODBYE_MSG_LEN 0
-    GoodbyeMsg::GoodbyeMsg()
-    {
-        msg_type = Goodbye;
-        num_el = 2 + GOODBYE_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    GoodbyeMsg::GoodbyeMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    GoodbyeMsg::GoodbyeMsg(BSONReader* _br) : BSONMessage(_br, GOODBYE_MSG_LEN)
     {
         // A generic FIN, indicating a smarty is disconnecting, or otherwise leaving.
         READ_PROLOGUE(GOODBYE_MSG_LEN)
@@ -701,14 +672,7 @@ namespace Diana
     }
 
 #define DIRECTORY_MSG_LEN 4
-    DirectoryMsg::DirectoryMsg()
-    {
-        msg_type = Directory;
-        num_el = 2 + DIRECTORY_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
     {
         throw "NotImplemented";
         item_type = NULL;
@@ -754,14 +718,7 @@ namespace Diana
     }
 
 #define NAME_MSG_LEN 1
-    NameMsg::NameMsg()
-    {
-        msg_type = Name;
-        num_el = 2 + NAME_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    NameMsg::NameMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    NameMsg::NameMsg(BSONReader* _br) : BSONMessage(_br, NAME_MSG_LEN)
     {
         name = NULL;
         READ_PROLOGUE(NAME_MSG_LEN)
@@ -782,14 +739,7 @@ namespace Diana
     }
 
 #define READY_MSG_LEN 1
-    ReadyMsg::ReadyMsg()
-    {
-        msg_type = Ready;
-        num_el = 2 + READY_MSG_LEN;
-        specced = (bool*)calloc(num_el, sizeof(bool));
-    }
-
-    ReadyMsg::ReadyMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    ReadyMsg::ReadyMsg(BSONReader* _br) : BSONMessage(_br, READY_MSG_LEN)
     {
         READ_PROLOGUE(READY_MSG_LEN)
             READ_ELEMENT(ready, el.bln_val)
@@ -803,7 +753,7 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-    ThrustMsg::ThrustMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    ThrustMsg::ThrustMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }
@@ -813,7 +763,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    VelocityMsg::VelocityMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    VelocityMsg::VelocityMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }
@@ -823,7 +773,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    JumpMsg::JumpMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    JumpMsg::JumpMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }
@@ -833,7 +783,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }
@@ -843,7 +793,7 @@ namespace Diana
         throw "NotImplemented";
     }
 
-    RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
+    RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br) : BSONMessage(_br, 0)
     {
         throw "NotImplemented";
     }

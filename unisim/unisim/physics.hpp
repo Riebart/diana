@@ -35,15 +35,11 @@ namespace Diana
 
     //! @todo This doesn't account for high-energy mass particles that are ionizing
     //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
+#pragma pack(1)
     struct Spectrum
     {
         // Number of components in the spectrum
         uint32_t n;
-        
-        // Array of spectrum components, precisely n components long.
-        // This is actually the first in an array of components, to get the array (pointer), 
-        // use &components. There's some allocation magic here.
-        struct SpectrumComponent components;
         
         // How far away do we need to be before notifications start to arrive for radiation
         // impacts, this is the SQUARE of the minimum safe distance, to avoid the need for
@@ -52,7 +48,13 @@ namespace Diana
 
         // Cache of the total power of the spectrum across all wavelengths.
         double total_power;
+
+        // Array of spectrum components, precisely n components long.
+        // This is actually the first in an array of components, to get the array (pointer), 
+        // use &components. There's some allocation magic here.
+        struct SpectrumComponent components;
     };
+#pragma pack()
 
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
 #pragma pack(1)
