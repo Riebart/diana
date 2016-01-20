@@ -270,6 +270,10 @@ namespace Diana
         // Now realloc the return spectrum block because we probably didn't use all the
         // space we allocated.
         ret = (struct Spectrum*)realloc(ret, spectrum_size - sizeof(struct SpectrumComponent) * (dst->n + increment->n - n_unique_wavelengths));
+        if (ret == NULL)
+        {
+            throw std::runtime_error("Spectrum_combine:ReallocShrinkFailed");
+        }
         return ret;
     }
 
@@ -787,7 +791,7 @@ namespace Diana
                 res->scan_target = PhysicsObject_clone(obj);
                 if (res->scan_target == NULL)
                 {
-                    throw "OOMError::ScanTargetAllocFailed";
+                    throw std::runtime_error("OOMError::ScanTargetAllocFailed");
                 }
                 obj->universe->add_object(res);
             }
