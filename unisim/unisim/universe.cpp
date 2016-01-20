@@ -661,6 +661,8 @@ namespace Diana
                 Vector3_add(&msg->velocity, &smarty->pobj.velocity);
             }
 
+            //! @todo Couple the energy of the beam to the power of the spectrum somehow.
+
             // Note that the spectrum is a non-optional component, so we can assume it exists
             // as enforcement of that condition occurs earlier with the all_specced() call.
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
@@ -745,6 +747,7 @@ namespace Diana
             if (msg->is_smart)
             {
                 obj->type = PhysicsObjectType::PHYSOBJECT_SMART;
+                obj->health = -1;
             }
 
             add_object(obj);
@@ -775,6 +778,12 @@ namespace Diana
             {
                 // The message to send back.
                 ScanResultMsg srm;
+                
+                // Spec the IDs
+                srm.specced[0] = true;
+                srm.server_id = msg->server_id;
+                srm.specced[1] = true;
+                srm.client_id = msg->client_id;
 
                 // Spec the position (which will be a unit vector in the direction of the source
                 srm.specced[4] = true;
@@ -792,6 +801,8 @@ namespace Diana
                 double distance_sq;
                 double power_scale;
  
+                //! @todo THIS IS BAD! Locking the physics lock synchronously for networking? Oh no.
+                LOCK(phys_lock);
                 //! @todo Move all objects with spectra to their own vector
                 for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
                 {
@@ -804,7 +815,19 @@ namespace Diana
                     Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
                     distance_sq = Vector3_length2(&dp);
                     
-                    power_scale = smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq);
+                    // If we're looking at our own radiation signature, then we need to do
+                    // things a little different. THis will stand out as having a position that
+                    // is (0,0,0), so we can leave the power spectrum alone.
+                    if (Vector3_almost_zeroS(distance_sq))
+                    {
+                        power_scale = 1.0;
+                    }
+                    else
+                    {
+                        // You can't absorb more power than it's outputting...
+                        power_scale = MIN(1.0, smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq));
+                    }
+                    
                     if ((power_scale * other->spectrum->total_power) < COLLISION_ENERGY_CUTOFF)
                     {
                         continue;
@@ -817,12 +840,17 @@ namespace Diana
                         components[i].power *= power_scale;
                     }
 
+                    // Make the position a unit direction vector if it isn't (0,0,0)
+                    if (!Vector3_almost_zeroS(distance_sq))
+                    {
+                        Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
+                    }
+                    
                     srm.position = dp;
-                    // Make the position a unit direction vector.
-                    Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
                     srm.send(smarty->socket);
                     free(srm.obj_spectrum);
                 }
+                UNLOCK(phys_lock);
                 srm.obj_spectrum = NULL;
             }
 
@@ -1160,6 +1188,9 @@ namespace Diana
                     Vector3_subtract(&cm.position, &o->position);
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
+                    // It makes sense that we know about the power levels of the beam here,
+                    // since in theory the ship would know about the duration of the beam, 
+                    // even if we're not simulating that.
                     cm.spectrum = Spectrum_clone(b->spectrum);
                     cm.spec_all();
 
@@ -1245,6 +1276,11 @@ namespace Diana
                         srm.data = b->data;
                         srm.spec_all();
 
+                        if (b->data == NULL)
+                        {
+                            srm.specced[srm.num_el - 7] = false;
+                        }
+
                         // If the spectrum for the object we hit is NULL, then we should unmark
                         // the spectrum parts of the message.
                         if (b->scan_target->spectrum == NULL)
@@ -1283,18 +1319,23 @@ namespace Diana
         //! @todo Multithread this.
         V3 pd;
         PO* other;
+        double distance_sq;
 
         if ((u->total_time - u->last_effect_time) >= 1.0)
         {
-            u->last_effect_time = u->total_time;
             for (size_t i = 0; i < u->radiators.size(); i++)
             {
                 other = u->radiators[i];
-                Vector3_subtract(&pd, &other->position, &o->position);
-
-                if (Vector3_length2(&pd) < other->spectrum->safe_distance_sq)
+                if (other->phys_id == o->phys_id)
                 {
-                    double energy = other->spectrum->total_power;
+                    continue;
+                }
+                
+                Vector3_subtract(&pd, &other->position, &o->position);
+                distance_sq = Vector3_length2(&pd);
+                if (distance_sq < other->spectrum->safe_distance_sq)
+                {
+                    double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
 
                     if (o->type == PHYSOBJECT_SMART)
                     {
@@ -1308,12 +1349,13 @@ namespace Diana
                         cm.position = pd;
                         cm.energy = energy;
                         cm.comm_msg = NULL;
-                        cm.spec_all();
-                        // Note that there is no comm message, so that's unspecced.
-                        cm.specced[cm.num_el - 1] = false;
                         cm.spectrum = Spectrum_clone(other->spectrum);
                         //! @todo Ok, this four-character string is starting to feel forced.
                         cm.set_colltype((char*)"RADN");
+                        cm.spec_all();
+                        
+                        // Note that there is no comm message, so that's unspecced.
+                        cm.specced[cm.num_el - 4] = false;
                         cm.send(s->socket);
                     }
                     else if (o->type == PHYSOBJECT)
@@ -1851,6 +1893,12 @@ namespace Diana
 
         handle_expired();
         handle_added();
+
+        // Now update the periodic timer that tells us when to do periodic effects.
+        if ((total_time - last_effect_time) >= 1.0)
+        {
+            last_effect_time = total_time;
+        }
 
         // Unlock everything
         UNLOCK(phys_lock);

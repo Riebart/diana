@@ -7,6 +7,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <random>
+
 namespace Diana
 {
     //! Area of a sphere is 4 pi r^2
@@ -37,9 +39,13 @@ namespace Diana
                                       // a radiative power of about 290kW/m^2. This is absolutely dangerous, but 
                                       // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
 
+    // Spectrum wavelengths and power levels are adjusted by this proportional amount randomly
+#define SPECTRUM_SLUSH_RANGE 0.01
+
     //! At what percentage of the total health does damage start to apply.
 #define HEALTH_DAMAGE_CUTOFF 0.1
 
+#define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -200,12 +206,71 @@ namespace Diana
 
     struct Spectrum* Spectrum_perturb(struct Spectrum* src)
     {
+        if (src != NULL)
+        {
+            // We won't wiggle anything around by more than 1% of it's current value.
+            std::uniform_real_distribution<double> dist(1.0 - SPECTRUM_SLUSH_RANGE, 1.0 + SPECTRUM_SLUSH_RANGE);
+            thread_local std::default_random_engine re;
+            struct SpectrumComponent* components = &src->components;
+            for (uint32_t i = 0; i < src->n; i++)
+            {
+                if (ABS(components[i].power) < SPECTRUM_SLUSH_RANGE)
+                {
+                    // No one will be able to fully remove a component from the signature.
+                    components[i].power = (dist(re) - 1.0 + SPECTRUM_SLUSH_RANGE) / 2;
+                }
+                else
+                {
+                    components[i].power *= dist(re);
+                }
+            }
+            radiates_strong_enough(src);
+        }
         return src;
     }
 
     struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment)
     {
-        return dst;
+        size_t spectrum_size;
+        // Allocate a new spectrum that's the size of both, we'll realloc() later to shrink it.
+        struct Spectrum* ret = Spectrum_allocate(dst->n + increment->n, &spectrum_size);
+        // Copy the source to the destination
+        memcpy(ret, dst, spectrum_size - sizeof(struct SpectrumComponent) * increment->n);
+
+        struct SpectrumComponent* d_components = &ret->components;
+        struct SpectrumComponent* i_components = &increment->components;
+        uint32_t n_unique_wavelengths = dst->n;
+        bool found;
+
+        // Now go through the increment, and linear-travel through the return spectrum
+        // either updating the power, or appending to the end, as appropriate.
+        for (uint32_t i = 0; i < increment->n; i++)
+        {
+            found = false;
+            for (uint32_t j = 0; j < n_unique_wavelengths; j++)
+            {
+                if (Vector3_almost_zeroS(d_components[j].wavelength - i_components[i].wavelength))
+                {
+                    // If we find a matching wavelength, add the incremental
+                    // power component
+                    d_components[j].power += i_components[i].power;
+                    found = true;
+                    break;
+                }
+            }
+
+            // If we didn't find it, add the incremental wavelength to the list.
+            if (!found)
+            {
+                d_components[n_unique_wavelengths] = i_components[i];
+                n_unique_wavelengths++;
+            }
+        }
+
+        // Now realloc the return spectrum block because we probably didn't use all the
+        // space we allocated.
+        ret = (struct Spectrum*)realloc(ret, spectrum_size - sizeof(struct SpectrumComponent) * (dst->n + increment->n - n_unique_wavelengths));
+        return ret;
     }
 
     //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
@@ -715,6 +780,8 @@ namespace Diana
             if (obj->type == PHYSOBJECT)
             {
                 Beam* b = (Beam*)other;
+                // Note that the effect->p position marks the position in 3-space, relative to the beam
+                // origin, of the impact. To obtain the direction, this should negate that direction
                 Beam* res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
 
                 res->scan_target = PhysicsObject_clone(obj);
@@ -744,14 +811,17 @@ namespace Diana
         }
     }
 
-    void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
-    {
-        PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type, spectrum);
-        obj->pobj.type = PHYSOBJECT_SMART;
+    //void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
+    //{
+    //    PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type, spectrum);
+    //    obj->pobj.type = PHYSOBJECT_SMART;
+    //    
+    //    // The universe doesn't track the health of smarties.
+    //    obj->pobj.health = -1;
 
-        obj->socket = socket;
-        obj->client_id = client_id;
-    }
+    //    obj->socket = socket;
+    //    obj->client_id = client_id;
+    //}
 
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)
     {
@@ -791,7 +861,15 @@ namespace Diana
         double speed = Vector3_length(velocity);
         double area_factor = BEAM_SOLID_ANGLE_FACTOR * (angle_h * angle_v);
         double cosh = cos(angle_h / 2);
+        if (Vector3_almost_zeroS(cosh))
+        {
+            cosh = 0.0;
+        }
         double cosv = cos(angle_v / 2);
+        if (Vector3_almost_zeroS(cosv))
+        {
+            cosv = 0.0;
+        }
 
         Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg, data, spectrum);
     }
@@ -806,9 +884,9 @@ namespace Diana
         //! @todo Take into account how much of the object is in the beam's path.
 
         //! @todo There might be a way to more quickly reject from here based on distance,
-        //! which could be easier to computer. The problem is that t comes from angle calcs.
+        //! which could be easie to computer. The problem is that t comes from angle calcs.
 
-        // Move the object position to a point32_t relative to the beam's origin.
+        // Move the object position to be relative to the beam's origin.
         // Then scale the velocity by dt, and add it to the position to get the
         // start, end, and difference vectors.
         bcr->d = b->direction;
@@ -816,6 +894,15 @@ namespace Diana
         // Relative position of object to beam origin.
         V3 p = obj->position;
         Vector3_subtract(&p, &p, &b->origin);
+
+        // If the position delta is almost zero (or less than the object's radius),
+        // and the beam hasn't gone anywhere yet, then just bail, because we don't care
+        // about hitting the object we started at.
+        if (Vector3_almost_zero(&p) && Vector3_almost_zeroS(b->distance_travelled))
+        {
+            bcr->t = -1.0;
+            return;
+        }
 
         // Object position delta in this tick.
         V3 dp = obj->velocity;
@@ -974,9 +1061,12 @@ namespace Diana
 
     B* Beam_make_return_beam(B* beam, double energy, V3* origin, PhysicsObjectType type)
     {
-        V3 d;
-        Vector3_subtract(&d, &beam->origin, origin);
+        V3 d = *origin;
         Vector3_normalize(&d);
+        Vector3_scale(&d, -1);
+
+        V3 absolute_origin;
+        Vector3_add(&absolute_origin, origin, &beam->origin);
 
         V3 up = { -1 * d.y, d.x, 0.0 };
         Vector3_normalize(&up);
@@ -984,7 +1074,7 @@ namespace Diana
         Vector3_cross(&right, &d, &up);
 
         B* ret = (B*)malloc(sizeof(B));
-        Beam_init(ret, beam->universe, origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
+        Beam_init(ret, beam->universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
         return ret;
     }
 }

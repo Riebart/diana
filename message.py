@@ -11,6 +11,8 @@ from collections import OrderedDict
 class Spectrum:
     def __init__(self, wavelengths, powers):
         if wavelengths != None and powers != None:
+            print wavelengths
+            print powers
             self.spectrum = dict(zip(wavelengths, powers))
         else:
             self.spectrum = None
@@ -163,7 +165,7 @@ class Message:
     @staticmethod
     def ReadMsgEl(key, msg):
         if isinstance(key, list) or isinstance(key, tuple):
-            return tuple([ (msg[k] if k in msg else None) for k in key])
+            return [ (msg[k] if k in msg else None) for k in key]
         else:
             return msg[key] if key in msg else None
 
@@ -428,6 +430,8 @@ class ScanResultMsg(Message):
         self.data = Message.ReadMsgEl('\x13', msg)
         # Skip 14
         self.spectrum = Spectrum(Message.ReadMsgEl('\x15', msg), Message.ReadMsgEl('\x16', msg))
+        # Skip 17
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x18', msg), Message.ReadMsgEl('\x19', msg))
 
     def build(self):
         msg = {}
@@ -454,6 +458,7 @@ class ScanQueryMsg(Message):
 
     def build(self):
         msg = {}
+        print self.scan_dir
         vals = [ self.scan_id, self.scan_energy ] + self.scan_dir + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg

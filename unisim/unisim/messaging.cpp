@@ -648,6 +648,8 @@ namespace Diana
 
     ScanResultMsg::~ScanResultMsg()
     {
+        free(beam_spectrum);
+        free(obj_spectrum);
         free(obj_type);
         free(data);
     }

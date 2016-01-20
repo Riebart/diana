@@ -6,132 +6,9 @@ import socket
 import objectsim
 import random
 import bson
+import time
+import math
 from vector import Vector3
-
-#def test_vis_data():
-    #direction = Vector3((1.0, 0.0,0.0))
-    #miss1 = ship1.fire_missile(direction, 50000.0)
-    #print ship1
-
-    #sock = socket.socket()
-    #sock.connect( ("localhost", 5511) )
-
-    #message.VisualDataEnableMsg.send(sock, 0, 0, 1)
-
-    #while True:
-        #print sock.recv(1024)
-
-## Spawns some asteroids in a vacuum (just a socket open, no Smarty for reference)
-#def spawn_some_asteroids(n = 25):
-    #sock = socket.socket()
-    #sock.connect( ("localhost", 5505) )
-
-    #import sys
-    #import random
-    #from math import sin, cos, pi, sqrt
-    #from physics import PhysicsObject
-    #from message import SpawnMsg
-
-    #rand = random.Random()
-    ##rand.seed(0)
-
-    #r = 1000
-    #t = 100
-
-    #for i in range(0, n):
-        #u = rand.random() * 2 * pi
-        #v = rand.random() * 2 * pi
-        #c = r + (rand.random() * 2 - 1) * t
-        #a = rand.random() * t
-
-        #velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, 0 * rand.random() * 5 - 2.5]
-        #position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), 0 * a * sin(v) ]
-        #mass = rand.random() * 2500 + 7500
-        #radius = 10 + rand.random() * 20
-        #orientation = [0,0,0,0]
-        #thrust = [0,0,0]
-        #object_type = "Asteroid " + str(i)
-
-        #args = [object_type, mass] + position + velocity + orientation + thrust + [radius]
-
-        #SpawnMsg.send(sock, None, None, args)
-
-    #sock.shutdown(socket.SHUT_RDWR)
-    #sock.close()
-
-## Spawns some asteroids in a vacuum (just a socket open, no Smarty for reference)
-#def spawn_some_planets(n = 5):
-    #sock = socket.socket()
-    #sock.connect( ("localhost", 5505) )
-
-    #import sys
-    #import random
-    #from math import sin, cos, pi, sqrt
-    #from physics import PhysicsObject
-    #from message import SpawnMsg
-
-    #rand = random.Random()
-    ##rand.seed(0)
-
-    #r = 10000000
-    #t = 100000
-
-    ## These are massive enough to have gravity.
-    #for i in range(0, n):
-        #u = rand.random() * 2 * pi
-        #v = rand.random() * 2 * pi
-        #c = r + (rand.random() * 2 - 1) * t
-        #a = rand.random() * t
-
-        #velocity = [ rand.random() * 5 - 2.5, rand.random() * 5 - 2.5, rand.random() * 5 - 2.5]
-        #position = [ (c + a * cos(v)) * cos(u), (c + a * cos(v)) * sin(u), a * sin(v) ]
-        #mass = rand.random() * 100000000 + 1e15,
-        #radius = 500000 + rand.random() * 2000000,
-        #orientation = [0,0,0,0]
-        #thrust = [0,0,0]
-        #object_type = "Planet " + str(i)
-
-        #args = [object_type, mass] + position + velocity + orientation + thrust + [radius]
-
-        #SpawnMsg.send(sock, None, None, args)
-
-    #sock.shutdown(socket.SHUT_RDWR)
-    #sock.close()
-
-#def basic_collision():
-    #sock = socket.socket()
-    #sock.connect( ("localhost", 5505) )
-
-    #import sys
-    #from math import sin, cos, pi, sqrt
-    #from message import SpawnMsg
-
-    #r = 10000000
-    #t = 100000
-
-    #ball_mass = 1
-    #ball_radius = 1
-
-    ## Collinear collisions
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-
-    ## Slightly skewed
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 5, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 4.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-
-    ## Some different sizes
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  10, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass,  5, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", ball_mass, -10, 10, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, ball_radius ])
-    #SpawnMsg.send(sock, None, None, [ "Cue ball", 2 * ball_mass,  -5, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 * ball_radius ])
-
-    #sock.shutdown(socket.SHUT_RDWR)
-    #sock.close()
 
 def pool_rack():
     sock = socket.socket()
@@ -145,21 +22,6 @@ def pool_rack():
     ball_radius = 1.0
 
     num_rows = 15
-
-    # This loop produces a trangle of balls that points down the negative y axis.
-    #
-    # Mathematica code.
-    # numRows = 5;
-    # radius = 1;
-    # balls = Reap[For[i = 0, i < numRows, i++,
-        # For[j = 0, j <= i, j++,
-        # x = (i - 2 j) radius;
-        # y = Sqrt[3]/2 (1 + 2 i) radius;
-        # Sow[Circle[{x, y}, radius]]
-        # ]
-        # ]][[2]][[1]];
-    # Graphics[balls]
-
     C = 1.0
     y_scale = sqrt(3) / 2
     y_offset = 0.0
@@ -194,29 +56,6 @@ def pool_rack():
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
-
-#def all_moving():
-    #sock = socket.socket()
-    #sock.connect( ("localhost", 5505) )
-
-    #num_objs = 50
-
-    #import sys
-    #import random
-    #from math import sin, cos, pi, sqrt
-    #from physics import PhysicsObject
-    #from message import SpawnMsg
-
-    #for i in range(0,num_objs):
-        #SpawnMsg.send(sock, None, None, [ "Object %d" % i, 1000000,
-        #num_objs * cos(2 * pi * i / num_objs), num_objs * sin(2 * pi * i / num_objs), 0,
-        #-0.25 * num_objs * cos(2 * pi * i / num_objs), -0.25 * num_objs * sin(2 * pi * i / num_objs), 0,
-        #1, 0, 0,
-        #0, 0, 0,
-        #1 ])
-
-    #sock.shutdown(socket.SHUT_RDWR)
-    #sock.close()
 
 def spawn_sol():
     sock = socket.socket()
@@ -260,6 +99,58 @@ def spawn_sol():
         print str(phys_id) + ": " + sm.object_type
         message.SpawnMsg.send(sock, None, -1, sm.build())
         phys_id += 1
+
+def signature_test():
+    sock = socket.socket()
+    sock.connect( ("localhost", 5505) )
+
+    sm = message.SpawnMsg()
+    sm.srv_id = None
+    sm.cli_id = -1
+    sm.is_smart = False
+    sm.thrust = [0.0,0.0,0.0]
+    sm.velocity = [0.0,0.0,0.0]
+    sm.orientation = [0.0,0.0,0.0,0.0]
+    sm.object_type = "NonRadiatorDumb"
+    sm.mass = 1.0
+    sm.radius = 1.0
+    sm.position = [0.0,0.0,0.0]
+    message.SpawnMsg.send(sock, None, -1, sm.build())
+
+    sm.object_type = "RadiatorSmarty"
+    sm.position = [10.0,0.0,0.0]
+    sm.spectrum = message.Spectrum([550e-9],[1500.0])
+    sm.is_smart = True
+    message.SpawnMsg.send(sock, None, 1, sm.build())
+    msg = message.Message.get_message(sock)
+    smarty_id = msg.srv_id
+
+    sm.object_type = "BIGRadiatorDumb"
+    sm.position = [20.0,0.0,0.0]
+    sm.spectrum = message.Spectrum([550e-9],[1.5e8])
+    sm.is_smart = False
+    message.SpawnMsg.send(sock, None, -1, sm.build())
+
+    time.sleep(5)
+    sqm = message.ScanQueryMsg()
+    message.ScanQueryMsg.send(sock, smarty_id, 1, sqm.build())
+
+    sbm = message.BeamMsg()
+    sbm.beam_type = "SCAN"
+    sbm.energy = 1e6
+    sbm.srv_id = smarty_id
+    sbm.cli_id = 1
+    sbm.origin = [0.0,0.0,0.0]
+    sbm.velocity = [5.0,0.0,0.0]
+    sbm.up = [0.0,0.0,1.0]
+    sbm.spread_h = 2 * math.pi
+    sbm.spread_v = 2 * math.pi
+    sbm.spectrum = message.Spectrum([550e-9],[1000])
+    message.BeamMsg.send(sock, smarty_id, 1, sbm.build())
+
+    while True:
+        msg = message.Message.get_message(sock)
+        print msg.__dict__
 
 
 def dirmsg(sock, msg):
@@ -312,15 +203,8 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #test_vis_data()
-
-    #spawn_some_asteroids()
-    #spawn_some_planets()
-
-    #basic_collision()
     #pool_rack()
+    #spawn_sol()
+    signature_test()
 
-    #all_moving()
-
-    spawn_sol()
     #test_systems()

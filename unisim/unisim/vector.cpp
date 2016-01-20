@@ -123,12 +123,20 @@ namespace Diana
 
     void Vector3_normalize(V3* out, V3* v)
     {
-        Vector3_scale(out, v, 1.0 / Vector3_length(v));
+        double l = Vector3_length(v);
+        if (!Vector3_almost_zeroS(l))
+        {
+            Vector3_scale(out, v, 1.0 / l);
+        }
     }
 
     void Vector3_normalize(V3* v)
     {
-        Vector3_scale(v, 1.0 / Vector3_length(v));
+        double l = Vector3_length(v);
+        if (!Vector3_almost_zeroS(l))
+        {
+            Vector3_scale(v, 1.0 / l);
+        }
     }
 
     void Vector3_cross(V3* out, V3* v1, V3* v2)
