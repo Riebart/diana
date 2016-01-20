@@ -1,61 +1,21 @@
-#include <iostream>
 #include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <math.h>
 #include <signal.h>
-
 #include <chrono>
 
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
-using namespace Diana;
-
-bool running = true;
-Universe* u;
-std::vector<struct PhysicsObject*> objs;
-std::vector<struct Beam*> beams;
+volatile bool running = true;
 
 void sighandler(int32_t sig)
 {
 	fprintf(stderr, "Caught Ctrl+C, stopping.\n");
 	running = false;
-	u->stop_net();
-	u->stop_sim();
-}
-
-int32_t compare(const void* aV, const void* bV)
-{
-	uint64_t a = *(uint64_t*)aV;
-	uint64_t b = *(uint64_t*)bV;
-	return ((a < b) ? -1 : ((a == b) ? 0 : 1));
-}
-
-void print_positions()
-{
-	for (size_t i = 0; i < objs.size(); i++)
-	{
-#if __x86_64__
-        fprintf(stderr, "PO%lu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
-#else
-        fprintf(stderr, "PO%llu   %g   %g   %g   %g\n", objs[i]->phys_id, objs[i]->position.x, objs[i]->position.y, objs[i]->position.z, objs[i]->health);
-#endif
-	}
-
-	for (size_t i = 0; i < beams.size(); i++)
-	{
-#if __x86_64__
-        fprintf(stderr, "BM%lu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
-#else
-        fprintf(stderr, "BM%llu   %g   %g   %g\n", objs[i]->phys_id, beams[i]->front_position.x, beams[i]->front_position.y, beams[i]->front_position.z);
-#endif
-	}
 }
 
 void check_packing()
 {
-	struct PhysicsObject p;
+	struct Diana::PhysicsObject p;
 // On g++ 64-bit, we need %lu, all other times we need %llu
 #if __x86_64__
     printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
@@ -81,7 +41,7 @@ void check_packing()
 		(uint64_t)&p.art_id - (uint64_t)&p,
 		(uint64_t)&p.emits_gravity - (uint64_t)&p);
 
-	struct SmartPhysicsObject s;
+	struct Diana::SmartPhysicsObject s;
 #if __x86_64__
     printf("%lu %lu\n",
 #else
@@ -90,7 +50,7 @@ void check_packing()
 		(uint64_t)&s.pobj - (uint64_t)&s,
         (uint64_t)&s.socket - (uint64_t)&s);
 
-	struct Beam b;
+	struct Diana::Beam b;
 #if __x86_64__
     printf("%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
 #else
@@ -118,19 +78,7 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    u = new Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, true);
-
-	//pool_rack();
-	//simple_collision();
-	//fast_collision();
-	//shifting();
-	//collision_exit();
-
-	//beam_collision();
-	//beam_multi_collision();
-
-	//print_positions();
-
+    Diana::Universe* u = new Diana::Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, true);
 	u->start_net();
 	u->start_sim();
 
@@ -145,17 +93,14 @@ int main(int32_t argc, char** argv)
 	{
 		u->get_frametime(frametimes);
 		cur_ticks = u->get_ticks();
+
 #if __x86_64__
         fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #else
         fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
-		if (objs.size() < 10)
-		{
-			print_positions();
-		}
-		last_ticks = cur_ticks;
-
+		
+        last_ticks = cur_ticks;
 		std::this_thread::sleep_for(dura);
 	}
 
