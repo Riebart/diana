@@ -203,8 +203,8 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #pool_rack()
+    pool_rack()
     #spawn_sol()
-    signature_test()
+    #signature_test()
 
     #test_systems()

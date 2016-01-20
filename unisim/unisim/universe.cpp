@@ -1736,11 +1736,16 @@ namespace Diana
                     struct PhysicsObject* obj1 = collision_event.obj1;
                     struct PhysicsObject* obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
+
+                    if (n_rounds == 1)
+                    {
 #if __x86_64__
-                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
-                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
+                    }
+                    
                     // Note that when applying the collision, we need to make sure that each object is observing the
                     // correct time-delta to have elapsed since their last physics event. This is why we take the
                     // collision results 't' parameter portion of the total tick time (t*dt), and subtract off the

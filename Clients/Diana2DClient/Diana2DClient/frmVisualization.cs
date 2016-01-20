@@ -19,6 +19,7 @@ namespace Diana2DClient
     {
         Graphics g;
         Pen pen;
+        Pen reticlePen;
 
         bool painting = true;
         bool reading = false;
@@ -29,6 +30,7 @@ namespace Diana2DClient
 
         Color bgColor = Color.Black;
         Color fgColor = Color.White;
+        Color rColor = Color.Red;
 
         List<VisDataMessage> updateList = new List<VisDataMessage>();
         List<VisDataMessage> bufferList = new List<VisDataMessage>();
@@ -67,6 +69,7 @@ namespace Diana2DClient
 
             g = this.CreateGraphics();
             pen = new Pen(fgColor, 1);
+            reticlePen = new Pen(rColor, 1);
 
             start_time = DateTime.Now;
 
@@ -278,6 +281,10 @@ namespace Diana2DClient
 
                         }
                     }
+
+                    g.DrawEllipse(reticlePen, this.ClientSize.Width / 2, this.ClientSize.Height / 2, 4, 4);
+
+                    // Then draw the centre reticle
 
                     lblNumMessages.Text = "" + numSwaps + " (" + (int)(1000 * DateTime.Now.Subtract(start_time).TotalSeconds / numSwaps) + " ms)";
                     lblNumMessages.BackColor = bgColor;
