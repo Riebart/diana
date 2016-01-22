@@ -11,6 +11,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <random>
 
 // g++ has C++11 atomics with --std=c++11, and WIN32 does from VS2012+
 #include <atomic>
@@ -154,6 +155,9 @@ namespace Diana
         void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
         
         void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+
+        // Random generation engine used for generating random increments for the IDs.
+        std::default_random_engine re;
 
         struct vis_client
         {

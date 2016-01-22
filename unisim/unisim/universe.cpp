@@ -89,6 +89,8 @@
 #define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
 
+#define RANDOM_ID_RANGE 1000000
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define CLAMP(m, v, M) MIN((M), MAX((v), (m)))
@@ -364,7 +366,9 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
-        int64_t r = total_objs.fetch_add(1);
+        std::uniform_int_distribution<uint32_t> dist(1, RANDOM_ID_RANGE);
+        int64_t offset = dist(re);
+        int64_t r = total_objs.fetch_add(offset);
         return r;
     }
 
