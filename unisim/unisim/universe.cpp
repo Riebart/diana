@@ -366,8 +366,14 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
+        int64_t offset;
+#ifdef RANDOM_ID_RANGE
         std::uniform_int_distribution<uint32_t> dist(1, RANDOM_ID_RANGE);
-        int64_t offset = dist(re);
+        offset = dist(re);
+#else
+        offset = 1;
+#endif
+       
         int64_t r = total_objs.fetch_add(offset);
         return r;
     }
@@ -480,7 +486,7 @@ namespace Diana
             // value, which will be in the 20-30 bits range, and the socket, which is in the 16
             // bits range. Total entropy is only in the 35-40 bits range, but that's good enough.
             int64_t socket_bits;
-#if RANDOM_ID_RANGE > 1
+#ifdef RANDOM_ID_RANGE
             // Mathematica justification:
             ////   Function[{x}, Module[{a},
             ////       a = x;
