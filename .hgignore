@@ -29,6 +29,9 @@ syntax: glob
 *\Intermediate\*bin
 *\Build\Receipts\*
 *\Saved\HardwareSurvey\*
+*\StagedBuilds\*
+*\Saved\Cooked\*
+*\Binaries\*
 
 syntax: regexp
 ^([^/]*)/.*/\1[^/]*.log$

@@ -105,7 +105,7 @@ namespace Diana
 #define READ_PROLOGUE(num_el_lit) num_el = 2 + num_el_lit; \
     struct BSONReader::Element el = br->get_next_element(); \
     specced = (bool*)calloc(num_el, sizeof(bool)); \
-    if (specced == NULL) { throw "OOM"; }\
+    if (specced == NULL) { /*throw "OOM"*/; }\
     std::function<void(int)> fps[num_el_lit + 2 + 1] = { \
         READ_ELEMENT(server_id, el.i64_val) READ_ELEMENT(client_id, el.i64_val)
     // Begin the reading of objects from the BSONReader, calling the lambdas as we go, calling the 'last' lambda for every element that has an index too large.
@@ -137,7 +137,7 @@ namespace Diana
         char* ret = (char*)malloc(el.str_len + (null_missing ? 1 : 0));
         if (ret == NULL)
         {
-            throw "OOM you twat";
+            //throw "OOM you twat";
         }
         memcpy(ret, el.str_val, el.str_len);
         if (null_missing)
@@ -201,7 +201,7 @@ namespace Diana
         char* buf = (char*)malloc(message_len);
         if (buf == NULL)
         {
-            throw "OOM You twat";
+            //throw "OOM You twat";
         }
         *(int32_t*)buf = message_len;
         nbytes = socket_read(sock, buf + 4, message_len - 4);
@@ -363,12 +363,13 @@ namespace Diana
 #define VISUALPROPERTIES_MSG_LEN 
     VisualPropertiesMsg::VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t VisualPropertiesMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
 #define VISUALDATAENABLE_MSG_LEN 1
@@ -418,12 +419,13 @@ namespace Diana
 #define VISUALMETADATA_MSG_LEN
     VisualMetaDataMsg::VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t VisualMetaDataMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
 #define VISUALDATA_MSG_LEN 1 + 1 + 3 + 4
@@ -712,7 +714,7 @@ namespace Diana
 
     DirectoryMsg::DirectoryMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
         item_type = NULL;
         READ_PROLOGUE(DIRECTORY_MSG_LEN)
             READ_ELEMENT(item_type, ReadString(el))
@@ -807,51 +809,56 @@ namespace Diana
 
     ThrustMsg::ThrustMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t ThrustMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
     VelocityMsg::VelocityMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t VelocityMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
     JumpMsg::JumpMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t JumpMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
     InfoUpdateMsg::InfoUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t InfoUpdateMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 
     RequestUpdateMsg::RequestUpdateMsg(BSONReader* _br, MessageType _msg_type) : BSONMessage(_br, _msg_type)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
     }
 
     int64_t RequestUpdateMsg::send(FSocket* sock)
     {
-        throw "NotImplemented";
+        //throw "NotImplemented";
+        return 0;
     }
 }

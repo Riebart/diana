@@ -162,7 +162,7 @@ public:
             pos += 4;
             break;
         default:
-            throw "UnrecognizedType";
+            //throw "UnrecognizedType";
             break;
         }
 
@@ -207,7 +207,7 @@ public:
         out = (uint8_t*)calloc(1, 4);
         if (out == NULL)
         {
-            throw "OOM you twat";
+            //throw "OOM you twat";
         }
 
         is_array = false;
@@ -524,7 +524,7 @@ private:
         uint8_t* out_new = (uint8_t*)realloc(out, (size_t)(pos + nbytes));
         if (out_new == NULL)
         {
-            throw "OOM you twat";
+            //throw "OOM you twat";
         }
         else
         {
@@ -555,7 +555,7 @@ private:
             // printable, but this just uses this as an 8-bit unsigned field.
             if (tag_index > 254)
             {
-                throw "OutOfMinimalTags";
+                //throw "OutOfMinimalTags";
             }
 
             // Because we're using the actual integer values, we need to start at 1, otherwise we'll have a pair of NULL characters.

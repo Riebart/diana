@@ -7,8 +7,11 @@
 #include "Sockets.h"
 #include "SocketTypes.h"
 #include "SocketSubsystem.h"
+#include "GenericPlatformProcess.h"
 
 #include "messaging.hpp"
+
+#include <thread>
 
 FVisDataReceiver::FVisDataReceiver(FSocket* sock, AEventedActor* parent, std::map<int32, struct DianaActor>* oa_map)
 {
@@ -39,7 +42,7 @@ uint32 FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
 
-    int32 sleep_ms = 10;
+    std::chrono::milliseconds dura(100);
     // Timespan representing 1 second as 10-million 0.1us (100ns) ticks.
     FTimespan sock_wait_time(10000000);
     bool read_available = false;
@@ -77,9 +80,9 @@ uint32 FVisDataReceiver::Run()
             {
                 delete m;
             }
-        }
 
-        Sleep(sleep_ms);
+            std::this_thread::sleep_for(dura);
+        }
     }
     return nmessages;
 }

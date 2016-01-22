@@ -22,7 +22,7 @@ namespace Diana
         V3* ret = (V3*)malloc(sizeof(V3) * n);
         if (ret == NULL)
         {
-            throw "OOM";
+            //throw "OOM";
         }
         return ret;
     }
