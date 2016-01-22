@@ -190,6 +190,12 @@ void AEventedActor::Tick(float DeltaTime)
 
 bool AEventedActor::RegisterForVisData(bool enable)
 {
+    // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
+    if ((vdr_thread == NULL) && !enable)
+    {
+        return true;
+    }
+    
     ConnectSocket();
 
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin"));
@@ -218,9 +224,11 @@ bool AEventedActor::RegisterForVisData(bool enable)
 
         if (vdr_thread != NULL)
         {
-            UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle:Disable::ThreadStop"));
+            UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle:Disable::ThreadStop %p"), (void*)vdr_thread);
             vdr_thread->Stop();
+            DisconnectSocket();
             delete vdr_thread;
+            vdr_thread = NULL;
         }
     }
 

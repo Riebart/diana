@@ -1,0 +1,1 @@
+Clone the libODB source into here, that is, so that the root of the repo is here. Specifically, you'll need the src/include folder.

@@ -1,0 +1,34 @@
+syntax: glob
+*.pyc
+
+# VS user-local, debugging symbols, intermediate files, and object files.
+*.suo
+*.pdb
+*.ipdb
+*.sdf
+*.pch
+*.opendb
+*.vshost.*
+*.ilk
+*.tlog
+*.obj
+*.iobj
+*codeanalysis*
+*/obj/*
+*.idb
+*.exe.config
+*.user
+
+# Uunrel Engine stuff
+*/Saved/Backup/*
+*.dll.response
+#*\Development\UE4Editor*
+*\Intermediate\Build\*
+*\Saved\Autosaves\*
+*\Saved\Logs\*
+*\Intermediate\*bin
+*\Build\Receipts\*
+*\Saved\HardwareSurvey\*
+
+syntax: regexp
+^([^/]*)/.*/\1[^/]*.log$
