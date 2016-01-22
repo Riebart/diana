@@ -272,9 +272,6 @@ namespace Diana
         this->min_vis_frametime = min_vis_frametime;
         this->realtime = realtime;
 
-        // We're always going to specify all of the options, so just set them all to specced.
-        visdata_msg.spec_all(true);
-
         total_time = 0.0;
         last_effect_time = 0.0;
         phys_frametime = 0.0;
@@ -450,7 +447,10 @@ namespace Diana
         for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
         {
             vc = *it;
+            // We're going to specify all of the options, so just set them all to specced.
+            visdata_msg.spec_all(true);
             visdata_msg.client_id = vc.client_id;
+            
             //! @todo Unlocked access to the smarties map.
             ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
             bool disconnect = false;
@@ -485,7 +485,21 @@ namespace Diana
 
             if (!disconnect)
             {
-                it++;
+                // Send an empty message with an unspecced server ID, only specifying client ID
+                // This is an end-of-frame message, indicating the end of round of messages.
+                visdata_msg.spec_all(false);
+                visdata_msg.specced[1] = true;
+                int64_t nbytes = visdata_msg.send(vc.socket);
+                if (nbytes < 0)
+                {
+                    it = vis_clients.erase(it);
+                    printf("Client %d erased due to failed network send", vc.socket);
+                    disconnect = true;
+                }
+                else
+                {
+                    it++;
+                }
             }
         }
         UNLOCK(vis_lock);
