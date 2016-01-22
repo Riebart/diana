@@ -1,6 +1,9 @@
 #include "universe.hpp"
 #include "messaging.hpp"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include <stdio.h>
 #include <algorithm>
 
@@ -85,6 +88,9 @@
 #define GRAVITATIONAL_CONSTANT  6.67384e-11
 #define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
+
+#define RANDOM_ID_RANGE 1000000
+
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define CLAMP(m, v, M) MIN((M), MAX((v), (m)))
@@ -268,10 +274,8 @@ namespace Diana
         this->min_vis_frametime = min_vis_frametime;
         this->realtime = realtime;
 
-        // We're always going to specify all of the options, so just set them all to specced.
-        visdata_msg.spec_all(true);
-
         total_time = 0.0;
+        last_effect_time = 0.0;
         phys_frametime = 0.0;
         wall_frametime = 0.0;
         game_frametime = 0.0;
@@ -362,7 +366,9 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
-        int64_t r = total_objs.fetch_add(1);
+        std::uniform_int_distribution<uint32_t> dist(1, RANDOM_ID_RANGE);
+        int64_t offset = dist(re);
+        int64_t r = total_objs.fetch_add(offset);
         return r;
     }
 
@@ -445,17 +451,78 @@ namespace Diana
         for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
         {
             vc = *it;
+
+            // The socket is a 32-bit value, but likely only occupying the first 16-ish
+            // Use this for entropy when obfuscating the server ID, generate more random bits 
+            //
+            // Without this, since access to send messages to a phys_id is unauthenticated, if
+            // phys_ids were sent in the clear, clients could send messages to other ships.
+            //
+            // This method uses a client-specific data, the socket file descriptor ID, and a 
+            // global piece of entropy, the RAND_MAX for the inter-object ID increment, to
+            // generate a high entropy value to XOR the phys_id with. 
+            //
+            // Note that smarties know their own server IDs, exactly, and can relay this to
+            // another ship to allow them to derive the XOR key used on their own ship. This
+            // eliminates a portion of the entropy in the obfuscation process. This would be
+            // inadvisable, in general, as sending commands to a smarty is authenticated, in
+            // a sense, only by this mechanism. Giving someone else your ID would allow them
+            // to control your ship.
+            //
+            // Uncertainties:
+            //  - Unicity distance; how many objects/people working together would
+            // be required to determine the true ID of a smarty. I'm going to guess five-ish?
+            //  - Including the object's pointer as an integer (squared, to consider
+            // 32-bit pointers) to include a per-object piece of information. I don't THINK that
+            // these objects are being reallocated, or will ever be reallocated, but who knows.
+
+            // Hold the socket-specific entropy bits, generated from the global RANDOM_ID_RANGE
+            // value, which will be in the 20-30 bits range, and the socket, which is in the 16
+            // bits range. Total entropy is only in the 35-40 bits range, but that's good enough.
+            int64_t socket_bits;
+#if RANDOM_ID_RANGE > 1
+            // Mathematica justification:
+            ////   Function[{x}, Module[{a},
+            ////       a = x;
+            ////   a = a(a + 1);
+            ////   a = a(a + 1);
+            ////   a = a(a + 1);
+            ////   a
+            ////   ]];
+            ////   %[x]//Expand
+            ////       Map[%%, Table[i, { i,256,1024 }]];
+            ////   Total[IntegerDigits[#, 2, 64]] & / @%//Sort//ListPlot
+            socket_bits = vc.socket + RANDOM_ID_RANGE;
+            socket_bits = socket_bits * (socket_bits + 1);
+            socket_bits = socket_bits * (socket_bits + 1);
+            socket_bits = socket_bits * (socket_bits + 1);
+            // By this point, it's a an 8th order polynomial, and produces a solid bell curve
+            // around 32 set bits, even for values >256, and about 24 bits for values <256.
+            //
+            // Note that we're doing the efficient polynomial thing, 4 multiplications,
+            // 4 additions, and an 8th order polynomial.
+#else
+            socket_bits = 0;
+#endif
+
+            // We're going to specify all of the options, so just set them all to specced.
+            visdata_msg.spec_all(true);
             visdata_msg.client_id = vc.client_id;
+            
             //! @todo Unlocked access to the smarties map.
             ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
             bool disconnect = false;
 
+            //! @todo unlocked access to phsy_objects array.
             for (size_t i = 0; i < phys_objects.size(); i++)
             {
                 o = phys_objects[i];
-                visdata_msg.server_id = o->phys_id;
+                visdata_msg.server_id = vc.phys_id;
                 visdata_msg.radius = o->radius;
-                visdata_msg.phys_id = o->phys_id;
+                
+                // Don't forget to unset the sign bits, negative IDs would be weird.
+                visdata_msg.phys_id = o->phys_id ^ socket_bits ^ (int64_t)o;
+                
                 visdata_msg.position = o->position;
 
                 if (ro != NULL)
@@ -480,7 +547,23 @@ namespace Diana
 
             if (!disconnect)
             {
-                it++;
+                // Send an empty message with an unspecced server ID, only specifying client ID
+                // This is an end-of-frame message, indicating the end of round of messages.
+                visdata_msg.spec_all(false);
+                visdata_msg.specced[0] = true;
+                visdata_msg.server_id = -1;
+                visdata_msg.specced[1] = true;
+                int64_t nbytes = visdata_msg.send(vc.socket);
+                if (nbytes < 0)
+                {
+                    it = vis_clients.erase(it);
+                    printf("Client %d erased due to failed network send", vc.socket);
+                    disconnect = true;
+                }
+                else
+                {
+                    it++;
+                }
             }
         }
         UNLOCK(vis_lock);
@@ -546,6 +629,26 @@ namespace Diana
                     }
                 }
 
+                // If the mass or radius changes, we need to update attractors if the values changes
+                if ((msg->specced[3] && !Vector3_almost_zeroS(smarty->pobj.mass - msg->mass)) ||
+                    (msg->specced[17] && !Vector3_almost_zeroS(smarty->pobj.radius - msg->radius)))
+                {
+                    // The mass and/or radius changed, so we need to recalculate whether or not
+                    // it can be a gravity source now. Probably not, but who knows.
+                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius);
+
+                    // We don't want to grab the lock unnecessarily
+                    if (newval != smarty->pobj.emits_gravity)
+                    {
+                        LOCK(add_lock);
+                        LOCK(expire_lock);
+                        update_list(&smarty->pobj, &attractors, newval, smarty->pobj.emits_gravity);
+                        UNLOCK(add_lock);
+                        UNLOCK(expire_lock);
+                        smarty->pobj.emits_gravity = newval;
+                    }
+                }
+
 #define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
 #define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
                 ASSIGN_VAL(3, mass);
@@ -559,17 +662,38 @@ namespace Diana
                 ASSIGN_VAL(17, radius);
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
+
+                // Ensure that the spectrum was specified in the message
+                if (msg->all_specced(msg->num_el - 3))
+                {
+                    struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
+                    spectrum = Spectrum_perturb(spectrum);
+                    spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
+                    smarty->pobj.spectrum = spectrum;
+
+                    radiates_strong_enough(spectrum);
+                    bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
+
+                    if (newval != smarty->pobj.dangerous_radiation)
+                    {
+                        LOCK(add_lock);
+                        LOCK(expire_lock);
+                        update_list(&smarty->pobj, &radiators, newval, smarty->pobj.dangerous_radiation);
+                        UNLOCK(add_lock);
+                        UNLOCK(expire_lock);
+                        smarty->pobj.dangerous_radiation = newval;
+                    }
+                }
             }
             break;
         }
         case BSONMessage::Beam:
         {
             BeamMsg* msg = (BeamMsg*)msg_base;
-            // We need all of the properties, except the last, if it's not a COMM beam,
+            // We need all of the properties, except message, if it's not a COMM beam,
             // If it's a COMM beam, we need them all.
-            if (
-                ((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
-                msg->all_specced(0, msg->num_el - 1))
+            if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
+                ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 1, msg->num_el - 4)))
             {
                 break;
             }
@@ -615,16 +739,25 @@ namespace Diana
                 Vector3_add(&msg->velocity, &smarty->pobj.velocity);
             }
 
+            //! @todo Couple the energy of the beam to the power of the spectrum somehow.
+
+            // Note that the spectrum is a non-optional component, so we can assume it exists
+            // as enforcement of that condition occurs earlier with the all_specced() call.
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL);
+                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
+
+            // Now that the beam has a cloned version of the spectrum, perturb it.
+            b->spectrum = Spectrum_perturb(b->spectrum);
+
             add_object(b);
             break;
         }
         case BSONMessage::MessageType::Spawn:
         {
             SpawnMsg* msg = (SpawnMsg*)msg_base;
-            // We don't need, or rather, shouldn't have, a server ID on a spawn
-            if (!msg->all_specced(1))
+            // We don't need, or rather, shouldn't have, a server ID on a spawn, but we should
+            // have everything else. Similarly, spectrum specification is optional.
+            if (!msg->all_specced(1, msg->num_el - 4))
             {
                 break;
             }
@@ -659,9 +792,25 @@ namespace Diana
             }
             memcpy(obj_type, msg->obj_type, len);
 
+            struct Spectrum* spectrum = NULL;
+            // If the message specifies a spectrum, use it
+            if (msg->all_specced(msg->num_el - 3))
+            {
+                spectrum = msg->spectrum;
+            }
+
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
                 const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
-                msg->mass, msg->radius, obj_type);
+                msg->mass, msg->radius, obj_type, spectrum);
+
+            // Now that the object contains a cloned version of the spectrum, perturb it.
+            if (obj->spectrum != NULL)
+            {
+                obj->spectrum = Spectrum_perturb(obj->spectrum);
+            }
+
+            // Note that adding the object to the attractors and radiators lists is handled
+            // at the end of the physics tick when the added vector is emptied.
 
             // If the object creating the object is a smarty, it's position and velocity
             // are relative.
@@ -676,6 +825,7 @@ namespace Diana
             if (msg->is_smart)
             {
                 obj->type = PhysicsObjectType::PHYSOBJECT_SMART;
+                obj->health = -1;
             }
 
             add_object(obj);
@@ -688,6 +838,100 @@ namespace Diana
                 hm.spec_all();
                 hm.send(socket);
             }
+            break;
+        }
+        case BSONMessage::MessageType::ScanQuery:
+        {
+            ScanQueryMsg* msg = (ScanQueryMsg*)msg_base;
+            // The only time we should receive this is when a ship is querying for a passive
+            // scan. We expect the query to have no parameters, as it simply begins an event.
+
+            // A passive scan result contains the signature and direction.
+            //
+            // The signature's power levels are scaled based on the distance (the area of the 
+            // wave front, total power amortized across the area, times the area of the object
+            // intersection with that).
+            
+            if (smarty != NULL)
+            {
+                // The message to send back.
+                ScanResultMsg srm;
+                
+                // Spec the IDs
+                srm.specced[0] = true;
+                srm.server_id = msg->server_id;
+                srm.specced[1] = true;
+                srm.client_id = msg->client_id;
+
+                // Spec the position (which will be a unit vector in the direction of the source
+                srm.specced[4] = true;
+                srm.specced[5] = true;
+                srm.specced[6] = true;
+
+                // Spec the obj_spectrum component, which will be the same spectrum as the object
+                // with the power levels scaled inverse-quadratically by distance.
+                srm.specced[22] = true;
+                srm.specced[23] = true;
+                srm.specced[24] = true;
+
+                PO* other;
+                V3 dp;
+                double distance_sq;
+                double power_scale;
+ 
+                //! @todo THIS IS BAD! Locking the physics lock synchronously for networking? Oh no.
+                LOCK(phys_lock);
+                //! @todo Move all objects with spectra to their own vector
+                for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
+                {
+                    other = *it;
+                    if (other->spectrum == NULL)
+                    {
+                        continue;
+                    }
+                    
+                    Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
+                    distance_sq = Vector3_length2(&dp);
+                    
+                    // If we're looking at our own radiation signature, then we need to do
+                    // things a little different. THis will stand out as having a position that
+                    // is (0,0,0), so we can leave the power spectrum alone.
+                    if (Vector3_almost_zeroS(distance_sq))
+                    {
+                        power_scale = 1.0;
+                    }
+                    else
+                    {
+                        // You can't absorb more power than it's outputting...
+                        power_scale = MIN(1.0, smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq));
+                    }
+                    
+                    if ((power_scale * other->spectrum->total_power) < COLLISION_ENERGY_CUTOFF)
+                    {
+                        continue;
+                    }
+
+                    srm.obj_spectrum = Spectrum_clone(other->spectrum);
+                    struct SpectrumComponent* components = &(srm.obj_spectrum->components);
+                    for (size_t i = 0; i < srm.obj_spectrum->n; i++)
+                    {
+                        components[i].power *= power_scale;
+                    }
+
+                    // Make the position a unit direction vector if it isn't (0,0,0)
+                    if (!Vector3_almost_zeroS(distance_sq))
+                    {
+                        Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
+                    }
+                    
+                    srm.position = dp;
+                    srm.send(smarty->socket);
+                    free(srm.obj_spectrum);
+                }
+                UNLOCK(phys_lock);
+                srm.obj_spectrum = NULL;
+            }
+
             break;
         }
         case BSONMessage::MessageType::ScanResponse:
@@ -981,6 +1225,7 @@ namespace Diana
         }
     }
 
+    //! @todo Convert this to a private member function.
     void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     {
         V3 g = { 0.0, 0.0, 0.0 };
@@ -1021,13 +1266,19 @@ namespace Diana
                     Vector3_subtract(&cm.position, &o->position);
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
+                    // It makes sense that we know about the power levels of the beam here,
+                    // since in theory the ship would know about the duration of the beam, 
+                    // even if we're not simulating that.
+                    cm.spectrum = Spectrum_clone(b->spectrum);
                     cm.spec_all();
-                    cm.specced[cm.num_el - 1] = false;
+
+                    // Note that there is no comm message (yet, maybe), so that's unspecced.
+                    cm.specced[cm.num_el - 4] = false;
 
                     switch (b->type)
                     {
                     case BEAM_COMM:
-                        cm.specced[cm.num_el - 1] = true;
+                        cm.specced[cm.num_el - 4] = true;
                         cm.set_colltype((char*)"COMM");
                         cm.comm_msg = b->comm_msg;
                         cm.send(s->socket);
@@ -1043,6 +1294,7 @@ namespace Diana
                         sqm.scan_id = b->phys_id;
                         sqm.energy = cm.energy;
                         sqm.direction = cm.direction;
+                        sqm.spectrum = Spectrum_clone(b->spectrum);
                         sqm.spec_all();
 
                         // Note that we need to ensure that the queries map is ready for a response before sending
@@ -1070,6 +1322,7 @@ namespace Diana
                             b_copy->data = NULL;
                             b_copy->comm_msg = NULL;
                             b_copy->scan_target = o_copy;
+                            b_copy->spectrum = Spectrum_clone(b->spectrum);
                             u->queries[st] = { b_copy, cm.energy, beam_result.p };
                         }
                         UNLOCK(u->query_lock);
@@ -1097,8 +1350,29 @@ namespace Diana
                         srm.radius = b->scan_target->radius;
                         srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
                         srm.obj_type = b->scan_target->obj_type;
+                        srm.beam_spectrum = Spectrum_clone(b->spectrum);
                         srm.data = b->data;
                         srm.spec_all();
+
+                        if (b->data == NULL)
+                        {
+                            srm.specced[srm.num_el - 7] = false;
+                        }
+
+                        // If the spectrum for the object we hit is NULL, then we should unmark
+                        // the spectrum parts of the message.
+                        if (b->scan_target->spectrum == NULL)
+                        {
+                            srm.specced[srm.num_el - 3] = false;
+                            srm.specced[srm.num_el - 2] = false;
+                            srm.specced[srm.num_el - 1] = false;
+                            srm.obj_spectrum = NULL;
+                        }
+                        else
+                        {
+                            srm.obj_spectrum = Spectrum_clone(b->scan_target->spectrum);
+                        }
+
                         srm.send(s->socket);
 
                         // The message object will go out-of-scope, but is currently pointing to the beam's
@@ -1115,6 +1389,56 @@ namespace Diana
                         break;
                     default:
                         break;
+                    }
+                }
+            }
+        }
+
+        //! @todo Multithread this.
+        V3 pd;
+        PO* other;
+        double distance_sq;
+
+        if ((u->total_time - u->last_effect_time) >= 1.0)
+        {
+            for (size_t i = 0; i < u->radiators.size(); i++)
+            {
+                other = u->radiators[i];
+                if (other->phys_id == o->phys_id)
+                {
+                    continue;
+                }
+                
+                Vector3_subtract(&pd, &other->position, &o->position);
+                distance_sq = Vector3_length2(&pd);
+                if (distance_sq < other->spectrum->safe_distance_sq)
+                {
+                    double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
+
+                    if (o->type == PHYSOBJECT_SMART)
+                    {
+                        struct SmartPhysicsObject* s = (SPO*)o;
+                        CollisionMsg cm;
+                        cm.client_id = s->client_id;
+                        cm.server_id = o->phys_id;
+                        Vector3_scale(&pd, 1.0 / Vector3_length(&pd));
+                        cm.direction = pd;
+                        Vector3_scale(&pd, o->radius);
+                        cm.position = pd;
+                        cm.energy = energy;
+                        cm.comm_msg = NULL;
+                        cm.spectrum = Spectrum_clone(other->spectrum);
+                        //! @todo Ok, this four-character string is starting to feel forced.
+                        cm.set_colltype((char*)"RADN");
+                        cm.spec_all();
+                        
+                        // Note that there is no comm message, so that's unspecced.
+                        cm.specced[cm.num_el - 4] = false;
+                        cm.send(s->socket);
+                    }
+                    else if (o->type == PHYSOBJECT)
+                    {
+                        PhysicsObject_resolve_damage(o, energy);
                     }
                 }
             }
@@ -1139,6 +1463,174 @@ namespace Diana
 
         list[max_index] = val;
         return true;
+    }
+
+    void Universe::handle_expired()
+    {
+        if (expired.size() > 0)
+        {
+            LOCK(expire_lock);
+            //! @todo Promote this into a function that'll make this a LOT simpler here.
+            //! Use something like PhysicsObject_free() and Beam_free()
+
+            // Handle expiry queue
+            // First sort the expiry queue, which is just a vector of phys_ids
+            // Then we can binary search our way as we iterate over the list of phys IDs.
+            // That might have a big constant though
+            //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
+            struct PhysicsObject* po;
+            struct Beam* b;
+
+            // See if any are a beam.
+            for (size_t i = 0; i < beams.size(); i++)
+            {
+                b = beams[i];
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+                    if (*it == b->phys_id)
+                    {
+                        free(b->data);
+                        free(b->comm_msg);
+
+                        // Remember, we cloned the object we're interested in into the scan_target
+                        // to prevent a use-after-free, so free that here.
+                        if (b->scan_target != NULL)
+                        {
+                            free(b->scan_target->obj_type);
+                            free(b->scan_target);
+                        }
+
+                        free(b->spectrum);
+                        free(b);
+                        beams.erase(beams.begin() + i);
+                        it = expired.erase(it);
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            // See if any are a physical object.
+            for (size_t i = 0; i < phys_objects.size(); i++)
+            {
+                po = phys_objects[i];
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+                    if (*it == po->phys_id)
+                    {
+                        free(po->obj_type);
+
+                        if (po->type == PHYSOBJECT_SMART)
+                        {
+                            smarties.erase(*it);
+                        }
+
+                        if (phys_objects[i]->emits_gravity)
+                        {
+                            // This is nicer to read than the iterator in the for loop method.
+                            for (size_t k = 0; k < attractors.size(); k++)
+                            {
+                                if (attractors[k]->phys_id == *it)
+                                {
+                                    attractors.erase(attractors.begin() + k);
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (phys_objects[i]->dangerous_radiation)
+                        {
+                            // This is nicer to read than the iterator in the for loop method.
+                            for (size_t k = 0; k < radiators.size(); k++)
+                            {
+                                if (radiators[k]->phys_id == *it)
+                                {
+                                    radiators.erase(radiators.begin() + k);
+                                    break;
+                                }
+                            }
+                        }
+
+                        free(po->spectrum);
+                        free(po);
+                        phys_objects.erase(phys_objects.begin() + i);
+                        it = expired.erase(it);
+                        i--;
+                        break;
+                    }
+                }
+            }
+
+            if (expired.size() != 0)
+            {
+                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
+                {
+#if __x86_64__
+                    printf("%ld\n", *it);
+#else
+                    printf("%lld\n", *it);
+#endif
+                }
+                throw std::runtime_error("WAT");
+            }
+            UNLOCK(expire_lock);
+            }
+        }
+
+    void Universe::handle_added()
+    {
+        if (added.size() > 0)
+        {
+            LOCK(add_lock);
+            // Handle added queue
+            for (size_t i = 0; i < added.size(); i++)
+            {
+                switch (added[i]->type)
+                {
+                case PHYSOBJECT:
+                {
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
+                    if (added[i]->dangerous_radiation)
+                    {
+                        radiators.push_back(added[i]);
+                    }
+                    break;
+                }
+                case PHYSOBJECT_SMART:
+                {
+                    SPO* obj = (SPO*)added[i];
+                    //! @todo Check to make sure this smarty adding is right.
+                    smarties[obj->pobj.phys_id] = obj;
+                    phys_objects.push_back(added[i]);
+                    if (added[i]->emits_gravity)
+                    {
+                        attractors.push_back(added[i]);
+                    }
+                    if (added[i]->dangerous_radiation)
+                    {
+                        radiators.push_back(added[i]);
+                    }
+                    break;
+                }
+                case BEAM_COMM:
+                case BEAM_SCAN:
+                case BEAM_SCANRESULT:
+                case BEAM_WEAP:
+                {
+                    beams.push_back((B*)added[i]);
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+            added.clear();
+            UNLOCK(add_lock);
+        }
     }
 
     void Universe::tick(double dt)
@@ -1232,12 +1724,18 @@ namespace Diana
             cm.comm_msg = NULL;
             cm.spec_all();
 
+            // Since this is a physical collision, there's no spectrum attached.
+            cm.spectrum = NULL;
+            cm.specced[cm.num_el - 1] = false;
+            cm.specced[cm.num_el - 2] = false;
+            cm.specced[cm.num_el - 3] = false;
+
             // This constant defines the number of rounds that we'll consider multiple collision at the same instant.
             // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
             // negligible.
 #define COLLISION_ROUNDS_CUTOFF 100
-            
+
             // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
 
@@ -1316,11 +1814,16 @@ namespace Diana
                     struct PhysicsObject* obj1 = collision_event.obj1;
                     struct PhysicsObject* obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
+
+                    if (n_rounds == 1)
+                    {
 #if __x86_64__
-                    fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
-                    fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
+                    }
+                    
                     // Note that when applying the collision, we need to make sure that each object is observing the
                     // correct time-delta to have elapsed since their last physics event. This is why we take the
                     // collision results 't' parameter portion of the total tick time (t*dt), and subtract off the
@@ -1345,7 +1848,7 @@ namespace Diana
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
                     //! but I don't think, in general, this will cause much of a problem for a 60hz
-                    //! physics refresh rate.
+                    //! physics refrecsh rate.
 
                     // Alert the smarties that there was a collision, if either re smart.
                     // Only physical collisions are generated here, beams are elsewhere.
@@ -1458,13 +1961,7 @@ namespace Diana
             }
         }
 
-        // The vector should be empty at this point, we should be able to assert on it's size.
-        if (collisions.size() != 0)
-        {
-            throw std::runtime_error("NonEmptyCollisionList");
-        }
-
-        // Now tick along each object
+        // Now tick along each object, handling any gravity and radiation while we're at it
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
             obj_tick(this, phys_objects[i], dt);
@@ -1477,194 +1974,40 @@ namespace Diana
             Beam_tick(beams[bi], dt);
         }
 
-        if (expired.size() > 0)
+        handle_expired();
+        handle_added();
+
+        // Now update the periodic timer that tells us when to do periodic effects.
+        if ((total_time - last_effect_time) >= 1.0)
         {
-            LOCK(expire_lock);
-            // Handle expiry queue
-            // First sort the expiry queue, which is just a vector of phys_ids
-            // Then we can binary search our way as we iterate over the list of phys IDs.
-            // That might have a big constant though
-            //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-            struct PhysicsObject* po;
-            struct Beam* b;
-
-            // See if any are a beam.
-            for (size_t i = 0; i < beams.size(); i++)
-            {
-                b = beams[i];
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-                    if (*it == b->phys_id)
-                    {
-                        free(b->data);
-                        free(b->comm_msg);
-
-                        // Remember, we cloned the object we're interested in into the scan_target
-                        // to prevent a use-after-free, so free that here.
-                        if (b->scan_target != NULL)
-                        {
-                            free(b->scan_target->obj_type);
-                            free(b->scan_target);
-                        }
-
-                        free(b);
-                        beams.erase(beams.begin() + i);
-                        it = expired.erase(it);
-                        i--;
-                        break;
-                    }
-                }
-            }
-
-            // See if any are a physical object.
-            for (size_t i = 0; i < phys_objects.size(); i++)
-            {
-                po = phys_objects[i];
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-                    if (*it == po->phys_id)
-                    {
-                        free(po->obj_type);
-
-                        if (po->type == PHYSOBJECT_SMART)
-                        {
-                            smarties.erase(*it);
-                        }
-
-                        if (phys_objects[i]->emits_gravity)
-                        {
-                            // This is nicer to read than the iterator in the for loop method.
-                            for (size_t k = 0; k < attractors.size(); k++)
-                            {
-                                if (attractors[k]->phys_id == *it)
-                                {
-                                    attractors.erase(attractors.begin() + k);
-                                    break;
-                                }
-                            }
-                        }
-
-                        free(po);
-                        phys_objects.erase(phys_objects.begin() + i);
-                        it = expired.erase(it);
-                        i--;
-                        break;
-                    }
-                }
-            }
-
-            if (expired.size() != 0)
-            {
-                for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
-                {
-#if __x86_64__
-                    printf("%ld\n", *it);
-#else
-                    printf("%lld\n", *it);
-#endif
-                }
-                throw std::runtime_error("WAT");
-            }
-            UNLOCK(expire_lock);
-        }
-
-        if (added.size() > 0)
-        {
-            LOCK(add_lock);
-            // Handle added queue
-            for (size_t i = 0; i < added.size(); i++)
-            {
-                switch (added[i]->type)
-                {
-                case PHYSOBJECT:
-                {
-                    phys_objects.push_back(added[i]);
-                    if (added[i]->emits_gravity)
-                    {
-                        attractors.push_back(added[i]);
-                    }
-                    break;
-                }
-                case PHYSOBJECT_SMART:
-                {
-                    SPO* obj = (SPO*)added[i];
-                    //! @todo Check to make sure this smarty adding is right.
-                    smarties[obj->pobj.phys_id] = obj;
-                    phys_objects.push_back(added[i]);
-                    if (added[i]->emits_gravity)
-                    {
-                        attractors.push_back(added[i]);
-                    }
-                    break;
-                }
-                case BEAM_COMM:
-                case BEAM_SCAN:
-                case BEAM_SCANRESULT:
-                case BEAM_WEAP:
-                {
-                    beams.push_back((B*)added[i]);
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
-            added.clear();
-            UNLOCK(add_lock);
+            last_effect_time = total_time;
         }
 
         // Unlock everything
         UNLOCK(phys_lock);
     }
 
-    void Universe::update_attractor(struct PhysicsObject* obj, bool calculate)
+    void Universe::update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval)
     {
-        // This requires a linear search of the attractors, but whatever.
-        if (calculate)
+        // If it's a current candidate, and the old value indicates it wasn't before, then
+        // we can safely just add it.
+        if (newval && !oldval)
         {
-            // If 
-            bool newval = is_big_enough(obj->mass, obj->radius);
-
-            // If we're a new attractor, assume that obj->emits_gravity hasn't been changed out of band
-            // And just push it onto the list
-            if (newval && !obj->emits_gravity)
-            {
-                attractors.push_back(obj);
-            }
-            else if (!newval && obj->emits_gravity)
-            {
-                for (size_t i = 0; i < attractors.size(); i++)
-                {
-                    if (attractors[i]->phys_id == obj->phys_id)
-                    {
-                        attractors.erase(attractors.begin() + i);
-                        break;
-                    }
-                }
-            }
+            list->push_back(obj);
         }
-        else
+        // If we're an existing member, and the new value indicates we should no longer be,
+        // then find it and remove it.
+        else if (!newval && oldval)
         {
-            // Here we have no idea what oldval was, so we need to iterate every time.
-            bool in = false;
-            for (size_t i = 0; i < attractors.size(); i++)
+            // Then linear searches here shouldn't be problematic, because 
+            for (size_t i = 0; i < list->size(); i++)
             {
-                if (attractors[i]->phys_id == obj->phys_id)
+                if (list->at(i)->phys_id == obj->phys_id)
                 {
-                    if (!obj->emits_gravity)
-                    {
-                        attractors.erase(attractors.begin() + i);
-                    }
-                    in = true;
+                    list->erase(list->begin() + i);
                     break;
-                }
-
-                // If we didn't find it, and we want it in there, push it back.
-                if (!in && obj->emits_gravity)
-                {
-                    attractors.push_back(obj);
                 }
             }
         }
     }
-}
+    }

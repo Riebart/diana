@@ -24,6 +24,38 @@ namespace Diana
     //! Enumeration of the types of physics objects to allow for branching and basic polymorphics with structs.
     enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP };
 
+    struct SpectrumComponent
+    {
+        // The wavelength of the component, in metres. (green visible light = 550e-9)
+        double wavelength;
+        
+        // The power of the emission at the given wavelength, in Watts.
+        double power;
+    };
+
+    //! @todo This doesn't account for high-energy mass particles that are ionizing
+    //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
+#pragma pack(1)
+    struct Spectrum
+    {
+        // Number of components in the spectrum
+        uint32_t n;
+        
+        // How far away do we need to be before notifications start to arrive for radiation
+        // impacts, this is the SQUARE of the minimum safe distance, to avoid the need for
+        // sqrt() when working with it.
+        double safe_distance_sq;
+
+        // Cache of the total power of the spectrum across all wavelengths.
+        double total_power;
+
+        // Array of spectrum components, precisely n components long.
+        // This is actually the first in an array of components, to get the array (pointer), 
+        // use &components. There's some allocation magic here.
+        struct SpectrumComponent components;
+    };
+#pragma pack()
+
     //! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
 #pragma pack(1)
     struct PhysicsObject
@@ -65,6 +97,10 @@ namespace Diana
         //! Whether or not this object should be considered an attractor by the Universe.
         //! Make sure to call Universe::update_attractor if you set this or change the mass/radius.
         bool emits_gravity;
+        //! Whether or not this object's radiation spectrum is powerful enough to be harmful.
+        bool dangerous_radiation;
+        //! The radiation spectrum of this object.
+        struct Spectrum* spectrum;
     };
 #pragma pack()
 
@@ -77,15 +113,18 @@ namespace Diana
     {
         //! Physical object that forms the base of the object
         struct PhysicsObject pobj;
+        //! Client FD to talk out of.
+        int32_t socket;
+        //! ID on the client-side of the socket (not our side) that was supplied in the
+        //! SpawnMsg that spawned this object.
+        int64_t client_id;
+        
         //!// OSim ID (UNUSED)
         //int64_t osim_id,
         //    //! Parent physical ID (UNUSED)
         //    parent_phys_id,
         //    //! Query ID (UNUSED)
         //    query_id;
-        //! Client FD to talk out of.
-        int32_t socket;
-        int64_t client_id;
         //!// Is this client registered for vis data
         //bool vis_data,
         //    //! Is this client registered for vis meta data
@@ -103,6 +142,8 @@ namespace Diana
         int64_t phys_id;
         Universe* universe;
         PhysicsObject* scan_target;
+        //! Tha radiation spectrum of this object.
+        struct Spectrum* spectrum;
         struct Vector3 origin,
             direction,
             front_position,
@@ -162,9 +203,14 @@ namespace Diana
         void* occlusion;
     };
 
-    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
     struct PhysicsObject* PhysicsObject_clone(struct PhysicsObject* obj);
     void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
+
+    struct Spectrum* Spectrum_clone(struct Spectrum* src);
+    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size = NULL);
+    struct Spectrum* Spectrum_perturb(struct Spectrum* src);
+    struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment);
 
     void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation);
 
@@ -174,14 +220,16 @@ namespace Diana
     void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, double dt, struct PhysCollisionEffect* pce);
     void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
-    void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+    //void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
 
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg = 0, char* data = 0);
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg = 0, char* data = 0);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    
     void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
     void Beam_tick(struct Beam* beam, double dt);
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
 
     bool is_big_enough(double m, double r);
+    double radiates_strong_enough(struct Spectrum* spectrum);
 }
 #endif
