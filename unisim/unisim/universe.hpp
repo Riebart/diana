@@ -136,15 +136,23 @@ namespace Diana
         //! Expire all objects in the universe associated with the given client.
         void hangup_objects(int32_t c);
 
-        //! Update whether or not an object emits gravity.
-        void update_attractor(struct PhysicsObject* obj, bool calculate);
-
     private:
         int64_t get_id();
         void broadcast_vis_data();
         void tick(double dt);
         void sort_aabb(double dt, bool calc);
         void handle_message(int32_t socket);
+        
+        // Take care of expiring objects from the universe at the end of a physics tick.
+        void handle_expired();
+        // Take care of adding queued objects to the universe at the end of a physics tick.
+        void handle_added();
+
+        //! This is called to update either the attractors or radiators lists, and is supplied
+        //! with the physics object in question, as well as the new and old values for the 
+        //! conditional boolean as appropriate.
+        void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
+        
         void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
 
         struct vis_client
@@ -190,6 +198,7 @@ namespace Diana
 
         std::map<int64_t, struct SmartPhysicsObject*> smarties;
         std::vector<struct PhysicsObject*> attractors;
+        std::vector<struct PhysicsObject*> radiators;
         std::vector<struct PhysicsObject*> phys_objects;
         std::vector<struct Beam*> beams;
         std::set<int64_t> expired;
@@ -278,6 +287,9 @@ namespace Diana
         double rate;
         //! Total time elapsed in the game world
         double total_time;
+        //! Last persitent environmental effect time. Total simulation time that the last event was
+        //! triggered for the last environment effect (radiation, etc...)
+        double last_effect_time;
         //! The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks.
         double min_frametime;
         //! The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse.

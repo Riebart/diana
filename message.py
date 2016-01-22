@@ -8,6 +8,24 @@ from vector import Vector3, zero3d
 from cStringIO import StringIO
 from collections import OrderedDict
 
+class Spectrum:
+    def __init__(self, wavelengths, powers):
+        if wavelengths != None and powers != None:
+            print wavelengths
+            print powers
+            self.spectrum = dict(zip(wavelengths, powers))
+        else:
+            self.spectrum = None
+
+    def get_parts(self):
+        if self.spectrum == None:
+            return []
+
+        keys = sorted(self.spectrum.keys())
+        vals = [ self.spectrum[k] for k in keys ]
+
+        return [ len(keys), keys, vals ]
+
 class Message:
     def __init__(self, client):
         pass
@@ -147,7 +165,7 @@ class Message:
     @staticmethod
     def ReadMsgEl(key, msg):
         if isinstance(key, list) or isinstance(key, tuple):
-            return tuple([ (msg[k] if k in msg else None) for k in key])
+            return [ (msg[k] if k in msg else None) for k in key]
         else:
             return msg[key] if key in msg else None
 
@@ -192,11 +210,14 @@ class PhysicalPropertiesMsg(Message):
         self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
         self.radius = Message.ReadMsgEl('\x12', msg)
 
+        # We can ignore the spectrum component count, and just consider the arrays that follow, because we're Python
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x14', msg), Message.ReadMsgEl('\x15', msg))
+
     def build(self):
         msg = {}
         vals = [ self.object_type, self.mass ] + \
             list(self.position) + list(self.velocity) + \
-            list(self.orientation) + list(self.thrust) + [ self.radius ]
+            list(self.orientation) + list(self.thrust) + [ self.radius ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -212,7 +233,7 @@ class PhysicalPropertiesMsg(Message):
         vals = [ obj.object_type, obj.mass ] + \
             [a-b for a,b in zip(obj.position,p)] + \
             [a-b for a,b in zip(obj.velocity,v)] + \
-            obj.orientation + obj.thrust + [ obj.radius ]
+            obj.orientation + obj.thrust + [ obj.radius ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
 
         return msg
@@ -322,11 +343,14 @@ class BeamMsg(Message):
         self.energy = Message.ReadMsgEl('\x0E', msg)
         self.beam_type = Message.ReadMsgEl('\x0F', msg)
         self.comm_msg = Message.ReadMsgEl('\x10', msg)
+        # Skip 11
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x12', msg), Message.ReadMsgEl('\x13', msg))
+
 
     def build(self):
         msg = {}
         vals = self.origin + self.velocity + self.up + \
-            [ self.spread_h, self.spread_v, self.energy, self.beam_type, self.comm_msg ]
+            [ self.spread_h, self.spread_v, self.energy, self.beam_type, self.comm_msg ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -346,10 +370,12 @@ class CollisionMsg(Message):
         self.energy = Message.ReadMsgEl('\x09', msg)
         self.collision_type = Message.ReadMsgEl('\x0A', msg)
         self.comm_msg = Message.ReadMsgEl('\x0B', msg)
+        # Skip 0C
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x0D', msg), Message.ReadMsgEl('\x0E', msg))
 
     def build(self):
         msg = {}
-        vals = self.position + self.direction + [ self.energy + self.beam_type, self.comm_msg ]
+        vals = self.position + self.direction + [ self.energy + self.beam_type, self.comm_msg ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -372,12 +398,14 @@ class SpawnMsg(Message):
         self.orientation = Message.ReadMsgEl(('\x0C','\x0D','\x0E','\x0F'), msg)
         self.thrust = Message.ReadMsgEl(('\x10','\x11','\x12'), msg)
         self.radius = Message.ReadMsgEl('\x13', msg)
+        # Skip 14
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x15', msg), Message.ReadMsgEl('\x16', msg))
 
     def build(self):
         msg = {}
         vals = [ self.is_smart, str(self.object_type), self.mass ] + \
             list(self.position) + list(self.velocity) + list(self.orientation) + list(self.thrust) + \
-            [ self.radius ]
+            [ self.radius ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -400,10 +428,14 @@ class ScanResultMsg(Message):
         self.thrust = Message.ReadMsgEl(('\x0F','\x10','\x11'), msg)
         self.radius = Message.ReadMsgEl('\x12', msg)
         self.data = Message.ReadMsgEl('\x13', msg)
+        # Skip 14
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x15', msg), Message.ReadMsgEl('\x16', msg))
+        # Skip 17
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x18', msg), Message.ReadMsgEl('\x19', msg))
 
     def build(self):
         msg = {}
-        vals = [ self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius, self.data ]
+        vals = [ self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius, self.data ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -421,10 +453,13 @@ class ScanQueryMsg(Message):
         self.scan_id = Message.ReadMsgEl('\x03', msg)
         self.scan_energy = Message.ReadMsgEl('\x04', msg)
         self.scan_dir = Message.ReadMsgEl(('\x05','\x06','\x07'), msg)
+        # Skip 08
+        self.spectrum = Spectrum(Message.ReadMsgEl('\x09', msg), Message.ReadMsgEl('\x0A', msg))
 
     def build(self):
         msg = {}
-        vals = [ self.scan_id, self.scan_energy ] + self.scan_dir
+        print self.scan_dir
+        vals = [ self.scan_id, self.scan_energy ] + self.scan_dir + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 

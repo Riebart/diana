@@ -91,6 +91,8 @@ public:
         {
         case ElementType::Double:
             el.dbl_val = *(double*)(msg + pos);
+            el.i32_val = (int32_t)el.dbl_val;
+            el.i64_val = (int64_t)el.dbl_val;
             pos += 8;
             break;
 
@@ -151,6 +153,7 @@ public:
             // The Python BSON library has a habit of not obeying integer types
             // Fill in the i32_val from the parsed value, as best we can, in case we were expected an i32
             el.i32_val = (int32_t)el.i64_val;
+            el.dbl_val = (double)el.i64_val;
             pos += 8;
             break;
 
@@ -159,6 +162,7 @@ public:
             // The Python BSON library has a habit of not obeying integer types
             // Fill in the i64_val from the parsed value, in case we were expected an i64
             el.i64_val = el.i32_val;
+            el.dbl_val = (double)el.i32_val;
             pos += 4;
             break;
         default:

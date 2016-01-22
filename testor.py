@@ -2,7 +2,7 @@
 
 import message
 import objectsim
-import unisim
+#import unisim
 import threading
 import ship
 from shiptypes import Firefly

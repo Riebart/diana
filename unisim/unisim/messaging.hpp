@@ -11,12 +11,18 @@ typedef int sock_t;
 #include <stdlib.h>
 #include <stdint.h>
 
+// For Vector3
 #include "vector.hpp"
-
-class BSONReader;
+// For Spectrum/SpectrumComponent
+#include "physics.hpp"
+// For BSONReader::Element
+#include "bson.hpp"
 
 namespace Diana
 {
+    class BSONMessage;
+    typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)> read_lambda;
+    
     // The general superclass of all messages
     class BSONMessage
     {
@@ -48,34 +54,41 @@ namespace Diana
         // An array of boolean values indicating whether a value was filled or left blank.
         bool* specced;
 
-        // NUmber of elements, equals the length of the 'specced' array.
-        int num_el;
+        // Number of elements, equals the length of the 'specced' and 'handlers' arrays, minus
+        // 2. This number doesn't account for the server/client IDs at the head of the message,
+        // just the message specific fields. Can be 0.
+        uint32_t num_el;
+
+        // A pointer to an externally allocated/destroyed BSONReader object.
+        BSONReader* br;
 
         // Read a BSON message form a socket and return a pointer to a newly allocated object.
         static BSONMessage* ReadMessage(sock_t sock);
         BSONMessage() { }
         virtual ~BSONMessage();
         virtual int spec_all(bool spec = true);
-        virtual bool all_specced(int start_index = 0, int stop_index = -1);
+        virtual bool all_specced(int start_index = 0, int stop_index = -1, int except = -1);
 
     protected:
-        BSONReader* br;
-        BSONMessage(BSONReader* _br, MessageType _msg_type);
+        BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
+
+        virtual const read_lambda* handlers() { return NULL; };
     };
 
     class HelloMsg : public BSONMessage
     {
     public:
-        HelloMsg();
-        HelloMsg(BSONReader* _br, MessageType _msg_type);
+        HelloMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), Hello) { }
         int64_t send(sock_t sock);
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class PhysicalPropertiesMsg : public BSONMessage
     {
     public:
-        PhysicalPropertiesMsg();
-        PhysicalPropertiesMsg(BSONReader* _br, MessageType _msg_type);
+        PhysicalPropertiesMsg(BSONReader* _br = NULL) : BSONMessage(_br, 19, handlers(), PhysicalProperties) { }
         ~PhysicalPropertiesMsg();
         int64_t send(sock_t sock);
 
@@ -83,62 +96,75 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+        struct Spectrum* spectrum;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class VisualPropertiesMsg : public BSONMessage
     {
     public:
-        VisualPropertiesMsg();
-        VisualPropertiesMsg(BSONReader* _br, MessageType _msg_type);
+        VisualPropertiesMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), VisualProperties) { }
         int64_t send(sock_t sock);
+    protected:
+        const read_lambda* handlers();
     };
 
     class VisualDataEnableMsg : public BSONMessage
     {
     public:
-        VisualDataEnableMsg();
-        VisualDataEnableMsg(BSONReader* _br, MessageType _msg_type);
+        VisualDataEnableMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), VisualDataEnable) { }
         int64_t send(sock_t sock);
 
         bool enabled;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class VisualMetaDataEnableMsg : public BSONMessage
     {
     public:
-        VisualMetaDataEnableMsg();
-        VisualMetaDataEnableMsg(BSONReader* _br, MessageType _msg_type);
+        VisualMetaDataEnableMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), VisualMetaDataEnable) { }
         int64_t send(sock_t sock);
 
         bool enabled;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class VisualMetaDataMsg : public BSONMessage
     {
     public:
-        VisualMetaDataMsg();
-        VisualMetaDataMsg(BSONReader* _br, MessageType _msg_type);
+        VisualMetaDataMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), VisualMetaData) { }
         int64_t send(sock_t sock);
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class VisualDataMsg : public BSONMessage
     {
     public:
-        VisualDataMsg();
-        VisualDataMsg(BSONReader* _br, MessageType _msg_type);
+        VisualDataMsg(BSONReader* _br = NULL) : BSONMessage(_br, 9, handlers(), VisualData) { }
         int64_t send(sock_t sock);
 
         int64_t phys_id;
         double radius;
         struct Vector3 position;
         struct Vector4 orientation;
+        double red, green, blue;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class BeamMsg : public BSONMessage
     {
     public:
-        BeamMsg();
-        BeamMsg(BSONReader* _br, MessageType _msg_type);
+        BeamMsg(BSONReader* _br = NULL) : BSONMessage(_br, 17, handlers(), Beam) { }
         ~BeamMsg();
         int64_t send(sock_t sock);
 
@@ -146,13 +172,16 @@ namespace Diana
         char* comm_msg;
         double spread_h, spread_v, energy;
         struct Vector3 origin, velocity, up;
+        struct Spectrum* spectrum;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class CollisionMsg : public BSONMessage
     {
     public:
-        CollisionMsg();
-        CollisionMsg(BSONReader* _br, MessageType _msg_type);
+        CollisionMsg(BSONReader* _br = NULL) : BSONMessage(_br, 12, handlers(), Collision) { }
         ~CollisionMsg();
         int64_t send(sock_t sock);
         void set_colltype(char* type);
@@ -161,13 +190,16 @@ namespace Diana
         char* comm_msg;
         double energy;
         struct Vector3 position, direction;
+        struct Spectrum* spectrum;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class SpawnMsg : public BSONMessage
     {
     public:
-        SpawnMsg();
-        SpawnMsg(BSONReader* _br, MessageType _msg_type);
+        SpawnMsg(BSONReader* _br = NULL) : BSONMessage(_br, 20, handlers(), Spawn) { }
         ~SpawnMsg();
         int64_t send(sock_t sock);
 
@@ -176,13 +208,16 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+        struct Spectrum* spectrum;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class ScanResultMsg : public BSONMessage
     {
     public:
-        ScanResultMsg();
-        ScanResultMsg(BSONReader* _br, MessageType _msg_type);
+        ScanResultMsg(BSONReader* _br = NULL) : BSONMessage(_br, 23, handlers(), ScanResult) { }
         ~ScanResultMsg();
         int64_t send(sock_t sock);
 
@@ -191,117 +226,153 @@ namespace Diana
         double mass, radius;
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
+        struct Spectrum* obj_spectrum;
+        struct Spectrum* beam_spectrum;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class ScanQueryMsg : public BSONMessage
     {
     public:
-        ScanQueryMsg();
-        ScanQueryMsg(BSONReader* _br, MessageType _msg_type);
+        ScanQueryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 8, handlers(), ScanQuery) { }
+        ~ScanQueryMsg();
         int64_t send(sock_t sock);
 
         int64_t scan_id;
         double energy;
         struct Vector3 direction;
+        struct Spectrum* spectrum;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class ScanResponseMsg : public BSONMessage
     {
     public:
-        ScanResponseMsg();
-        ScanResponseMsg(BSONReader* _br, MessageType _msg_type);
+        ScanResponseMsg(BSONReader* _br = NULL) : BSONMessage(_br, 2, handlers(), ScanResponse) { }
         ~ScanResponseMsg();
         int64_t send(sock_t sock);
 
         char* data;
         int64_t scan_id;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class GoodbyeMsg : public BSONMessage
     {
     public:
-        GoodbyeMsg();
-        GoodbyeMsg(BSONReader* _br, MessageType _msg_type);
+        GoodbyeMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), Goodbye) { }
         int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class DirectoryMsg : public BSONMessage
     {
     public:
+        DirectoryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 4, handlers(), Directory) { }
+        ~DirectoryMsg();
+        int64_t send(sock_t sock);
+
         struct DirectoryItem
         {
             char* name;
             int64_t id;
         };
-        DirectoryMsg();
-        DirectoryMsg(BSONReader* _br, MessageType _msg_type);
-        ~DirectoryMsg();
-        int64_t send(sock_t sock);
 
         int64_t item_count;
         char* item_type;
         struct DirectoryItem* items;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class NameMsg : public BSONMessage
     {
     public:
-        NameMsg();
-        NameMsg(BSONReader* _br, MessageType _msg_type);
+        NameMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), Name) { }
         ~NameMsg();
         int64_t send(sock_t sock);
 
         char* name;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class ReadyMsg : public BSONMessage
     {
     public:
-        ReadyMsg();
-        ReadyMsg(BSONReader* _br, MessageType _msg_type);
+        ReadyMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), Ready) { }
         int64_t send(sock_t sock);
 
         bool ready;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class ThrustMsg : public BSONMessage
     {
     public:
-        ThrustMsg();
-        ThrustMsg(BSONReader* _br, MessageType _msg_type);
+        ThrustMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Thrust) { }
         int64_t send(sock_t sock);
+
+        Vector3 thrust;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class VelocityMsg : public BSONMessage
     {
     public:
-        VelocityMsg();
-        VelocityMsg(BSONReader* _br, MessageType _msg_type);
+        VelocityMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Velocity) { }
         int64_t send(sock_t sock);
+
+        Vector3 velocity;
+    
+    protected:
+        const read_lambda* handlers();
     };
 
     class JumpMsg : public BSONMessage
     {
     public:
-        JumpMsg();
-        JumpMsg(BSONReader* _br, MessageType _msg_type);
+        JumpMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Jump) { }
         int64_t send(sock_t sock);
+
+        Vector3 destination;
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class InfoUpdateMsg : public BSONMessage
     {
     public:
-        InfoUpdateMsg();
-        InfoUpdateMsg(BSONReader* _br, MessageType _msg_type);
+        InfoUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), InfoUpdate) { }
         int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
     };
 
     class RequestUpdateMsg : public BSONMessage
     {
     public:
-        RequestUpdateMsg();
-        RequestUpdateMsg(BSONReader* _br, MessageType _msg_type);
+        RequestUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), RequestUpdate) { }
         int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
     };
 }
 #endif
