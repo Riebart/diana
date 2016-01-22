@@ -141,8 +141,8 @@ def signature_test():
     sbm.srv_id = smarty_id
     sbm.cli_id = 1
     sbm.origin = [0.0,0.0,0.0]
-    sbm.velocity = [5.0,0.0,0.0]
-    sbm.up = [0.0,0.0,1.0]
+    sbm.velocity = [0.0,0.0,5.0]
+    sbm.up = [1.0,0.0,0.0]
     sbm.spread_h = 2 * math.pi
     sbm.spread_v = 2 * math.pi
     sbm.spectrum = message.Spectrum([550e-9],[1000])
@@ -203,8 +203,8 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    pool_rack()
+    #pool_rack()
     #spawn_sol()
-    #signature_test()
+    signature_test()
 
     #test_systems()

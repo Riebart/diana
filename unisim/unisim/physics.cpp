@@ -147,9 +147,11 @@ namespace Diana
         // We account for the position delta above with the FMAD.
         Vector3_fmad(&obj->velocity, dt / obj->mass, &obj->thrust);
 
-        V3 a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
-
-        Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
+        if (!Vector3_almost_zero(&obj->ang_velocity))
+        {
+            V3 a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
+            Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
+        }
     }
 
     void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation)
@@ -916,10 +918,20 @@ namespace Diana
         V3 p2;
         Vector3_add(&p2, &p, &dp);
 
+        //! @todo Early rejection if we're WAY outside of collision distance.
+
         // Get the components of the position at the start and end of the physics tick
         // that lie in the plane defined by the up and right vectors of the beam
         // respectively.
-
+        //
+        // Note that there's going to be a problem with vectors that are in the plane
+        // defined by the up and right vectors. Vectors in this plane will have 0 dot
+        // product with the direction vector, and so compare unfavourably with the
+        // cosines of the spread.
+        //
+        // - proj_*[0] is the projection DOWN the up vector into the RIGHT/FORWARD plane
+        // - proj_*[1] is the projection DOWN the right vector into the UP/FORWARD plane
+        
         V3 proj_s[2];
         Vector3_project_down(&proj_s[0], &p, &b->up);
         Vector3_project_down(&proj_s[1], &p, &b->right);
@@ -934,10 +946,10 @@ namespace Diana
 
         // Now dot with the beam direction to get the angles of the rays make. Do it for
         // the original position, and for the position plus the position delta. Projecting
-        // down the up vector gets us the horizontal angle, and down teh right vector
+        // down the up vector gets us the horizontal angle, and down the right vector
         // gets us the vertical angle.
         //
-        // Note that cosine decreses from 1 to -1 as the angle goes from 0 to 180.
+        // Note that cosine decreses from 1 to -1 as the angle goes from 0 to 180 (0 to pi).
         // We are inside, if we are > than the cosine of our beam. Note that since cosine
         // is symmetric about 0, the beam's cosines are actually from the direction to the
         // edge of the volume, and we can just test this half-angle.
@@ -951,11 +963,83 @@ namespace Diana
 
         double entering = -0.1;
         double leaving = 1.1;
+        
+        //! @todo This should be looked at for efficiency.
 
-        // This assumes that out position delta is small enough that we can consider things linear
+        // However, if the direction vector under consideration is in the up/right plane,
+        // Then we need to do something a little different. In this case, we have that at
+        // least one of the two cosines is negative (extends to include a part of this
+        // plane, if they are both negative, then we can just set the value to true, since
+        // the spanned volume contains the entirety of this plane), and that the direction
+        // vector 'matches' the non-negative cosine.
+
+        // Remember:
+        //  - cosines[0] = cosh
+        //  - cosines[1] = cosv
+        //
+        // For the current/future/proj_s/proj_e pairs:
+        //  - [0] = projection into the UP/forward plane
+        //  - [1] = projection into the RIGHT/forward plane
+        
+        // If the relative position vector lies in the up/right plane...
+
+        // Current
+        if (Vector3_almost_zeroS(Vector3_dot(&p, &b->direction)))
+        {
+            // Figure out which one failed the cosine test, Then check that the other cosine is < 0 or almost 0.
+            // If that checks out, then get the cosine of the position vector with the appropriate vector:
+            //  - horizontal spread (cosines[0]) => up vector
+            //  - vertical spread => right vector
+            // Then, check that cosine against the cosines of the beam.
+            if (!current_b[0] && ((b->cosines[1] < 0) || Vector3_almost_zeroS(b->cosines[1])))
+            {
+                current[0] = Vector3_dot(&p, &b->up) / Vector3_length(&p);
+                current_b[0] = (current[0] >= b->cosines[0]);
+            }
+            else if (!current_b[1] && ((b->cosines[0] < 0) || Vector3_almost_zeroS(b->cosines[0])))
+            {
+                current[1] = Vector3_dot(&p, &b->right) / Vector3_length(&p);
+                current_b[1] = (current[1] >= b->cosines[1]);
+            }
+        }
+
+        // Future
+        if (Vector3_almost_zeroS(Vector3_dot(&p2, &b->direction)))
+        {
+            if (!future_b[0] && ((b->cosines[1] < 0) || Vector3_almost_zeroS(b->cosines[1])))
+            {
+                future[0] = Vector3_dot(&p2, &b->up) / Vector3_length(&p);
+                future_b[0] = (future[0] >= b->cosines[0]);
+            }
+            else if (!future_b[1] && ((b->cosines[0] < 0) || Vector3_almost_zeroS(b->cosines[0])))
+            {
+                future[1] = Vector3_dot(&p2, &b->right) / Vector3_length(&p);
+                future_b[1] = (future[1] >= b->cosines[1]);
+            }
+        }
+
+        // This assumes that our position delta is small enough that we can consider things linear
         // Lots of linear approximation going on.
         for (int32_t i = 0; i < 2; i++)
         {
+            // We also need to consider the situation where one or both angles are >pi, which
+            // results in some interaction between the two cosine values.
+            //
+            // If the current boolean is false, and the opposite cosine is negative (which
+            // means it extends far enough to look 'backward'), then be optimistic, and
+            // see if the negative of the current dot product matches the cosine restriction
+            //
+            // Check for horizontal...
+            if (!current_b[i] && (b->cosines[1 - i] < 0))
+            {
+                current_b[i] = ((-current[i]) >= b->cosines[i]);
+            }
+            // And the vertical...
+            if (!future_b[i] && (b->cosines[1 - i] < 0))
+            {
+                future_b[i] = ((-future[i]) >= b->cosines[i]);
+            }
+            
             if (!current_b[i])
             {
                 // If we're out, and coming in
