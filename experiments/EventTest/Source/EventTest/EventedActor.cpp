@@ -56,15 +56,14 @@ uint32 FVisDataReceiver::Run()
         {
             m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
 
-            // Only consider messages that are VisualData, and have our client_id
+            // Only consider messages that are VisualData, and have our client_id, and have the phys_id specced[2]
             if ((m != NULL) &&
                 (m->msg_type == Diana::BSONMessage::VisualData) &&
-                (m->client_id == parent->client_id))
+                m->specced[1] && (m->client_id == parent->client_id) && 
+                m->specced[2])
             {
-                //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::GoodMessage"));
                 vdm = (Diana::VisualDataMsg*)m;
-                int32 server_id = (int32)vdm->server_id;
-                dm.server_id = server_id;
+                dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
                 dm.world_time = world->RealTimeSeconds;
                 dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
                 parent->messages.Enqueue(dm);
