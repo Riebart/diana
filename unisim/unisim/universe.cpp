@@ -229,14 +229,14 @@ namespace Diana
         u->handle_message(c);
     }
 
-    Universe::Universe(struct Parameters params)
+    Universe::Universe(struct Parameters _params)
     {
-        this->params = params;
-        this->rate = params.simulation_rate;
-        this->realtime = params.realtime_physics;
-        this->min_frametime = params.min_physics_frametime;
-        this->max_frametime = params.max_physics_frametime;
-        this->min_vis_frametime = params.min_vis_frametime;
+        this->params = _params;
+        this->rate = _params.simulation_rate;
+        this->realtime = _params.realtime_physics;
+        this->min_frametime = _params.min_physics_frametime;
+        this->max_frametime = _params.max_physics_frametime;
+        this->min_vis_frametime = _params.min_vis_frametime;
 
         if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
         {
@@ -245,7 +245,7 @@ namespace Diana
             max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
         }
 
-        this->num_threads = params.num_worker_threads;
+        this->num_threads = _params.num_worker_threads;
         //sched = new libodb::Scheduler(this->num_threads - 1);
 
         phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
@@ -273,68 +273,9 @@ namespace Diana
         visdata_paused = true;
         running = false;
 
-        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, params.network_port);
+        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, _params.network_port);
     }
     
-    /// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
-    /// @in min_frametime Minimum time in the simulation between physics ticks, regardles of the real wall clock time of a physics tick.
-    ///    If this is set to a value lower than the wall-clock time of a physics tick, then the simulation thread will fully utilize the available CPU resources.
-    ///    To achieve a sense of throttling, set this to a value above the typical wall-clock time to cause the simulation thread to sleep between ticks.
-    /// @in max_frametime Maximum time allowed to pass by in the simulation in a single tick.
-    ///    If this is less than the wall clock time, it will result in a perceived slowdown of the simulation.
-    /// @in min_vis_frametime The minimum time between visualization updates, reduces load on the physics server.
-    /// @in port TCP port to listen on when start_net() is called.
-    /// @in num_threads Number of threads to use for collision detection, no more than 4 is recommended (there's no gains at that point)
-    /// @in rate Multiplier used to scale the time-tick in the simulation. Most useful in conjunction with realtime.
-    /// @in realtime If set to true, then the simulation attempts to pass in real time, with physics ticks sleeping to match wall-clock time if necessary.
-    /// The constructor to initialize a universe for physics simulation.
-    Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
-    {
-        this->rate = rate;
-
-        if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
-        {
-            fprintf(stderr, "WARNING: min_framtime set below absolute minimum. Raising it to %g s.\n", ABSOLUTE_MIN_FRAMETIME);
-            min_frametime = ABSOLUTE_MIN_FRAMETIME;
-            max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
-        }
-
-        this->num_threads = num_threads;
-        //sched = new libodb::Scheduler(this->num_threads - 1);
-
-        phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
-        for (int i = 0; i < this->num_threads; i++)
-        {
-            phys_worker_args[i].u = this;
-            phys_worker_args[i].offset = i;
-            phys_worker_args[i].stride = this->num_threads;
-            phys_worker_args[i].dt = 0.0;
-            phys_worker_args[i].done = true;
-        }
-
-        this->min_frametime = min_frametime;
-        this->max_frametime = max_frametime;
-        this->min_vis_frametime = min_vis_frametime;
-        this->realtime = realtime;
-
-        total_time = 0.0;
-        last_effect_time = 0.0;
-        phys_frametime = 0.0;
-        wall_frametime = 0.0;
-        game_frametime = 0.0;
-        vis_frametime = 0.0;
-
-        total_time = 0.0;
-        num_ticks = 0;
-        total_objs = 1;
-
-        paused = true;
-        visdata_paused = true;
-        running = false;
-
-        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, port);
-    }
-
     Universe::~Universe()
     {
         for (int i = 0; i < num_threads; i++)
