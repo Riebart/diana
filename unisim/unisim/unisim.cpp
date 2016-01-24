@@ -78,7 +78,9 @@ int main(int32_t argc, char** argv)
 	signal(SIGTERM, &sighandler);
 	signal(SIGINT, &sighandler);
 
-    Diana::Universe* u = new Diana::Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, true);
+    struct Diana::Universe::Parameters params;
+    //Diana::Universe* u = new Diana::Universe(0.002, 0.002, 0.1, 5505, 1, 1.0, true);
+    Diana::Universe* u = new Diana::Universe(params);
 	u->start_net();
 	u->start_sim();
 

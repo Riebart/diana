@@ -125,7 +125,7 @@ namespace Diana
                      ReadArray<double>(&(s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true)), \
     READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->var; \
                      ReadArray<double>(&(s->components.power), s->n, msg->br, [](struct BSONReader::Element& el) {return el.dbl_val; }, 2, true); \
-                     radiates_strong_enough(s))
+                     total_spectrum_power(s))
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();

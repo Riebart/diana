@@ -85,11 +85,7 @@
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
 #define THREAD_JOIN(t) if (t.joinable()) t.join()
 
-#define GRAVITATIONAL_CONSTANT  6.67384e-11
-#define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
-
-#define RANDOM_ID_RANGE 1000000
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -105,9 +101,9 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    void gravity(V3* out, PO* big, PO* small)
+    void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = GRAVITATIONAL_CONSTANT * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
+        double m = G * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
         Vector3_ray(out, &small->position, &big->position);
         Vector3_scale(out, m);
     }
@@ -233,6 +229,53 @@ namespace Diana
         u->handle_message(c);
     }
 
+    Universe::Universe(struct Parameters params)
+    {
+        this->params = params;
+        this->rate = params.simulation_rate;
+        this->realtime = params.realtime_physics;
+        this->min_frametime = params.min_physics_frametime;
+        this->max_frametime = params.max_physics_frametime;
+        this->min_vis_frametime = params.min_vis_frametime;
+
+        if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
+        {
+            fprintf(stderr, "WARNING: min_framtime set below absolute minimum. Raising it to %g s.\n", ABSOLUTE_MIN_FRAMETIME);
+            min_frametime = ABSOLUTE_MIN_FRAMETIME;
+            max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
+        }
+
+        this->num_threads = params.num_worker_threads;
+        //sched = new libodb::Scheduler(this->num_threads - 1);
+
+        phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
+        for (int i = 0; i < this->num_threads; i++)
+        {
+            phys_worker_args[i].u = this;
+            phys_worker_args[i].offset = i;
+            phys_worker_args[i].stride = this->num_threads;
+            phys_worker_args[i].dt = 0.0;
+            phys_worker_args[i].done = true;
+        }
+
+        total_time = 0.0;
+        last_effect_time = 0.0;
+        phys_frametime = 0.0;
+        wall_frametime = 0.0;
+        game_frametime = 0.0;
+        vis_frametime = 0.0;
+
+        total_time = 0.0;
+        num_ticks = 0;
+        total_objs = 1;
+
+        paused = true;
+        visdata_paused = true;
+        running = false;
+
+        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, params.network_port);
+    }
+    
     /// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
     /// @in min_frametime Minimum time in the simulation between physics ticks, regardles of the real wall clock time of a physics tick.
     ///    If this is set to a value lower than the wall-clock time of a physics tick, then the simulation thread will fully utilize the available CPU resources.
@@ -367,13 +410,17 @@ namespace Diana
     int64_t Universe::get_id()
     {
         int64_t offset;
-#ifdef RANDOM_ID_RANGE
-        std::uniform_int_distribution<uint32_t> dist(1, RANDOM_ID_RANGE);
-        offset = dist(re);
-#else
-        offset = 1;
-#endif
-       
+        if (params.id_rand_max > 1)
+        {
+           
+            std::uniform_int_distribution<int64_t> dist(1, params.id_rand_max);
+            offset = dist(re);
+        }
+        else
+        {
+            offset = 1;
+        }
+
         int64_t r = total_objs.fetch_add(offset);
         return r;
     }
@@ -641,7 +688,7 @@ namespace Diana
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
-                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius);
+                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius, params.gravity_magnitude_cutoff);
 
                     // We don't want to grab the lock unnecessarily
                     if (newval != smarty->pobj.emits_gravity)
@@ -673,11 +720,11 @@ namespace Diana
                 if (msg->all_specced(msg->num_el - 3))
                 {
                     struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
-                    spectrum = Spectrum_perturb(spectrum);
+                    spectrum = Spectrum_perturb(spectrum, params.spectrum_slush_range);
                     spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
                     smarty->pobj.spectrum = spectrum;
 
-                    radiates_strong_enough(spectrum);
+                    radiates_strong_enough(spectrum, params.radiation_energy_cutoff);
                     bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
 
                     if (newval != smarty->pobj.dangerous_radiation)
@@ -721,7 +768,10 @@ namespace Diana
                 {
                     memcpy(comm_msg, msg->comm_msg, len);
                     b->comm_msg = comm_msg;
-                    //throw std::runtime_error("OOM");
+                }
+                else
+                {
+                    throw std::runtime_error("Universe::UnableToAllocateCommMsg");
                 }
             }
             if (strcmp(msg->beam_type, "WEAP") == 0)
@@ -753,7 +803,7 @@ namespace Diana
                 msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
 
             // Now that the beam has a cloned version of the spectrum, perturb it.
-            b->spectrum = Spectrum_perturb(b->spectrum);
+            b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range);
 
             add_object(b);
             break;
@@ -812,7 +862,7 @@ namespace Diana
             // Now that the object contains a cloned version of the spectrum, perturb it.
             if (obj->spectrum != NULL)
             {
-                obj->spectrum = Spectrum_perturb(obj->spectrum);
+                obj->spectrum = Spectrum_perturb(obj->spectrum, params.spectrum_slush_range);
             }
 
             // Note that adding the object to the attractors and radiators lists is handled
@@ -912,7 +962,7 @@ namespace Diana
                         power_scale = MIN(1.0, smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq));
                     }
                     
-                    if ((power_scale * other->spectrum->total_power) < COLLISION_ENERGY_CUTOFF)
+                    if ((power_scale * other->spectrum->total_power) < params.collision_energy_cutoff)
                     {
                         continue;
                     }
@@ -1041,7 +1091,7 @@ namespace Diana
                 continue;
             }
 
-            gravity(&cg, attractors[i], obj);
+            gravity(params.gravitational_constant, &cg, attractors[i], obj);
             Vector3_add(g, &cg);
         }
     }
@@ -1076,8 +1126,8 @@ namespace Diana
             // of energy from an 'impact effect' perspective, and that is in
             // the 'e' field of the collision result.
 
-            if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
-                (phys_result.e > COLLISION_ENERGY_CUTOFF))
+            if ((phys_result.e < -u->params.collision_energy_cutoff) ||
+                (phys_result.e > u->params.collision_energy_cutoff))
             {
                 ev.obj1 = obj1;
                 ev.obj2 = obj2;
@@ -1257,7 +1307,7 @@ namespace Diana
 #else
                 fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
-                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1);
+                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
                 //! @todo Smarty beam collision messages
                 //! @todo Beam collision messages
@@ -1444,7 +1494,7 @@ namespace Diana
                     }
                     else if (o->type == PHYSOBJECT)
                     {
-                        PhysicsObject_resolve_damage(o, energy);
+                        PhysicsObject_resolve_damage(o, energy, u->params.health_damage_threshold);
                     }
                 }
             }
@@ -1736,11 +1786,11 @@ namespace Diana
             cm.specced[cm.num_el - 2] = false;
             cm.specced[cm.num_el - 3] = false;
 
-            // This constant defines the number of rounds that we'll consider multiple collision at the same instant.
+            // The value in params.max_simultaneous_collision_rounds defines the number of rounds that we'll consider 
+            // multiple collision at the same instant.
             // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
             // negligible.
-#define COLLISION_ROUNDS_CUTOFF 100
 
             // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
@@ -1846,11 +1896,11 @@ namespace Diana
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
                     energy0 += (never_seen ? obj1->mass * Vector3_length2(&obj1->velocity) : 0.0);
-                    PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1);
+                    PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
                     energy0 += (never_seen ? obj2->mass * Vector3_length2(&obj2->velocity) : 0.0);
-                    PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2);
+                    PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
                     //! but I don't think, in general, this will cause much of a problem for a 60hz
@@ -1884,7 +1934,7 @@ namespace Diana
 
                     // To prevent hanging in the situation where there's a constant feedback of collisions,
                     // limit the number of rounds we'll support.
-                    if (n_rounds > COLLISION_ROUNDS_CUTOFF)
+                    if (n_rounds > params.max_simultaneous_collision_rounds)
                     {
                         break;
                     }

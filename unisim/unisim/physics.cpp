@@ -18,12 +18,12 @@ namespace Diana
 
     //! If the gravitational acceleration of a body at it's surface (radius) is less than this,
     //! then the body is ignored as an insignificant gravitational source. This has units of m/s^2
-#define GRAVITY_CUTOFF 0.01
+//#define GRAVITY_CUTOFF 0.01
 
     //! If the energy per square metre of beam wavefront is fewer than this many joules, the beam
     //! is expired from the universe. This is a detection threshold, derived from typical consumer
     //! wireless antennae that can detect at -70 dBmW.
-#define BEAM_ENERGY_CUTOFF 1e-10
+//#define BEAM_ENERGY_CUTOFF 1e-10
 
     //! If the radiation energy per square metre at an object's radius is less than this amount
     //! (in Watts), the radiation source is considered too insignificant to be harmful. This is a
@@ -32,7 +32,7 @@ namespace Diana
     //! See: https://en.wikipedia.org/wiki/Mercury_(planet)#Surface_conditions_and_exosphere
     //!
     //! To compare, Sol outputs 61.7MW/m^2 at it's surface.
-#define RADIATION_ENERGY_CUTOFF 1.5e4 // A 6000W cutting laser uses a beam about 0.5mm across.
+//#define RADIATION_ENERGY_CUTOFF 1.5e4 // A 6000W cutting laser uses a beam about 0.5mm across.
                                       // Using the Stefan-Boltzmann radiative energy equations for a black body,
                                       // and the fact that a 'good' temperature is about 1500K (the temperature
                                       // at which steel melts, and most ceramic tiles break down), this results in
@@ -40,10 +40,10 @@ namespace Diana
                                       // even a small portion of this would begin to cause damage, so let's say 10kW/m^2
 
     // Spectrum wavelengths and power levels are adjusted by this proportional amount randomly
-#define SPECTRUM_SLUSH_RANGE 0.01
+//#define SPECTRUM_SLUSH_RANGE 0.01
 
     //! At what percentage of the total health does damage start to apply.
-#define HEALTH_DAMAGE_CUTOFF 0.1
+//#define HEALTH_DAMAGE_CUTOFF 0.1
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -61,24 +61,30 @@ namespace Diana
     //! GCC: __uint128_t and __int128_t
     //! Look back at the UniverseGenerator code, and see if we can resurrect some of it.
 
-    bool is_big_enough(double m, double r)
+    bool is_big_enough(double m, double r, double cutoff)
     {
-        return ((6.67384e-11 * m / (r * r)) >= GRAVITY_CUTOFF);
+        return ((6.67384e-11 * m / (r * r)) >= cutoff);
     }
 
-    double radiates_strong_enough(struct Spectrum* spectrum)
+    double total_spectrum_power(struct Spectrum* spectrum)
     {
         spectrum->total_power = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
-        struct SpectrumComponent* components = &(spectrum->components);
+        struct SpectrumComponent* components = &spectrum->components;
         for (uint32_t i = 0; i < spectrum->n; i++)
         {
             spectrum->total_power += components[i].power;
         }
+        return spectrum->total_power;
+    }
 
+    double radiates_strong_enough(struct Spectrum* spectrum, double cutoff)
+    {
+        total_spectrum_power(spectrum);
+        
         // Calculate the minimum safe distance from teh radiation source.
-        spectrum->safe_distance_sq = spectrum->total_power / (4 * M_PI * RADIATION_ENERGY_CUTOFF);
+        spectrum->safe_distance_sq = spectrum->total_power / (4 * M_PI * cutoff);
         return spectrum->safe_distance_sq;
     }
 
@@ -103,12 +109,12 @@ namespace Diana
         Vector3_init(&obj->up, 0, 0, 1);
 
         obj->health = mass * 1000000;
-        obj->emits_gravity = is_big_enough(mass, radius);
+        obj->emits_gravity = is_big_enough(mass, radius, universe->params.gravity_magnitude_cutoff);
 
         obj->spectrum = Spectrum_clone(spectrum);
         if (spectrum != NULL)
         {
-            radiates_strong_enough(spectrum);
+            radiates_strong_enough(spectrum, universe->params.radiation_energy_cutoff);
             // If the safe distance is more than the radius, then it's possible to be
             // in a situation where the radiation levels are dangerous.
             obj->dangerous_radiation = (spectrum->safe_distance_sq > (obj->radius * obj->radius));
@@ -206,27 +212,27 @@ namespace Diana
         }
     }
 
-    struct Spectrum* Spectrum_perturb(struct Spectrum* src)
+    struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit)
     {
         if (src != NULL)
         {
             // We won't wiggle anything around by more than 1% of it's current value.
-            std::uniform_real_distribution<double> dist(1.0 - SPECTRUM_SLUSH_RANGE, 1.0 + SPECTRUM_SLUSH_RANGE);
+            std::uniform_real_distribution<double> dist(1.0 - limit, 1.0 + limit);
             thread_local std::default_random_engine re;
             struct SpectrumComponent* components = &src->components;
             for (uint32_t i = 0; i < src->n; i++)
             {
-                if (ABS(components[i].power) < SPECTRUM_SLUSH_RANGE)
+                if (ABS(components[i].power) < limit)
                 {
                     // No one will be able to fully remove a component from the signature.
-                    components[i].power = (dist(re) - 1.0 + SPECTRUM_SLUSH_RANGE) / 2;
+                    components[i].power = (dist(re) - 1.0 + limit) / 2;
                 }
                 else
                 {
                     components[i].power *= dist(re);
                 }
             }
-            radiates_strong_enough(src);
+            total_spectrum_power(src);
         }
         return src;
     }
@@ -558,7 +564,7 @@ namespace Diana
         Vector3_scale(&cr->pce2.d, -1);
     }
 
-    void PhysicsObject_resolve_damage(PO* obj, double energy)
+    void PhysicsObject_resolve_damage(PO* obj, double energy, double cutoff)
     {
         // We'll take damage if we absorb an impact whose energy is above ten percent
         // of our current health, and only by the energy that is above that threshold
@@ -569,7 +575,7 @@ namespace Diana
             return;
         }
 
-        double t = HEALTH_DAMAGE_CUTOFF * obj->health;
+        double t = cutoff * obj->health;
 
         if (energy > t)
         {
@@ -758,7 +764,7 @@ namespace Diana
     }
 
     //! @param args This describes the information about the thing that hit obj, that is other.
-    void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struct PhysCollisionEffect* effect)
+    void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struct PhysCollisionEffect* effect, double health_cutoff)
     {
         switch (other->type)
         {
@@ -766,12 +772,12 @@ namespace Diana
         case PHYSOBJECT_SMART:
         {
             PhysicsObject_resolve_phys_collision(obj, energy, dt, effect);
-            PhysicsObject_resolve_damage(obj, energy);
+            PhysicsObject_resolve_damage(obj, energy, health_cutoff);
             break;
         }
         case BEAM_WEAP:
         {
-            PhysicsObject_resolve_damage(obj, energy);
+            PhysicsObject_resolve_damage(obj, energy, health_cutoff);
             break;
         }
         case BEAM_SCAN:
@@ -849,7 +855,7 @@ namespace Diana
         beam->data = data;
 
         beam->distance_travelled = 0;
-        beam->max_distance = sqrt(energy / (area_factor * BEAM_ENERGY_CUTOFF));
+        beam->max_distance = sqrt(energy / (area_factor * universe->params.beam_energy_cutoff));
 
         beam->spectrum = Spectrum_clone(spectrum);
     }
