@@ -46,9 +46,6 @@
     <ClInclude Include="..\..\Source\EventTest\EventedActor.h">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\EventTest\EventedActorComponent.h">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\EventTest\bson.hpp">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
@@ -58,18 +55,21 @@
     <ClInclude Include="..\..\Source\EventTest\vector.hpp">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\EventTest\ObjectSimConnector.h">
+      <Filter>Source\EventTest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\EventTest\EventedActor.cpp">
-      <Filter>Source\EventTest</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\EventTest\EventedActorComponent.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\EventTest\messaging.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\EventTest\vector.cpp">
+      <Filter>Source\EventTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\EventTest\ObjectSimConnector.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
   </ItemGroup>

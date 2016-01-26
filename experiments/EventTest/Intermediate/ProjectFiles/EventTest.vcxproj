@@ -251,8 +251,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\EventTest\messaging.cpp" />
+    <ClCompile Include="..\..\Source\EventTest\ObjectSimConnector.cpp" />
     <ClCompile Include="..\..\Source\EventTest\vector.cpp" />
     <ClInclude Include="..\..\Source\EventTest\messaging.hpp" />
+    <ClInclude Include="..\..\Source\EventTest\ObjectSimConnector.h" />
     <ClInclude Include="..\..\Source\EventTest\vector.hpp" />
     <None Include="..\..\EventTest.uproject" />
     <None Include="..\..\Source\EventTest.Target.cs" />
@@ -262,11 +264,9 @@
     <None Include="..\..\Config\DefaultGame.ini" />
     <None Include="..\..\Source\EventTest\EventTest.Build.cs" />
     <ClCompile Include="..\..\Source\EventTest\EventedActor.cpp" />
-    <ClCompile Include="..\..\Source\EventTest\EventedActorComponent.cpp" />
     <ClCompile Include="..\..\Source\EventTest\EventTest.cpp" />
     <ClInclude Include="..\..\Source\EventTest\bson.hpp" />
     <ClInclude Include="..\..\Source\EventTest\EventedActor.h" />
-    <ClInclude Include="..\..\Source\EventTest\EventedActorComponent.h" />
     <ClInclude Include="..\..\Source\EventTest\EventTest.h" />
     <ClCompile Include="..\..\Source\EventTest\EventTestGameMode.cpp" />
     <ClInclude Include="..\..\Source\EventTest\EventTestGameMode.h" />
