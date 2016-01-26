@@ -643,17 +643,17 @@ namespace Diana
                     }
                 }
 
-#define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
-#define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
-                ASSIGN_VAL(3, mass);
-                ASSIGN_V3(4, position);
-                ASSIGN_V3(7, velocity);
+#define ASSIGN_VAL(i, var, absolute) if (msg->specced[i]) { smarty->pobj.var = (absolute ? smarty->pobj.var : 0.0) + msg->var; };
+#define ASSIGN_V3(i, var, absolute) ASSIGN_VAL(i, var.x, absolute) ASSIGN_VAL(i + 1, var.y, absolute) ASSIGN_VAL(i + 2, var.z, absolute);
+                ASSIGN_VAL(3, mass, true);
+                ASSIGN_V3(4, position, false);
+                ASSIGN_V3(7, velocity, false);
                 if (msg->specced[10] && msg->specced[11] && msg->specced[12] && msg->specced[13])
                 {
                     PhysicsObject_from_orientation(&smarty->pobj, &msg->orientation);
                 }
-                ASSIGN_V3(14, thrust);
-                ASSIGN_VAL(17, radius);
+                ASSIGN_V3(14, thrust, true);
+                ASSIGN_VAL(17, radius, true);
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
 

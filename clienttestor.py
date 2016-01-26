@@ -204,7 +204,7 @@ def test_systems():
 
 if __name__ == "__main__":
     #pool_rack()
-    #spawn_sol()
-    signature_test()
+    spawn_sol()
+    #signature_test()
 
     #test_systems()

@@ -42,7 +42,7 @@ uint32 FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
 
-    std::chrono::milliseconds dura(100);
+    std::chrono::milliseconds dura(10);
     // Timespan representing 1 second as 10-million 0.1us (100ns) ticks.
     FTimespan sock_wait_time(10000000);
     bool read_available = false;
