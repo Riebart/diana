@@ -364,6 +364,7 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda* HelloMsg_handlers = NULL;
+    
     const read_lambda* HelloMsg::handlers()
     {
         return HelloMsg_handlers;
@@ -388,8 +389,11 @@ namespace Diana
         READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA_SPECTRUM(spectrum, PhysicalPropertiesMsg)
     };
+    
     const read_lambda* PhysicalPropertiesMsg::handlers()
     {
+        obj_type = NULL;
+        spectrum = NULL;
         return PhysicalPropertiesMsg_handlers;
     }
 
@@ -417,6 +421,7 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda* VisualPropertiesMsg_handlers = NULL;
+    
     const read_lambda* VisualPropertiesMsg::handlers()
     {
         throw std::runtime_error("VisualPropertiesMsg::NotImplemented");
@@ -434,6 +439,7 @@ namespace Diana
     static const read_lambda VisualDataEnableMsg_handlers[] = {
         READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
     };
+    
     const read_lambda* VisualDataEnableMsg::handlers()
     {
         return VisualDataEnableMsg_handlers;
@@ -452,6 +458,7 @@ namespace Diana
     static const read_lambda VisualMetaDataEnableMsg_handlers[] = {
         READER_LAMBDA(enabled, el.bln_val, VisualMetaDataEnableMsg)
     };
+    
     const read_lambda* VisualMetaDataEnableMsg::handlers()
     {
         return VisualMetaDataEnableMsg_handlers;
@@ -468,6 +475,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* VisualMetaDataMsg_handlers = NULL;
+    
     const read_lambda* VisualMetaDataMsg::handlers()
     {
         throw std::runtime_error("VisualMetaDataMsg::NotImplemented");
@@ -488,6 +496,7 @@ namespace Diana
         READER_LAMBDA3(position, el.dbl_val, VisualDataMsg),
         READER_LAMBDA4(orientation, el.dbl_val, VisualDataMsg)
     };
+    
     const read_lambda* VisualDataMsg::handlers()
     {
         return VisualDataMsg_handlers;
@@ -517,8 +526,11 @@ namespace Diana
         READER_LAMBDA(comm_msg, ReadString(el), BeamMsg),
         READER_LAMBDA_SPECTRUM(spectrum, BeamMsg)
     };
+    
     const read_lambda* BeamMsg::handlers()
     {
+        comm_msg = NULL;
+        spectrum = NULL;
         return BeamMsg_handlers;
     }
 
@@ -554,8 +566,11 @@ namespace Diana
         READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg),
         READER_LAMBDA_SPECTRUM(spectrum, CollisionMsg)
     };
+    
     const read_lambda* CollisionMsg::handlers()
     {
+        comm_msg = NULL;
+        spectrum = NULL;
         return CollisionMsg_handlers;
     }
 
@@ -600,8 +615,11 @@ namespace Diana
         READER_LAMBDA(radius, el.dbl_val, SpawnMsg),
         READER_LAMBDA_SPECTRUM(spectrum, SpawnMsg)
     };
+    
     const read_lambda* SpawnMsg::handlers()
     {
+        obj_type = NULL;
+        spectrum = NULL;
         return SpawnMsg_handlers;
     }
 
@@ -641,8 +659,13 @@ namespace Diana
         READER_LAMBDA_SPECTRUM(beam_spectrum, ScanResultMsg),
         READER_LAMBDA_SPECTRUM(obj_spectrum, ScanResultMsg)
     };
+    
     const read_lambda* ScanResultMsg::handlers()
     {
+        beam_spectrum = NULL;
+        obj_spectrum = NULL;
+        obj_type = NULL;
+        data = NULL;
         return ScanResultMsg_handlers;
     }
 
@@ -679,9 +702,16 @@ namespace Diana
         READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg),
         READER_LAMBDA_SPECTRUM(spectrum, ScanQueryMsg)
     };
+    
     const read_lambda* ScanQueryMsg::handlers()
     {
+        spectrum = NULL;
         return ScanQueryMsg_handlers;
+    }
+
+    ScanQueryMsg::~ScanQueryMsg()
+    {
+        free(spectrum);
     }
 
     int64_t ScanQueryMsg::send(sock_t sock)
@@ -694,11 +724,6 @@ namespace Diana
         SEND_EPILOGUE();
     }
 
-    ScanQueryMsg::~ScanQueryMsg()
-    {
-        free(spectrum);
-    }
-
     // ================================================================================
     // ================================================================================
 
@@ -706,8 +731,10 @@ namespace Diana
         READER_LAMBDA(scan_id, el.i64_val, ScanResponseMsg),
         READER_LAMBDA(data, ReadString(el), ScanResponseMsg)
     };
+    
     const read_lambda* ScanResponseMsg::handlers()
     {
+        data = NULL;
         return ScanResponseMsg_handlers;
     }
 
@@ -727,6 +754,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* GoodbyeMsg_handlers = NULL;
+    
     const read_lambda* GoodbyeMsg::handlers()
     {
         return GoodbyeMsg_handlers;
@@ -742,9 +770,12 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* DirectoryMsg_handlers = NULL;
+    
     const read_lambda* DirectoryMsg::handlers()
     {
         throw std::runtime_error("DirectoryMsg::NotImplemented");
+        items = NULL;
+        item_type = NULL;
         return DirectoryMsg_handlers;
     }
 
@@ -799,8 +830,10 @@ namespace Diana
     static read_lambda NameMsg_handlers[] = {
         READER_LAMBDA(name, ReadString(el), NameMsg)
     };
+    
     const read_lambda* NameMsg::handlers()
     {
+        name = NULL;
         return NameMsg_handlers;
     }
 
@@ -822,6 +855,7 @@ namespace Diana
     static read_lambda ReadyMsg_handlers[] = {
         READER_LAMBDA(ready, el.bln_val, ReadyMsg)
     };
+    
     const read_lambda* ReadyMsg::handlers()
     {
         return ReadyMsg_handlers;
@@ -840,6 +874,7 @@ namespace Diana
     static read_lambda ThrustMsg_handlers[] = {
         READER_LAMBDA3(thrust, el.dbl_val, ThrustMsg)
     };
+    
     const read_lambda* ThrustMsg::handlers()
     {
         return ThrustMsg_handlers;
@@ -856,6 +891,7 @@ namespace Diana
     static read_lambda VelocityMsg_handlers[] = {
         READER_LAMBDA3(velocity, el.dbl_val, VelocityMsg)
     };
+    
     const read_lambda* VelocityMsg::handlers()
     {
         return VelocityMsg_handlers;
@@ -872,6 +908,7 @@ namespace Diana
     static read_lambda JumpMsg_handlers[] = {
         READER_LAMBDA3(destination, el.dbl_val, JumpMsg)
     };
+    
     const read_lambda* JumpMsg::handlers()
     {
         return JumpMsg_handlers;
@@ -886,6 +923,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* InfoUpdateMsg_handlers = NULL;
+    
     const read_lambda* InfoUpdateMsg::handlers()
     {
         throw std::runtime_error("InfoUpdateMsg::NotImplemented");
@@ -901,6 +939,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* RequestUpdateMsg_handlers = NULL;
+    
     const read_lambda* RequestUpdateMsg::handlers()
     {
         throw std::runtime_error("RequestUpdateMsg::NotImplemented");
