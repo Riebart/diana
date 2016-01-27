@@ -748,19 +748,20 @@ namespace Diana
         return DirectoryMsg_handlers;
     }
 
-    //DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
-    //{
-    //    throw "NotImplemented";
-    //    item_type = NULL;
-    //    READ_PROLOGUE(DIRECTORY_MSG_LEN)
-    //        READ_ELEMENT(item_type, ReadString(el))
-    //        READ_ELEMENT(item_count, el.i64_val; \
-    //            this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
-    //        // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
-    //        READ_ELEMENT_IP(;)
-    //        READ_ELEMENT_IP(;)
-    //        READ_BEGIN()
-    //}
+    /*
+    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
+    {
+       throw "NotImplemented";
+       item_type = NULL;
+       READ_PROLOGUE(DIRECTORY_MSG_LEN)
+           READ_ELEMENT(item_type, ReadString(el))
+           READ_ELEMENT(item_count, el.i64_val; \
+               this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
+           // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
+           READ_ELEMENT_IP(;)
+           READ_ELEMENT_IP(;)
+           READ_BEGIN()
+    }*/
 
     DirectoryMsg::~DirectoryMsg()
     {

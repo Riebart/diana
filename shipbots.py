@@ -9,6 +9,7 @@ class SimpleBot(spaceobj.SmartObject):
         self.done = False
         self.target_acquired = False
         self.enemy_pos = None
+        self.enemy_name = None
         
         self.states = {0: "Accelerating", 1: "Coasting", 2: "Hunting-accelerating", 3:"Hunting-coasting", 4:"Engaging"}
         self.cur_state = 0
@@ -45,6 +46,9 @@ class SimpleBot(spaceobj.SmartObject):
             enemy_pos = Vector3(mess.position)
             enemy_vel = Vector3(mess.velocity)
             distance = enemy_pos.length()
+            
             if distance < self.fuse+mess.radius:
-                self.detonate()
+                #self.detonate()
+                pass
             else:
+                pass
