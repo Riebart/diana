@@ -389,6 +389,7 @@ namespace Diana
         UNLOCK(expire_lock);
     }
 
+    //! @todo Do not expire smarty objects on disconnect.
     void Universe::hangup_objects(int32_t c)
     {
         LOCK(expire_lock);
@@ -981,6 +982,8 @@ namespace Diana
             UNLOCK(query_lock);
             break;
         }
+        //! @todo Use Hello messages to tell a smart to send it's response messages back to the socket
+        // the Hello came from.
         case BSONMessage::MessageType::Hello:
         {
             HelloMsg* msg = (HelloMsg*)msg_base;
@@ -994,6 +997,8 @@ namespace Diana
             }
             break;
         }
+        //! @todo Use Goodbye messages to expire smarty objects. Only expire them on a goodbye, not on
+        // socket disconnect.
         case BSONMessage::MessageType::Goodbye:
         {
             GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;

@@ -140,8 +140,8 @@ namespace Diana
     // Attempt to read exactly n elements of type T into the destination array, which may be
     // interleaved (stride > 1), applying the given function to each BSON element to retrieve
     // the desired value.
-    template<typename T> int32_t ReadArray(T* dst, uint32_t n, 
-        BSONReader* br, std::function<T(struct BSONReader::Element&)> get_val, 
+    template<typename T> int32_t ReadArray(T* dst, uint32_t n,
+        BSONReader* br, std::function<T(struct BSONReader::Element&)> get_val,
         uint32_t stride = 1, bool consume_extra = true)
     {
         struct BSONReader::Element el = br->get_next_element();
@@ -364,7 +364,7 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda* HelloMsg_handlers = NULL;
-    
+
     const read_lambda* HelloMsg::handlers()
     {
         return HelloMsg_handlers;
@@ -389,7 +389,7 @@ namespace Diana
         READER_LAMBDA(radius, el.dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA_SPECTRUM(spectrum, PhysicalPropertiesMsg)
     };
-    
+
     const read_lambda* PhysicalPropertiesMsg::handlers()
     {
         obj_type = NULL;
@@ -421,7 +421,7 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda* VisualPropertiesMsg_handlers = NULL;
-    
+
     const read_lambda* VisualPropertiesMsg::handlers()
     {
         throw std::runtime_error("VisualPropertiesMsg::NotImplemented");
@@ -439,7 +439,7 @@ namespace Diana
     static const read_lambda VisualDataEnableMsg_handlers[] = {
         READER_LAMBDA(enabled, el.bln_val, VisualDataEnableMsg)
     };
-    
+
     const read_lambda* VisualDataEnableMsg::handlers()
     {
         return VisualDataEnableMsg_handlers;
@@ -458,7 +458,7 @@ namespace Diana
     static const read_lambda VisualMetaDataEnableMsg_handlers[] = {
         READER_LAMBDA(enabled, el.bln_val, VisualMetaDataEnableMsg)
     };
-    
+
     const read_lambda* VisualMetaDataEnableMsg::handlers()
     {
         return VisualMetaDataEnableMsg_handlers;
@@ -475,7 +475,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* VisualMetaDataMsg_handlers = NULL;
-    
+
     const read_lambda* VisualMetaDataMsg::handlers()
     {
         throw std::runtime_error("VisualMetaDataMsg::NotImplemented");
@@ -496,7 +496,7 @@ namespace Diana
         READER_LAMBDA3(position, el.dbl_val, VisualDataMsg),
         READER_LAMBDA4(orientation, el.dbl_val, VisualDataMsg)
     };
-    
+
     const read_lambda* VisualDataMsg::handlers()
     {
         return VisualDataMsg_handlers;
@@ -526,7 +526,7 @@ namespace Diana
         READER_LAMBDA(comm_msg, ReadString(el), BeamMsg),
         READER_LAMBDA_SPECTRUM(spectrum, BeamMsg)
     };
-    
+
     const read_lambda* BeamMsg::handlers()
     {
         comm_msg = NULL;
@@ -566,7 +566,7 @@ namespace Diana
         READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg),
         READER_LAMBDA_SPECTRUM(spectrum, CollisionMsg)
     };
-    
+
     const read_lambda* CollisionMsg::handlers()
     {
         comm_msg = NULL;
@@ -615,7 +615,7 @@ namespace Diana
         READER_LAMBDA(radius, el.dbl_val, SpawnMsg),
         READER_LAMBDA_SPECTRUM(spectrum, SpawnMsg)
     };
-    
+
     const read_lambda* SpawnMsg::handlers()
     {
         obj_type = NULL;
@@ -659,7 +659,7 @@ namespace Diana
         READER_LAMBDA_SPECTRUM(beam_spectrum, ScanResultMsg),
         READER_LAMBDA_SPECTRUM(obj_spectrum, ScanResultMsg)
     };
-    
+
     const read_lambda* ScanResultMsg::handlers()
     {
         beam_spectrum = NULL;
@@ -702,7 +702,7 @@ namespace Diana
         READER_LAMBDA3(direction, el.dbl_val, ScanQueryMsg),
         READER_LAMBDA_SPECTRUM(spectrum, ScanQueryMsg)
     };
-    
+
     const read_lambda* ScanQueryMsg::handlers()
     {
         spectrum = NULL;
@@ -731,7 +731,7 @@ namespace Diana
         READER_LAMBDA(scan_id, el.i64_val, ScanResponseMsg),
         READER_LAMBDA(data, ReadString(el), ScanResponseMsg)
     };
-    
+
     const read_lambda* ScanResponseMsg::handlers()
     {
         data = NULL;
@@ -754,7 +754,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* GoodbyeMsg_handlers = NULL;
-    
+
     const read_lambda* GoodbyeMsg::handlers()
     {
         return GoodbyeMsg_handlers;
@@ -769,30 +769,56 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* DirectoryMsg_handlers = NULL;
-    
+    static read_lambda DirectoryMsg_handlers[] = {
+        READER_LAMBDA(item_type, ReadString(el), DirectoryMsg),
+        READER_LAMBDA(item_count, el.i64_val, DirectoryMsg)
+    };
+
     const read_lambda* DirectoryMsg::handlers()
     {
-        throw std::runtime_error("DirectoryMsg::NotImplemented");
         items = NULL;
         item_type = NULL;
         return DirectoryMsg_handlers;
     }
 
-    /*
-    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, DIRECTORY_MSG_LEN)
+    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, 4, handlers(), Directory)
     {
-       throw "NotImplemented";
-       item_type = NULL;
-       READ_PROLOGUE(DIRECTORY_MSG_LEN)
-           READ_ELEMENT(item_type, ReadString(el))
-           READ_ELEMENT(item_count, el.i64_val; \
-               this->items = (struct DirectoryItem*)malloc((size_t)(this->item_count * sizeof(struct DirectoryItem)));)
-           // Items 5 and 6 are, respetively, BSON arrays of ids and names that will fill in the items array.
-           READ_ELEMENT_IP(;)
-           READ_ELEMENT_IP(;)
-           READ_BEGIN()
-    }*/
+        // Make sure that both type and number are specified, otherwise a directory
+        // makes no sense.
+        if (specced[2] && specced[3] && specced[4] && specced[5])
+        {
+            // Allocate the item list. new[] doesn't allocate a NULL, and throws instead.
+            items = new struct DirectoryItem[item_count];
+            struct BSONReader::Element el;
+
+            // Keep track of how many items we read, so we know if the item_count was wrong.
+            int64_t i;
+
+            // Read the ID array    
+            el = _br->get_next_element(); // Eat the array header item
+            for (i = 0; ((i < item_count) && (el.type != BSONReader::EndOfDocument)); i++)
+            {
+                items[i].id = el.i64_val;
+            }
+
+            // Eat any remaining elements, in case the array was longer than item_count
+            // Then eat the end-of-document item.
+            while (el.type != BSONReader::EndOfDocument) {}
+            el = _br->get_next_element();
+
+            // Read the Name array
+            el = _br->get_next_element(); // Eat the array header item
+            for (i = 0; ((i < item_count) && (el.type != BSONReader::EndOfDocument)); i++)
+            {
+                items[i].name = ReadString(el);
+            }
+
+            // Eat any remaining elements, in case the array was longer than item_count
+            // Then eat the end-of-document item.
+            while (el.type != BSONReader::EndOfDocument) {}
+            el = _br->get_next_element();
+        }
+    }
 
     DirectoryMsg::~DirectoryMsg()
     {
@@ -800,7 +826,7 @@ namespace Diana
         {
             free(items[i].name);
         }
-        free(items);
+        delete items;
         free(item_type);
     }
 
@@ -809,18 +835,24 @@ namespace Diana
         SEND_PROLOGUE();
         SEND_ELEMENT(item_type);
         SEND_ELEMENT(item_count);
-        bw.push_array();
-        //for (int i = 0; i < item_count; i++)
-        //{
-        //    bw.push(items[i].id);
-        //}
-        bw.push_end();
-        bw.push_array();
-        //for (int i = 0; i < item_count; i++)
-        //{
-        //    bw.push(items[i].name);
-        //}
-        bw.push_end();
+
+        if (specced[2] && specced[3] && specced[4] && specced[5] && 
+            (item_count > 0) && (items != NULL))
+        {
+            bw.push_array();
+            for (int i = 0; i < item_count; i++)
+            {
+                bw.push(items[i].id);
+            }
+            bw.push_end();
+
+            bw.push_array();
+            for (int i = 0; i < item_count; i++)
+            {
+                bw.push(items[i].name);
+            }
+            bw.push_end();
+        }
 
         SEND_EPILOGUE();
     }
@@ -831,7 +863,7 @@ namespace Diana
     static read_lambda NameMsg_handlers[] = {
         READER_LAMBDA(name, ReadString(el), NameMsg)
     };
-    
+
     const read_lambda* NameMsg::handlers()
     {
         name = NULL;
@@ -856,7 +888,7 @@ namespace Diana
     static read_lambda ReadyMsg_handlers[] = {
         READER_LAMBDA(ready, el.bln_val, ReadyMsg)
     };
-    
+
     const read_lambda* ReadyMsg::handlers()
     {
         return ReadyMsg_handlers;
@@ -875,7 +907,7 @@ namespace Diana
     static read_lambda ThrustMsg_handlers[] = {
         READER_LAMBDA3(thrust, el.dbl_val, ThrustMsg)
     };
-    
+
     const read_lambda* ThrustMsg::handlers()
     {
         return ThrustMsg_handlers;
@@ -892,7 +924,7 @@ namespace Diana
     static read_lambda VelocityMsg_handlers[] = {
         READER_LAMBDA3(velocity, el.dbl_val, VelocityMsg)
     };
-    
+
     const read_lambda* VelocityMsg::handlers()
     {
         return VelocityMsg_handlers;
@@ -909,7 +941,7 @@ namespace Diana
     static read_lambda JumpMsg_handlers[] = {
         READER_LAMBDA3(destination, el.dbl_val, JumpMsg)
     };
-    
+
     const read_lambda* JumpMsg::handlers()
     {
         return JumpMsg_handlers;
@@ -924,7 +956,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* InfoUpdateMsg_handlers = NULL;
-    
+
     const read_lambda* InfoUpdateMsg::handlers()
     {
         throw std::runtime_error("InfoUpdateMsg::NotImplemented");
@@ -940,7 +972,7 @@ namespace Diana
     // ================================================================================
 
     static read_lambda* RequestUpdateMsg_handlers = NULL;
-    
+
     const read_lambda* RequestUpdateMsg::handlers()
     {
         throw std::runtime_error("RequestUpdateMsg::NotImplemented");

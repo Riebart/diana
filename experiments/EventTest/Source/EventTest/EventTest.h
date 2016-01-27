@@ -4,3 +4,4 @@
 
 #include "Engine.h"
 
+#define UE_NETWORKING

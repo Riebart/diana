@@ -1,7 +1,7 @@
 #ifndef MESSAGING_HPP
 #define MESSAGING_HPP
 
-// Branch if we're using US networking or OS networking.
+// Branch if we're using UE networking or OS networking.
 #ifdef UE_NETWORKING
 typedef FSocket* sock_t;
 #else
@@ -276,7 +276,7 @@ namespace Diana
     class DirectoryMsg : public BSONMessage
     {
     public:
-        DirectoryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 4, handlers(), Directory) { }
+        DirectoryMsg(BSONReader* _br = NULL);// : BSONMessage(_br, 4, handlers(), Directory) { }
         ~DirectoryMsg();
         int64_t send(sock_t sock);
 
