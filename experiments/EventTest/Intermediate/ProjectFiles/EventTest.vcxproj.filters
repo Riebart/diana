@@ -43,9 +43,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\EventTest\EventedActor.h">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source\EventTest\bson.hpp">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
@@ -60,9 +57,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\EventTest\EventedActor.cpp">
-      <Filter>Source\EventTest</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\EventTest\messaging.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>

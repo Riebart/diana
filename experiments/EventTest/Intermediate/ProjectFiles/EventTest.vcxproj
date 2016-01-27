@@ -263,10 +263,8 @@
     <None Include="..\..\Config\DefaultEngine.ini" />
     <None Include="..\..\Config\DefaultGame.ini" />
     <None Include="..\..\Source\EventTest\EventTest.Build.cs" />
-    <ClCompile Include="..\..\Source\EventTest\EventedActor.cpp" />
     <ClCompile Include="..\..\Source\EventTest\EventTest.cpp" />
     <ClInclude Include="..\..\Source\EventTest\bson.hpp" />
-    <ClInclude Include="..\..\Source\EventTest\EventedActor.h" />
     <ClInclude Include="..\..\Source\EventTest\EventTest.h" />
     <ClCompile Include="..\..\Source\EventTest\EventTestGameMode.cpp" />
     <ClInclude Include="..\..\Source\EventTest\EventTestGameMode.h" />
