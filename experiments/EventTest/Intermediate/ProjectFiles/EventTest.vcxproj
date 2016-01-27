@@ -250,6 +250,7 @@
     <NMakeOutput>..\..\Binaries\Win64\EventTest-Win64-Shipping.exe</NMakeOutput>
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\EventTest\physics.hpp" />
     <None Include="..\..\EventTest.uproject" />
     <None Include="..\..\Source\EventTest.Target.cs" />
     <None Include="..\..\Source\EventTestEditor.Target.cs" />

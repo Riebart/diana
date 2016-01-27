@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdexcept>
 
 // Partial implementation of bson that is self-contained and simple, both implementation
 // and API.
@@ -30,7 +31,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32767
+        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32768
     };
 
     // Every element is returned in this structure, with the type field and the relevant
@@ -91,6 +92,8 @@ public:
         {
         case ElementType::Double:
             el.dbl_val = *(double*)(msg + pos);
+            el.i32_val = (int32_t)el.dbl_val;
+            el.i64_val = (int64_t)el.dbl_val;
             pos += 8;
             break;
 
@@ -151,6 +154,7 @@ public:
             // The Python BSON library has a habit of not obeying integer types
             // Fill in the i32_val from the parsed value, as best we can, in case we were expected an i32
             el.i32_val = (int32_t)el.i64_val;
+            el.dbl_val = (double)el.i64_val;
             pos += 8;
             break;
 
@@ -159,10 +163,11 @@ public:
             // The Python BSON library has a habit of not obeying integer types
             // Fill in the i64_val from the parsed value, in case we were expected an i64
             el.i64_val = el.i32_val;
+            el.dbl_val = (double)el.i32_val;
             pos += 4;
             break;
         default:
-            //throw "UnrecognizedType";
+            throw new std::runtime_error("UnrecognizedType");
             break;
         }
 
@@ -207,7 +212,7 @@ public:
         out = (uint8_t*)calloc(1, 4);
         if (out == NULL)
         {
-            //throw "OOM you twat";
+            throw new std::runtime_error("OOM you twat");
         }
 
         is_array = false;
@@ -524,7 +529,7 @@ private:
         uint8_t* out_new = (uint8_t*)realloc(out, (size_t)(pos + nbytes));
         if (out_new == NULL)
         {
-            //throw "OOM you twat";
+            throw new std::runtime_error("OOM you twat");
         }
         else
         {
@@ -555,7 +560,7 @@ private:
             // printable, but this just uses this as an 8-bit unsigned field.
             if (tag_index > 254)
             {
-                //throw "OutOfMinimalTags";
+                throw new std::runtime_error("OutOfMinimalTags");
             }
 
             // Because we're using the actual integer values, we need to start at 1, otherwise we'll have a pair of NULL characters.

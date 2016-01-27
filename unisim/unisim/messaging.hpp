@@ -3,6 +3,7 @@
 
 // Branch if we're using UE networking or OS networking.
 #ifdef UE_NETWORKING
+class FSocket;
 typedef FSocket* sock_t;
 #else
 typedef int sock_t;
@@ -10,6 +11,7 @@ typedef int sock_t;
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <functional>
 
 // For Vector3
 #include "vector.hpp"

@@ -61,6 +61,9 @@
     <ClInclude Include="..\..\Source\EventTest\DianaConnector.h">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source\EventTest\physics.hpp">
+      <Filter>Source\EventTest</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\EventTest\DianaConnector.cpp">

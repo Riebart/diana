@@ -82,6 +82,44 @@ namespace Diana
 
         return nbytes;
     }
+
+    double total_spectrum_power(struct Spectrum* spectrum)
+    {
+        spectrum->total_power = 0.0;
+        // The energy of a photon is proportional to it's frequency, or inversely to it's
+        // wavelength. The energy components of the spectrum, though, can just be summed up.
+        struct SpectrumComponent* components = &spectrum->components;
+        for (uint32_t i = 0; i < spectrum->n; i++)
+        {
+            spectrum->total_power += components[i].power;
+        }
+        return spectrum->total_power;
+    }
+
+    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size)
+    {
+        if (n > 0)
+        {
+            size_t spectrum_size = sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent);
+            struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
+            if (ret == NULL)
+            {
+                throw std::runtime_error("Spectrum_allocate::UnableToAllocate");
+            }
+
+            if (total_size != NULL)
+            {
+                *total_size = spectrum_size;
+            }
+
+            ret->n = n;
+            return ret;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
 }
 #else
 #include "MIMOServer.hpp"
@@ -836,7 +874,7 @@ namespace Diana
         SEND_ELEMENT(item_type);
         SEND_ELEMENT(item_count);
 
-        if (specced[2] && specced[3] && specced[4] && specced[5] && 
+        if (specced[2] && specced[3] && specced[4] && specced[5] &&
             (item_count > 0) && (items != NULL))
         {
             bw.push_array();

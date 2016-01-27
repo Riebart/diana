@@ -1,8 +1,10 @@
 #include "EventTest.h"
+
 #include "vector.hpp"
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #define SIGN(x) (((x) < 0) ? -1 : (((x) > 0) ? 1 : 0))
 #define CHOP_CUTOFF 1e-8
@@ -22,7 +24,7 @@ namespace Diana
         V3* ret = (V3*)malloc(sizeof(V3) * n);
         if (ret == NULL)
         {
-            //throw "OOM";
+            throw new std::runtime_error("OOM");
         }
         return ret;
     }
@@ -78,6 +80,14 @@ namespace Diana
         return (Vector3_almost_zeroS(v->x) && Vector3_almost_zeroS(v->y) && Vector3_almost_zeroS(v->z));
     }
 
+    void Vector3_round(struct Vector3* v, double e)
+    {
+    }
+    
+    void Vector3_roundS(double v, double e)
+    {
+    }
+
     void Vector3_add(V3* out, V3* v1, V3* v2)
     {
         out->x = v1->x + v2->x;
@@ -116,12 +126,20 @@ namespace Diana
 
     void Vector3_normalize(V3* out, V3* v)
     {
-        Vector3_scale(out, v, 1.0 / Vector3_length(v));
+        double l = Vector3_length(v);
+        if (!Vector3_almost_zeroS(l))
+        {
+            Vector3_scale(out, v, 1.0 / l);
+        }
     }
 
     void Vector3_normalize(V3* v)
     {
-        Vector3_scale(v, 1.0 / Vector3_length(v));
+        double l = Vector3_length(v);
+        if (!Vector3_almost_zeroS(l))
+        {
+            Vector3_scale(v, 1.0 / l);
+        }
     }
 
     void Vector3_cross(V3* out, V3* v1, V3* v2)
