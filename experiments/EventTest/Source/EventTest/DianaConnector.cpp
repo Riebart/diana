@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventTest.h"
-#include "ObjectSimConnector.h"
+#include "DianaConnector.h"
 
 #include "Array.h"
 
@@ -14,7 +14,7 @@
 
 #include <thread>
 
-AObjectSimConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, AObjectSimConnector* parent, std::map<int32, struct AObjectSimConnector::DianaActor>* oa_map)
+ADianaConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor>* oa_map)
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor"));
     this->sock = sock;
@@ -24,7 +24,7 @@ AObjectSimConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, AObjectSi
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
 
-AObjectSimConnector::FVisDataReceiver::~FVisDataReceiver()
+ADianaConnector::FVisDataReceiver::~FVisDataReceiver()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Destructor"));
     Stop();
@@ -32,14 +32,14 @@ AObjectSimConnector::FVisDataReceiver::~FVisDataReceiver()
     rt = NULL;
 }
 
-bool AObjectSimConnector::FVisDataReceiver::Init()
+bool ADianaConnector::FVisDataReceiver::Init()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Init"));
     running = true;
     return true;
 }
 
-uint32 AObjectSimConnector::FVisDataReceiver::Run()
+uint32 ADianaConnector::FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
 
@@ -88,14 +88,14 @@ uint32 AObjectSimConnector::FVisDataReceiver::Run()
     return nmessages;
 }
 
-void AObjectSimConnector::FVisDataReceiver::Stop()
+void ADianaConnector::FVisDataReceiver::Stop()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Stop"));
     running = false;
     rt->WaitForCompletion();
 }
 
-bool AObjectSimConnector::ConnectSocket()
+bool ADianaConnector::ConnectSocket()
 {
     if (sock == NULL)
     {
@@ -114,7 +114,7 @@ bool AObjectSimConnector::ConnectSocket()
     }
 }
 
-void AObjectSimConnector::DisconnectSocket()
+void ADianaConnector::DisconnectSocket()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::DisconnectSocket"));
     if (sock != NULL)
@@ -124,31 +124,31 @@ void AObjectSimConnector::DisconnectSocket()
 }
 
 // Sets default values
-AObjectSimConnector::AObjectSimConnector()
+ADianaConnector::ADianaConnector()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
 }
 
-AObjectSimConnector::~AObjectSimConnector()
+ADianaConnector::~ADianaConnector()
 {
     RegisterForVisData(false);
     DisconnectSocket();
 }
 
 // Called when the game starts or when spawned
-void AObjectSimConnector::BeginPlay()
+void ADianaConnector::BeginPlay()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging:BeginPlay"));
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+
 }
 
 // Called every frame
-void AObjectSimConnector::Tick( float DeltaTime )
+void ADianaConnector::Tick(float DeltaTime)
 {
-	Super::Tick( DeltaTime );
+    Super::Tick(DeltaTime);
     struct DianaVDM dm;
     struct DianaActor da;
 
@@ -193,7 +193,7 @@ void AObjectSimConnector::Tick( float DeltaTime )
     }
 }
 
-bool AObjectSimConnector::RegisterForVisData(bool enable)
+bool ADianaConnector::RegisterForVisData(bool enable)
 {
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
@@ -240,38 +240,38 @@ bool AObjectSimConnector::RegisterForVisData(bool enable)
     return true;
 }
 
-void AObjectSimConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef)
+void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef)
 {
     FScopeLock Lock(&map_cs);
     oa_map[PhysID].a = ActorRef;
 }
 
-TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(FString type, TArray<struct FDirectoryItem> items)
+TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TArray<struct FDirectoryItem> items)
 {
     return this->DirectoryListing(client_id, server_id, type, items);
 }
 
-void AObjectSimConnector::CreateShip(int32 class_id)
+void ADianaConnector::CreateShip(int32 class_id)
 {
     CreateShip(client_id, server_id, class_id);
 }
 
-void AObjectSimConnector::JoinShip()
+void ADianaConnector::JoinShip()
 {
     JoinShip(client_id, server_id);
 }
 
-void AObjectSimConnector::RenameShip(FString NewShipName)
+void ADianaConnector::RenameShip(FString NewShipName)
 {
     RenameShip(client_id, server_id, NewShipName);
 }
 
-void AObjectSimConnector::Ready()
+void ADianaConnector::Ready()
 {
     Ready(client_id, server_id);
 }
 
-TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items)
+TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items)
 {
     TArray<struct FDirectoryItem> ret;
     struct FDirectoryItem i;
@@ -287,18 +287,18 @@ TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(int32 client
     return ret;
 }
 
-void AObjectSimConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id)
+void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id)
 {
 }
 
-void AObjectSimConnector::JoinShip(int32 client_id, int32 server_id)
+void ADianaConnector::JoinShip(int32 client_id, int32 server_id)
 {
 }
 
-void AObjectSimConnector::RenameShip(int32 client_id, int32 server_id, FString NewShipName)
+void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString NewShipName)
 {
 }
 
-void AObjectSimConnector::Ready(int32 client_id, int32 server_id)
+void ADianaConnector::Ready(int32 client_id, int32 server_id)
 {
 }

@@ -4,10 +4,9 @@
 
 #include <map>
 #include "GameFramework/Actor.h"
-#include "ObjectSimConnector.generated.h"
+#include "DianaConnector.generated.h"
 
 class FSocket;
-//class AEventedActor;
 
 USTRUCT(BlueprintType, Blueprintable)
 struct FDirectoryItem
@@ -21,7 +20,7 @@ struct FDirectoryItem
 };
 
 UCLASS()
-class EVENTTEST_API AObjectSimConnector : public AActor
+class EVENTTEST_API ADianaConnector : public AActor
 {
     friend class FVisDataReceiver;
 
@@ -49,7 +48,7 @@ public:
     class FVisDataReceiver : public FRunnable
     {
     public:
-        FVisDataReceiver(FSocket* sock, AObjectSimConnector* parent, std::map<int32, struct DianaActor>* oa_map);
+        FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct DianaActor>* oa_map);
         ~FVisDataReceiver();
 
         virtual bool Init();
@@ -60,13 +59,13 @@ public:
         FRunnableThread* rt = NULL;
         volatile bool running;
         FSocket* sock = NULL;
-        AObjectSimConnector* parent;
+        ADianaConnector* parent;
         std::map<int32, struct DianaActor>* oa_map;
     };
 
     // Sets default values for this actor's properties
-    AObjectSimConnector();
-    ~AObjectSimConnector();
+    ADianaConnector();
+    ~ADianaConnector();
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
@@ -87,7 +86,7 @@ public:
         int32 server_id = 1;
 
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Proxy Diana Connector"))
-    //    AObjectSimConnector* proxy = NULL;
+    //    ADianaConnector* proxy = NULL;
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         bool RegisterForVisData(bool enable);

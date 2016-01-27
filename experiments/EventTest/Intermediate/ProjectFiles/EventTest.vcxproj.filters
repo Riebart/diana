@@ -3,7 +3,7 @@
   <ItemGroup>
     <None Include="..\..\EventTest.uproject" />
     <Filter Include="Source">
-      <UniqueIdentifier>{E63EE7BD-B761-4225-B669-E1457EA16901}</UniqueIdentifier>
+      <UniqueIdentifier>{72D8E5FF-87F4-4934-B6ED-7C404511FAE8}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Source\EventTest.Target.cs">
       <Filter>Source</Filter>
@@ -12,7 +12,7 @@
       <Filter>Source</Filter>
     </None>
     <Filter Include="Config">
-      <UniqueIdentifier>{8335471A-D980-48E6-948E-5F34050E3A29}</UniqueIdentifier>
+      <UniqueIdentifier>{FAD421B6-AC54-4A29-8BD5-5560A1599AFA}</UniqueIdentifier>
     </Filter>
     <None Include="..\..\Config\DefaultEditor.ini">
       <Filter>Config</Filter>
@@ -24,8 +24,11 @@
       <Filter>Config</Filter>
     </None>
     <Filter Include="Source\EventTest">
-      <UniqueIdentifier>{C3E5D8ED-20B9-4CB3-B011-381034B78D10}</UniqueIdentifier>
+      <UniqueIdentifier>{F825A3F7-A732-4CC7-8284-CD46C8BFA98A}</UniqueIdentifier>
     </Filter>
+    <None Include="..\..\Source\EventTest\bson.hpp">
+      <Filter>Source\EventTest</Filter>
+    </None>
     <None Include="..\..\Source\EventTest\EventTest.Build.cs">
       <Filter>Source\EventTest</Filter>
     </None>
@@ -41,29 +44,26 @@
     <ClInclude Include="..\..\Source\EventTest\EventTestGameMode.h">
       <Filter>Source\EventTest</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\Source\EventTest\bson.hpp">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\EventTest\messaging.hpp">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\EventTest\vector.hpp">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\EventTest\ObjectSimConnector.h">
-      <Filter>Source\EventTest</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\Source\EventTest\messaging.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
+    <None Include="..\..\Source\EventTest\messaging.hpp">
+      <Filter>Source\EventTest</Filter>
+    </None>
     <ClCompile Include="..\..\Source\EventTest\vector.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\EventTest\ObjectSimConnector.cpp">
+    <None Include="..\..\Source\EventTest\vector.hpp">
+      <Filter>Source\EventTest</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source\EventTest\DianaConnector.h">
+      <Filter>Source\EventTest</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source\EventTest\DianaConnector.cpp">
       <Filter>Source\EventTest</Filter>
     </ClCompile>
   </ItemGroup>

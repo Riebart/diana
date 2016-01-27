@@ -32,6 +32,7 @@ syntax: glob
 *\StagedBuilds\*
 *\Saved\Cooked\*
 *\Binaries\*
+*\Saved\Config\*
 
 syntax: regexp
 ^([^/]*)/.*/\1[^/]*.log$
