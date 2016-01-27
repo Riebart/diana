@@ -97,10 +97,10 @@ public:
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
-    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Vis Data Message for New Object"))
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "New Vis Data Object"))
         void NewVisDataObject(int32 PhysID, FVector Position);
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Vis Data Message for Existing Object"))
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
         void ExistingVisDataObject(int32 PhysID, FVector CurrentPosition, FVector LastPosition, float CurrentRealTime, float LastRealTime, AActor* ActorRef);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
