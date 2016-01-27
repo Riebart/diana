@@ -42,7 +42,9 @@ class Observable:
             
     def send_state(self, observer):
         #print nest_dict(self.__dict__)
-        message.SystemUpdateMsg.send(observer, 0, 0, (nest_dict(self.__dict__)))
+        d = dict(self.__dict__)
+        del d["_Observable__observers"]
+        message.SystemUpdateMsg.send(observer, 0, 0, (nest_dict(d)))
     
     def add_observer(self, observer):
         self.__observers.append(observer)
