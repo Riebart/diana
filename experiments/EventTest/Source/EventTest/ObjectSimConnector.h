@@ -38,5 +38,17 @@ public:
         int32 port = 5506;
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        TArray<struct FDirectoryItem> DirectoryListing(FString Type);
+        TArray<struct FDirectoryItem> DirectoryListing(int32 ClientID, FString Type, TArray<struct FDirectoryItem> Items);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void CreateShip(int32 ClientID, int32 ServerID);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void JoinShip(int32 ClientID, int32 ServerID);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void RenameShip(int32 ClientID, int32 ServerID, FString NewShipName);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void Ready(int32 ClientID, int32 ServerID);
 };

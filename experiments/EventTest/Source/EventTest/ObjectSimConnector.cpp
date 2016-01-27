@@ -27,25 +27,34 @@ void AObjectSimConnector::Tick( float DeltaTime )
 
 }
 
-TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(FString Type)
+TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(int32 ClientID, FString Type, TArray<struct FDirectoryItem> Items)
 {
     TArray<struct FDirectoryItem> ret;
     struct FDirectoryItem i;
+    i.ItemName = FString("2560 x 1440 pixels^2");
+    i.ItemID = 1;
+    ret.Add(i);
     i.ItemName = FString("1920 x 1080 pixels^2");
     i.ItemID = 1;
     ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
-    ret.Add(i);
+    i.ItemName = FString("1280 x 720 pixels^2");
+    i.ItemID = 1;
     ret.Add(i);
     return ret;
+}
+
+void AObjectSimConnector::JoinShip(int32 ClientID, int32 ServerID)
+{
+}
+
+void AObjectSimConnector::CreateShip(int32 ClientID, int32 ServerID)
+{
+}
+
+void AObjectSimConnector::RenameShip(int32 ClientID, int32 ServerID, FString NewShipName)
+{
+}
+
+void AObjectSimConnector::Ready(int32 ClientID, int32 ServerID)
+{
 }
