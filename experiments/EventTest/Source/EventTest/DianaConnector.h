@@ -42,6 +42,7 @@ public:
         float cur_time;
         FVector last_pos;
         FVector cur_pos;
+        int64 last_iteration;
     };
 
     // See: https://wiki.unrealengine.com/Multi-Threading:_How_to_Create_Threads_in_UE4
@@ -85,8 +86,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server ID"))
         int32 server_id = 1;
 
-    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Proxy Diana Connector"))
-    //    ADianaConnector* proxy = NULL;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Proxy Diana Connector"))
+        ADianaConnector* proxy = NULL;
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void UseProxyConnection(ADianaConnector* _proxy);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         bool RegisterForVisData(bool enable);
@@ -101,6 +105,9 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
         void ExistingVisDataObject(int32 PhysID, FVector CurrentPosition, FVector LastPosition, float CurrentRealTime, float LastRealTime, AActor* ActorRef);
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Removed Vis Data Object"))
+        void RemovedVisDataObject(int32 PhysID, AActor* ActorRef);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
@@ -117,14 +124,19 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void Ready();
 
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void Goodbye();
+
 protected:
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString Type, TArray<struct FDirectoryItem> Items);
     void CreateShip(int32 client_id, int32 server_id, int32 class_id);
     void JoinShip(int32 client_id, int32 server_id);
     void RenameShip(int32 client_id, int32 server_id, FString NewShipName);
     void Ready(int32 client_id, int32 server_id);
+    void Goodbye(int32 client_id, int32 server_id);
 
 private:
+    int64 vis_iteration = 1;
     FVisDataReceiver* vdr_thread = NULL;
     bool ConnectSocket();
     void DisconnectSocket();

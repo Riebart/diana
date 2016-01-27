@@ -63,17 +63,31 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
             // Only consider messages that are VisualData, and have our client_id, and have the phys_id specced[2]
             if ((m != NULL) &&
                 (m->msg_type == Diana::BSONMessage::VisualData) &&
-                m->specced[1] && (m->client_id == parent->client_id) &&
-                m->specced[2])
+                m->specced[1] && (m->client_id == parent->client_id))
             {
-                vdm = (Diana::VisualDataMsg*)m;
-                dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
-                dm.world_time = world->RealTimeSeconds;
-                dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
-                parent->messages.Enqueue(dm);
+                // If the phys_id is specced, then use it.
+                if (m->specced[2])
+                {
+                    vdm = (Diana::VisualDataMsg*)m;
+                    dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
+                    dm.world_time = world->RealTimeSeconds;
+                    dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
+                    parent->messages.Enqueue(dm);
 
-                // We handled a message, so immediately repeat, skip the Sleep()
-                delete vdm;
+                    // We handled a message, so immediately repeat, skip the Sleep()
+                    delete vdm;
+                }
+                // If the phys_id is unspecced, then we need to check up on our map, and see
+                // which objects missed their update, indicating they should be removed from
+                // the scene.
+                else
+                {
+                    // Push an end-of-frame VDM to the queue
+                    dm.server_id = 0x80000000;
+                    dm.world_time = world->RealTimeSeconds;
+                    parent->messages.Enqueue(dm);
+                }
+
                 continue;
             }
 
@@ -155,6 +169,13 @@ void ADianaConnector::Tick(float DeltaTime)
     while (!messages.IsEmpty())
     {
         messages.Dequeue(dm);
+
+        if (dm.server_id == 0x80000000)
+        {
+            vis_iteration++;
+            continue;
+        }
+
         da.server_id = dm.server_id;
 
         // Look up the server ID in the map
@@ -168,6 +189,7 @@ void ADianaConnector::Tick(float DeltaTime)
             da.a = NULL;
             da.last_pos = dm.pos;
             da.cur_pos = da.last_pos;
+            da.last_iteration = vis_iteration;
             {
                 FScopeLock Lock(&map_cs);
                 oa_map[da.server_id] = da;
@@ -183,12 +205,29 @@ void ADianaConnector::Tick(float DeltaTime)
             da.cur_time = dm.world_time;
             da.last_pos = da.cur_pos;
             da.cur_pos = dm.pos;
+            da.last_iteration = vis_iteration;
             if (da.a != NULL)
             {
                 //da.a->SetActorLocation(da.cur_pos);
                 oa_map[da.server_id] = da;
             }
             ExistingVisDataObject(da.server_id, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
+        }
+    }
+
+    for (std::map<int32, struct DianaActor>::iterator it = oa_map.begin(); it != oa_map.end(); )
+    {
+        da = it->second;
+        // We may have only consumed part of the current frame, so it it proper to check that
+        // the last iteration value is at least onemore than the previous value.
+        if (da.last_iteration < (vis_iteration - 1))
+        {
+            it = oa_map.erase(it);
+            RemovedVisDataObject(da.server_id, da.a);
+        }
+        else
+        {
+            it++;
         }
     }
 }
@@ -240,6 +279,12 @@ bool ADianaConnector::RegisterForVisData(bool enable)
     return true;
 }
 
+void ADianaConnector::UseProxyConnection(ADianaConnector* _proxy)
+{
+    this->proxy = _proxy;
+    this->client_id = _proxy->client_id + 1;
+}
+
 void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef)
 {
     FScopeLock Lock(&map_cs);
@@ -271,6 +316,11 @@ void ADianaConnector::Ready()
     Ready(client_id, server_id);
 }
 
+void ADianaConnector::Goodbye()
+{
+    Goodbye(client_id, server_id);
+}
+
 TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items)
 {
     TArray<struct FDirectoryItem> ret;
@@ -300,5 +350,9 @@ void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString NewSh
 }
 
 void ADianaConnector::Ready(int32 client_id, int32 server_id)
+{
+}
+
+void ADianaConnector::Goodbye(int32 client_id, int32 server_id)
 {
 }
