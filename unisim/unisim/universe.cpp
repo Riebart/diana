@@ -1707,10 +1707,6 @@ namespace Diana
             //   > Test the sizes of the vector before and after the re-collide, any collisions resulting
             //     from that operation will require a re-sort of the list. Don't re-sort if there's no new events.
 
-            // Keep track of how far the collisions have taken us through the time interval so far, so that we
-            // can make sure objects are only ticked along as necessary.
-            double total_dt = 0.0;
-
             // WHether or not to re-sort the vector after handling a collision, this will be determined by whether
             // a collision resolution results in new collisions being added.
             bool re_sort = true;

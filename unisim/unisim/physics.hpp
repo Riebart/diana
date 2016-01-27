@@ -2,6 +2,7 @@
 #define PHYSICS_HPP
 
 #include <stdint.h>
+#include <stddef.h>
 #include "vector.hpp"
 
 namespace Diana
