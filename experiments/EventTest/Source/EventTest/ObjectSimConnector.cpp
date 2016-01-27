@@ -27,7 +27,7 @@ void AObjectSimConnector::Tick( float DeltaTime )
 
 }
 
-TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(int32 ClientID, FString Type, TArray<struct FDirectoryItem> Items)
+TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(FString Type, TArray<struct FDirectoryItem> Items)
 {
     TArray<struct FDirectoryItem> ret;
     struct FDirectoryItem i;
@@ -43,18 +43,18 @@ TArray<struct FDirectoryItem> AObjectSimConnector::DirectoryListing(int32 Client
     return ret;
 }
 
-void AObjectSimConnector::JoinShip(int32 ClientID, int32 ServerID)
+void AObjectSimConnector::CreateShip(int32 ServerID)
 {
 }
 
-void AObjectSimConnector::CreateShip(int32 ClientID, int32 ServerID)
+void AObjectSimConnector::JoinShip(int32 ServerID)
 {
 }
 
-void AObjectSimConnector::RenameShip(int32 ClientID, int32 ServerID, FString NewShipName)
+void AObjectSimConnector::RenameShip(int32 ServerID, FString NewShipName)
 {
 }
 
-void AObjectSimConnector::Ready(int32 ClientID, int32 ServerID)
+void AObjectSimConnector::Ready(int32 ServerID)
 {
 }

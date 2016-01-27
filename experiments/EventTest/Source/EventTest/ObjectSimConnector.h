@@ -37,18 +37,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server TCP Port"))
         int32 port = 5506;
 
-    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        TArray<struct FDirectoryItem> DirectoryListing(int32 ClientID, FString Type, TArray<struct FDirectoryItem> Items);
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Client ID"))
+        int32 client_id = 1;
+
+    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Proxy Diana Connector"))
+    //    AObjectSimConnector* proxy = NULL;
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void CreateShip(int32 ClientID, int32 ServerID);
+        TArray<struct FDirectoryItem> DirectoryListing(FString Type, TArray<struct FDirectoryItem> Items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void JoinShip(int32 ClientID, int32 ServerID);
+        void CreateShip(int32 ServerID);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void RenameShip(int32 ClientID, int32 ServerID, FString NewShipName);
+        void JoinShip(int32 ServerID);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void Ready(int32 ClientID, int32 ServerID);
+        void RenameShip(int32 ServerID, FString NewShipName);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void Ready(int32 ServerID);
 };
