@@ -128,6 +128,7 @@ public:
         void Goodbye();
 
 protected:
+    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString Type, TArray<struct FDirectoryItem> Items);
     void CreateShip(int32 client_id, int32 server_id, int32 class_id);
     void JoinShip(int32 client_id, int32 server_id);

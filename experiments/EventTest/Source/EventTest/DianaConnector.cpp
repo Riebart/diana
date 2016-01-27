@@ -234,6 +234,11 @@ void ADianaConnector::Tick(float DeltaTime)
 
 bool ADianaConnector::RegisterForVisData(bool enable)
 {
+    return RegisterForVisData(enable, client_id, server_id);
+}
+
+bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 server_id)
+{
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
     {
@@ -252,7 +257,7 @@ bool ADianaConnector::RegisterForVisData(bool enable)
     Diana::VisualDataEnableMsg vdm;
     vdm.enabled = enable;
     vdm.client_id = client_id;
-    vdm.server_id = -1;
+    vdm.server_id = server_id;
     vdm.spec_all();
 
     if (enable)
@@ -293,7 +298,7 @@ void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef
 
 TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TArray<struct FDirectoryItem> items)
 {
-    return this->DirectoryListing(client_id, server_id, type, items);
+    return DirectoryListing(client_id, server_id, type, items);
 }
 
 void ADianaConnector::CreateShip(int32 class_id)
