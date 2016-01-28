@@ -3,6 +3,7 @@
 #include <limits>
 #include <functional>
 #include <stdexcept>
+#include <vector>
 
 #include "messaging.hpp"
 
@@ -19,18 +20,23 @@ namespace Diana
 {
     int32 socket_write(FSocket* s, char* srcC, int32_t countS)
     {
+        if (s == NULL)
+        {
+            return 0;
+        }
+
         int32 count = (uint32)countS;
         uint8* src = (uint8*)srcC;
         int32 nbytes = 0;
         int32 curbytes;
-        bool read_success;
+        bool write_success;
         while (nbytes < count)
         {
             //! @todo Maybe use recvmsg()?
             // Try to wait for all of the data, if possible.
-            read_success = s->Send(src + nbytes, count - nbytes, curbytes);
+            write_success = s->Send(src + nbytes, count - nbytes, curbytes);
             //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketSend::Post::(%d,%d,%d)"), count, curbytes, (int32)read_success);
-            if (!read_success)
+            if (!write_success)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -48,6 +54,11 @@ namespace Diana
 
     int32 socket_read(FSocket* s, char* dstC, int32_t countS)
     {
+        if (s == NULL)
+        {
+            return 0;
+        }
+
         uint32 count = (uint32)countS;
         uint8* dst = (uint8*)dstC;
         uint32 nbytes = 0;
@@ -811,7 +822,9 @@ namespace Diana
 
     static read_lambda DirectoryMsg_handlers[] = {
         READER_LAMBDA(item_type, ReadString(el), DirectoryMsg),
-        READER_LAMBDA(item_count, el.i64_val, DirectoryMsg)
+        READER_LAMBDA_IP(((DirectoryMsg*)msg)->item_count = el.i64_val; ((DirectoryMsg*)msg)->items = new struct DirectoryMsg::DirectoryItem[el.i64_val]),
+        READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.id = el.i64_val; })),
+        READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.name = ReadString(el); }))
     };
 
     const read_lambda* DirectoryMsg::handlers()
@@ -821,52 +834,56 @@ namespace Diana
         return DirectoryMsg_handlers;
     }
 
-    DirectoryMsg::DirectoryMsg(BSONReader* _br) : BSONMessage(_br, 4, handlers(), Directory)
+    void DirectoryMsg::read_parts(std::function<void(struct DirectoryItem&, struct BSONReader::Element)> set)
     {
-        // Make sure that both type and number are specified, otherwise a directory
-        // makes no sense.
-        if (specced[2] && specced[3] && specced[4] && specced[5])
+        if (br != NULL)
         {
-            // Allocate the item list. new[] doesn't allocate a NULL, and throws instead.
-            items = new struct DirectoryItem[item_count];
-            struct BSONReader::Element el;
+            // The BSONReader should have last returned an array element, eat it
+            // and carry on.
+            struct BSONReader::Element el = br->get_next_element();
 
-            // Keep track of how many items we read, so we know if the item_count was wrong.
-            int64_t i;
-
-            // Read the ID array    
-            el = _br->get_next_element(); // Eat the array header item
-            for (i = 0; ((i < item_count) && (el.type != BSONReader::EndOfDocument)); i++)
+            // If we haven't encountered the item_count yet, then that's awkward.
+            if (items == NULL)
             {
-                items[i].id = el.i64_val;
+                std::vector<struct DirectoryItem> ivec;
+                struct DirectoryItem it;
+
+                while (el.type != BSONReader::EndOfDocument)
+                {
+                    set(it, el);
+                    ivec.push_back(it);
+                    el = br->get_next_element();
+                }
+
+                // Now stuff the vector into the items array.
+                item_count = ivec.size();
+                items = new struct DirectoryItem[item_count];
+                for (int i = 0; i < item_count; i++)
+                {
+                    items[i] = ivec[i];
+                }
             }
-
-            // Eat any remaining elements, in case the array was longer than item_count
-            // Then eat the end-of-document item.
-            while (el.type != BSONReader::EndOfDocument) {}
-            el = _br->get_next_element();
-
-            // Read the Name array
-            el = _br->get_next_element(); // Eat the array header item
-            for (i = 0; ((i < item_count) && (el.type != BSONReader::EndOfDocument)); i++)
+            else
             {
-                items[i].name = ReadString(el);
+                for (int i = 0; ((i < item_count) && (el.type != BSONReader::EndOfDocument)); i++)
+                {
+                    set(items[i], el);
+                    el = br->get_next_element();
+                }
             }
-
-            // Eat any remaining elements, in case the array was longer than item_count
-            // Then eat the end-of-document item.
-            while (el.type != BSONReader::EndOfDocument) {}
-            el = _br->get_next_element();
         }
     }
 
     DirectoryMsg::~DirectoryMsg()
     {
-        for (int i = 0; i < item_count; i++)
+        if (items != NULL)
         {
-            free(items[i].name);
+            for (int i = 0; i < item_count; i++)
+            {
+                free(items[i].name);
+            }
+            delete items;
         }
-        delete items;
         free(item_type);
     }
 

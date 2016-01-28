@@ -12,6 +12,7 @@
 
 #include "messaging.hpp"
 
+#include <string.h>
 #include <thread>
 
 ADianaConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor>* oa_map)
@@ -109,9 +110,22 @@ void ADianaConnector::FVisDataReceiver::Stop()
     rt->WaitForCompletion();
 }
 
+bool ADianaConnector::ConnectToServer(FString _host, int32 _port)
+{
+    this->host = _host;
+    this->port = _port;
+
+    if (sock != NULL)
+    {
+        DisconnectSocket();
+    }
+
+    return ConnectSocket();
+}
+
 bool ADianaConnector::ConnectSocket()
 {
-    if (sock == NULL)
+    if ((sock == NULL) && (port > 1) && (port < 65535) && (host.Len() >= 8))
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::ConnectSocket"));
         sock = FTcpSocketBuilder(TEXT("xSIMConn"));
@@ -124,7 +138,15 @@ bool ADianaConnector::ConnectSocket()
     }
     else
     {
-        return true;
+        if ((sock != NULL) &&
+            (sock->GetConnectionState() == ESocketConnectionState::SCS_Connected))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
 
@@ -134,6 +156,8 @@ void ADianaConnector::DisconnectSocket()
     if (sock != NULL)
     {
         sock->Close();
+        delete sock;
+        sock = NULL;
     }
 }
 
@@ -142,7 +166,8 @@ ADianaConnector::ADianaConnector()
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
+    this->proxy = this;
+    this->sock = NULL;
 }
 
 ADianaConnector::~ADianaConnector()
@@ -234,7 +259,7 @@ void ADianaConnector::Tick(float DeltaTime)
 
 bool ADianaConnector::RegisterForVisData(bool enable)
 {
-    return RegisterForVisData(enable, client_id, server_id);
+    return proxy->RegisterForVisData(enable, client_id, server_id);
 }
 
 bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 server_id)
@@ -247,7 +272,7 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 ser
 
     ConnectSocket();
 
-    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin"));
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin (%d) %d %d"), enable, client_id, server_id);
     if (sock == NULL)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::NULLSocket"));
@@ -298,59 +323,140 @@ void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef
 
 TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TArray<struct FDirectoryItem> items)
 {
-    return DirectoryListing(client_id, server_id, type, items);
+    return proxy->DirectoryListing(client_id, server_id, type, items);
 }
 
-void ADianaConnector::CreateShip(int32 class_id)
+void ADianaConnector::CreateShip(int32 class_id, FString class_name)
 {
-    CreateShip(client_id, server_id, class_id);
+    proxy->CreateShip(client_id, server_id, class_id, class_name);
 }
 
 void ADianaConnector::JoinShip()
 {
-    JoinShip(client_id, server_id);
+    proxy->JoinShip(client_id, server_id);
 }
 
-void ADianaConnector::RenameShip(FString NewShipName)
+void ADianaConnector::RenameShip(FString new_name)
 {
-    RenameShip(client_id, server_id, NewShipName);
+    proxy->RenameShip(client_id, server_id, new_name);
 }
 
 void ADianaConnector::Ready()
 {
-    Ready(client_id, server_id);
+    proxy->Ready(client_id, server_id);
 }
 
 void ADianaConnector::Goodbye()
 {
-    Goodbye(client_id, server_id);
+    proxy->Goodbye(client_id, server_id);
+}
+
+char* fstring_to_char(FString s)
+{
+    char* src = TCHAR_TO_ANSI(*s);
+    size_t src_len = strnlen(src, s.Len());
+    char* dst = (char*)malloc(src_len);
+    if (dst == NULL)
+    {
+        throw std::runtime_error("UnableToAllocateDirItemType");
+    }
+    memcpy(dst, src, src_len + 1);
+    return dst;
 }
 
 TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items)
 {
+    ConnectSocket();
+
+    Diana::DirectoryMsg dm;
+    dm.specced[0] = true;
+    dm.specced[1] = true;
+    dm.specced[2] = true;
+    dm.specced[3] = true;
+
+    dm.server_id = server_id;
+    dm.client_id = client_id;
+    dm.item_count = items.Num();
+    dm.item_type = fstring_to_char(type);
+
+    if (dm.item_count > 0)
+    {
+        dm.specced[4] = true;
+        dm.specced[5] = true;
+
+        dm.items = new Diana::DirectoryMsg::DirectoryItem[dm.item_count];
+        for (int i = 0; i < dm.item_count; i++)
+        {
+            dm.items[i].id = items[i].id;
+            dm.items[i].name = fstring_to_char(items[i].name);
+        }
+    }
+
+    dm.send(sock);
+
     TArray<struct FDirectoryItem> ret;
-    struct FDirectoryItem i;
-    i.name = FString("2560x1440");
-    i.id = 1;
-    ret.Add(i);
-    i.name = FString("1920x1080");
-    i.id = 2;
-    ret.Add(i);
-    i.name = FString("1280x720");
-    i.id = 3;
-    ret.Add(i);
+
+    // If the item count was 0, then we're really going to want to wait for a return message.
+    if (dm.item_count == 0)
+    {
+        std::chrono::milliseconds dura(20);
+        Diana::BSONMessage* m = NULL;
+        for (int i = 0; ((i < 50) && (m == NULL)); i++)
+        {
+            m = Diana::BSONMessage::ReadMessage(sock);
+            std::this_thread::sleep_for(dura);
+        }
+
+        if ((m != NULL) && (m->msg_type == Diana::BSONMessage::MessageType::Directory))
+        {
+            Diana::DirectoryMsg* dmr = (Diana::DirectoryMsg*)m;
+            if ((dmr->server_id == server_id) && (dmr->client_id == client_id) &&
+                (strcmp(TCHAR_TO_ANSI(*type), dmr->item_type) == 0))
+            {
+                struct FDirectoryItem item;
+                for (int i = 0; i < dmr->item_count; i++)
+                {
+                    item.id = dmr->items[i].id;
+                    item.name = FString(dmr->items[i].name);
+                    ret.Add(item);
+                }
+            }
+        }
+    }
+
     return ret;
 }
 
-void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id)
+void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id, FString class_name)
 {
+    std::chrono::milliseconds dura(20);
+    TArray<struct FDirectoryItem> selection;
+    struct FDirectoryItem item;
+    item.id = class_id;
+    item.name = class_name;
+    selection.Add(item);
+    FString type = "CLASS";
+    
+    DirectoryListing(client_id, server_id, type, selection);
+    Diana::BSONMessage* m = NULL;
+    for (int i = 0; ((i < 50) && (m == NULL)); i++)
+    {
+        m = Diana::BSONMessage::ReadMessage(sock);
+        std::this_thread::sleep_for(dura);
+    }
+
+    if (m->msg_type == Diana::BSONMessage::Hello)
+    {
+    }
+
+    delete m;
 }
 
 void ADianaConnector::JoinShip(int32 client_id, int32 server_id)
 {
 }
 
-void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString NewShipName)
+void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString new_name)
 {
 }
 

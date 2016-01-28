@@ -67,7 +67,7 @@ class ObjectSim:
                 elif msg.item_type == "CLASS":
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
-                elif osm_id != None and msg.item_type == "SYSTEMS":
+                elif osim_id != None and msg.item_type == "SYSTEMS":
                     dm.item_type = msg.item_type
                     dm.items = self.ship_list[osim_id].get_systems()
                 DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())

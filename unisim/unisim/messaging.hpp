@@ -24,7 +24,7 @@ namespace Diana
 {
     class BSONMessage;
     typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)> read_lambda;
-    
+
     // The general superclass of all messages
     class BSONMessage
     {
@@ -82,7 +82,7 @@ namespace Diana
     public:
         HelloMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), Hello) { }
         int64_t send(sock_t sock);
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -99,7 +99,7 @@ namespace Diana
         struct Vector3 position, velocity, thrust;
         struct Vector4 orientation;
         struct Spectrum* spectrum;
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -120,7 +120,7 @@ namespace Diana
         int64_t send(sock_t sock);
 
         bool enabled;
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -132,7 +132,7 @@ namespace Diana
         int64_t send(sock_t sock);
 
         bool enabled;
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -142,7 +142,7 @@ namespace Diana
     public:
         VisualMetaDataMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), VisualMetaData) { }
         int64_t send(sock_t sock);
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -158,7 +158,7 @@ namespace Diana
         struct Vector3 position;
         struct Vector4 orientation;
         double red, green, blue;
-    
+
     protected:
         const read_lambda* handlers();
     };
@@ -278,7 +278,7 @@ namespace Diana
     class DirectoryMsg : public BSONMessage
     {
     public:
-        DirectoryMsg(BSONReader* _br = NULL);// : BSONMessage(_br, 4, handlers(), Directory) { }
+        DirectoryMsg(BSONReader* _br = NULL) : BSONMessage(_br, 4, handlers(), Directory) { }
         ~DirectoryMsg();
         int64_t send(sock_t sock);
 
@@ -291,7 +291,9 @@ namespace Diana
         int64_t item_count;
         char* item_type;
         struct DirectoryItem* items;
-    
+
+        void read_parts(std::function<void(struct DirectoryItem&, BSONReader::Element)> set);
+
     protected:
         const read_lambda* handlers();
     };
@@ -340,7 +342,7 @@ namespace Diana
         int64_t send(sock_t sock);
 
         Vector3 velocity;
-    
+
     protected:
         const read_lambda* handlers();
     };

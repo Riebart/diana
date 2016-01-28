@@ -100,6 +100,8 @@ namespace Diana
         obj->ang_velocity = *ang_velocity;
         obj->thrust = *thrust;
         obj->mass = mass;
+
+        //! @todo Ensure radius >= 0. Maybe Almost-Zero radius is uncollidable because it would break the math?
         obj->radius = radius;
         obj->obj_type = const_cast<char*>(obj_type);
         obj->t = 0.0;

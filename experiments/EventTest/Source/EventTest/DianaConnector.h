@@ -13,9 +13,9 @@ struct FDirectoryItem
 {
     GENERATED_USTRUCT_BODY()
 
-        UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Diana Messaging")
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
         FString name;
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Diana Messaging")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
         int32 id;
 };
 
@@ -74,20 +74,14 @@ public:
     // Called every frame
     virtual void Tick(float DeltaSeconds) override;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server IPv4 Address"))
-        FString host = "127.0.0.1";
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server TCP Port"))
-        int32 port = 5506;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Client ID"))
+    UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Client ID"))
         int32 client_id = 1;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server ID"))
-        int32 server_id = 1;
+    UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server ID"))
+        int32 server_id = -1;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Proxy Diana Connector"))
-        ADianaConnector* proxy = NULL;
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        bool ConnectToServer(FString _host, int32 _port);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void UseProxyConnection(ADianaConnector* _proxy);
@@ -113,13 +107,13 @@ public:
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void CreateShip(int32 class_id);
+        void CreateShip(int32 class_id, FString class_name);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void JoinShip();
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void RenameShip(FString NewShipName);
+        void RenameShip(FString new_name);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void Ready();
@@ -129,15 +123,18 @@ public:
 
 protected:
     bool RegisterForVisData(bool enable, int32 client_id, int32 server_id);
-    TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString Type, TArray<struct FDirectoryItem> Items);
-    void CreateShip(int32 client_id, int32 server_id, int32 class_id);
+    TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
+    void CreateShip(int32 client_id, int32 server_id, int32 class_id, FString class_name);
     void JoinShip(int32 client_id, int32 server_id);
-    void RenameShip(int32 client_id, int32 server_id, FString NewShipName);
+    void RenameShip(int32 client_id, int32 server_id, FString new_name);
     void Ready(int32 client_id, int32 server_id);
     void Goodbye(int32 client_id, int32 server_id);
 
 private:
+    FString host = "";
+    int32 port = 0;
     int64 vis_iteration = 1;
+    ADianaConnector* proxy = NULL;
     FVisDataReceiver* vdr_thread = NULL;
     bool ConnectSocket();
     void DisconnectSocket();

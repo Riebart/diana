@@ -1022,7 +1022,6 @@ namespace Diana
             throw std::runtime_error("Universe::UnrecognizedMessageType");
         }
 
-        //! @todo Check that this calls the right desstructors, specifically of the children.
         delete msg_base;
     }
 
