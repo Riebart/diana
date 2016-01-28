@@ -326,14 +326,17 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TA
     return proxy->DirectoryListing(client_id, server_id, type, items);
 }
 
-void ADianaConnector::CreateShip(int32 class_id, FString class_name)
+void ADianaConnector::CreateShip(int32 class_id)
 {
-    proxy->CreateShip(client_id, server_id, class_id, class_name);
+    proxy->CreateShip(client_id, server_id, class_id);
 }
 
-void ADianaConnector::JoinShip()
+int32 ADianaConnector::JoinShip(int32 ship_id)
 {
-    proxy->JoinShip(client_id, server_id);
+    int32 ret = proxy->JoinShip(client_id, server_id, ship_id);
+    server_id = ret;
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::JoinedShip %u"), server_id);
+    return ret;
 }
 
 void ADianaConnector::RenameShip(FString new_name)
@@ -427,13 +430,13 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id,
     return ret;
 }
 
-void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id, FString class_name)
+void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id)
 {
     std::chrono::milliseconds dura(20);
     TArray<struct FDirectoryItem> selection;
     struct FDirectoryItem item;
     item.id = class_id;
-    item.name = class_name;
+    item.name = FString("");
     selection.Add(item);
     FString type = "CLASS";
     
@@ -452,12 +455,43 @@ void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_i
     delete m;
 }
 
-void ADianaConnector::JoinShip(int32 client_id, int32 server_id)
+int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
 {
+    std::chrono::milliseconds dura(20);
+    TArray<struct FDirectoryItem> selection;
+    struct FDirectoryItem item;
+    item.id = ship_id;
+    item.name = FString("");
+    selection.Add(item);
+    FString type = "SHIP";
+    int32 ret;
+
+    DirectoryListing(client_id, server_id, type, selection);
+    Diana::BSONMessage* m = NULL;
+    for (int i = 0; ((i < 50) && (m == NULL)); i++)
+    {
+        m = Diana::BSONMessage::ReadMessage(sock);
+        std::this_thread::sleep_for(dura);
+    }
+
+    if (m->msg_type == Diana::BSONMessage::Hello)
+    {
+        ret = m->server_id;
+    }
+
+    delete m;
+    return ret;
 }
 
 void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString new_name)
 {
+    Diana::NameMsg nm;
+    nm.client_id = client_id;
+    nm.server_id = server_id;
+    nm.name = TCHAR_TO_ANSI(*new_name);
+    nm.spec_all();
+    nm.send(sock);
+    nm.name = NULL;
 }
 
 void ADianaConnector::Ready(int32 client_id, int32 server_id)

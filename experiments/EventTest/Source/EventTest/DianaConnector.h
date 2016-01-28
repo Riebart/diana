@@ -107,10 +107,10 @@ public:
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void CreateShip(int32 class_id, FString class_name);
+        void CreateShip(int32 class_id);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void JoinShip();
+        int32 JoinShip(int32 ship_id);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void RenameShip(FString new_name);
@@ -124,8 +124,8 @@ public:
 protected:
     bool RegisterForVisData(bool enable, int32 client_id, int32 server_id);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
-    void CreateShip(int32 client_id, int32 server_id, int32 class_id, FString class_name);
-    void JoinShip(int32 client_id, int32 server_id);
+    void CreateShip(int32 client_id, int32 server_id, int32 class_id);
+    int32 JoinShip(int32 client_id, int32 server_id, int32 ship_id);
     void RenameShip(int32 client_id, int32 server_id, FString new_name);
     void Ready(int32 client_id, int32 server_id);
     void Goodbye(int32 client_id, int32 server_id);
