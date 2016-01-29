@@ -236,10 +236,11 @@ class ObjectSim:
         del self.client_list[osim_id]
 
 if __name__ == "__main__":
-    from shiptypes import Firefly
+    from shiptypes import Firefly, CueBall
 
     osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
+    osim.register_ship_class(CueBall)
 
     print "Press Enter to close the server..."
     raw_input()

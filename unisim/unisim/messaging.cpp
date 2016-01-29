@@ -971,7 +971,9 @@ namespace Diana
 
     int64_t ThrustMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        SEND_PROLOGUE();
+        SEND_VECTOR3(thrust);
+        SEND_EPILOGUE();
     }
 
     // ================================================================================
@@ -988,7 +990,9 @@ namespace Diana
 
     int64_t VelocityMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        SEND_PROLOGUE();
+        SEND_VECTOR3(velocity);
+        SEND_EPILOGUE();
     }
 
     // ================================================================================
@@ -1005,7 +1009,9 @@ namespace Diana
 
     int64_t JumpMsg::send(sock_t sock)
     {
-        throw "NotImplemented";
+        SEND_PROLOGUE();
+        SEND_VECTOR3(destination);
+        SEND_EPILOGUE();
     }
 
     // ================================================================================

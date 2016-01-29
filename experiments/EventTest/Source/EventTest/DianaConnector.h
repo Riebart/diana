@@ -121,6 +121,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void Goodbye();
 
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void SetThrust(FVector _thrust);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void OffsetThrust(FVector _thrust);
+
 protected:
     bool RegisterForVisData(bool enable, int32 client_id, int32 server_id);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
@@ -129,6 +135,8 @@ protected:
     void RenameShip(int32 client_id, int32 server_id, FString new_name);
     void Ready(int32 client_id, int32 server_id);
     void Goodbye(int32 client_id, int32 server_id);
+    void SetThrust(int32 client_id, int32 server_id, FVector _thrust);
+    void OffsetThrust(int32 client_id, int32 server_id, FVector _thrust);
 
 private:
     FString host = "";
@@ -139,6 +147,7 @@ private:
     bool ConnectSocket();
     void DisconnectSocket();
     FSocket* sock = NULL;
+    FVector thrust = FVector(0.0, 0.0, 0.0);
 
     // See: http://www.slideserve.com/maine/concurrency-parallelism-in-ue4
     TQueue<struct DianaVDM> messages;

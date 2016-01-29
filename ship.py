@@ -117,7 +117,12 @@ class Ship(SmartObject):
         elif isinstance(msg, message.PhysicalPropertiesMsg):
             msg.srv_id = self.phys_id
             msg.cli_id = self.osim_id
-            msg.sendto(self.sock)
+            message.PhysicalPropertiesMsg.send(self.phys_id, self.osim_id, msg.build())
+
+        elif isinstance(msg, message.ThrustMsg):
+            if msg.thrust != None:
+                print "Setting thrust: " + str(msg.thrust)
+                self.set_thrust(msg.thrust)
 
         elif isinstance(msg, message.VisualDataEnableMsg):
             if msg.enabled:

@@ -512,3 +512,39 @@ void ADianaConnector::Goodbye(int32 client_id, int32 server_id)
     gm.spec_all();
     gm.send(sock);
 }
+
+void ADianaConnector::SetThrust(FVector _thrust)
+{
+    proxy->SetThrust(client_id, server_id, _thrust);
+}
+
+void ADianaConnector::SetThrust(int32 client_id, int32 server_id, FVector _thrust)
+{
+    thrust = _thrust;
+    Diana::ThrustMsg tm;
+    tm.client_id = client_id;
+    tm.server_id = server_id;
+    tm.thrust.x = thrust.X;
+    tm.thrust.y = thrust.Y;
+    tm.thrust.z = thrust.Z;
+    tm.spec_all();
+    tm.send(sock);
+}
+
+void ADianaConnector::OffsetThrust(FVector _thrust)
+{
+    proxy->OffsetThrust(client_id, server_id, _thrust);
+}
+
+void ADianaConnector::OffsetThrust(int32 client_id, int32 server_id, FVector _thrust)
+{
+    thrust += _thrust;
+    Diana::ThrustMsg tm;
+    tm.client_id = client_id;
+    tm.server_id = server_id;
+    tm.thrust.x = thrust.X;
+    tm.thrust.y = thrust.Y;
+    tm.thrust.z = thrust.Z;
+    tm.spec_all();
+    tm.send(sock);
+}
