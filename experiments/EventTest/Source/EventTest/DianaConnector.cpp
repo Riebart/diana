@@ -496,8 +496,19 @@ void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString new_n
 
 void ADianaConnector::Ready(int32 client_id, int32 server_id)
 {
+    Diana::ReadyMsg rm;
+    rm.client_id = client_id;
+    rm.server_id = server_id;
+    rm.ready = true;
+    rm.spec_all();
+    rm.send(sock);
 }
 
 void ADianaConnector::Goodbye(int32 client_id, int32 server_id)
 {
+    Diana::GoodbyeMsg gm;
+    gm.server_id = server_id;
+    gm.client_id = client_id;
+    gm.spec_all();
+    gm.send(sock);
 }

@@ -5,7 +5,7 @@
 
 #include "messaging.hpp"
 
-#ifdef UE_NETWORKING
+#ifdef UCLASS
 #include "Networking.h"
 #include "Sockets.h"
 #include "SocketSubsystem.h"
@@ -820,6 +820,7 @@ namespace Diana
 
     static read_lambda DirectoryMsg_handlers[] = {
         READER_LAMBDA(item_type, ReadString(el), DirectoryMsg),
+        //! @todo Remove the item_count, since the array readers will use vectors to handle the unknown case?
         READER_LAMBDA_IP(((DirectoryMsg*)msg)->item_count = el.i64_val; ((DirectoryMsg*)msg)->items = new struct DirectoryMsg::DirectoryItem[el.i64_val]),
         READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.id = el.i64_val; })),
         READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.name = ReadString(el); }))

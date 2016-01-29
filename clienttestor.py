@@ -54,6 +54,8 @@ def pool_rack():
     sm.radius = ball_radius
     SpawnMsg.send(sock, None, -1, sm.build())
 
+    ret = raw_input('Press enter to continue...')
+
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
 
@@ -99,6 +101,11 @@ def spawn_sol():
         print str(phys_id) + ": " + sm.object_type
         message.SpawnMsg.send(sock, None, -1, sm.build())
         phys_id += 1
+
+    ret = raw_input('Press enter to continue...')
+
+    sock.shutdown(socket.SHUT_RDWR)
+    sock.close()
 
 def signature_test():
     sock = socket.socket()

@@ -878,6 +878,7 @@ namespace Diana
                 double power_scale;
  
                 //! @todo THIS IS BAD! Locking the physics lock synchronously for networking? Oh no.
+                //! @todo Use read/write locks, since most of the time, we only want read locks.
                 LOCK(phys_lock);
                 //! @todo Move all objects with spectra to their own vector
                 for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)

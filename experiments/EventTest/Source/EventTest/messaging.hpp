@@ -2,7 +2,7 @@
 #define MESSAGING_HPP
 
 // Branch if we're using UE networking or OS networking.
-#ifdef UE_NETWORKING
+#ifdef UCLASS
 class FSocket;
 typedef FSocket* sock_t;
 #else
@@ -22,6 +22,10 @@ typedef int sock_t;
 
 namespace Diana
 {
+    //! @todo A message relay that will replicate/pass messages off to other pieces of code
+    // that ask for them. Think about multiplexing multiple clients over a socket, and handling
+    // the message relaying that's required.
+
     class BSONMessage;
     typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)> read_lambda;
 
