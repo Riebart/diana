@@ -163,7 +163,7 @@ def signature_test():
         msg = message.Message.get_message(sock)
         print msg.__dict__
 
-def flight_school(ball_radius = 1.0, num_balls = 10):
+def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
 
@@ -187,7 +187,7 @@ def flight_school(ball_radius = 1.0, num_balls = 10):
 
     theta = 0.0
     for i in range(num_balls):
-        sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), 0.0 ]
+        sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
         message.SpawnMsg.send(sock, None, -1, sm.build())
         theta += 2 * math.pi / num_balls
 
@@ -248,6 +248,7 @@ if __name__ == "__main__":
     #pool_rack(C = 1.01, num_rows = 15)
     #spawn_sol()
     #signature_test()
-    flight_school(0.1, 100)
+    for i in range(-3, 3, 1):
+        flight_school(0.1, 25, i)
 
     #test_systems()

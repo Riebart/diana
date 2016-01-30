@@ -246,7 +246,7 @@ void ADianaConnector::Tick(float DeltaTime)
     for (std::map<int32, struct DianaActor>::iterator it = oa_map.begin(); it != oa_map.end(); )
     {
         da = it->second;
-        // We may have only consumed part of the current frame, so it it proper to check that
+        // We may have only consumed part of the current frame, so it is proper to check that
         // the last iteration value is at least onemore than the previous value.
         if (da.last_iteration < (vis_iteration - 1))
         {
