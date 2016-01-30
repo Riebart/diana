@@ -10,7 +10,7 @@ import time
 import math
 from vector import Vector3
 
-def pool_rack():
+def pool_rack(C = 1.0, num_rows = 5):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
 
@@ -21,10 +21,11 @@ def pool_rack():
     ball_mass = 15.0
     ball_radius = 1.0
 
-    num_rows = 15
-    C = 1.0
+#    num_rows = 50
+#    C = 1.01
     y_scale = sqrt(3) / 2
     y_offset = 0.0
+    nobjects = 0
 
     sm = SpawnMsg()
     sm.srv_id = -1
@@ -39,9 +40,10 @@ def pool_rack():
             sm.radius = ball_radius
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
-            sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0.0 ]
+            sm.position = [  C * (i - 2 * j) * ball_radius + random.random() * (C - 1.0), y_offset - C * y_scale * (1 + 2 * i) * ball_radius + random.random() * (C - 1.0), random.random() * (C - 1.0) ]
             print sm.position
             SpawnMsg.send(sock, None, -1, sm.build())
+            nobjects += 1
 
     # This makes us a cue ball
     sm.srv_id = -1
@@ -53,8 +55,10 @@ def pool_rack():
     sm.velocity = [0.0,-5.0,0.0]
     sm.radius = ball_radius
     SpawnMsg.send(sock, None, -1, sm.build())
+    nobjects += 1
 
-    ret = raw_input('Press enter to continue...')
+    print "Spawned", nobjects, "objects"
+#    ret = raw_input('Press enter to continue...')
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
@@ -159,6 +163,37 @@ def signature_test():
         msg = message.Message.get_message(sock)
         print msg.__dict__
 
+def flight_school(ball_radius = 1.0, num_balls = 10):
+    sock = socket.socket()
+    sock.connect( ("localhost", 5505) )
+
+    sm = message.SpawnMsg()
+    sm.srv_id = None
+    sm.cli_id = -1
+    sm.is_smart = False
+    sm.thrust = [0.0,0.0,0.0]
+    sm.velocity = [0.0,0.0,0.0]
+    sm.orientation = [0.0,0.0,0.0,0.0]
+    sm.object_type = "NonRadiatorDumb"
+    sm.mass = 1.0
+    sm.radius = ball_radius
+
+    # We need a circle of radius enough to fit the specified number of balls of the given size
+    # k is some slush factor
+    #
+    # 2 * pi * R_c >= num_balls * ball_radius  * k
+    k = 2.0
+    circle_radius = k * num_balls * ball_radius
+
+    theta = 0.0
+    for i in range(num_balls):
+        sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), 0.0 ]
+        message.SpawnMsg.send(sock, None, -1, sm.build())
+        theta += 2 * math.pi / num_balls
+
+    sock.shutdown(socket.SHUT_RDWR)
+    sock.close()
+
 
 def dirmsg(sock, msg):
     message.DirectoryMsg.send(sock, 0,0, msg)    
@@ -210,8 +245,9 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    pool_rack()
+    #pool_rack(C = 1.01, num_rows = 15)
     #spawn_sol()
     #signature_test()
+    flight_school(0.1, 100)
 
     #test_systems()

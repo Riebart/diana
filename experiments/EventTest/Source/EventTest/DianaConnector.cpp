@@ -72,6 +72,7 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
                     vdm = (Diana::VisualDataMsg*)m;
                     dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
                     dm.world_time = world->RealTimeSeconds;
+                    dm.radius = vdm->radius;
                     dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
                     parent->messages.Enqueue(dm);
 
@@ -212,6 +213,7 @@ void ADianaConnector::Tick(float DeltaTime)
             da.last_time = dm.world_time;
             da.cur_time = dm.world_time;
             da.a = NULL;
+            da.radius = dm.radius;
             da.last_pos = dm.pos;
             da.cur_pos = da.last_pos;
             da.last_iteration = vis_iteration;
@@ -219,13 +221,14 @@ void ADianaConnector::Tick(float DeltaTime)
                 FScopeLock Lock(&map_cs);
                 oa_map[da.server_id] = da;
             }
-            NewVisDataObject(da.server_id, da.cur_pos);
+            NewVisDataObject(da.server_id, da.radius, da.cur_pos);
         }
         else
         {
             // The object is being updated
             //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleUpdated"));
             da = oa_map[da.server_id];
+            da.radius = dm.radius;
             da.last_time = da.cur_time;
             da.cur_time = dm.world_time;
             da.last_pos = da.cur_pos;
@@ -236,7 +239,7 @@ void ADianaConnector::Tick(float DeltaTime)
                 //da.a->SetActorLocation(da.cur_pos);
                 oa_map[da.server_id] = da;
             }
-            ExistingVisDataObject(da.server_id, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
+            ExistingVisDataObject(da.server_id, da.radius, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
         }
     }
 

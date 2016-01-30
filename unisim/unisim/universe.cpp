@@ -525,6 +525,12 @@ namespace Diana
                     Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
                 }
 
+                // Apply the visual acuity cutoff
+                if ((visdata_msg.radius * visdata_msg.radius / Vector3_length2(&visdata_msg.position)) < params.visual_acuity)
+                {
+                    continue;
+                }
+
                 visdata_msg.orientation.w = o->forward.x;
                 visdata_msg.orientation.x = o->forward.y;
                 visdata_msg.orientation.y = o->up.x;
@@ -581,7 +587,10 @@ namespace Diana
         // If this smarty is non-NULL, then this points to the PARENT
         SPO* smarty = (it != smarties.end() ? it->second : NULL);
 
-        printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
+        if (params.verbose_logging)
+        {
+            printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
+        }
 
         switch (msg_base->msg_type)
         {
@@ -644,7 +653,7 @@ namespace Diana
                     }
                 }
 
-#define ASSIGN_VAL(i, var, absolute) if (msg->specced[i]) { smarty->pobj.var = (absolute ? smarty->pobj.var : 0.0) + msg->var; };
+#define ASSIGN_VAL(i, var, absolute) if (msg->specced[i]) { smarty->pobj.var = (absolute ? 0.0 : smarty->pobj.var) + msg->var; };
 #define ASSIGN_V3(i, var, absolute) ASSIGN_VAL(i, var.x, absolute) ASSIGN_VAL(i + 1, var.y, absolute) ASSIGN_VAL(i + 2, var.z, absolute);
                 ASSIGN_VAL(3, mass, true);
                 ASSIGN_V3(4, position, false);
@@ -1248,11 +1257,15 @@ namespace Diana
                 phys_result.pce1.d = beam_result.d;
                 phys_result.pce1.p = beam_result.p;
 
+                if (u->params.verbose_logging)
+                {
 #if __x86_64__
-                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
-                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
+                }
+                
                 PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
                 //! @todo Smarty beam collision messages
@@ -1813,7 +1826,7 @@ namespace Diana
                     struct PhysicsObject* obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
 
-                    if (n_rounds == 1)
+                    if ((n_rounds == 1) && params.verbose_logging)
                     {
 #if __x86_64__
                         fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
@@ -1953,7 +1966,7 @@ namespace Diana
                 objs = NULL;
             }
 
-            if (n_rounds > 1)
+            if ((n_rounds > 1) && params.verbose_logging)
             {
                 printf("Collision set required %u rounds\n", n_rounds);
             }

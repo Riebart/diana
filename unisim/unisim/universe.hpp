@@ -106,6 +106,7 @@ namespace Diana
         struct Parameters
         {
             Parameters() :
+                verbose_logging(true),
                 min_physics_frametime(0.002),
                 max_physics_frametime(0.002),
                 min_vis_frametime(0.1),
@@ -122,9 +123,15 @@ namespace Diana
                 radiation_energy_cutoff(1.5e4),
                 spectrum_slush_range(0.01),
                 health_damage_threshold(0.1),
-                health_mass_scale(1e6)
+                health_mass_scale(1e6),
+                visual_acuity(1e-5) // This assumes an acuity of approximately 60cm at 
+                                    // 1km, which roughly corresponds to a typical human
             {}
 
+            // Print verbose information, such as collision rounds per tick, and when a
+            // collision happens, and which objects were involved.
+            bool verbose_logging;
+            
             // Minimum unscaled simulated time that is allowed to pass in a single tick.
             // If the previous phsyics tick took less wall-clock time than this, the time
             // delta for the next tick is increased up to this amount.
@@ -234,6 +241,11 @@ namespace Diana
             // Non-smart physics objects are assigned a number of hit points that is their mass
             // multiplied by this value.
             double health_mass_scale;
+
+            // The cutoff (in (radius/distance)^2) used to determine whether a given object is sent
+            // as a piece of visual data. The square is to prevent unnecessary square roots being
+            // performed frequently. The physical units of this tan(radians).
+            double visual_acuity;
         };
 
         Universe(struct Parameters _params);

@@ -30,7 +30,7 @@ class CueBall(Ship):
         Ship.__init__(self, osim)
         self.name = "Baldie"
         self.object_type = "Ship"
-        self.mass = 10.0
+        self.mass = 2.0
         self.radius = 1.0
 
         #This information should all be handled server-side,

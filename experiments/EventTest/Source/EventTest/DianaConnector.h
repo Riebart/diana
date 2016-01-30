@@ -31,6 +31,7 @@ public:
     {
         int32 server_id;
         float world_time;
+        double radius;
         FVector pos;
     };
 
@@ -38,6 +39,7 @@ public:
     {
         int32 server_id;
         AActor* a;
+        double radius;
         float last_time;
         float cur_time;
         FVector last_pos;
@@ -95,10 +97,10 @@ public:
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "New Vis Data Object"))
-        void NewVisDataObject(int32 PhysID, FVector Position);
+        void NewVisDataObject(int32 PhysID, float Radius, FVector Position);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
-        void ExistingVisDataObject(int32 PhysID, FVector CurrentPosition, FVector LastPosition, float CurrentRealTime, float LastRealTime, AActor* ActorRef);
+        void ExistingVisDataObject(int32 PhysID, float Radius, FVector CurrentPosition, FVector LastPosition, float CurrentRealTime, float LastRealTime, AActor* ActorRef);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Removed Vis Data Object"))
         void RemovedVisDataObject(int32 PhysID, AActor* ActorRef);
