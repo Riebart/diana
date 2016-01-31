@@ -447,59 +447,6 @@ namespace Diana
         {
             vc = *it;
 
-            // The socket is a 32-bit value, but likely only occupying the first 16-ish
-            // Use this for entropy when obfuscating the server ID, generate more random bits 
-            //
-            // Without this, since access to send messages to a phys_id is unauthenticated, if
-            // phys_ids were sent in the clear, clients could send messages to other ships.
-            //
-            // This method uses a client-specific data, the socket file descriptor ID, and a 
-            // global piece of entropy, the RAND_MAX for the inter-object ID increment, to
-            // generate a high entropy value to XOR the phys_id with. 
-            //
-            // Note that smarties know their own server IDs, exactly, and can relay this to
-            // another ship to allow them to derive the XOR key used on their own ship. This
-            // eliminates a portion of the entropy in the obfuscation process. This would be
-            // inadvisable, in general, as sending commands to a smarty is authenticated, in
-            // a sense, only by this mechanism. Giving someone else your ID would allow them
-            // to control your ship.
-            //
-            // Uncertainties:
-            //  - Unicity distance; how many objects/people working together would
-            // be required to determine the true ID of a smarty. I'm going to guess five-ish?
-            //  - Including the object's pointer as an integer (squared, to consider
-            // 32-bit pointers) to include a per-object piece of information. I don't THINK that
-            // these objects are being reallocated, or will ever be reallocated, but who knows.
-
-            // Hold the socket-specific entropy bits, generated from the global RANDOM_ID_RANGE
-            // value, which will be in the 20-30 bits range, and the socket, which is in the 16
-            // bits range. Total entropy is only in the 35-40 bits range, but that's good enough.
-            int64_t socket_bits;
-#ifdef RANDOM_ID_RANGE
-            // Mathematica justification:
-            ////   Function[{x}, Module[{a},
-            ////       a = x;
-            ////   a = a(a + 1);
-            ////   a = a(a + 1);
-            ////   a = a(a + 1);
-            ////   a
-            ////   ]];
-            ////   %[x]//Expand
-            ////       Map[%%, Table[i, { i,256,1024 }]];
-            ////   Total[IntegerDigits[#, 2, 64]] & / @%//Sort//ListPlot
-            socket_bits = vc.socket + RANDOM_ID_RANGE;
-            socket_bits = socket_bits * (socket_bits + 1);
-            socket_bits = socket_bits * (socket_bits + 1);
-            socket_bits = socket_bits * (socket_bits + 1);
-            // By this point, it's a an 8th order polynomial, and produces a solid bell curve
-            // around 32 set bits, even for values >256, and about 24 bits for values <256.
-            //
-            // Note that we're doing the efficient polynomial thing, 4 multiplications,
-            // 4 additions, and an 8th order polynomial.
-#else
-            socket_bits = 0;
-#endif
-
             // We're going to specify all of the options, so just set them all to specced.
             visdata_msg.spec_all(true);
             visdata_msg.client_id = vc.client_id;
@@ -516,7 +463,7 @@ namespace Diana
                 visdata_msg.radius = o->radius;
                 
                 // Don't forget to unset the sign bits, negative IDs would be weird.
-                visdata_msg.phys_id = o->phys_id ^ socket_bits ^ (int64_t)o;
+                visdata_msg.phys_id = (o->phys_id ^ (int64_t)o) & 0x7FFFFFFFFFFFFFFF;
                 
                 visdata_msg.position = o->position;
 

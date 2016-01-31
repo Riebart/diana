@@ -185,12 +185,32 @@ void ADianaConnector::BeginPlay()
 
 }
 
+void motion_interpolation(FVector* p, double* t, FVector& v, FVector& a)
+{
+    FVector dp[] = { p[1] - p[0], p[2] - p[0] };
+    double dt[] = { t[1] - t[0], t[2] - t[0] };
+
+    //a = dp[0] * (2.0 / (dt[0] * (dt[0] - dt[1]))) - 
+    //    dp[1] * (2.0 / (dt[1] * (dt[0] - dt[1])));
+
+    //v = 0.5 * (dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])))) + (p[2] - p[1]) / (t[2] - t[1]);
+
+    //v = dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])));
+
+    v = (p[2] - p[1]) / (t[2] - t[1]);
+}
+
 // Called every frame
 void ADianaConnector::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     struct DianaVDM dm;
     struct DianaActor da;
+
+    FVector velocity;
+    FVector acceleration;
 
     while (!messages.IsEmpty())
     {
@@ -209,19 +229,24 @@ void ADianaConnector::Tick(float DeltaTime)
         if (it == oa_map.end())
         {
             // The object is new
-            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleNew"));
-            da.last_time = dm.world_time;
-            da.cur_time = dm.world_time;
+            da.time[0] = dm.world_time - 2.0;
+            da.time[1] = dm.world_time - 1.0;
+            da.time[2] = dm.world_time;
             da.a = NULL;
             da.radius = dm.radius;
-            da.last_pos = dm.pos;
-            da.cur_pos = da.last_pos;
+            
+            da.pos[0] = dm.pos;
+            da.pos[1] = dm.pos;
+            da.pos[2] = dm.pos;
+            
             da.last_iteration = vis_iteration;
+            
             {
                 FScopeLock Lock(&map_cs);
                 oa_map[da.server_id] = da;
             }
-            NewVisDataObject(da.server_id, da.radius, da.cur_pos);
+            
+            NewVisDataObject(da.server_id, da.radius, da.pos[2]);
         }
         else
         {
@@ -229,17 +254,26 @@ void ADianaConnector::Tick(float DeltaTime)
             //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleUpdated"));
             da = oa_map[da.server_id];
             da.radius = dm.radius;
-            da.last_time = da.cur_time;
-            da.cur_time = dm.world_time;
-            da.last_pos = da.cur_pos;
-            da.cur_pos = dm.pos;
+           
+            da.pos[0] = da.pos[1];
+            da.pos[1] = da.pos[2];
+            da.pos[2] = dm.pos;
+            
+            da.time[0] = da.time[1];
+            da.time[1] = da.time[2];
+            da.time[2] = dm.world_time;
+
+            motion_interpolation(da.pos, da.time, velocity, acceleration);
+            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::InterpolatedVelocity %f %f %f"), velocity.X, velocity.Y, velocity.Z);
+
             da.last_iteration = vis_iteration;
             if (da.a != NULL)
             {
                 //da.a->SetActorLocation(da.cur_pos);
                 oa_map[da.server_id] = da;
             }
-            ExistingVisDataObject(da.server_id, da.radius, da.cur_pos, da.last_pos, da.cur_time, da.last_time, da.a);
+            
+            ExistingVisDataObject(da.server_id, da.radius, da.pos[2], velocity, acceleration, da.time[2], da.a);
         }
     }
 
