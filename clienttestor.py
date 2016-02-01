@@ -248,6 +248,6 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
     for i in range(-40, 41, 1):
-        flight_school(0.25, 30, i, 0.45)
+        flight_school(0.25, 30, i, 0.42)
 
     #test_systems()

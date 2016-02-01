@@ -185,6 +185,7 @@ uint32 FVisDataReceiver::Run()
                             {
                                 last_seen.erase(lit);
                                 last_seen.push_back(mit->second);
+                                break;
                             }
                         }
 
@@ -204,13 +205,14 @@ uint32 FVisDataReceiver::Run()
                 else
                 {
                     int32 how_far = 0;
-                    for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < vis_iterations)); lit++)
+                    for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < vis_iterations)); )
                     {
                         // In this case, just set the da pointer to be to the object that
                         // is expired, the non-NULL-ness will trigger the removal, and the
                         // rest of the dm struct will be ignored.
                         dm.da = *lit;
                         parent->messages.Enqueue(dm);
+                        lit = last_seen.erase(lit);
                         how_far++;
                     }
 
