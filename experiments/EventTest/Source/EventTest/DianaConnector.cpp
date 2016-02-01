@@ -154,6 +154,9 @@ uint32 FVisDataReceiver::Run()
                         da->a = NULL;
                         da->epc = NULL;
 
+                        // Add this actor to the last_seen list, at the end, because it was the last seen.
+                        last_seen.push_back(da);
+
                         dm.da = NULL;
                         parent->messages.Enqueue(dm);
 
