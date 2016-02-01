@@ -250,6 +250,7 @@
     <NMakeOutput>..\..\Binaries\Win64\EventTest-Win64-Shipping.exe</NMakeOutput>
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\EventTest\ExtendedPhysicsComponent.h" />
     <ClInclude Include="..\..\Source\EventTest\physics.hpp" />
     <None Include="..\..\EventTest.uproject" />
     <None Include="..\..\Source\EventTest.Target.cs" />
@@ -265,6 +266,7 @@
     <ClInclude Include="..\..\Source\EventTest\EventTest.h" />
     <ClCompile Include="..\..\Source\EventTest\EventTestGameMode.cpp" />
     <ClInclude Include="..\..\Source\EventTest\EventTestGameMode.h" />
+    <ClCompile Include="..\..\Source\EventTest\ExtendedPhysicsComponent.cpp" />
     <ClCompile Include="..\..\Source\EventTest\messaging.cpp" />
     <None Include="..\..\Source\EventTest\messaging.hpp" />
     <ClCompile Include="..\..\Source\EventTest\vector.cpp" />

@@ -34,3 +34,18 @@ folder, and requires the UDK 4.10 or higher to work with at this time.
 * Start the osim.
 * Start a client.
 * Run a python script to generate some objects/scenario in the universe.
+
+= PyPy =
+
+PyPy doesn't ship, and sometimes won't pick up the system packages.
+
+Diana requires bson, and two dependencies that requires; pytz and six.
+
+- Grab the pure BSON library from https://github.com/py-bson/bson
+  > Extract the bson directory, and pitch the rest.
+- Grab a pytz source package from https://pypi.python.org/pypi/pytz/#downloads
+  > Extract the pytz folder, and pitch the rest.
+- Grab a six source package from https://pypi.python.org/pypi/six#downloads
+  > Extract the six.py file, and pitch the rest.
+
+Put those two directories and the source file in the Diana root, and away we go!

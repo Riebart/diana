@@ -115,6 +115,7 @@ namespace Diana
                 simulation_rate(1.0),
                 realtime_physics(true),
                 gravitational_constant(6.67384e-11),
+                speed_of_light(299792458),
                 collision_energy_cutoff(1e-9),
                 id_rand_max(1),
                 max_simultaneous_collision_rounds(100),
@@ -124,7 +125,7 @@ namespace Diana
                 spectrum_slush_range(0.01),
                 health_damage_threshold(0.1),
                 health_mass_scale(1e6),
-                visual_acuity(1e-5) // This assumes an acuity of approximately 60cm at 
+                visual_acuity(4e-7) // This assumes an acuity of approximately 60cm at 
                                     // 1km, which roughly corresponds to a typical human
             {}
 
@@ -185,6 +186,10 @@ namespace Diana
 
             // Universal gravitational constant.
             double gravitational_constant;
+
+            // The speed of light in this universe. The defualt speed for beams, and the speed at
+            // which relativistic effects do/would take effect.
+            double speed_of_light;
 
             // Collisions (physical or beam) that result in a transfer of energy below this amount
             // are ignored. This helps to ensure that spurious collisions (stiction) are gracefully

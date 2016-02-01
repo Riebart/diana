@@ -1,5 +1,8 @@
 syntax: glob
 *.pyc
+bson
+pytz
+six.py
 
 # VS user-local, debugging symbols, intermediate files, and object files.
 *.suo

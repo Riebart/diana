@@ -463,7 +463,7 @@ namespace Diana
                 visdata_msg.radius = o->radius;
                 
                 // Don't forget to unset the sign bits, negative IDs would be weird.
-                visdata_msg.phys_id = (o->phys_id ^ (int64_t)o) & 0x7FFFFFFFFFFFFFFF;
+                visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
                 
                 visdata_msg.position = o->position;
 

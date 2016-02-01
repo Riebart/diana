@@ -14,8 +14,28 @@
 
 #include <string.h>
 #include <thread>
+#include <list>
 
-ADianaConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor>* oa_map)
+// See: https://wiki.unrealengine.com/Multi-Threading:_How_to_Create_Threads_in_UE4
+class FVisDataReceiver : public FRunnable
+{
+public:
+    FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map);
+    ~FVisDataReceiver();
+
+    virtual bool Init();
+    virtual uint32 Run();
+    virtual void Stop();
+
+private:
+    FRunnableThread* rt = NULL;
+    volatile bool running;
+    FSocket* sock = NULL;
+    ADianaConnector* parent;
+    std::map<int32, struct ADianaConnector::DianaActor*>* oa_map;
+};
+
+FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map)
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor"));
     this->sock = sock;
@@ -25,7 +45,7 @@ ADianaConnector::FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnect
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
 
-ADianaConnector::FVisDataReceiver::~FVisDataReceiver()
+FVisDataReceiver::~FVisDataReceiver()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Destructor"));
     Stop();
@@ -33,14 +53,34 @@ ADianaConnector::FVisDataReceiver::~FVisDataReceiver()
     rt = NULL;
 }
 
-bool ADianaConnector::FVisDataReceiver::Init()
+bool FVisDataReceiver::Init()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Init"));
     running = true;
     return true;
 }
 
-uint32 ADianaConnector::FVisDataReceiver::Run()
+void motion_interpolation(double* t, FVector* p, FVector& v, FVector& a)
+{
+    FVector dp[] = { p[1] - p[0], p[2] - p[0] };
+    double dt[] = { t[1] - t[0], t[2] - t[0] };
+
+    a = dp[0] * (2.0 / (dt[0] * (dt[0] - dt[1]))) -
+        dp[1] * (2.0 / (dt[1] * (dt[0] - dt[1])));
+
+    //v = 0.5 * (dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])))) + (p[2] - p[1]) / (t[2] - t[1]);
+
+    v = dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+        dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])));
+
+    //v = (p[2] - p[1]) / (t[2] - t[1]);
+    //a.X = 0.0;
+    //a.Y = 0.0;
+    //a.Z = 0.0;
+}
+
+uint32 FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
 
@@ -50,9 +90,27 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
     bool read_available = false;
     Diana::BSONMessage* m = NULL;
     Diana::VisualDataMsg* vdm = NULL;
-    struct DianaVDM dm;
+    struct ADianaConnector::DianaVDM dm;
+    struct ADianaConnector::DianaActor* da;
+    std::map<int32, struct ADianaConnector::DianaActor*>::iterator mit;
+    FVector velocity, acceleration;
     uint32 nmessages = 0;
     UWorld* world = parent->GetWorld();
+    float last_stat_time = world->RealTimeSeconds;
+    int last_stat_frames = 0;
+
+    // Hold a list of all DianaActor struct pointers, we're going to use it like a stack
+    // to make it easier to expire objects at the end of a vis frame.
+    std::list<struct ADianaConnector::DianaActor*> last_seen;
+    std::list<struct ADianaConnector::DianaActor*>::iterator lit;
+    int64 vis_iterations = 1;
+
+    // The number of UU per metre in the Unreal map that the parent actor lives in.
+    // We blindly assume that all EPC (or at least their associated static meshes/actors
+    // exist in the same map, or at least have the same scale, as the DianaConnector.
+    //
+    // Divide by 2.... because. Not sure why, but we need to.
+    float world_to_metres = world->GetWorldSettings()->WorldToMeters / 2.0;
 
     while (running)
     {
@@ -64,7 +122,7 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
             // Only consider messages that are VisualData, and have our client_id, and have the phys_id specced[2]
             if ((m != NULL) &&
                 (m->msg_type == Diana::BSONMessage::VisualData) &&
-                m->specced[1] && (m->client_id == parent->client_id))
+                m->specced[0] && m->specced[1] && (m->client_id == parent->client_id))
             {
                 // If the phys_id is specced, then use it.
                 if (m->specced[2])
@@ -73,21 +131,95 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
                     dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
                     dm.world_time = world->RealTimeSeconds;
                     dm.radius = vdm->radius;
-                    dm.pos = FVector(vdm->position.x, vdm->position.y, vdm->position.z);
-                    parent->messages.Enqueue(dm);
+                    dm.pos = world_to_metres * FVector(vdm->position.x, vdm->position.y, vdm->position.z);
+
+                    {
+                        FScopeLock(&parent->map_cs);
+                        mit = oa_map->find(dm.server_id);
+                    }
+
+                    if (mit == oa_map->end())
+                    {
+                        da = new struct ADianaConnector::DianaActor;
+                        // The object is new
+                        da->time[0] = dm.world_time - 2.0;
+                        da->time[1] = dm.world_time - 1.0;
+                        da->time[2] = dm.world_time;
+                        da->pos[0] = dm.pos;
+                        da->pos[1] = dm.pos;
+                        da->pos[2] = dm.pos;
+                        da->radius = dm.radius;
+                        da->server_id = dm.server_id;
+                        da->last_iteration = vis_iterations;
+                        da->a = NULL;
+                        da->epc = NULL;
+
+                        dm.da = NULL;
+                        parent->messages.Enqueue(dm);
+
+                        FScopeLock Lock(&parent->map_cs);
+                        oa_map->insert(std::pair<int32, struct ADianaConnector::DianaActor*>(dm.server_id, da));
+                    }
+                    else
+                    {
+                        da = mit->second;
+                        da->time[0] = da->time[1];
+                        da->time[1] = da->time[2];
+                        da->time[2] = dm.world_time;
+                        da->pos[0] = da->pos[1];
+                        da->pos[1] = da->pos[2];
+                        da->pos[2] = dm.pos;
+                        da->last_iteration = vis_iterations;
+
+                        // Find this object in the list, and move it to the end.
+                        // Because objects are, generally, being sent in the same order each frame
+                        // (or, subsequent frames are very clode in order), this should be a
+                        // pretty short linear search each time. Using the linked list will
+                        // make unlinking and pushing to the back easier on large lists.
+                        for (lit = last_seen.begin(); lit != last_seen.end(); lit++)
+                        {
+                            if ((*lit)->server_id != da->server_id)
+                            {
+                                last_seen.erase(lit);
+                                last_seen.push_back(mit->second);
+                            }
+                        }
+
+                        if (da->epc != NULL)
+                        {
+                            motion_interpolation(da->time, da->pos, velocity, acceleration);
+                            da->epc->SetPVA(da->pos[2], velocity, acceleration);
+                        }
+                    }
 
                     // We handled a message, so immediately repeat, skip the Sleep()
                     delete vdm;
                 }
-                // If the phys_id is unspecced, then we need to check up on our map, and see
+                // If the phys_id is unspecced, then we need to check up on our list, and see
                 // which objects missed their update, indicating they should be removed from
                 // the scene.
                 else
                 {
-                    // Push an end-of-frame VDM to the queue
-                    dm.server_id = 0x80000000;
-                    dm.world_time = world->RealTimeSeconds;
-                    parent->messages.Enqueue(dm);
+                    int32 how_far = 0;
+                    for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < vis_iterations)); lit++)
+                    {
+                        // In this case, just set the da pointer to be to the object that
+                        // is expired, the non-NULL-ness will trigger the removal, and the
+                        // rest of the dm struct will be ignored.
+                        dm.da = *lit;
+                        parent->messages.Enqueue(dm);
+                        how_far++;
+                    }
+
+                    vis_iterations++;
+                    last_stat_frames++;
+                }
+
+                if ((world->RealTimeSeconds - last_stat_time) >= 1.0f)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Stats %d"), last_stat_frames);
+                    last_stat_frames = 0;
+                    last_stat_time = world->RealTimeSeconds;
                 }
 
                 continue;
@@ -104,7 +236,7 @@ uint32 ADianaConnector::FVisDataReceiver::Run()
     return nmessages;
 }
 
-void ADianaConnector::FVisDataReceiver::Stop()
+void FVisDataReceiver::Stop()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Stop"));
     running = false;
@@ -185,111 +317,32 @@ void ADianaConnector::BeginPlay()
 
 }
 
-void motion_interpolation(FVector* p, double* t, FVector& v, FVector& a)
-{
-    FVector dp[] = { p[1] - p[0], p[2] - p[0] };
-    double dt[] = { t[1] - t[0], t[2] - t[0] };
-
-    //a = dp[0] * (2.0 / (dt[0] * (dt[0] - dt[1]))) - 
-    //    dp[1] * (2.0 / (dt[1] * (dt[0] - dt[1])));
-
-    //v = 0.5 * (dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
-    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])))) + (p[2] - p[1]) / (t[2] - t[1]);
-
-    //v = dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
-    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])));
-
-    v = (p[2] - p[1]) / (t[2] - t[1]);
-}
-
 // Called every frame
 void ADianaConnector::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     struct DianaVDM dm;
-    struct DianaActor da;
-
-    FVector velocity;
-    FVector acceleration;
+    struct DianaActor* da;
 
     while (!messages.IsEmpty())
     {
+        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandlingQueueMessage"));
         messages.Dequeue(dm);
 
-        if (dm.server_id == 0x80000000)
+        // If the object disappeared, call out to Blueprints to handle that event
+        if (dm.da != NULL)
         {
-            vis_iteration++;
-            continue;
+            da = dm.da;
+            RemovedVisDataObject(da->server_id, da->a, da->epc);
+            FScopeLock(&this->map_cs);
+            oa_map.erase(dm.server_id);
+            delete dm.da;
         }
-
-        da.server_id = dm.server_id;
-
-        // Look up the server ID in the map
-        it = oa_map.find(dm.server_id);
-        if (it == oa_map.end())
+        // Otherweise call out to Blueprints to handle a new object.
+        else
         {
             // The object is new
-            da.time[0] = dm.world_time - 2.0;
-            da.time[1] = dm.world_time - 1.0;
-            da.time[2] = dm.world_time;
-            da.a = NULL;
-            da.radius = dm.radius;
-            
-            da.pos[0] = dm.pos;
-            da.pos[1] = dm.pos;
-            da.pos[2] = dm.pos;
-            
-            da.last_iteration = vis_iteration;
-            
-            {
-                FScopeLock Lock(&map_cs);
-                oa_map[da.server_id] = da;
-            }
-            
-            NewVisDataObject(da.server_id, da.radius, da.pos[2]);
-        }
-        else
-        {
-            // The object is being updated
-            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandleUpdated"));
-            da = oa_map[da.server_id];
-            da.radius = dm.radius;
-           
-            da.pos[0] = da.pos[1];
-            da.pos[1] = da.pos[2];
-            da.pos[2] = dm.pos;
-            
-            da.time[0] = da.time[1];
-            da.time[1] = da.time[2];
-            da.time[2] = dm.world_time;
-
-            motion_interpolation(da.pos, da.time, velocity, acceleration);
-            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::InterpolatedVelocity %f %f %f"), velocity.X, velocity.Y, velocity.Z);
-
-            da.last_iteration = vis_iteration;
-            if (da.a != NULL)
-            {
-                //da.a->SetActorLocation(da.cur_pos);
-                oa_map[da.server_id] = da;
-            }
-            
-            ExistingVisDataObject(da.server_id, da.radius, da.pos[2], velocity, acceleration, da.time[2], da.a);
-        }
-    }
-
-    for (std::map<int32, struct DianaActor>::iterator it = oa_map.begin(); it != oa_map.end(); )
-    {
-        da = it->second;
-        // We may have only consumed part of the current frame, so it is proper to check that
-        // the last iteration value is at least onemore than the previous value.
-        if (da.last_iteration < (vis_iteration - 1))
-        {
-            it = oa_map.erase(it);
-            RemovedVisDataObject(da.server_id, da.a);
-        }
-        else
-        {
-            it++;
+            NewVisDataObject(dm.server_id, dm.radius, dm.pos);
         }
     }
 }
@@ -352,10 +405,11 @@ void ADianaConnector::UseProxyConnection(ADianaConnector* _proxy)
     this->client_id = _proxy->client_id + 1;
 }
 
-void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef)
+void ADianaConnector::UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef)
 {
     FScopeLock Lock(&map_cs);
-    oa_map[PhysID].a = ActorRef;
+    oa_map[PhysID]->a = ActorRef;
+    oa_map[PhysID]->epc = EPCRef;
 }
 
 TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TArray<struct FDirectoryItem> items)
@@ -476,7 +530,7 @@ void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_i
     item.name = FString("");
     selection.Add(item);
     FString type = "CLASS";
-    
+
     DirectoryListing(client_id, server_id, type, selection);
     Diana::BSONMessage* m = NULL;
     for (int i = 0; ((i < 50) && (m == NULL)); i++)
@@ -501,7 +555,7 @@ int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
     item.name = FString("");
     selection.Add(item);
     FString type = "SHIP";
-    int32 ret;
+    int32 ret = -1;
 
     DirectoryListing(client_id, server_id, type, selection);
     Diana::BSONMessage* m = NULL;

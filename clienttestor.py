@@ -163,7 +163,7 @@ def signature_test():
         msg = message.Message.get_message(sock)
         print msg.__dict__
 
-def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0):
+def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
 
@@ -182,7 +182,6 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0):
     # k is some slush factor
     #
     # 2 * pi * R_c >= num_balls * ball_radius  * k
-    k = 2.0
     circle_radius = k * num_balls * ball_radius
 
     theta = 0.0
@@ -245,10 +244,10 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #pool_rack(C = 1.01, num_rows = 15)
+    #pool_rack(C = 1.0, num_rows = 15)
     #spawn_sol()
     #signature_test()
-    for i in range(-3, 3, 1):
-        flight_school(0.1, 40, i)
+    for i in range(-40, 41, 1):
+        flight_school(0.25, 30, i, 0.45)
 
     #test_systems()

@@ -80,7 +80,7 @@ int main(int32_t argc, char** argv)
 
     struct Diana::Universe::Parameters params;
     params.verbose_logging = false;
-    params.min_vis_frametime = 0.04;
+    params.min_vis_frametime = 0.02;
     Diana::Universe* u = new Diana::Universe(params);
 
     u->start_net();

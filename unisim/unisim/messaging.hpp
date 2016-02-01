@@ -255,6 +255,7 @@ namespace Diana
         const read_lambda* handlers();
     };
 
+    //! @todo Allow the response to specify the return energy/spread of the beam. I think this is in the wiki, but I'll put it here too.
     class ScanResponseMsg : public BSONMessage
     {
     public:

@@ -3,6 +3,9 @@
 #pragma once
 
 #include <map>
+
+#include "ExtendedPhysicsComponent.h"
+
 #include "GameFramework/Actor.h"
 #include "DianaConnector.generated.h"
 
@@ -11,13 +14,15 @@ class FSocket;
 USTRUCT(BlueprintType, Blueprintable)
 struct FDirectoryItem
 {
-    GENERATED_USTRUCT_BODY()
+    GENERATED_USTRUCT_BODY();
 
-        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
         FString name;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
         int32 id;
 };
+
+class FVisDataReceiver;
 
 UCLASS()
 class EVENTTEST_API ADianaConnector : public AActor
@@ -27,41 +32,24 @@ class EVENTTEST_API ADianaConnector : public AActor
     GENERATED_BODY()
 
 public:
-    struct DianaVDM
-    {
-        int32 server_id;
-        float world_time;
-        double radius;
-        FVector pos;
-    };
-
     struct DianaActor
     {
         int32 server_id;
         AActor* a;
+        UExtendedPhysicsComponent* epc;
         double radius;
         double time[3];
         FVector pos[3];
         int64 last_iteration;
     };
 
-    // See: https://wiki.unrealengine.com/Multi-Threading:_How_to_Create_Threads_in_UE4
-    class FVisDataReceiver : public FRunnable
+    struct DianaVDM
     {
-    public:
-        FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct DianaActor>* oa_map);
-        ~FVisDataReceiver();
-
-        virtual bool Init();
-        virtual uint32 Run();
-        virtual void Stop();
-
-    private:
-        FRunnableThread* rt = NULL;
-        volatile bool running;
-        FSocket* sock = NULL;
-        ADianaConnector* parent;
-        std::map<int32, struct DianaActor>* oa_map;
+        int32 server_id;
+        float world_time;
+        double radius;
+        FVector pos;
+        struct DianaActor* da;
     };
 
     // Sets default values for this actor's properties
@@ -90,18 +78,18 @@ public:
         bool RegisterForVisData(bool enable);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef);
+        void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "New Vis Data Object"))
         void NewVisDataObject(int32 PhysID, float Radius, FVector Position);
 
-    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
-        void ExistingVisDataObject(int32 PhysID, float Radius, FVector Position, FVector Velocity, FVector Acceleration, float CurrentRealTime, AActor* ActorRef);
+    //UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
+    //    void ExistingVisDataObject(int32 PhysID, float Radius, FVector Position, FVector Velocity, FVector Acceleration, float CurrentRealTime, AActor* ActorRef);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Removed Vis Data Object"))
-        void RemovedVisDataObject(int32 PhysID, AActor* ActorRef);
+        void RemovedVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
@@ -154,6 +142,6 @@ private:
 
     // See: https://answers.unrealengine.com/questions/207675/fcriticalsection-lock-causes-crash.html
     FCriticalSection map_cs;
-    std::map<int32, struct DianaActor>::iterator it;
-    std::map<int32, struct DianaActor> oa_map;
+
+    std::map<int32, struct DianaActor*> oa_map;
 };
