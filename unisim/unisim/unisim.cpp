@@ -81,6 +81,7 @@ int main(int32_t argc, char** argv)
     struct Diana::Universe::Parameters params;
     params.verbose_logging = false;
     params.min_vis_frametime = 0.02;
+    params.id_rand_max = 1;
     Diana::Universe* u = new Diana::Universe(params);
 
     u->start_net();

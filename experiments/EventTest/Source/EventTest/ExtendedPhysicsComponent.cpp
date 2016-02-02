@@ -34,6 +34,7 @@ FVector UExtendedPhysicsComponent::GetAcceleration()
 void UExtendedPhysicsComponent::SetAcceleration(FVector Acceleration)
 {
     FScopeLock(&this->cs);
+    set_accel = true;
     this->acceleration = Acceleration;
 }
 
@@ -46,6 +47,7 @@ FVector UExtendedPhysicsComponent::GetVelocity()
 void UExtendedPhysicsComponent::SetVelocity(FVector Velocity)
 {
     FScopeLock(&this->cs);
+    set_velocity = true;
     this->velocity = Velocity;
 }
 
@@ -58,6 +60,7 @@ FVector UExtendedPhysicsComponent::GetPosition()
 void UExtendedPhysicsComponent::SetPosition(FVector Position)
 {
     FScopeLock(&this->cs);
+    set_position = true;
     this->position = Position;
 }
 
@@ -72,9 +75,22 @@ void UExtendedPhysicsComponent::GetPVA(FVector& Position, FVector& Velocity, FVe
 void UExtendedPhysicsComponent::SetPVA(FVector& Position, FVector& Velocity, FVector& Acceleration)
 {
     FScopeLock(&this->cs);
+    set_position = true;
     this->position = Position;
+    set_velocity = true;
     this->velocity = Velocity;
+    set_accel = true;
     this->acceleration = Acceleration;
+}
+
+float UExtendedPhysicsComponent::GetLocalSimThreshold()
+{
+    return this->local_physics_thresh;
+}
+
+void UExtendedPhysicsComponent::SetLocalSimThreshold(float Threshold)
+{
+    this->local_physics_thresh = Threshold;
 }
 
 UStaticMeshComponent* UExtendedPhysicsComponent::GetStaticMesh()
@@ -99,26 +115,59 @@ void UExtendedPhysicsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
     FScopeLock(&this->cs);
     if (static_mesh != NULL)
     {
-        FVector dv = DeltaTime * acceleration;
-        FVector dp = DeltaTime * (velocity + 0.5 * dv);
-        position += dp;
-        velocity += dv;
-
-        // Since client-side collisions are approximations, set the velocities they
-        // got to zero on every tick to undo any local collision events.
-        static_mesh->SetPhysicsLinearVelocity(z, false, NAME_None);
-        //static_mesh->SetAllPhysicsAngularVelocity(z, false);
-        static_mesh->SetAllPhysicsPosition(position);
-
-        // See: https://docs.unrealengine.com/latest/INT/API/Runtime/Engine/Components/UPrimitiveComponent/AddForce/index.html
-        // Setting this or the velocity has a considerable impact on peformance, 
+        // Setting the acceleration or the velocity has a considerable impact on peformance, 
         // due to UE's limitations in physics calculation throughput. Setting either
         // of these properties takes the objects out of physics sleep, but setting the
         // position does not.
         // 
-        // To address this, velocity and acceleration are calculated into a position and
-        // velocity component, and the position is updated on each tick.
-        //
-        //static_mesh->AddForce(acceleration, NAME_None, true);
+        // To address this, when the frametime is long enough, optimizations are made and 
+        // velocity and acceleration are calculated into a position and velocity component, 
+        // and the position is updated on each tick.
+
+        // Only enable local physics if the frametime is low enough, OR if the frametime is
+        // suficiently fast with physics off
+        //if ((local_physics_enabled && (DeltaTime < local_physics_thresh)) || 
+        //    (!local_physics_enabled && (DeltaTime < 0.1 * local_physics_thresh)))
+        //{
+            //if (!local_physics_enabled)
+            //{
+            //    UE_LOG(LogTemp, Warning, TEXT("ExtendedPhysics::LocalPhysics::ENABLING %f"), DeltaTime / local_physics_thresh);
+            //    local_physics_enabled = true;
+            //}
+
+            //if (set_position)
+            //{
+            //    static_mesh->SetAllPhysicsPosition(position);
+            //    set_position = false;
+            //}
+
+            //if (set_velocity)
+            //{
+            //    static_mesh->SetPhysicsLinearVelocity(velocity, false, NAME_None);
+            //    set_velocity = false;
+            //}
+
+            //// See: https://docs.unrealengine.com/latest/INT/API/Runtime/Engine/Components/UPrimitiveComponent/AddForce/index.html
+            //static_mesh->AddForce(acceleration, NAME_None, true);
+        //}
+        //else
+        //{
+            //if (local_physics_enabled)
+            //{
+            //    UE_LOG(LogTemp, Warning, TEXT("ExtendedPhysics::LocalPhysics::DISABLING %f"), DeltaTime / local_physics_thresh);
+            //    local_physics_enabled = false;
+            //}
+
+            FVector dv = DeltaTime * acceleration;
+            FVector dp = DeltaTime * (velocity + 0.5 * dv);
+            position += dp;
+            velocity += dv;
+
+            // Since client-side collisions are approximations, set the velocities they
+            // got to zero on every tick to undo any local collision events.
+            static_mesh->SetPhysicsLinearVelocity(z, false, NAME_None);
+            static_mesh->SetAllPhysicsAngularVelocity(z, false);
+            static_mesh->SetAllPhysicsPosition(position);
+        //}
     }
 }

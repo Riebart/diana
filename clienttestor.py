@@ -135,6 +135,7 @@ def signature_test():
     message.SpawnMsg.send(sock, None, 1, sm.build())
     msg = message.Message.get_message(sock)
     smarty_id = msg.srv_id
+    print "SMARTY ID =", smarty_id
 
     sm.object_type = "BIGRadiatorDumb"
     sm.position = [20.0,0.0,0.0]
@@ -163,7 +164,7 @@ def signature_test():
         msg = message.Message.get_message(sock)
         print msg.__dict__
 
-def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0):
+def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale = 0.0):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
 
@@ -187,6 +188,7 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0):
     theta = 0.0
     for i in range(num_balls):
         sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
+        sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), 0.0 ]
         message.SpawnMsg.send(sock, None, -1, sm.build())
         theta += 2 * math.pi / num_balls
 
@@ -244,10 +246,10 @@ def test_systems():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #pool_rack(C = 1.0, num_rows = 15)
+    #pool_rack(C = 1.01, num_rows = 5)
     #spawn_sol()
     #signature_test()
     for i in range(-40, 41, 1):
-        flight_school(0.25, 30, i, 0.42)
+        flight_school(0.25, 30, i, 0.42, 0.3)
 
     #test_systems()

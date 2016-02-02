@@ -156,6 +156,7 @@ uint32 FVisDataReceiver::Run()
 
                         // Add this actor to the last_seen list, at the end, because it was the last seen.
                         last_seen.push_back(da);
+                        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::ListLength %u"), last_seen.size());
 
                         dm.da = NULL;
                         parent->messages.Enqueue(dm);
@@ -181,13 +182,14 @@ uint32 FVisDataReceiver::Run()
                         // make unlinking and pushing to the back easier on large lists.
                         for (lit = last_seen.begin(); lit != last_seen.end(); lit++)
                         {
-                            if ((*lit)->server_id != da->server_id)
+                            if ((*lit)->server_id == da->server_id)
                             {
                                 last_seen.erase(lit);
-                                last_seen.push_back(mit->second);
                                 break;
                             }
                         }
+
+                        last_seen.push_back(mit->second);
 
                         if (da->epc != NULL)
                         {
@@ -195,25 +197,22 @@ uint32 FVisDataReceiver::Run()
                             da->epc->SetPVA(da->pos[2], velocity, acceleration);
                         }
                     }
-
-                    // We handled a message, so immediately repeat, skip the Sleep()
-                    delete vdm;
                 }
                 // If the phys_id is unspecced, then we need to check up on our list, and see
                 // which objects missed their update, indicating they should be removed from
                 // the scene.
                 else
                 {
-                    int32 how_far = 0;
                     for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < vis_iterations)); )
                     {
                         // In this case, just set the da pointer to be to the object that
                         // is expired, the non-NULL-ness will trigger the removal, and the
                         // rest of the dm struct will be ignored.
+                        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Erasing %d"), (*lit)->server_id);
                         dm.da = *lit;
+                        dm.server_id = (*lit)->server_id;
                         parent->messages.Enqueue(dm);
                         lit = last_seen.erase(lit);
-                        how_far++;
                     }
 
                     vis_iterations++;
@@ -227,6 +226,8 @@ uint32 FVisDataReceiver::Run()
                     last_stat_time = world->RealTimeSeconds;
                 }
 
+                // We handled a message, so immediately repeat, skip the Sleep()
+                delete vdm;
                 continue;
             }
 

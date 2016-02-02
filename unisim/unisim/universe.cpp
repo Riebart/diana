@@ -463,7 +463,14 @@ namespace Diana
                 visdata_msg.radius = o->radius;
                 
                 // Don't forget to unset the sign bits, negative IDs would be weird.
-                visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
+                if (params.id_rand_max == 1)
+                {
+                    visdata_msg.phys_id = o->phys_id;
+                }
+                else
+                {
+                    visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
+                }
                 
                 visdata_msg.position = o->position;
 
