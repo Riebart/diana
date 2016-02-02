@@ -480,7 +480,7 @@ namespace Diana
                 }
 
                 // Apply the visual acuity cutoff
-                if ((visdata_msg.radius * visdata_msg.radius / Vector3_length2(&visdata_msg.position)) < params.visual_acuity)
+                if ((4 * visdata_msg.radius * visdata_msg.radius / Vector3_length2(&visdata_msg.position)) < params.visual_acuity)
                 {
                     continue;
                 }

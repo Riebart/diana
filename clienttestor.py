@@ -185,10 +185,10 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
     # 2 * pi * R_c >= num_balls * ball_radius  * k
     circle_radius = k * num_balls * ball_radius
 
-    theta = 0.0
+    theta = z
     for i in range(num_balls):
         sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
-        sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), 0.0 ]
+        sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), vel_scale * (2 * random.random() - 1) * ball_radius ]
         message.SpawnMsg.send(sock, None, -1, sm.build())
         theta += 2 * math.pi / num_balls
 
@@ -248,8 +248,8 @@ def test_systems():
 if __name__ == "__main__":
     #pool_rack(C = 1.01, num_rows = 5)
     #spawn_sol()
-    #signature_test()
-    for i in range(-40, 41, 1):
-        flight_school(0.25, 30, i, 0.42, 0.3)
+    signature_test()
+    #for i in range(-30, 31, 1):
+    #    flight_school(0.25, 25, i, 0.42, 0.3)
 
     #test_systems()

@@ -103,7 +103,8 @@ uint32 FVisDataReceiver::Run()
     // to make it easier to expire objects at the end of a vis frame.
     std::list<struct ADianaConnector::DianaActor*> last_seen;
     std::list<struct ADianaConnector::DianaActor*>::iterator lit;
-    int64 vis_iterations = 1;
+    int64 vis_iterations_buffer = 5;
+    int64 vis_iterations = vis_iterations_buffer;
 
     // The number of UU per metre in the Unreal map that the parent actor lives in.
     // We blindly assume that all EPC (or at least their associated static meshes/actors
@@ -203,7 +204,7 @@ uint32 FVisDataReceiver::Run()
                 // the scene.
                 else
                 {
-                    for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < vis_iterations)); )
+                    for (lit = last_seen.begin(); ((lit != last_seen.end()) && ((*lit)->last_iteration < (vis_iterations - vis_iterations_buffer))); )
                     {
                         // In this case, just set the da pointer to be to the object that
                         // is expired, the non-NULL-ness will trigger the removal, and the
@@ -211,8 +212,8 @@ uint32 FVisDataReceiver::Run()
                         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Erasing %d"), (*lit)->server_id);
                         dm.da = *lit;
                         dm.server_id = (*lit)->server_id;
-                        parent->messages.Enqueue(dm);
                         lit = last_seen.erase(lit);
+                        parent->messages.Enqueue(dm);
                     }
 
                     vis_iterations++;
@@ -339,10 +340,17 @@ void ADianaConnector::Tick(float DeltaTime)
         if (dm.da != NULL)
         {
             da = dm.da;
-            RemovedVisDataObject(da->server_id, da->a, da->epc);
+
+            // Sometimes, if the vis frames are fast enough, and the objects are moving, the vis frames will
+            // arrive in an order that causes an object to be missed in one or more frames, possibly
+            // before the Blueprint returns with an actor allocation.
+            if (da->a != NULL)
+            {
+                RemovedVisDataObject(da->server_id, da->a, da->epc);
+            }
+            delete dm.da;
             FScopeLock(&this->map_cs);
             oa_map.erase(dm.server_id);
-            delete dm.da;
         }
         // Otherweise call out to Blueprints to handle a new object.
         else
