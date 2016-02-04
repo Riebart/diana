@@ -429,9 +429,9 @@ class ScanResultMsg(Message):
         self.radius = Message.ReadMsgEl('\x12', msg)
         self.data = Message.ReadMsgEl('\x13', msg)
         # Skip 14
-        self.spectrum = Spectrum(Message.ReadMsgEl('\x15', msg), Message.ReadMsgEl('\x16', msg))
+        self.beam_spectrum = Spectrum(Message.ReadMsgEl('\x15', msg), Message.ReadMsgEl('\x16', msg))
         # Skip 17
-        self.spectrum = Spectrum(Message.ReadMsgEl('\x18', msg), Message.ReadMsgEl('\x19', msg))
+        self.obj_spectrum = Spectrum(Message.ReadMsgEl('\x18', msg), Message.ReadMsgEl('\x19', msg))
 
     def build(self):
         msg = {}

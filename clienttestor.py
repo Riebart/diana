@@ -248,8 +248,8 @@ def test_systems():
 if __name__ == "__main__":
     #pool_rack(C = 1.01, num_rows = 5)
     #spawn_sol()
-    signature_test()
-    #for i in range(-30, 31, 1):
-    #    flight_school(0.25, 25, i, 0.42, 0.3)
+    #signature_test()
+    for i in range(-30, 31, 1):
+        flight_school(0.25, 50, i, 0.42, 0.3)
 
     #test_systems()
