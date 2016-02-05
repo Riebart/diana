@@ -7,12 +7,16 @@ import json
 class System(Observable):
     def __init__(self):
         Observable.__init__(self)
+        self.system_id = -1
         self.controlled = 0
         self.name = "ERROR: Default system object"
 
     def add_observer(self, observer):
         self.controlled = self.controlled + 1
         Observable.add_observer(self, observer)
+        
+    def handle_command(self, msg):
+        print "Error: Undefined ", msg
 
 
 class Contact:
@@ -78,6 +82,9 @@ class Sensors(System):
 
         #in the future, perhaps just notify about what's changed
         self.notify()
+        
+    def handle_command(self, msg):
+        print "Command received: ", msg
 
 
 class Comms(System):

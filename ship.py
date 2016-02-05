@@ -118,6 +118,9 @@ class Ship(SmartObject):
             msg.srv_id = self.phys_id
             msg.cli_id = self.osim_id
             message.PhysicalPropertiesMsg.send(self.phys_id, self.osim_id, msg.build())
+            
+        elif isinstance(msg, message.CommandMsg):
+            self.handle_command(msg)
 
         elif isinstance(msg, message.ThrustMsg):
             if msg.thrust != None:
@@ -152,6 +155,12 @@ class Ship(SmartObject):
 
 
 
+    def handle_command(self, msg):
+        if (msg.system_id in self.systems):
+            self.systems[msg.system_id-1].handle_command(msg.system_command)
+        else:
+            print "ERROR: System id not found: ", msg.system_id
+        pass
 
     # ++++++++++++++++++++++++++++++++
     # Now the rest of the handler functions

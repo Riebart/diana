@@ -577,12 +577,12 @@ class CommandMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.system = Message.ReadMsgEl(('\x03'), msg)
+        self.system_id = Message.ReadMsgEl(('\x03'), msg)
         self.system_command = Message.ReadMsgEl(('\x04'), msg)   
         
     def build(self):
         msg = {}
-        Message.SendMsgEl('\x03', self.system, msg)
+        Message.SendMsgEl('\x03', self.system_id, msg)
         Message.SendMsgEl('\x04', self.system_command, msg)
         return msg
 
@@ -728,7 +728,7 @@ MessageTypeClasses = {1: HelloMsg,
                       20: JumpMsg,
                       21: InfoUpdateMsg,
                       22: RequestUpdateMsg,
-                      23: SystemUpdateMsg
+                      23: SystemUpdateMsg,
                       24: CommandMsg
                       }
 
@@ -755,5 +755,5 @@ MessageTypeIDs = { HelloMsg: 1,
                   InfoUpdateMsg: 21,
                   RequestUpdateMsg: 22,
                   SystemUpdateMsg: 23,
-                  CommandMsg: 25
+                  CommandMsg: 24
                   }
