@@ -10,20 +10,28 @@ class System(Observable):
         self.controlled = 0
         self.name = "ERROR: Default system object"
 
+    def add_observer(self, observer):
+        self.controlled = self.controlled + 1
+        Observable.add_observer(self, observer)
 
 
 class Contact:
-    def __init__(self, name, position, velocity, radius, time_seen=0):
+    def __init__(self, name, mass, position, velocity, orientation, thrust, radius, data, rad_sig, time_seen=0):
         self.name = name
+        self.mass = mass
+        self.position = position
+        self.velocity = velocity
+        self.orientation = orientation
+        self.thrust = thrust
+        self.radius = radius
+        self.data = data
+        self.rad_sig = rad_sig
+        
         if (time_seen == 0):
             self.time_seen = time.time()
         else:
             self.time_seen = time_seen
-        self.position = position
-        self.velocity = velocity
-        self.radius = radius
-        self.other_data = ""
-
+"""
     def __repr__(self):
         return (self.name + "," +
             str(time.time() - self.time_seen) + "," +
@@ -31,7 +39,7 @@ class Contact:
             self.velocity[0] + "," + self.velocity[1] + "," + self.velocity[2] + "," +
             self.radius + "," +
             self.other_data)
-
+"""
 
 class Sensors(System):
     def __init__(self):
@@ -51,8 +59,7 @@ class Sensors(System):
         for contact in self.contacts:
             if cur_time - contact.time_seen > self.fade_time:
                 self.contacts.remove(contact)
-        
-        
+                
         System.send_state(self, client)
 
 
@@ -63,14 +70,14 @@ class Sensors(System):
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
-        #if (mess.object_type in self.contact):
-            #pass
-        #else:
-        contact = Contact(mess.object_type, Vector3(mess.position), Vector3(mess.velocity), mess.radius )
-        contact.other_data = mess.extra_parms
-        self.contact_list[contact.name] = contact
+        if ( (mess.object_type, mess.rad_sig) in self.contact_list):
+            del self.contact_list[ (mess.object_type, mess.rad_sig) ]
 
-        self.notify(contact)
+        contact = Contact(mess.object_type, mess.mass, Vector3(mess.position), Vector3(mess.velocity), Vector4(mess.orientation), Vector3(mess.thrust), mess.radius, mess.data, mess.obj_spectrum )
+        self.contact_list[ (contact.name, contact.rad_sig) ] = contact
+
+        #in the future, perhaps just notify about what's changed
+        self.notify()
 
 
 class Comms(System):
