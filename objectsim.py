@@ -64,9 +64,11 @@ class ObjectSim:
                 if msg.item_type == "SHIP":
                     dm.item_type = msg.item_type
                     dm.items = self.get_joinable_ships()
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                 elif msg.item_type == "CLASS":
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                 else:
                     print "Unrecognized Dir message: " + msg
 
@@ -97,7 +99,7 @@ class ObjectSim:
                         dm.item_type = msg.item_type
                         #do we want them to see the systems available for any ship (as below)
                         #or just the one they've already joined?
-                        dm.items = self.ship_list[msg.items[0][0]].systems
+                        dm.items = self.get_systems(self.ship_list[msg.items[0][0]])
                         DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                     else:
                         # They chose a system to observe, so register the client with that system.
@@ -135,9 +137,10 @@ class ObjectSim:
     
     def get_systems(self, ship):
         systems = []
-        for s_key in ship.systems:
-            #joinables.append([
-            pass
+        for (k,v) in ship.systems.iteritems():
+            systems.append((k, {"name": v.name, "controlled":v.controlled}))
+            
+        return systems
 
     def register_ship_class(self, ship_class):
         self.id_lock.acquire()
