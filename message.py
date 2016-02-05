@@ -571,8 +571,28 @@ class ReadyMsg(Message):
         return ret
 
 
-
 ##Here begins the client <-> ship messages
+class CommandMsg(Message):
+    def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
+        self.msgtype = msgtype
+        self.srv_id = srv_id
+        self.cli_id = cli_id
+        self.system = Message.ReadMsgEl(('\x03'), msg)
+        self.system_command = Message.ReadMsgEl(('\x04'), msg)   
+        
+    def build(self):
+        msg = {}
+        Message.SendMsgEl('\x03', self.system, msg)
+        Message.SendMsgEl('\x04', self.system_command, msg)
+        return msg
+
+    @staticmethod
+    def send(client, srv_id, cli_id, msg):
+        msg[''] = MessageTypeIDs[CommandMsg]
+        ret = Message.sendall(client, srv_id, cli_id, msg)
+        return ret
+    
+    
 class ThrustMsg(Message):
     def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
         self.msgtype = msgtype
@@ -709,6 +729,7 @@ MessageTypeClasses = {1: HelloMsg,
                       21: InfoUpdateMsg,
                       22: RequestUpdateMsg,
                       23: SystemUpdateMsg
+                      24: CommandMsg
                       }
 
 MessageTypeIDs = { HelloMsg: 1,
@@ -733,5 +754,6 @@ MessageTypeIDs = { HelloMsg: 1,
                   JumpMsg: 20,
                   InfoUpdateMsg: 21,
                   RequestUpdateMsg: 22,
-                  SystemUpdateMsg: 23
+                  SystemUpdateMsg: 23,
+                  CommandMsg: 25
                   }
