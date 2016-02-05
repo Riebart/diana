@@ -234,7 +234,7 @@ def test_sensors():
     osim = objectsim.ObjectSim()
     osim.register_ship_class(Firefly)
     
-    spawn_sol()
+    #spawn_sol()
     
     sock = socket.socket()
     sock.connect( ("localhost", 5506) )
@@ -246,14 +246,38 @@ def test_sensors():
     ship_id = newmsg['\x01']
     client_id = newmsg['\x02']
     
-    #TODO: fix the request for available systems
     
-    #msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
-    #dirmsg(sock, msg)
-    
+    #this also tests that we can correctly identify and join systems based on name
+    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
+    newmsg = dirmsg(sock, msg)
+    system_ids = newmsg['\x05']
+    system_list = newmsg['\x06']
 
-    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[1]}
+    sensors_id = -1
+    for i in system_list:
+        sensors_id = sensors_id + 1
+        if (i["name"] == "Sensors"):
+            break
+
+    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[system_ids[sensors_id]]}
     dirmsg(sock, msg)
+    
+    msg = {'\x03':system_ids[sensors_id], '\x04': {"key":"value"} }
+    message.CommandMsg.send(sock, ship_id, 0, msg)
+
+    
+    #send out a ping, "One. Ping. Only..."
+    pass
+    
+    
+    #and loop receiveing responses forever
+    while (True):
+        res = sock.recv(5000)
+        newmsg = bson.loads(res)
+        print newmsg
+    
+    pass
+
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
