@@ -87,9 +87,10 @@ class ObjectSim:
                     class_id = msg.items[0][0]
                     # They chose a class, so take the class ID and hand off.
                     newship = self.christen_ship(class_id)
-                    HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
-                    self.client_list[newship.osim_id] = [[msg.socket, client_id]]
-                    newship.new_client(msg.socket, client_id)
+                    if newship is not None:
+                        HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
+                        self.client_list[newship.osim_id] = [[msg.socket, client_id]]
+                        newship.new_client(msg.socket, client_id)
 
 
                 elif osim_id != None and msg.item_type == "SYSTEMS":
@@ -142,9 +143,11 @@ class ObjectSim:
         return classes
 
     def christen_ship(self, class_id):
-        newship = self.ship_classes[class_id](self)
-        self.ship_list[newship.osim_id] = newship
-        self.object_list[newship.osim_id] = newship
+        newship = None
+        if class_id in self.ship_classes:
+            newship = self.ship_classes[class_id](self)
+            self.ship_list[newship.osim_id] = newship
+            self.object_list[newship.osim_id] = newship
 
         return newship
 
