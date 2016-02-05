@@ -8,7 +8,8 @@ import random
 import bson
 import time
 import math
-from vector import Vector3
+from vector import Vector3, Vector4
+from shiptypes import Firefly
 
 def pool_rack(C = 1.0, num_rows = 5):
     sock = socket.socket()
@@ -207,9 +208,6 @@ def dirmsg(sock, msg):
 def test_systems():
     sock = socket.socket()
     sock.connect( ("localhost", 5506) )
-
-    objects = {}
-
     
     msg = {'\x03':"CLASS", '\x04':0, '\x05': {}, '\x06':{}}
     dirmsg(sock, msg)
@@ -221,9 +219,7 @@ def test_systems():
     
     msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
     newmsg = dirmsg(sock, msg)
-    
-    ship_id = newmsg['\x01']
-    client_id = newmsg['\x02']
+
     
     #get all the systems info
     for i in range(0,5):
@@ -233,6 +229,31 @@ def test_systems():
     
     sock.close()
 
+
+def test_sensors():
+    osim = objectsim.ObjectSim()
+    osim.register_ship_class(Firefly)
+    
+    spawn_sol()
+    
+    sock = socket.socket()
+    sock.connect( ("localhost", 5506) )
+
+    #join the Firefly
+    msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
+    newmsg = dirmsg(sock, msg)
+    
+    ship_id = newmsg['\x01']
+    client_id = newmsg['\x02']
+    
+    #TODO: fix the request for available systems
+    
+    #msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
+    #dirmsg(sock, msg)
+    
+
+    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[1]}
+    dirmsg(sock, msg)
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
@@ -249,7 +270,8 @@ if __name__ == "__main__":
     #pool_rack(C = 1.01, num_rows = 5)
     #spawn_sol()
     #signature_test()
-    for i in range(-30, 31, 1):
-        flight_school(0.25, 50, i, 0.42, 0.3)
+    #for i in range(-30, 31, 1):
+    #    flight_school(0.25, 50, i, 0.42, 0.3)
 
     #test_systems()
+    test_sensors()
