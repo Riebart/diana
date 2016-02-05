@@ -138,7 +138,7 @@ class ObjectSim:
     def get_systems(self, ship):
         systems = []
         for (k,v) in ship.systems.iteritems():
-            systems.append((k, {"name": v.name, "controlled":v.controlled}))
+            systems.append((k+1, {"name": v.name, "controlled":v.controlled}))
             
         return systems
 
