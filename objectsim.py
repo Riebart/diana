@@ -67,10 +67,8 @@ class ObjectSim:
                 elif msg.item_type == "CLASS":
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
-                elif osim_id != None and msg.item_type == "SYSTEMS":
-                    dm.item_type = msg.item_type
-                    dm.items = self.ship_list[osim_id].get_systems()
-                DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                else:
+                    print "Unrecognized Dir message: " + msg
 
             # If they send back one item, then they have made a choice.
             elif len(msg.items) == 1:
@@ -94,13 +92,20 @@ class ObjectSim:
 
 
                 elif osim_id != None and msg.item_type == "SYSTEMS":
-                    # They chose a system to observe, so register the client with that system.
-                    self.ship_list[msg.items[0][0]].systems[msg.items[0][1]].add_observer(msg.socket)
+                    if msg.items[0][1] == 0:
+                        dm = DirectoryMsg()
+                        dm.item_type = msg.item_type
+                        #do we want them to see the systems available for any ship (as below)
+                        #or just the one they've already joined?
+                        dm.items = self.ship_list[msg.items[0][0]].systems
+                        DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                    else:
+                        # They chose a system to observe, so register the client with that system.
+                        self.ship_list[msg.items[0][0]].systems[msg.items[0][1]-1].add_observer(msg.socket)   
                         
-                    #HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
-                    #self.client_list[newship.osim_id] = [[msg.socket, client_id]]
-                    #newship.new_client(msg.socket, client_id)
-
+                        
+            else:
+                print "Unexpected Dir messsage size: " + msg.items
 
 
         #Pass all other messages up to the ship logic
@@ -127,6 +132,12 @@ class ObjectSim:
                 joinables.append([s_key, self.ship_list[s_key].name])
 
         return joinables
+    
+    def get_systems(self, ship):
+        systems = []
+        for s_key in ship.systems:
+            #joinables.append([
+            pass
 
     def register_ship_class(self, ship_class):
         self.id_lock.acquire()
