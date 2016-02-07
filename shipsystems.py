@@ -65,7 +65,7 @@ class Sensors(System):
     def update_contacts(self):
         cur_time = time.time()
 
-        new_contacts = dict(contacts)
+        new_contacts = dict(self.contacts)
         #remove any expired contacts before sending the current list
         for contact in self.contacts.iterkeys():
             if cur_time - self.contacts[contact].time_seen > self.fade_time:
