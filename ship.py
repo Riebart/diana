@@ -39,11 +39,11 @@ class Ship(SmartObject):
         self.name = None
         self.object_type = None
 
-        self.sensors = Sensors()
-        self.comms = Comms()
-        self.helm = Helm()
-        self.weapons = Weapons()
-        self.engineering = Engineering()
+        self.sensors = Sensors(self)
+        self.comms = Comms(self)
+        self.helm = Helm(self)
+        self.weapons = Weapons(self)
+        self.engineering = Engineering(self)
         self.spawned = 0
         
         #Currently a static dict mapping
@@ -122,6 +122,7 @@ class Ship(SmartObject):
         elif isinstance(msg, message.CommandMsg):
             self.handle_command(msg)
 
+        #Largely deprecated - use COMMAND messages
         elif isinstance(msg, message.ThrustMsg):
             if msg.thrust != None:
                 print "Setting thrust: " + str(msg.thrust)
@@ -169,7 +170,7 @@ class Ship(SmartObject):
     #these are defined by the handler function in SmartObject (spaceobj.py)
     def handle_scanresult(self, mess):
         pass
-        #self.Sensors.handle_scanresult(mess)
+        self.Sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         mess.srv_id = self.osim_id

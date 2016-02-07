@@ -231,8 +231,8 @@ def test_systems():
 
 
 def test_sensors():
-    osim = objectsim.ObjectSim()
-    osim.register_ship_class(Firefly)
+    #osim = objectsim.ObjectSim()
+    #osim.register_ship_class(Firefly)
     
     spawn_sol()
     
@@ -248,12 +248,23 @@ def test_sensors():
     
     #TODO: fix the request for available systems
     
-    #msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
-    #dirmsg(sock, msg)
+    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
+    dirmsg(sock, msg)
     
 
     msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[1]}
     dirmsg(sock, msg)
+
+
+    msg = message.CommandMsg.send(sock, ship_id, 0, {'\x03':1, '\x04':"blah"} )
+
+    #continually return results of ping
+    while (True):
+        res = sock.recv(5000)
+        newmsg = bson.loads(res)
+        print "Telemetry received: ", newmsg
+
+
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()

@@ -1,12 +1,14 @@
 from vector import Vector3
 from observer import Observable
 from shipparts import *
+from spaceobj import ScanBeam, Beam
 import math
 import json
 
 class System(Observable):
-    def __init__(self):
+    def __init__(self, ship):
         Observable.__init__(self)
+	self._ship = ship
         self.system_id = -1
         self.controlled = 0
         self.name = "ERROR: Default system object"
@@ -46,8 +48,8 @@ class Contact:
 """
 
 class Sensors(System):
-    def __init__(self):
-        System.__init__(self)
+    def __init__(self, ship):
+        System.__init__(self, ship)
         self.name = "Sensors"
         self.contacts = []
         self.scanners = []
@@ -83,13 +85,16 @@ class Sensors(System):
         #in the future, perhaps just notify about what's changed
         self.notify()
         
+    #for now, send a general 360 scan ("One. Ping. Only.")
     def handle_command(self, msg):
         print "Command received: ", msg
-
+        sb = self._ship.init_beam(ScanBeam, 10000, Beam.speed_of_light, self._ship.forward, self._ship.up, h_focus=2*math.pi, v_focus=2*math.pi)
+        sb.send_it(self._ship.sock)
+        print "Ping sent..."
 
 class Comms(System):
-    def __init__(self, power=10000.0, recharge_time=2.0):
-        System.__init__(self)
+    def __init__(self, ship, power=10000.0, recharge_time=2.0):
+        System.__init__(self, ship)
         self.messages = []
         # What the hell was the 'i' supposed to mean? Why are there lasers in the
         # Comm observable object? Commenting this out so that I can continue
@@ -123,26 +128,26 @@ class Comms(System):
 
 
 class Weapons(System):
-    def __init__(self):
-        System.__init__(self)
+    def __init__(self, ship):
+        System.__init__(self, ship)
         self.name = "Weapons"
         self.cur_target = None
 
 class Helm(System):
-    def __init__(self):
-        System.__init__(self)
+    def __init__(self, ship):
+        System.__init__(self, ship)
         self.name = "Helm"
         self.cur_thrust = Vector3(0,0,0)
         self.throttle = 0.0
         
 class Engineering(System):
-    def __init__(self):
-        System.__init__(self)
+    def __init__(self, ship):
+        System.__init__(self, ship)
         self.name = "Engineering"
 
 class Shields(System):
-    def __init__(self):
-        System.__init__(self)
+    def __init__(self, ship):
+        System.__init__(self, ship)
         self.name = "Shields"
 
 if __name__ == "__main__":
