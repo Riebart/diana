@@ -1,4 +1,4 @@
-from vector import Vector3
+from vector import Vector3, Vector4
 from observer import Observable
 from shipparts import *
 from spaceobj import ScanBeam, Beam
@@ -76,11 +76,11 @@ class Sensors(System):
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
-        if ( (mess.object_type, mess.rad_sig) in self.contact_list):
-            del self.contact_list[ (mess.object_type, mess.rad_sig) ]
+        if ( (mess.object_type, mess.obj_spectrum) in self.contacts):
+            del self.contacts[ (mess.object_type, mess.obj_spectrum) ]
 
         contact = Contact(mess.object_type, mess.mass, Vector3(mess.position), Vector3(mess.velocity), Vector4(mess.orientation), Vector3(mess.thrust), mess.radius, mess.data, mess.obj_spectrum )
-        self.contact_list[ (contact.name, contact.rad_sig) ] = contact
+        self.contacts[ (contact.name, contact.rad_sig) ] = contact
 
         #in the future, perhaps just notify about what's changed
         self.notify()

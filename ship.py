@@ -170,7 +170,7 @@ class Ship(SmartObject):
     #these are defined by the handler function in SmartObject (spaceobj.py)
     def handle_scanresult(self, mess):
         pass
-        self.Sensors.handle_scanresult(mess)
+        self.sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         mess.srv_id = self.osim_id
