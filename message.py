@@ -11,8 +11,6 @@ from collections import OrderedDict
 class Spectrum:
     def __init__(self, wavelengths, powers):
         if wavelengths != None and powers != None:
-            print wavelengths
-            print powers
             self.spectrum = dict(zip(wavelengths, powers))
         else:
             self.spectrum = None
@@ -349,7 +347,7 @@ class BeamMsg(Message):
 
     def build(self):
         msg = {}
-        vals = self.origin + self.velocity + self.up + \
+        vals = list(self.origin) + list(self.velocity) + list(self.up) + \
             [ self.spread_h, self.spread_v, self.energy, self.beam_type, self.comm_msg ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
@@ -375,7 +373,7 @@ class CollisionMsg(Message):
 
     def build(self):
         msg = {}
-        vals = self.position + self.direction + [ self.energy + self.beam_type, self.comm_msg ] + self.spectrum.get_parts()
+        vals = list(self.position) + list(self.direction) + [ self.energy + self.beam_type, self.comm_msg ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -435,7 +433,7 @@ class ScanResultMsg(Message):
 
     def build(self):
         msg = {}
-        vals = [ self.mass ] + self.position + self.velocity + self.orientation + self.thrust + [ self.radius, self.data ] + self.spectrum.get_parts()
+        vals = [ self.mass ] + list(self.position) + list(self.velocity) + list(self.orientation) + list(self.thrust) + [ self.radius, self.data ] + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -459,7 +457,7 @@ class ScanQueryMsg(Message):
     def build(self):
         msg = {}
         print self.scan_dir
-        vals = [ self.scan_id, self.scan_energy ] + self.scan_dir + self.spectrum.get_parts()
+        vals = [ self.scan_id, self.scan_energy ] + list(self.scan_dir) + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -541,7 +539,7 @@ class NameMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.name ]
+        vals = [ self.name ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -560,7 +558,7 @@ class ReadyMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.ready ]
+        vals = [ self.ready ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -578,8 +576,8 @@ class CommandMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
         self.system_id = Message.ReadMsgEl(('\x03'), msg)
-        self.system_command = Message.ReadMsgEl(('\x04'), msg)   
-        
+        self.system_command = Message.ReadMsgEl(('\x04'), msg)
+
     def build(self):
         msg = {}
         Message.SendMsgEl('\x03', self.system_id, msg)
@@ -591,8 +589,8 @@ class CommandMsg(Message):
         msg[''] = MessageTypeIDs[CommandMsg]
         ret = Message.sendall(client, srv_id, cli_id, msg)
         return ret
-    
-    
+
+
 class ThrustMsg(Message):
     def __init__(self, msg={}, msgtype=-1, srv_id=-1, cli_id=-1):
         self.msgtype = msgtype
@@ -602,7 +600,7 @@ class ThrustMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.thrust ]
+        vals = list(self.thrust)
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -621,7 +619,7 @@ class VelocityMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.velocity ]
+        vals = list(self.velocity)
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -640,7 +638,7 @@ class JumpMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.new_position ]
+        vals = list(self.new_position)
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -660,7 +658,7 @@ class InfoUpdateMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.type, self.data ]
+        vals = [ self.type, self.data ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -680,7 +678,7 @@ class RequestUpdateMsg(Message):
 
     def build(self):
         msg = {}
-        val = [ self.type, self.continuous ]
+        vals = [ self.type, self.continuous ]
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
 
@@ -699,7 +697,7 @@ class SystemUpdateMsg(Message):
     #message is Osim -> client only at this time
     def build(self):
         pass
-    
+
     @staticmethod
     def send(client, srv_id, cli_id, msg):
         msg[''] = MessageTypeIDs[SystemUpdateMsg]

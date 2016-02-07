@@ -228,6 +228,7 @@ namespace Diana
         int64_t send(sock_t sock);
 
         char* obj_type;
+        //! @todo Promote this to a dict with full text keys. Can probably just store the BSON dict to spit back.
         char* data;
         double mass, radius;
         struct Vector3 position, velocity, thrust;
@@ -263,6 +264,7 @@ namespace Diana
         ~ScanResponseMsg();
         int64_t send(sock_t sock);
 
+        //! @todo Promote this to a dict with full text keys. Can probably just store the BSON dict to spit back. This is tied to the ScanQueryResponse message data field.
         char* data;
         int64_t scan_id;
 

@@ -7,8 +7,8 @@ import json
 
 class System(Observable):
     def __init__(self, ship):
-        Observable.__init__(self)
-	self._ship = ship
+        Observable.__init__(self, ship.osim_id)
+        self._ship = ship
         self.system_id = -1
         self.controlled = 0
         self.name = "ERROR: Default system object"
@@ -16,7 +16,7 @@ class System(Observable):
     def add_observer(self, observer):
         self.controlled = self.controlled + 1
         Observable.add_observer(self, observer)
-        
+
     def handle_command(self, msg):
         print "Error: Undefined ", msg
 
@@ -32,7 +32,7 @@ class Contact:
         self.radius = radius
         self.data = data
         self.rad_sig = rad_sig
-        
+
         if (time_seen == 0):
             self.time_seen = time.time()
         else:
@@ -86,13 +86,13 @@ class Sensors(System):
 
         #in the future, perhaps just notify about what's changed
         self.notify()
-        
+
     #for now, send a general 360 scan ("One. Ping. Only.")
     def handle_command(self, msg):
         print "Command received: ", msg
-        sb = self._ship.init_beam(ScanBeam, 10000, Beam.speed_of_light, self._ship.forward, self._ship.up, h_focus=2*math.pi, v_focus=2*math.pi)
+        sb = self._ship.init_beam(ScanBeam, 10000, Beam.speed_of_light, self._ship.forward, self._ship.up, h_focus=2*math.pi, v_focus=math.pi)
         sb.send_it(self._ship.sock)
-        print "Ping sent..."
+        print "Scan ping sent..."
 
 class Comms(System):
     def __init__(self, ship, power=10000.0, recharge_time=2.0):
@@ -112,7 +112,7 @@ class Comms(System):
         for message in self.messages:
             if cur_time - message.time_seen > self.fade_time:
                 self.messages.remove(message)
-        
+
         System.send_state(self, client)
 
 
@@ -123,7 +123,7 @@ class Comms(System):
     def handle_message(self, mess):
         self.messages.append(CommMessage(mess))
         self.notify(self.messages[-1])
-        
+
     #TODO: handle ack-ing messages, so that they are removed from the list
     def ack_message(self, message):
         pass
@@ -141,7 +141,7 @@ class Helm(System):
         self.name = "Helm"
         self.cur_thrust = Vector3(0,0,0)
         self.throttle = 0.0
-        
+
 class Engineering(System):
     def __init__(self, ship):
         System.__init__(self, ship)

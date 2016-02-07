@@ -40,6 +40,7 @@ namespace Diana
     struct Spectrum
     {
         // Number of components in the spectrum
+        //! @todo Check to see if we can drop this from the messaging component.
         uint32_t n;
         
         // How far away do we need to be before notifications start to arrive for radiation
@@ -92,6 +93,7 @@ namespace Diana
             //! Health in some arbitrary hit points.
             health;
         //! Arbitrary C-string offering an object description of some sort
+        //! @todo Promote this to a dict with full text keys.
         char* obj_type;
         //! A unique art ID for any art assets as assigned by an ArtCurator.
         int64_t art_id;

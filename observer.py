@@ -26,8 +26,9 @@ def nest_dict(obj, classkey=None):
 
 
 class Observable:
-    def __init__(self):
+    def __init__(self, osim_id):
         self.__observers = []
+        self.__osim_id = osim_id
 
     def notify(self, data = None):
         for observer in self.__observers:
@@ -46,7 +47,7 @@ class Observable:
         #remove undesirable values
         d.pop("_Observable__observers", None)
         d.pop("_ship", None)
-        message.SystemUpdateMsg.send(observer, 0, 0, (nest_dict(d)))
+        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], (nest_dict(d)))
     
     def add_observer(self, observer):
         self.__observers.append(observer)

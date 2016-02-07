@@ -107,7 +107,7 @@ def spawn_sol():
         message.SpawnMsg.send(sock, None, -1, sm.build())
         phys_id += 1
 
-    ret = raw_input('Press enter to continue...')
+    #ret = raw_input('Press enter to continue...')
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
@@ -198,7 +198,7 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
 
 
 def dirmsg(sock, msg):
-    message.DirectoryMsg.send(sock, 0,0, msg)    
+    message.DirectoryMsg.send(sock, 0,0, msg)
     res = sock.recv(5000)
     newmsg = bson.loads(res)
     print newmsg
@@ -208,61 +208,98 @@ def dirmsg(sock, msg):
 def test_systems():
     sock = socket.socket()
     sock.connect( ("localhost", 5506) )
-    
+
     msg = {'\x03':"CLASS", '\x04':0, '\x05': {}, '\x06':{}}
     dirmsg(sock, msg)
-    
+
     msg = {'\x03':"SHIP", '\x04':0, '\x05': {}, '\x06':{}}
     dirmsg(sock, msg)
 
 
-    
+
     msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
     newmsg = dirmsg(sock, msg)
 
-    
+
     #get all the systems info
     for i in range(0,5):
         msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[i]}
         dirmsg(sock, msg)
 
-    
+
     sock.close()
 
 
 def test_sensors():
     osim = objectsim.ObjectSim()
     osim.register_ship_class(Firefly)
-    
-    spawn_sol()
-    
+
     sock = socket.socket()
     sock.connect( ("localhost", 5506) )
 
-    #join the Firefly
-    msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
-    newmsg = dirmsg(sock, msg)
-    
-    ship_id = newmsg['\x01']
-    client_id = newmsg['\x02']
-    
-    #TODO: fix the request for available systems
-    
-    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[0]}
-    dirmsg(sock, msg)
-    
+    ## Create a ship instance, then join that instance, of a Firefly
+    msg = message.DirectoryMsg()
 
-    msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[1]}
-    dirmsg(sock, msg)
+    # Ask the list of classes
+    msg.item_type = "CLASS"
+    message.DirectoryMsg.send(sock, -1, 1, msg.build())
 
+    # Get the list back, it'll be a DirectoryMsg
+    rmsg = message.Message.get_message(sock)
 
-    msg = message.CommandMsg.send(sock, ship_id, 0, {'\x03':1, '\x04':"blah"} )
+    # "Select" an instance of the first item in the list.
+    if len(rmsg.items) == 0:
+        return
+    msg.items = [ rmsg.items[0] ]
+    message.DirectoryMsg.send(sock, -1, 1, msg.build())
+
+    # The response HelloMsg is an anachronism, and we'll actually ignore it.
+    rmsg = message.Message.get_message(sock)
+
+    # Get the list of sips.
+    msg.item_type = "SHIP"
+    msg.items = None
+    message.DirectoryMsg.send(sock, -1, 1, msg.build())
+
+    # The response is the DirectoryMsg with the ships.
+    rmsg = message.Message.get_message(sock)
+
+    # Join the first ship.
+    if len(rmsg.items) == 0:
+        return
+    msg.items = [ rmsg.items[0] ]
+    message.DirectoryMsg.send(sock, -1, 1, msg.build())
+
+    # The response is the HelloMsg with the server ID of the ship we joined.
+    rmsg = message.Message.get_message(sock)
+    ship_server_id = rmsg.srv_id
+
+    # Now send a ready message, saying that we're ready, which will spawn the ship in the universe.
+    msg = message.ReadyMsg()
+    msg.ready = True
+    message.ReadyMsg.send(sock, ship_server_id, 1, msg.build())
+
+    # List the systems... We don't use this, but it's instructive.
+    msg = message.DirectoryMsg()
+    msg.item_type = "SYSTEMS"
+    message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
+
+    # Now sign up for the sensors, which will come back with a full state of the system
+    msg.items = [ (0, 'Sensors') ]
+    message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
+    rmsg = message.Message.get_message(sock)
+
+    msg = message.CommandMsg()
+    msg.system_id = 0
+    msg.system_command = "blah"
+    message.CommandMsg.send(sock, ship_server_id, 1, msg.build())
 
     #continually return results of ping
     while (True):
-        res = sock.recv(5000)
-        newmsg = bson.loads(res)
-        print "Telemetry received: ", newmsg
+        print "Waiting for results..."
+        rmsg = message.Message.get_message(sock)
+        print str(rmsg)
+        print rmsg.__dict__
 
 
 

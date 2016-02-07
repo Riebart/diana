@@ -69,8 +69,15 @@ class ObjectSim:
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
                     DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                elif osim_id in self.ship_list.keys() and msg.item_type == "SYSTEMS":
+                    dm = DirectoryMsg()
+                    dm.item_type = msg.item_type
+                    #do we want them to see the systems available for any ship (as below)
+                    #or just the one they've already joined?
+                    dm.items = self.get_systems(self.ship_list[osim_id])
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                 else:
-                    print "Unrecognized Dir message: " + msg
+                    print "Unrecognized Dir message: " + str(msg) + " <=> " + str(msg.__dict__)
 
             # If they send back one item, then they have made a choice.
             elif len(msg.items) == 1:
@@ -91,21 +98,10 @@ class ObjectSim:
                         HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
                         self.client_list[newship.osim_id] = [[msg.socket, client_id]]
                         newship.new_client(msg.socket, client_id)
-
-
-                elif osim_id != None and msg.item_type == "SYSTEMS":
-                    if msg.items[0][1] == 0:
-                        dm = DirectoryMsg()
-                        dm.item_type = msg.item_type
-                        #do we want them to see the systems available for any ship (as below)
-                        #or just the one they've already joined?
-                        dm.items = self.get_systems(self.ship_list[msg.items[0][0]])
-                        DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
-                    else:
-                        # They chose a system to observe, so register the client with that system.
-                        self.ship_list[msg.items[0][0]].systems[msg.items[0][1]-1].add_observer(msg.socket)   
-                        
-                        
+                elif osim_id in self.ship_list.keys() and msg.item_type == "SYSTEMS":
+                    # They chose a system to observe, so register the client with that system.
+                    for i in msg.items:
+                        self.ship_list[osim_id].systems[i[0]].add_observer((msg.socket, client_id))
             else:
                 print "Unexpected Dir messsage size: " + msg.items
 
@@ -134,12 +130,12 @@ class ObjectSim:
                 joinables.append([s_key, self.ship_list[s_key].name])
 
         return joinables
-    
+
     def get_systems(self, ship):
         systems = []
         for (k,v) in ship.systems.iteritems():
-            systems.append((k+1, {"name": v.name, "controlled":v.controlled}))
-            
+            systems.append((k, {"name": v.name, "controlled":v.controlled}))
+
         return systems
 
     def register_ship_class(self, ship_class):
@@ -162,7 +158,6 @@ class ObjectSim:
             newship = self.ship_classes[class_id](self)
             self.ship_list[newship.osim_id] = newship
             self.object_list[newship.osim_id] = newship
-            self.spawn_object(newship)
 
         return newship
 
