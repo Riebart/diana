@@ -51,7 +51,7 @@ class Sensors(System):
     def __init__(self, ship):
         System.__init__(self, ship)
         self.name = "Sensors"
-        self.contacts = []
+        self.contacts = dict()
         self.scanners = []
         self.fade_time = 5.0
 
@@ -59,15 +59,17 @@ class Sensors(System):
         pass
 
     def send_state(self, client):
-        cur_time = time.time()
-
-        #remove any expired contacts before sending the current list
-        for contact in self.contacts:
-            if cur_time - contact.time_seen > self.fade_time:
-                self.contacts.remove(contact)
-                
+        self.update_contacts()
         System.send_state(self, client)
 
+    def update_contacts(self):
+        cur_time = time.time()
+
+        new_contacts = dict(contacts)
+        #remove any expired contacts before sending the current list
+        for contact in self.contacts.iterkeys():
+            if cur_time - self.contacts[contact].time_seen > self.fade_time:
+                del new_contacts[contact]
 
     #for now, just send complete state
     def send_update(self, client, contact):
