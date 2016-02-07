@@ -162,6 +162,7 @@ class ObjectSim:
             newship = self.ship_classes[class_id](self)
             self.ship_list[newship.osim_id] = newship
             self.object_list[newship.osim_id] = newship
+            self.spawn_object(newship)
 
         return newship
 
