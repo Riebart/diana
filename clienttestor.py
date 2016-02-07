@@ -231,8 +231,8 @@ def test_systems():
 
 
 def test_sensors():
-    #osim = objectsim.ObjectSim()
-    #osim.register_ship_class(Firefly)
+    osim = objectsim.ObjectSim()
+    osim.register_ship_class(Firefly)
     
     spawn_sol()
     
