@@ -71,6 +71,8 @@ class Sensors(System):
             if cur_time - self.contacts[contact].time_seen > self.fade_time:
                 del new_contacts[contact]
 
+        self.contacts = new_contacts
+
     #for now, just send complete state
     def send_update(self, client, contact):
         self.send_state(client)
@@ -78,11 +80,15 @@ class Sensors(System):
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
         #and add or update it
-        if ( (mess.object_type, mess.obj_spectrum) in self.contacts):
-            del self.contacts[ (mess.object_type, mess.obj_spectrum) ]
+
+        #key = (mess.object_type, mess.obj_spectrum)
+        key = str(mess.object_type) + str(mess.obj_spectrum)
+
+        if ( key in self.contacts):
+            del self.contacts[key]
 
         contact = Contact(mess.object_type, mess.mass, Vector3(mess.position), Vector3(mess.velocity), Vector4(mess.orientation), Vector3(mess.thrust), mess.radius, mess.data, mess.obj_spectrum )
-        self.contacts[ (contact.name, contact.rad_sig) ] = contact
+        self.contacts[key] = contact
 
         #in the future, perhaps just notify about what's changed
         self.notify()

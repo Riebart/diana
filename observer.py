@@ -47,7 +47,7 @@ class Observable:
         #remove undesirable values
         d.pop("_Observable__observers", None)
         d.pop("_ship", None)
-        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], (nest_dict(d)))
+        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], nest_dict(d))
     
     def add_observer(self, observer):
         self.__observers.append(observer)

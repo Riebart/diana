@@ -24,6 +24,9 @@ class Spectrum:
 
         return [ len(keys), keys, vals ]
 
+    def __repr__(self):
+        return str(self.spectrum)
+
 class Message:
     def __init__(self, client):
         pass
@@ -693,10 +696,15 @@ class SystemUpdateMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
+        self.properties = msg
+        if '\x01' in self.properties:
+            del self.properties['\x01']
+        if '\x02' in self.properties:
+            del self.properties['\x02']
 
     #message is Osim -> client only at this time
     def build(self):
-        pass
+        return self.properties
 
     @staticmethod
     def send(client, srv_id, cli_id, msg):

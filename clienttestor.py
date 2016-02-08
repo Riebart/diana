@@ -204,32 +204,6 @@ def dirmsg(sock, msg):
     print newmsg
     return newmsg
 
-
-def test_systems():
-    sock = socket.socket()
-    sock.connect( ("localhost", 5506) )
-
-    msg = {'\x03':"CLASS", '\x04':0, '\x05': {}, '\x06':{}}
-    dirmsg(sock, msg)
-
-    msg = {'\x03':"SHIP", '\x04':0, '\x05': {}, '\x06':{}}
-    dirmsg(sock, msg)
-
-
-
-    msg = {'\x03':"CLASS", '\x04':1, '\x05': [1], '\x06':[0]}
-    newmsg = dirmsg(sock, msg)
-
-
-    #get all the systems info
-    for i in range(0,5):
-        msg = {'\x03':"SYSTEMS", '\x04':1, '\x05': [ship_id], '\x06':[i]}
-        dirmsg(sock, msg)
-
-
-    sock.close()
-
-
 def test_sensors():
     osim = objectsim.ObjectSim()
     osim.register_ship_class(Firefly)
@@ -289,6 +263,8 @@ def test_sensors():
     message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
     rmsg = message.Message.get_message(sock)
 
+    flight_school(ball_radius = 1.0, num_balls = 50, z = 0.0, k = 5.0, vel_scale = 0.0)
+
     msg = message.CommandMsg()
     msg.system_id = 0
     msg.system_command = "blah"
@@ -300,8 +276,6 @@ def test_sensors():
         rmsg = message.Message.get_message(sock)
         print str(rmsg)
         print rmsg.__dict__
-
-
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
@@ -321,5 +295,4 @@ if __name__ == "__main__":
     #for i in range(-30, 31, 1):
     #    flight_school(0.25, 50, i, 0.42, 0.3)
 
-    #test_systems()
     test_sensors()
