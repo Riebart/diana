@@ -155,7 +155,6 @@ class Message:
             msg['\x02'] = cli_id
 
         omsg = OrderedDict(sorted(msg.items(), key=lambda t: t[0]))
-        print omsg
         #print "SEND", omsg
         num_sent = Message.big_send(client, bson.dumps(omsg))
         if num_sent == 0:
@@ -696,15 +695,12 @@ class SystemUpdateMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.properties = msg
-        if '\x01' in self.properties:
-            del self.properties['\x01']
-        if '\x02' in self.properties:
-            del self.properties['\x02']
+        self.properties = Message.ReadMsgEl('\x03', msg)
 
     #message is Osim -> client only at this time
     def build(self):
-        return self.properties
+        msg = {'\x03': self.properties}
+        return msg
 
     @staticmethod
     def send(client, srv_id, cli_id, msg):

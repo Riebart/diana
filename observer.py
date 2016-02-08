@@ -36,28 +36,28 @@ class Observable:
                 self.send_state(observer)
             else:
                 self.send_update(observer, data)
-            
+
     def send_update(self, observer, data):
         #for now, just re-send everything
         self.send_state(observer)
-            
+
     def send_state(self, observer):
         #print nest_dict(self.__dict__)
         d = dict(self.__dict__)
         #remove undesirable values
         d.pop("_Observable__observers", None)
         d.pop("_ship", None)
-        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], nest_dict(d))
-    
+        msg = message.SystemUpdateMsg()
+        msg.properties = nest_dict(d)
+        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], msg.build())
+
     def add_observer(self, observer):
         self.__observers.append(observer)
         self.notify_once(observer)
-        
+
     def remove_observer(self, observer):
         if observer in self.__observers:
             self.__observers.remove(observer)
-            
+
     def notify_once(self, client):
         self.send_state(client)
-        
-        

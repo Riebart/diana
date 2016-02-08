@@ -212,6 +212,9 @@ namespace Diana
             nread++;
         }
 
+        el.bin_val = NULL;
+        el.str_val = NULL;
+
         // Return the difference between the number of items consumed, whether or not they
         // were stored, and the target number. If the number is positive, there was remainder
         // in the quota, if it is negative, there was more consumed than the target, and if it
@@ -232,8 +235,6 @@ namespace Diana
     //! @todo Support things other than C strings
     void ReadString(BSONReader::Element& el, char* dst, int32_t dstlen)
     {
-        //struct BSONReader::Element el;
-        //el = br->get_next_element();
         int32_t copy_len = (el.str_len <= dstlen ? el.str_len : dstlen);
         memcpy(dst, el.str_val, copy_len);
         dst[dstlen - 1] = 0;
@@ -274,7 +275,7 @@ namespace Diana
         if (br != NULL)
         {
             int8_t i;
-            struct BSONReader::Element el = br->get_next_element();;
+            struct BSONReader::Element el = br->get_next_element();
             while (el.type != BSONReader::ElementType::NoMoreData)
             {
                 i = el.name[0] - 1;
@@ -284,6 +285,9 @@ namespace Diana
                 }
                 el = br->get_next_element();
             }
+
+            el.bin_len = NULL;
+            el.str_val = NULL;
         }
 
         // So we're not tempted to use it after we're done reading things.
@@ -351,56 +355,89 @@ namespace Diana
         }
         else
         {
+            BSONMessage* ret = NULL;
             MessageType mt = (MessageType)el.i32_val;
             switch (mt)
             {
             case MessageType::Hello:
-                return new HelloMsg(&br);
+                ret = new HelloMsg(&br);
+                break;
             case MessageType::PhysicalProperties:
-                return new PhysicalPropertiesMsg(&br);
+                ret = new PhysicalPropertiesMsg(&br);
+                break;
             case MessageType::VisualProperties:
-                return new VisualPropertiesMsg(&br);
+                ret = new VisualPropertiesMsg(&br);
+                break;
             case MessageType::VisualDataEnable:
-                return new VisualDataEnableMsg(&br);
+                ret = new VisualDataEnableMsg(&br);
+                break;
             case MessageType::VisualMetaDataEnable:
-                return new VisualMetaDataEnableMsg(&br);
+                ret = new VisualMetaDataEnableMsg(&br);
+                break;
             case MessageType::VisualMetaData:
-                return new VisualMetaDataMsg(&br);
+                ret = new VisualMetaDataMsg(&br);
+                break;
             case MessageType::VisualData:
-                return new VisualDataMsg(&br);
+                ret = new VisualDataMsg(&br);
+                break;
             case MessageType::Beam:
-                return new BeamMsg(&br);
+                ret = new BeamMsg(&br);
+                break;
             case MessageType::Collision:
-                return new CollisionMsg(&br);
+                ret = new CollisionMsg(&br);
+                break;
             case MessageType::Spawn:
-                return new SpawnMsg(&br);
+                ret = new SpawnMsg(&br);
+                break;
             case MessageType::ScanResult:
-                return new ScanResultMsg(&br);
+                ret = new ScanResultMsg(&br);
+                break;
             case MessageType::ScanQuery:
-                return new ScanQueryMsg(&br);
+                ret = new ScanQueryMsg(&br);
+                break;
             case MessageType::ScanResponse:
-                return new ScanResponseMsg(&br);
+                ret = new ScanResponseMsg(&br);
+                break;
             case MessageType::Goodbye:
-                return new GoodbyeMsg(&br);
+                ret = new GoodbyeMsg(&br);
+                break;
             case MessageType::Directory:
-                return new DirectoryMsg(&br);
+                ret = new DirectoryMsg(&br);
+                break;
             case MessageType::Name:
-                return new NameMsg(&br);
+                ret = new NameMsg(&br);
+                break;
             case MessageType::Ready:
-                return new ReadyMsg(&br);
+                ret = new ReadyMsg(&br);
+                break;
             case MessageType::Thrust:
-                return new ThrustMsg(&br);
+                ret = new ThrustMsg(&br);
+                break;
             case MessageType::Velocity:
-                return new VelocityMsg(&br);
+                ret = new VelocityMsg(&br);
+                break;
             case MessageType::Jump:
-                return new JumpMsg(&br);
+                ret = new JumpMsg(&br);
+                break;
             case MessageType::InfoUpdate:
-                return new InfoUpdateMsg(&br);
+                ret = new InfoUpdateMsg(&br);
+                break;
             case MessageType::RequestUpdate:
-                return new RequestUpdateMsg(&br);
+                ret = new RequestUpdateMsg(&br);
+                break;
+            case MessageType::SystemUpdate:
+                ret = new SystemUpdateMsg(&br);
+                break;
+            case MessageType::Command:
+                ret = new CommandMsg(&br);
+                break;
             default:
-                return NULL;
+                ret = NULL;
             }
+
+            el.str_val = NULL;
+            el.bin_val = NULL;
+            return ret;
         }
     }
 
@@ -821,7 +858,7 @@ namespace Diana
     static read_lambda DirectoryMsg_handlers[] = {
         READER_LAMBDA(item_type, ReadString(el), DirectoryMsg),
         //! @todo Remove the item_count, since the array readers will use vectors to handle the unknown case?
-        READER_LAMBDA_IP(((DirectoryMsg*)msg)->item_count = el.i64_val; ((DirectoryMsg*)msg)->items = new struct DirectoryMsg::DirectoryItem[el.i64_val]),
+        READER_LAMBDA_IP(((DirectoryMsg*)msg)->item_count = el.i64_val; ((DirectoryMsg*)msg)->items = new struct DirectoryMsg::DirectoryItem[(size_t)el.i64_val]),
         READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.id = el.i64_val; })),
         READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element el) { it.name = ReadString(el); }))
     };
@@ -856,7 +893,7 @@ namespace Diana
 
                 // Now stuff the vector into the items array.
                 item_count = ivec.size();
-                items = new struct DirectoryItem[item_count];
+                items = new struct DirectoryItem[(size_t)item_count];
                 for (int i = 0; i < item_count; i++)
                 {
                     items[i] = ivec[i];
@@ -870,6 +907,9 @@ namespace Diana
                     el = br->get_next_element();
                 }
             }
+
+            el.str_val = NULL;
+            el.bin_val = NULL;
         }
     }
 
@@ -1042,6 +1082,38 @@ namespace Diana
     }
 
     int64_t RequestUpdateMsg::send(sock_t sock)
+    {
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+    }
+
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda* SystemUpdateMsg_handlers = NULL;
+
+    const read_lambda* SystemUpdateMsg::handlers()
+    {
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        return SystemUpdateMsg_handlers;
+    }
+
+    int64_t SystemUpdateMsg::send(sock_t sock)
+    {
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+    }
+
+    // ================================================================================
+    // ================================================================================
+
+    static read_lambda* CommandMsg_handlers = NULL;
+
+    const read_lambda* CommandMsg::handlers()
+    {
+        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        return CommandMsg_handlers;
+    }
+
+    int64_t CommandMsg::send(sock_t sock)
     {
         throw std::runtime_error("RequestUpdateMsg::NotImplemented");
     }

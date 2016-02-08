@@ -40,7 +40,7 @@ namespace Diana
             VisualMetaDataEnable = 5, VisualMetaData = 6, VisualData = 7, Beam = 8, Collision = 9,
             Spawn = 10, ScanResult = 11, ScanQuery = 12, ScanResponse = 13, Goodbye = 14,
             Directory = 15, Name = 16, Ready = 17, Thrust = 18, Velocity = 19, Jump = 20,
-            InfoUpdate = 21, RequestUpdate = 22
+            InfoUpdate = 21, RequestUpdate = 22, SystemUpdate = 23, Command = 24
         };
 
         // Type of message, stored in the first field, an Int32 field with the name "" (empty string)
@@ -380,6 +380,26 @@ namespace Diana
     {
     public:
         RequestUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), RequestUpdate) { }
+        int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
+    };
+
+    class SystemUpdateMsg : public BSONMessage
+    {
+    public:
+        SystemUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), SystemUpdate) { }
+        int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
+    };
+
+    class CommandMsg : public BSONMessage
+    {
+    public:
+        CommandMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), Command) { }
         int64_t send(sock_t sock);
 
     protected:
