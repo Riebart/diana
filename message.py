@@ -11,7 +11,7 @@ from collections import OrderedDict
 class Spectrum:
     def __init__(self, wavelengths, powers):
         if wavelengths != None and powers != None:
-            self.spectrum = dict(zip(wavelengths, powers))
+            self.spectrum = zip(wavelengths, powers)
         else:
             self.spectrum = None
 
@@ -19,10 +19,9 @@ class Spectrum:
         if self.spectrum == None:
             return []
 
-        keys = sorted(self.spectrum.keys())
-        vals = [ self.spectrum[k] for k in keys ]
-
-        return [ len(keys), keys, vals ]
+        wavelengths = [ c[0] for c in self.spectrum ]
+        powers = [ c[1] for c in self.spectrum ]
+        return [ len(self.spectrum), wavelengths, powers ]
 
     def __repr__(self):
         return str(self.spectrum)
@@ -156,6 +155,7 @@ class Message:
             msg['\x02'] = cli_id
 
         omsg = OrderedDict(sorted(msg.items(), key=lambda t: t[0]))
+        print omsg
         #print "SEND", omsg
         num_sent = Message.big_send(client, bson.dumps(omsg))
         if num_sent == 0:
