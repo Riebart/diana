@@ -41,10 +41,10 @@ public:
     // have any reasonable values.
     struct Element
     {
-        Element() : 
-            bin_val(NULL), str_val(NULL), map_val(NULL), 
+        Element() :
+            bin_val(NULL), str_val(NULL), map_val(NULL),
             managed_pointers(false) {}
-        
+
         Element(struct Element* src) : Element()
         {
             copy(src);
@@ -91,7 +91,7 @@ public:
 
             managed_pointers = true;
         }
-        
+
         bool managed_pointers;
 
         ElementType type;
@@ -120,31 +120,34 @@ public:
         pos = 4;
     }
 
-    struct Element* get_next_element(bool read_complex = false)
+    struct Element* get_next_element(bool read_complex = false, bool from_here = false)
     {
-        el = Element();
-
-        // Return a sentinel NoMoreData type when we reach the end of the message
-        if ((int32_t)pos >= len)
+        if (!from_here)
         {
-            el.type = ElementType::NoMoreData;
-            return &el;
-        }
+            el = Element();
 
-        el.type = (ElementType)(*(int8_t*)(msg + pos));
-        pos += 1;
+            // Return a sentinel NoMoreData type when we reach the end of the message
+            if ((int32_t)pos >= len)
+            {
+                el.type = ElementType::NoMoreData;
+                return &el;
+            }
 
-        // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
-        if (el.type == ElementType::EndOfDocument)
-        {
-            el.name = msg + pos - 1;
-            return &el;
-        }
-        else
-        {
-            // Otherwise, read the name.
-            el.name = msg + pos;
-            pos += strlen(msg + pos) + 1;;
+            el.type = (ElementType)(*(int8_t*)(msg + pos));
+            pos += 1;
+
+            // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
+            if (el.type == ElementType::EndOfDocument)
+            {
+                el.name = msg + pos - 1;
+                return &el;
+            }
+            else
+            {
+                // Otherwise, read the name.
+                el.name = msg + pos;
+                pos += strlen(msg + pos) + 1;;
+            }
         }
 
         // Switch on the element types.
@@ -182,7 +185,7 @@ public:
                 {
                     i_el.copy(elp);
                     root_el.map_val->operator[](std::string(i_el.name)) = i_el;
-                    
+
                     // Because of recursion, don't throw away the mapped value (array/subdoc), since that's
                     // now being tracked in this higher level value. Set the mapped value to NULL to prevent
                     // this before we get the next value, since that process calls the destructor.
@@ -260,7 +263,7 @@ public:
             pos += 4;
             break;
         default:
-            throw new std::runtime_error("UnrecognizedType");
+            throw new std::runtime_error("BSONReader::UnrecognizedType");
             break;
         }
 
@@ -589,6 +592,101 @@ public:
             *(int32_t*)out = (int32_t)(pos + 1); // Set the first 4 bytes to the length
             return out;
         }
+    }
+
+    bool push(std::map<std::string, struct BSONReader::Element>* map, BSONReader::ElementType type)
+    {
+        return push((char*)NULL, map, type);
+    }
+
+    bool push(char* name, std::map<std::string, struct BSONReader::Element>* map, BSONReader::ElementType type)
+    {
+        if (map == NULL)
+        {
+            return false;
+        }
+
+        switch (type)
+        {
+        case BSONReader::ElementType::Array:
+            push_array(name);
+            break;
+        case BSONReader::ElementType::SubDocument:
+            push_subdoc(name);
+            break;
+        default:
+            return false;
+        }
+
+        struct BSONReader::Element* el;
+        std::map<std::string, struct BSONReader::Element>::iterator it;
+        for (it = map->begin(); it != map->end(); it++)
+        {
+            el = &(it->second);
+            push(el);
+        }
+
+        push_end();
+
+        return true;
+    }
+
+    bool push(struct BSONReader::Element* el)
+    {
+        // Switch on the element types.
+        switch (el->type)
+        {
+        case BSONReader::ElementType::Double:
+            push(el->name, el->dbl_val);
+            break;
+
+        case BSONReader::ElementType::String:
+        case BSONReader::ElementType::JavaScript:
+        case BSONReader::ElementType::Deprecatedx0E:
+            push(el->name, el->str_val, el->type);
+            break;
+
+        case BSONReader::ElementType::SubDocument:
+        case BSONReader::ElementType::Array:
+            push(el->name, el->map_val, el->type);
+            break;
+
+        case BSONReader::ElementType::Binary:
+            push(el->name, el->bin_val, el->bin_len);
+            break;
+
+        case BSONReader::ElementType::Deprecatedx06:
+        case BSONReader::ElementType::Null:
+        case BSONReader::ElementType::MinKey:
+        case BSONReader::ElementType::MaxKey:
+            break;
+
+        case BSONReader::ElementType::ObjectId:
+            break;
+
+        case BSONReader::ElementType::Boolean:
+            push(el->name, el->bln_val);
+            break;
+
+        case BSONReader::ElementType::Regex:
+            break;
+
+        case BSONReader::ElementType::UTCDateTime:
+        case BSONReader::ElementType::MongoTimeStamp:
+        case BSONReader::ElementType::Int64:
+            push(el->name, el->i64_val, el->type);
+            break;
+
+        case BSONReader::ElementType::Int32:
+            push(el->name, el->i32_val);
+            break;
+
+        default:
+            throw new std::runtime_error("BSONWriter::UnrecognizedType");
+            break;
+        }
+
+        return true;
     }
 
     ~BSONWriter()

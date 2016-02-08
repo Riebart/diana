@@ -577,8 +577,8 @@ class CommandMsg(Message):
         self.msgtype = msgtype
         self.srv_id = srv_id
         self.cli_id = cli_id
-        self.system_id = Message.ReadMsgEl(('\x03'), msg)
-        self.system_command = Message.ReadMsgEl(('\x04'), msg)
+        self.system_id = Message.ReadMsgEl('\x03', msg)
+        self.system_command = Message.ReadMsgEl('\x04', msg)
 
     def build(self):
         msg = {}

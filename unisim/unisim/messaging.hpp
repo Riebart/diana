@@ -388,8 +388,10 @@ namespace Diana
     class SystemUpdateMsg : public BSONMessage
     {
     public:
-        SystemUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), SystemUpdate) { }
+        SystemUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), SystemUpdate) { }
+        ~SystemUpdateMsg();
         int64_t send(sock_t sock);
+        struct BSONReader::Element* properties;
 
     protected:
         const read_lambda* handlers();
@@ -398,8 +400,12 @@ namespace Diana
     class CommandMsg : public BSONMessage
     {
     public:
-        CommandMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), Command) { }
+        CommandMsg(BSONReader* _br = NULL) : BSONMessage(_br, 2, handlers(), Command) { }
+        ~CommandMsg();
         int64_t send(sock_t sock);
+
+        int64_t system_id;
+        struct BSONReader::Element* command;
 
     protected:
         const read_lambda* handlers();

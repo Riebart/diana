@@ -189,7 +189,7 @@ namespace Diana
     // Attempt to read exactly n elements of type T into the destination array, which may be
     // interleaved (stride > 1), applying the given function to each BSON element to retrieve
     // the desired value.
-    template<typename T> int32_t ReadArray(T* dst, uint32_t n, BSONReader* br, 
+    template<typename T> int32_t ReadArray(T* dst, uint32_t n, BSONReader* br,
         std::function<T(struct BSONReader::Element*)> get_val,
         uint32_t stride = 1, bool consume_extra = true)
     {
@@ -1056,7 +1056,9 @@ namespace Diana
 
     int64_t InfoUpdateMsg::send(sock_t sock)
     {
+        SEND_PROLOGUE();
         throw std::runtime_error("InfoUpdateMsg::NotImplemented");
+        SEND_EPILOGUE();
     }
 
     // ================================================================================
@@ -1072,38 +1074,62 @@ namespace Diana
 
     int64_t RequestUpdateMsg::send(sock_t sock)
     {
+        SEND_PROLOGUE();
         throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        SEND_EPILOGUE();
     }
 
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* SystemUpdateMsg_handlers = NULL;
+    static read_lambda SystemUpdateMsg_handlers[] = {
+        READER_LAMBDA_IP(((SystemUpdateMsg*)msg)->properties = msg->br->get_next_element(true, true); \
+            el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
+    };
 
     const read_lambda* SystemUpdateMsg::handlers()
     {
-        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        properties = NULL;
         return SystemUpdateMsg_handlers;
     }
 
     int64_t SystemUpdateMsg::send(sock_t sock)
     {
-        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        SEND_PROLOGUE();
+        SEND_ELEMENT(properties);
+        SEND_EPILOGUE();
+    }
+
+    SystemUpdateMsg::~SystemUpdateMsg()
+    {
+        delete properties;
     }
 
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* CommandMsg_handlers = NULL;
+    static read_lambda CommandMsg_handlers[] = {
+        READER_LAMBDA(system_id, el->i64_val, CommandMsg),
+        READER_LAMBDA_IP(((CommandMsg*)msg)->command = msg->br->get_next_element(true, true); \
+        el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
+    };
 
     const read_lambda* CommandMsg::handlers()
     {
-        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        command = NULL;
         return CommandMsg_handlers;
     }
 
     int64_t CommandMsg::send(sock_t sock)
     {
-        throw std::runtime_error("RequestUpdateMsg::NotImplemented");
+        SEND_PROLOGUE();
+        SEND_ELEMENT(system_id);
+        SEND_ELEMENT(command);
+        SEND_EPILOGUE();
+    }
+
+    CommandMsg::~CommandMsg()
+    {
+        delete command;
     }
 }
