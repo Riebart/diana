@@ -181,19 +181,6 @@ public:
                 while (el.type != EndOfDocument)
                 {
                     i_el.copy(elp);
-
-                    //// HACK: For some reson, el's destructor is called when the last loop line returns back here,
-                    //// so we have to un-manage the pointers, so mapped values coming back don't get destroyed.
-                    //// The only time we'll have managed values that don't get destroyed is if the map_val is
-                    //// non-NULL. If that is true, then we need to destroy them, otherwise we'll leak memory.
-                    //if (elp->map_val != NULL)
-                    //{
-                    //    elp->map_val = NULL;
-                    //    elp->managed_pointers = true;
-                    //    elp->~Element();
-                    //    i_el.managed_pointers = true;
-                    //}
-
                     root_el.map_val->operator[](std::string(i_el.name)) = i_el;
                     
                     // Because of recursion, don't throw away the mapped value (array/subdoc), since that's

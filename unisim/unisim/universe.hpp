@@ -230,6 +230,9 @@ namespace Diana
             // sources. The unts of this value is Watts per square metre.
             // This value is derived from the black-body radiative power of steel at it's melting
             // point. Steel absorbing this amount of radiative power.
+            // See: http://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
+            // See: https://en.wikipedia.org/wiki/Mercury_(planet)#Surface_conditions_and_exosphere
+            // To compare, Sol outputs 61.7MW/m^2 at it's surface.
             double radiation_energy_cutoff;
 
             // Spectrum power levels are randomly adjusted by this proportion upon receipt by the
