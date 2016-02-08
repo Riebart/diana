@@ -168,6 +168,7 @@ def signature_test():
 def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale = 0.0):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
+    from message import Spectrum
 
     sm = message.SpawnMsg()
     sm.srv_id = None
@@ -190,6 +191,8 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
     for i in range(num_balls):
         sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
         sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), vel_scale * (2 * random.random() - 1) * ball_radius ]
+        sm.spectrum = Spectrum([i], [i])
+
         message.SpawnMsg.send(sock, None, -1, sm.build())
         theta += 2 * math.pi / num_balls
 
