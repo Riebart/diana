@@ -83,7 +83,10 @@ public:
             if (src->str_val != NULL)
             {
                 str_val = new char[str_len + 1];
-                memcpy(str_val, src->str_val, str_len + 1);
+                memcpy(str_val, src->str_val, str_len);
+                // It's possible that the bin and str values are the same pointer,
+                // so since we have the luxury, make the string value properly ended.
+                str_val[str_len] = 0;
             }
 
             managed_pointers = true;
@@ -117,7 +120,7 @@ public:
         pos = 4;
     }
 
-    struct Element get_next_element(bool read_complex = false)
+    struct Element* get_next_element(bool read_complex = false)
     {
         el = Element();
 
@@ -125,7 +128,7 @@ public:
         if ((int32_t)pos >= len)
         {
             el.type = ElementType::NoMoreData;
-            return el;
+            return &el;
         }
 
         el.type = (ElementType)(*(int8_t*)(msg + pos));
@@ -135,7 +138,7 @@ public:
         if (el.type == ElementType::EndOfDocument)
         {
             el.name = msg + pos - 1;
-            return el;
+            return &el;
         }
         else
         {
@@ -172,31 +175,32 @@ public:
                 // Allocate a new element to return once we're done reading the subdoc.
                 struct Element root_el(&el);
                 struct Element i_el;
+                struct Element* elp;
                 root_el.map_val = new std::map<std::string, struct Element>();
-                el = get_next_element(read_complex);
+                elp = get_next_element(read_complex);
                 while (el.type != EndOfDocument)
                 {
-                    i_el.copy(&el);
+                    i_el.copy(elp);
 
-                    // HACK: For some reson, el's destructor is called when the last loop line returns back here,
-                    // so we have to un-manage the pointers, so mapped values coming back don't get destroyed.
-                    // The only time we'll have managed values that don't get destroyed is if the map_val is
-                    // non-NULL. If that is true, then we need to destroy them, otherwise we'll leak memory.
-                    if (el.map_val != NULL)
-                    {
-                        el.map_val = NULL;
-                        el.managed_pointers = true;
-                        el.~Element();
-                        i_el.managed_pointers = true;
-                    }
+                    //// HACK: For some reson, el's destructor is called when the last loop line returns back here,
+                    //// so we have to un-manage the pointers, so mapped values coming back don't get destroyed.
+                    //// The only time we'll have managed values that don't get destroyed is if the map_val is
+                    //// non-NULL. If that is true, then we need to destroy them, otherwise we'll leak memory.
+                    //if (elp->map_val != NULL)
+                    //{
+                    //    elp->map_val = NULL;
+                    //    elp->managed_pointers = true;
+                    //    elp->~Element();
+                    //    i_el.managed_pointers = true;
+                    //}
 
                     root_el.map_val->operator[](std::string(i_el.name)) = i_el;
                     
                     // Because of recursion, don't throw away the mapped value (array/subdoc), since that's
                     // now being tracked in this higher level value. Set the mapped value to NULL to prevent
                     // this before we get the next value, since that process calls the destructor.
-                    el.map_val = NULL;
-                    el = get_next_element(read_complex);
+                    elp->map_val = NULL;
+                    elp = get_next_element(read_complex);
                 }
 
                 // Note that i_el is about to go out of scope, so it's destructor will be called, despite the
@@ -273,8 +277,7 @@ public:
             break;
         }
 
-        el.managed_pointers = false;
-        return el;
+        return &el;
     }
 
 private:

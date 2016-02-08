@@ -292,10 +292,11 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #pool_rack(C = 1.01, num_rows = 5)
+    #pool_rack(C = 1.01, num_rows = 25)
     #spawn_sol()
     #signature_test()
+
     #for i in range(-30, 31, 1):
-    #    flight_school(0.25, 50, i, 0.42, 0.3)
+    #    flight_school(0.25, 50, i, 0.42, 0.0)
 
     test_sensors()

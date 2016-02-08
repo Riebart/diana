@@ -27,7 +27,7 @@ namespace Diana
     // the message relaying that's required.
 
     class BSONMessage;
-    typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)> read_lambda;
+    typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element*)> read_lambda;
 
     // The general superclass of all messages
     class BSONMessage
@@ -77,7 +77,6 @@ namespace Diana
 
     protected:
         BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
-
         virtual const read_lambda* handlers() { return NULL; };
     };
 
@@ -299,7 +298,7 @@ namespace Diana
         char* item_type;
         struct DirectoryItem* items;
 
-        void read_parts(std::function<void(struct DirectoryItem&, BSONReader::Element)> set);
+        void read_parts(std::function<void(struct DirectoryItem&, struct BSONReader::Element*)> set);
 
     protected:
         const read_lambda* handlers();

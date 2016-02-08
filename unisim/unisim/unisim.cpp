@@ -77,8 +77,8 @@ void bson_test()
     //char input[] = { '\x2b','\x00','\x00','\x00','\x04','\x48','\x69','\x00','\x22','\x00','\x00','\x00','\x10','\x30','\x00','\x00','\x00','\x00','\x00','\x10','\x31','\x00','\x01','\x00','\x00','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x0a' };
     char input[] = { '\x55','\x00','\x00','\x00','\x03','\x48','\x69','\x00','\x4c','\x00','\x00','\x00','\x04','\x42','\x79','\x65','\x00','\x42','\x00','\x00','\x00','\x10','\x30','\x00','\x12','\x00','\x00','\x00','\x04','\x31','\x00','\x24','\x00','\x00','\x00','\x05','\x30','\x00','\x01','\x00','\x00','\x00','\x00','\x61','\x05','\x31','\x00','\x03','\x00','\x00','\x00','\x00','\x62','\x63','\x64','\x01','\x32','\x00','\x00','\x00','\x00','\x00','\x00','\x00','\xe0','\x3f','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x00','\x0a' };
     BSONReader br(input);
-    struct BSONReader::Element el = br.get_next_element(true);
-    //! BUG: Since the 'managed_pointers' member is false at this point, it won't be automatically purged when it goes out of scope.
+    struct BSONReader::Element* el = br.get_next_element(true);
+    printf("%s\n", el->name);
 }
 
 int main(int32_t argc, char** argv)
