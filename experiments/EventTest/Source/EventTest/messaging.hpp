@@ -27,7 +27,7 @@ namespace Diana
     // the message relaying that's required.
 
     class BSONMessage;
-    typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element&)> read_lambda;
+    typedef std::function<void(uint32_t, BSONMessage*, struct BSONReader::Element*)> read_lambda;
 
     // The general superclass of all messages
     class BSONMessage
@@ -40,7 +40,7 @@ namespace Diana
             VisualMetaDataEnable = 5, VisualMetaData = 6, VisualData = 7, Beam = 8, Collision = 9,
             Spawn = 10, ScanResult = 11, ScanQuery = 12, ScanResponse = 13, Goodbye = 14,
             Directory = 15, Name = 16, Ready = 17, Thrust = 18, Velocity = 19, Jump = 20,
-            InfoUpdate = 21, RequestUpdate = 22
+            InfoUpdate = 21, RequestUpdate = 22, SystemUpdate = 23, Command = 24
         };
 
         // Type of message, stored in the first field, an Int32 field with the name "" (empty string)
@@ -77,7 +77,6 @@ namespace Diana
 
     protected:
         BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
-
         virtual const read_lambda* handlers() { return NULL; };
     };
 
@@ -228,6 +227,7 @@ namespace Diana
         int64_t send(sock_t sock);
 
         char* obj_type;
+        //! @todo Promote this to a dict with full text keys. Can probably just store the BSON dict to spit back.
         char* data;
         double mass, radius;
         struct Vector3 position, velocity, thrust;
@@ -255,6 +255,7 @@ namespace Diana
         const read_lambda* handlers();
     };
 
+    //! @todo Allow the response to specify the return energy/spread of the beam. I think this is in the wiki, but I'll put it here too.
     class ScanResponseMsg : public BSONMessage
     {
     public:
@@ -262,6 +263,7 @@ namespace Diana
         ~ScanResponseMsg();
         int64_t send(sock_t sock);
 
+        //! @todo Promote this to a dict with full text keys. Can probably just store the BSON dict to spit back. This is tied to the ScanQueryResponse message data field.
         char* data;
         int64_t scan_id;
 
@@ -296,7 +298,7 @@ namespace Diana
         char* item_type;
         struct DirectoryItem* items;
 
-        void read_parts(std::function<void(struct DirectoryItem&, BSONReader::Element)> set);
+        void read_parts(std::function<void(struct DirectoryItem&, struct BSONReader::Element*)> set);
 
     protected:
         const read_lambda* handlers();
@@ -378,6 +380,32 @@ namespace Diana
     public:
         RequestUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 0, handlers(), RequestUpdate) { }
         int64_t send(sock_t sock);
+
+    protected:
+        const read_lambda* handlers();
+    };
+
+    class SystemUpdateMsg : public BSONMessage
+    {
+    public:
+        SystemUpdateMsg(BSONReader* _br = NULL) : BSONMessage(_br, 1, handlers(), SystemUpdate) { }
+        ~SystemUpdateMsg();
+        int64_t send(sock_t sock);
+        struct BSONReader::Element* properties;
+
+    protected:
+        const read_lambda* handlers();
+    };
+
+    class CommandMsg : public BSONMessage
+    {
+    public:
+        CommandMsg(BSONReader* _br = NULL) : BSONMessage(_br, 2, handlers(), Command) { }
+        ~CommandMsg();
+        int64_t send(sock_t sock);
+
+        int64_t system_id;
+        struct BSONReader::Element* command;
 
     protected:
         const read_lambda* handlers();
