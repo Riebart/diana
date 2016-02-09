@@ -83,6 +83,35 @@ void UExtendedPhysicsComponent::SetPVA(FVector& Position, FVector& Velocity, FVe
     this->acceleration = Acceleration;
 }
 
+void UExtendedPhysicsComponent::motion_interpolation(double* t, FVector* p, int32 order, FVector* components)
+{
+    switch (order)
+    {
+    case 1:
+    {
+        components[0] = (p[1] - p[0]) / (t[1] - t[0]);
+    }
+    case 2:
+    {
+        FVector dp[] = { p[1] - p[0], p[2] - p[0] };
+        double dt[] = { t[1] - t[0], t[2] - t[0] };
+
+        components[0] = dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+                        dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])));
+
+        components[1] = dp[0] * (2.0 / (dt[0] * (dt[0] - dt[1]))) -
+                        dp[1] * (2.0 / (dt[1] * (dt[0] - dt[1])));
+
+        //v = 0.5 * (dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
+        //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])))) + (p[2] - p[1]) / (t[2] - t[1]);
+
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 float UExtendedPhysicsComponent::GetLocalSimThreshold()
 {
     return this->local_physics_thresh;
@@ -158,16 +187,16 @@ void UExtendedPhysicsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
             //    local_physics_enabled = false;
             //}
 
-            FVector dv = DeltaTime * acceleration;
-            FVector dp = DeltaTime * (velocity + 0.5 * dv);
-            position += dp;
-            velocity += dv;
+        FVector dv = DeltaTime * acceleration;
+        FVector dp = DeltaTime * (velocity + 0.5 * dv);
+        position += dp;
+        velocity += dv;
 
-            // Since client-side collisions are approximations, set the velocities they
-            // got to zero on every tick to undo any local collision events.
-            static_mesh->SetPhysicsLinearVelocity(z, false, NAME_None);
-            static_mesh->SetAllPhysicsAngularVelocity(z, false);
-            static_mesh->SetAllPhysicsPosition(position);
+        // Since client-side collisions are approximations, set the velocities they
+        // got to zero on every tick to undo any local collision events.
+        static_mesh->SetPhysicsLinearVelocity(z, false, NAME_None);
+        static_mesh->SetAllPhysicsAngularVelocity(z, false);
+        static_mesh->SetAllPhysicsPosition(position);
         //}
     }
 }

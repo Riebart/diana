@@ -22,12 +22,25 @@ struct FDirectoryItem
         int32 id;
 };
 
+USTRUCT(BlueprintType, Blueprintable)
+struct FSensorContact
+{
+    GENERATED_USTRUCT_BODY();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
+        FString name;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
+        int32 id;
+};
+
 class FVisDataReceiver;
+class FSensorManager;
 
 UCLASS()
 class EVENTTEST_API ADianaConnector : public AActor
 {
     friend class FVisDataReceiver;
+    friend class FSensorManager;
 
     GENERATED_BODY()
 
@@ -77,20 +90,26 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         bool RegisterForVisData(bool enable);
 
-    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
-
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "New Vis Data Object"))
         void NewVisDataObject(int32 PhysID, float Radius, FVector Position);
 
-    //UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Updated Vis Data Object"))
-    //    void ExistingVisDataObject(int32 PhysID, float Radius, FVector Position, FVector Velocity, FVector Acceleration, float CurrentRealTime, AActor* ActorRef);
-
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Removed Vis Data Object"))
         void RemovedVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        bool ConnectToSensors(bool enable);
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Sensor Contact"))
+        void SensorContact(const FString& ContactID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void UpdateExistingSensorContact(const FString& ContactID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
+    
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 

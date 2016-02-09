@@ -31,8 +31,26 @@ private:
     FRunnableThread* rt = NULL;
     volatile bool running;
     FSocket* sock = NULL;
-    ADianaConnector* parent;
+    ADianaConnector* parent = NULL;
     std::map<int32, struct ADianaConnector::DianaActor*>* oa_map;
+};
+
+class FSensorManager : public FRunnable
+{
+public:
+    //FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map);
+    FSensorManager() {}
+    ~FSensorManager() {}
+
+    virtual bool Init();
+    virtual uint32 Run();
+    virtual void Stop();
+
+private:
+    FRunnableThread* rt = NULL;
+    volatile bool running;
+    FSocket* sock = NULL;
+    ADianaConnector* parent = NULL;
 };
 
 FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map)
@@ -60,26 +78,6 @@ bool FVisDataReceiver::Init()
     return true;
 }
 
-void motion_interpolation(double* t, FVector* p, FVector& v, FVector& a)
-{
-    FVector dp[] = { p[1] - p[0], p[2] - p[0] };
-    double dt[] = { t[1] - t[0], t[2] - t[0] };
-
-    a = dp[0] * (2.0 / (dt[0] * (dt[0] - dt[1]))) -
-        dp[1] * (2.0 / (dt[1] * (dt[0] - dt[1])));
-
-    //v = 0.5 * (dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
-    //    dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])))) + (p[2] - p[1]) / (t[2] - t[1]);
-
-    v = dp[1] * (dt[0] / (dt[1] * (dt[0] - dt[1]))) -
-        dp[0] * (dt[1] / (dt[0] * (dt[0] - dt[1])));
-
-    //v = (p[2] - p[1]) / (t[2] - t[1]);
-    //a.X = 0.0;
-    //a.Y = 0.0;
-    //a.Z = 0.0;
-}
-
 uint32 FVisDataReceiver::Run()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Run::Begin"));
@@ -93,7 +91,7 @@ uint32 FVisDataReceiver::Run()
     struct ADianaConnector::DianaVDM dm;
     struct ADianaConnector::DianaActor* da;
     std::map<int32, struct ADianaConnector::DianaActor*>::iterator mit;
-    FVector velocity, acceleration;
+    FVector motion_components[2];
     uint32 nmessages = 0;
     UWorld* world = parent->GetWorld();
     float last_stat_time = world->RealTimeSeconds;
@@ -194,8 +192,8 @@ uint32 FVisDataReceiver::Run()
 
                         if (da->epc != NULL)
                         {
-                            motion_interpolation(da->time, da->pos, velocity, acceleration);
-                            da->epc->SetPVA(da->pos[2], velocity, acceleration);
+                            UExtendedPhysicsComponent::motion_interpolation(da->time, da->pos, 2, motion_components);
+                            da->epc->SetPVA(da->pos[2], motion_components[0], motion_components[1]);
                         }
                     }
                 }
@@ -407,6 +405,17 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 ser
             DisconnectSocket();
             delete vdr_thread;
             vdr_thread = NULL;
+            
+            FScopeLock Lock(&map_cs);
+            struct DianaActor* da;
+            std::map<int32, struct DianaActor*>::iterator it;
+            for (it = oa_map.begin(); it != oa_map.end(); it++)
+            {
+                da = it->second;
+                RemovedVisDataObject(da->server_id, da->a, da->epc);
+                delete da;
+            }
+            oa_map.clear();
         }
     }
 
@@ -652,4 +661,13 @@ void ADianaConnector::OffsetThrust(int32 client_id, int32 server_id, FVector _th
     tm.thrust.z = thrust.Z;
     tm.spec_all();
     tm.send(sock);
+}
+
+bool ADianaConnector::ConnectToSensors(bool enable)
+{
+    return false;
+}
+
+void ADianaConnector::UpdateExistingSensorContact(const FString& ID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef)
+{
 }

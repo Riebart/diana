@@ -57,6 +57,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Extended Physics")
         void SetStaticMesh(UStaticMeshComponent* StaticMesh);
 
+    static void motion_interpolation(double* t, FVector* p, int32 order, FVector* components);
+
 protected:
     // See: https://answers.unrealengine.com/questions/207675/fcriticalsection-lock-causes-crash.html
     FCriticalSection cs;

@@ -8,6 +8,7 @@ import random
 import bson
 import time
 import math
+import pprint
 from vector import Vector3, Vector4
 from shiptypes import Firefly
 
@@ -279,12 +280,14 @@ def test_sensors():
     msg.system_command = "blah"
     message.CommandMsg.send(sock, ship_server_id, 1, msg.build())
 
+    pprinter = pprint.PrettyPrinter(indent=1)
+
     #continually return results of ping
     while (True):
         print "Waiting for results..."
         rmsg = message.Message.get_message(sock)
         print str(rmsg)
-        print rmsg.__dict__
+        pprinter.pprint(rmsg.__dict__)
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
@@ -302,7 +305,7 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
 
-    for i in range(-30, 31, 1):
-        flight_school(0.25, 50, i, 0.42, 0.0)
+    #for i in range(-30, 31, 1):
+    #    flight_school(0.25, 50, i, 0.42, 0.0)
 
-    #test_sensors()
+    test_sensors()
