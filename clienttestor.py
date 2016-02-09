@@ -305,7 +305,7 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
 
-    #for i in range(-30, 31, 1):
-    #    flight_school(0.25, 50, i, 0.42, 0.0)
+    for i in range(-30, 31, 1):
+        flight_school(0.25, 50, i, 0.42, 0.0)
 
-    test_sensors()
+    #test_sensors()
