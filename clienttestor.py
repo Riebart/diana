@@ -256,13 +256,19 @@ def test_sensors():
     msg.ready = True
     message.ReadyMsg.send(sock, ship_server_id, 1, msg.build())
 
-    # List the systems... We don't use this, but it's instructive.
+    # List the systems
     msg = message.DirectoryMsg()
     msg.item_type = "SYSTEMS"
     message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
 
+    # Find the Sensors subsystem
+    rmsg = message.Message.get_message(sock)
+    sensors = [ s for s in rmsg.items if s[1] == "Sensors" ]
+    if len(sensors) == 0:
+        return
+
     # Now sign up for the sensors, which will come back with a full state of the system
-    msg.items = [ (0, 'Sensors') ]
+    msg.items = sensors
     message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
     rmsg = message.Message.get_message(sock)
 
