@@ -102,7 +102,7 @@ public:
         void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        bool ConnectToSensors(bool enable);
+        bool ConnectToSystem(bool enable, int32 system_id);
 
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Sensor Contact"))
         void SensorContact(const FString& ContactID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);

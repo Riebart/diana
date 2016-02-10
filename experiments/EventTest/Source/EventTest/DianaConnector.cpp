@@ -663,9 +663,9 @@ void ADianaConnector::OffsetThrust(int32 client_id, int32 server_id, FVector _th
     tm.send(sock);
 }
 
-bool ADianaConnector::ConnectToSensors(bool enable)
+bool ADianaConnector::ConnectToSystem(bool enable, int32 system_id)
 {
-    return false;
+    return enable;
 }
 
 void ADianaConnector::UpdateExistingSensorContact(const FString& ID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef)
