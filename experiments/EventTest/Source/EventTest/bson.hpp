@@ -122,16 +122,18 @@ public:
 
     struct Element* get_next_element(bool read_complex = false, bool from_here = false)
     {
-        if (!from_here)
+        // Return a sentinel NoMoreData type when we reach the end of the message
+        if ((int32_t)pos >= len)
+        {
+            el.type = ElementType::NoMoreData;
+            return &el;
+        }
+
+        // If we're not trying to re-read from here, or if we are, but we're neither an Array or a Subdoc,
+        // just continue as normal.
+        if ((!from_here) || ((el.type != ElementType::Array) && (el.type != ElementType::SubDocument)))
         {
             el = Element();
-
-            // Return a sentinel NoMoreData type when we reach the end of the message
-            if ((int32_t)pos >= len)
-            {
-                el.type = ElementType::NoMoreData;
-                return &el;
-            }
 
             el.type = (ElementType)(*(int8_t*)(msg + pos));
             pos += 1;
@@ -148,6 +150,14 @@ public:
                 el.name = msg + pos;
                 pos += strlen(msg + pos) + 1;;
             }
+        }
+        else
+        {
+            // For complex types trying to re-read from here, backtrack. For all other times, the above block
+            // applies instead.
+            //
+            // We only need to backtrack the amount that the below switch cases move it forward.
+            pos -= 4;
         }
 
         // Switch on the element types.
@@ -221,6 +231,7 @@ public:
         case ElementType::Null:
         case ElementType::MinKey:
         case ElementType::MaxKey:
+        case ElementType::EndOfDocument:
             break;
 
         case ElementType::ObjectId:

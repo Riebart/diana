@@ -1085,7 +1085,8 @@ namespace Diana
     // ================================================================================
 
     static read_lambda SystemUpdateMsg_handlers[] = {
-        READER_LAMBDA_IP(((SystemUpdateMsg*)msg)->properties = msg->br->get_next_element(true, true); \
+        READER_LAMBDA_IP(((SystemUpdateMsg*)msg)->properties = new BSONReader::Element(); \
+            ((SystemUpdateMsg*)msg)->properties->copy(msg->br->get_next_element(true, true)); \
             el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
     };
 
@@ -1104,6 +1105,7 @@ namespace Diana
 
     SystemUpdateMsg::~SystemUpdateMsg()
     {
+        properties->managed_pointers = true;
         delete properties;
     }
 
@@ -1112,8 +1114,9 @@ namespace Diana
 
     static read_lambda CommandMsg_handlers[] = {
         READER_LAMBDA(system_id, el->i64_val, CommandMsg),
-        READER_LAMBDA_IP(((CommandMsg*)msg)->command = msg->br->get_next_element(true, true); \
-        el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
+        READER_LAMBDA_IP(((CommandMsg*)msg)->command = new BSONReader::Element(); \
+            ((CommandMsg*)msg)->command->copy(msg->br->get_next_element(true, true)); \
+            el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
     };
 
     const read_lambda* CommandMsg::handlers()
@@ -1132,6 +1135,7 @@ namespace Diana
 
     CommandMsg::~CommandMsg()
     {
+        command->managed_pointers = true;
         delete command;
     }
 }

@@ -27,10 +27,59 @@ struct FSensorContact
 {
     GENERATED_USTRUCT_BODY();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector position;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector velocity;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector thrust;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector forward;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector up;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FVector right;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        float mass;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        float radius;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        float time_seen;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
         FString name;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Diana Messaging")
-        int32 id;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FString data;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        FString contact_id;
+};
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FSensorSystem
+{
+    GENERATED_USTRUCT_BODY();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float fade_time;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float horizontal_focus_min;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float horizontal_focus_max;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float vertical_focus_min;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float vertical_focus_max;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float max_energy;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        int32 bank_id;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        FString type;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float time_last_fired;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float recharge_time;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor System")
+        float damage_level;
 };
 
 class FVisDataReceiver;
@@ -101,17 +150,17 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void UpdateExistingVisDataObject(int32 PhysID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
-    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        bool ConnectToSystem(bool enable, int32 system_id);
-
     UFUNCTION(BlueprintImplementableEvent, Category = "Messages From Diana", meta = (DisplayName = "Received Sensor Contact"))
-        void SensorContact(const FString& ContactID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
+        void SensorContact(struct FSensorContact Contact, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void UpdateExistingSensorContact(const FString& ContactID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef);
-    
+
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
+
+    UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
+        void SensorStatus(bool read_only, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void CreateShip(int32 class_id);
@@ -144,6 +193,7 @@ protected:
     void Goodbye(int32 client_id, int32 server_id);
     void SetThrust(int32 client_id, int32 server_id, FVector _thrust);
     void OffsetThrust(int32 client_id, int32 server_id, FVector _thrust);
+    void SensorStatus(int32 client_id, int32 server_id, bool read_only, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
 
 private:
     FString host = "";
