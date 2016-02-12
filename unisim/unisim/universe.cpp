@@ -275,7 +275,7 @@ namespace Diana
 
         net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, _params.network_port);
     }
-    
+
     Universe::~Universe()
     {
         for (int i = 0; i < num_threads; i++)
@@ -353,7 +353,7 @@ namespace Diana
         int64_t offset;
         if (params.id_rand_max > 1)
         {
-           
+
             std::uniform_int_distribution<int64_t> dist(1, params.id_rand_max);
             offset = dist(re);
         }
@@ -450,7 +450,7 @@ namespace Diana
             // We're going to specify all of the options, so just set them all to specced.
             visdata_msg.spec_all(true);
             visdata_msg.client_id = vc.client_id;
-            
+
             //! @todo Unlocked access to the smarties map.
             ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
             bool disconnect = false;
@@ -461,7 +461,7 @@ namespace Diana
                 o = phys_objects[i];
                 visdata_msg.server_id = vc.phys_id;
                 visdata_msg.radius = o->radius;
-                
+
                 // Don't forget to unset the sign bits, negative IDs would be weird.
                 if (params.id_rand_max == 1)
                 {
@@ -471,7 +471,7 @@ namespace Diana
                 {
                     visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
                 }
-                
+
                 visdata_msg.position = o->position;
 
                 if (ro != NULL)
@@ -522,6 +522,15 @@ namespace Diana
             }
         }
         UNLOCK(vis_lock);
+    }
+
+    double Universe::gen_rand(std::normal_distribution<double> dist)
+    {
+        double ret = 0.0;
+        LOCK(rand_lock);
+        ret = dist(re);
+        UNLOCK(rand_lock);
+        return ret;
     }
 
     void Universe::handle_message(int32_t socket)
@@ -625,7 +634,8 @@ namespace Diana
                 if (msg->all_specced(msg->num_el - 3))
                 {
                     struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
-                    spectrum = Spectrum_perturb(spectrum, params.spectrum_slush_range);
+                    spectrum = Spectrum_perturb(spectrum, params.spectrum_slush_range,
+                        [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
                     spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
                     smarty->pobj.spectrum = spectrum;
 
@@ -708,7 +718,8 @@ namespace Diana
                 msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
 
             // Now that the beam has a cloned version of the spectrum, perturb it.
-            b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range);
+            b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range,
+                [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
 
             add_object(b);
             break;
@@ -767,7 +778,8 @@ namespace Diana
             // Now that the object contains a cloned version of the spectrum, perturb it.
             if (obj->spectrum != NULL)
             {
-                obj->spectrum = Spectrum_perturb(obj->spectrum, params.spectrum_slush_range);
+                obj->spectrum = Spectrum_perturb(obj->spectrum, params.spectrum_slush_range,
+                    [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
             }
 
             // Note that adding the object to the attractors and radiators lists is handled
@@ -812,12 +824,12 @@ namespace Diana
             // The signature's power levels are scaled based on the distance (the area of the 
             // wave front, total power amortized across the area, times the area of the object
             // intersection with that).
-            
+
             if (smarty != NULL)
             {
                 // The message to send back.
                 ScanResultMsg srm;
-                
+
                 // Spec the IDs
                 srm.specced[0] = true;
                 srm.server_id = msg->server_id;
@@ -839,7 +851,7 @@ namespace Diana
                 V3 dp;
                 double distance_sq;
                 double power_scale;
- 
+
                 //! @todo THIS IS BAD! Locking the physics lock synchronously for networking? Oh no.
                 //! @todo Use read/write locks, since most of the time, we only want read locks.
                 LOCK(phys_lock);
@@ -851,10 +863,10 @@ namespace Diana
                     {
                         continue;
                     }
-                    
+
                     Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
                     distance_sq = Vector3_length2(&dp);
-                    
+
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
                     // is (0,0,0), so we can leave the power spectrum alone.
@@ -867,7 +879,7 @@ namespace Diana
                         // You can't absorb more power than it's outputting...
                         power_scale = MIN(1.0, smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq));
                     }
-                    
+
                     if ((power_scale * other->spectrum->total_power) < params.collision_energy_cutoff)
                     {
                         continue;
@@ -885,7 +897,7 @@ namespace Diana
                     {
                         Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
                     }
-                    
+
                     srm.position = dp;
                     srm.send(smarty->socket);
                     free(srm.obj_spectrum);
@@ -1219,7 +1231,7 @@ namespace Diana
                     fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
                 }
-                
+
                 PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
                 //! @todo Smarty beam collision messages
@@ -1377,7 +1389,7 @@ namespace Diana
                 {
                     continue;
                 }
-                
+
                 Vector3_subtract(&pd, &other->position, &o->position);
                 distance_sq = Vector3_length2(&pd);
                 if (distance_sq < other->spectrum->safe_distance_sq)
@@ -1400,7 +1412,7 @@ namespace Diana
                         //! @todo Ok, this four-character string is starting to feel forced.
                         cm.set_colltype((char*)"RADN");
                         cm.spec_all();
-                        
+
                         // Note that there is no comm message, so that's unspecced.
                         cm.specced[cm.num_el - 4] = false;
                         cm.send(s->socket);
@@ -1543,8 +1555,8 @@ namespace Diana
                 throw std::runtime_error("WAT");
             }
             UNLOCK(expire_lock);
-            }
         }
+    }
 
     void Universe::handle_added()
     {
@@ -1788,7 +1800,7 @@ namespace Diana
                         fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
                     }
-                    
+
                     // Note that when applying the collision, we need to make sure that each object is observing the
                     // correct time-delta to have elapsed since their last physics event. This is why we take the
                     // collision results 't' parameter portion of the total tick time (t*dt), and subtract off the
@@ -1975,4 +1987,4 @@ namespace Diana
             }
         }
     }
-    }
+}

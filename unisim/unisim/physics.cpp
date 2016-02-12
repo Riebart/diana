@@ -185,24 +185,21 @@ namespace Diana
         }
     }
 
-    struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit)
+    struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit, std::function<double(void)> get_rand)
     {
         if (src != NULL)
         {
-            // We won't wiggle anything around by more than 1% of it's current value.
-            std::uniform_real_distribution<double> dist(1.0 - limit, 1.0 + limit);
-            thread_local std::default_random_engine re;
             struct SpectrumComponent* components = &src->components;
             for (uint32_t i = 0; i < src->n; i++)
             {
                 if (ABS(components[i].power) < limit)
                 {
                     // No one will be able to fully remove a component from the signature.
-                    components[i].power = (dist(re) - 1.0 + limit) / 2;
+                    components[i].power = (get_rand() - 1.0 + limit) / 2;
                 }
                 else
                 {
-                    components[i].power *= dist(re);
+                    components[i].power *= get_rand();
                 }
             }
             total_spectrum_power(src);

@@ -36,15 +36,14 @@ private:
     volatile bool running;
     FSocket* sock = NULL;
     ADianaConnector* parent = NULL;
-    std::map<int32, struct ADianaConnector::DianaActor*>* oa_map;
+    std::map<int32, struct ADianaConnector::DianaActor*>* oa_map = NULL;
 };
 
 class FSensorManager : public FRunnable
 {
 public:
-    //FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map);
-    FSensorManager() {}
-    ~FSensorManager() {}
+    FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct FSensorContact>* sc_map);
+    ~FSensorManager();
 
     virtual bool Init();
     virtual uint32 Run();
@@ -55,6 +54,7 @@ private:
     volatile bool running;
     FSocket* sock = NULL;
     ADianaConnector* parent = NULL;
+    std::map<int32, struct FSensorContact>* sc_map = NULL;
 };
 
 FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map)
@@ -67,6 +67,16 @@ FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
 
+FSensorManager::FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct FSensorContact>*sc_map)
+{
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Constructor"));
+    this->sock = sock;
+    this->parent = parent;
+    this->sc_map = sc_map;
+    rt = FRunnableThread::Create(this, TEXT("FSensorManager"), 0, EThreadPriority::TPri_Normal); // Don't set an affinity mask
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Constructor::PostThreadCreate"));
+}
+
 FVisDataReceiver::~FVisDataReceiver()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Destructor"));
@@ -75,9 +85,24 @@ FVisDataReceiver::~FVisDataReceiver()
     rt = NULL;
 }
 
+FSensorManager::~FSensorManager()
+{
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Destructor"));
+    Stop();
+    delete rt;
+    rt = NULL;
+}
+
 bool FVisDataReceiver::Init()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Init"));
+    running = true;
+    return true;
+}
+
+bool FSensorManager::Init()
+{
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Init"));
     running = true;
     return true;
 }
@@ -246,9 +271,22 @@ uint32 FVisDataReceiver::Run()
     return nmessages;
 }
 
+uint32 FSensorManager::Run()
+{
+    uint32 ncontacts = 0;
+    return ncontacts;
+}
+
 void FVisDataReceiver::Stop()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Stop"));
+    running = false;
+    rt->WaitForCompletion();
+}
+
+void FSensorManager::Stop()
+{
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Stop"));
     running = false;
     rt->WaitForCompletion();
 }
@@ -445,9 +483,9 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TA
     return proxy->DirectoryListing(client_id, server_id, type, items);
 }
 
-void ADianaConnector::SensorStatus(bool read_only, int32 system_id) //, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners)
+void ADianaConnector::SensorStatus(bool read_only, int32 system_id)
 {
-    return proxy->SensorStatus(client_id, server_id, read_only, system_id);//, contacts, scanners);
+    return proxy->SensorStatus(client_id, server_id, read_only, system_id);
 }
 
 void ADianaConnector::CreateShip(int32 class_id)
@@ -742,7 +780,7 @@ struct FSensorSystem read_scanner(std::map<std::string, struct BSONReader::Eleme
     return v;
 }
 
-void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_only, int32_t system_id) //, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners)
+void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_only, int32_t system_id)
 {
     if (!read_only)
     {
@@ -763,7 +801,7 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
 
     Diana::BSONMessage* m = NULL;;
     m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
-    
+
     //std::chrono::milliseconds dura(20);
     //for (int i = 0; ((i < 50) && (m == NULL)); i++)
     //{
@@ -855,8 +893,7 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                     if (it->second.map_val != NULL)
                     {
                         struct FSensorContact v = read_contact(it->second.map_val);
-                        v.contact_id = it->second.name;
-                        //contacts.Add(v);
+                        v.contact_id = it->first.c_str();
 
                         std::map<FString, struct FSensorContact>::iterator scit;
                         FScopeLock(&this->map_cs);
@@ -884,7 +921,6 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                                 v.epc->SetPVA(position, velocity, acceleration);
                             }
                             scit->second = v;
-                            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::UpdatedContact"));
                         }
                     }
                 }
@@ -895,7 +931,6 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus Expected 'contacts' element at root, not found."));
         }
 
-        //TArray<struct FSensorSystem> scanners;
         try
         {
             struct BSONReader::Element* el = &(props->at("scanners"));
@@ -907,7 +942,6 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                     {
                         struct FSensorSystem v = read_scanner(it->second.map_val);
                         v.fade_time = fade_time;
-                        //scanners.Add(v);
                     }
                 }
             }
@@ -916,8 +950,6 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
         {
             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus Expected 'scanners' element at root, not found."));
         }
-
-        //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::Counts %d %d"), scanners.Num(), contacts.Num());
 
         delete msg;
     }

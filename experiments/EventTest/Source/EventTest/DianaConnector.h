@@ -164,7 +164,7 @@ public:
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void SensorStatus(bool read_only, int32 system_id);// , TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
+        void SensorStatus(bool read_only, int32 system_id);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void CreateShip(int32 class_id);
@@ -197,7 +197,7 @@ protected:
     void Goodbye(int32 client_id, int32 server_id);
     void SetThrust(int32 client_id, int32 server_id, FVector _thrust);
     void OffsetThrust(int32 client_id, int32 server_id, FVector _thrust);
-    void SensorStatus(int32 client_id, int32 server_id, bool read_only, int32 system_id);//, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
+    void SensorStatus(int32 client_id, int32 server_id, bool read_only, int32 system_id);
 
 private:
     FString host = "";

@@ -305,6 +305,9 @@ namespace Diana
         // Take care of adding queued objects to the universe at the end of a physics tick.
         void handle_added();
 
+        //! Generate a random number according to the universe's spectrum perturbation rules.
+        double gen_rand(std::normal_distribution<double> dist);
+
         //! This is called to update either the attractors or radiators lists, and is supplied
         //! with the physics object in question, as well as the new and old values for the 
         //! conditional boolean as appropriate.
@@ -444,6 +447,7 @@ namespace Diana
         LOCK_T vis_lock;
         LOCK_T query_lock;
         LOCK_T collision_lock;
+        LOCK_T rand_lock;
 
         //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
         double rate;
