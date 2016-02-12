@@ -178,7 +178,7 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
     sm.thrust = [0.0,0.0,0.0]
     sm.velocity = [0.0,0.0,0.0]
     sm.orientation = [0.0,0.0,0.0,0.0]
-    sm.object_type = "NonRadiatorDumb"
+    sm.object_type = "Ball", z
     sm.mass = 1.0
     sm.radius = ball_radius
 
@@ -187,9 +187,11 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
     #
     # 2 * pi * R_c >= num_balls * ball_radius  * k
     circle_radius = k * num_balls * ball_radius
+    print circle_radius
 
     theta = z
     for i in range(num_balls):
+        sm.object_type = "Ball", z, i
         sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
         sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), vel_scale * (2 * random.random() - 1) * ball_radius ]
         sm.spectrum = Spectrum([i], [i])
@@ -305,7 +307,7 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
 
-    #for i in range(-30, 31, 1):
-    #    flight_school(0.25, 50, i, 0.42, 0.0)
+    for i in range(-1, 2, 1):
+        flight_school(1.0, 20, i, 4.0, 0.0)
 
-    test_sensors()
+    #test_sensors()

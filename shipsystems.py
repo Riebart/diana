@@ -53,7 +53,7 @@ class Sensors(System):
         self.name = "Sensors"
         self.contacts = dict()
         self.scanners = []
-        self.fade_time = 5.0
+        self.fade_time = 15.0
 
     def perform_scan():
         pass

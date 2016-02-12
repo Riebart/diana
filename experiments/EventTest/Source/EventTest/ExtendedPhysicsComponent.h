@@ -43,7 +43,7 @@ public:
         void GetPVA(FVector& Position, FVector& Velocity, FVector& Acceleration);
 
     UFUNCTION(BlueprintCallable, Category = "Extended Physics")
-        void SetPVA(FVector& Position, FVector& Velocity, FVector& Acceleration);
+        void SetPVA(FVector Position, FVector Velocity, FVector Acceleration);
 
     UFUNCTION(BlueprintCallable, Category = "Extended Physics")
         float GetLocalSimThreshold();

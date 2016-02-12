@@ -72,7 +72,7 @@ void UExtendedPhysicsComponent::GetPVA(FVector& Position, FVector& Velocity, FVe
     Acceleration = acceleration;
 }
 
-void UExtendedPhysicsComponent::SetPVA(FVector& Position, FVector& Velocity, FVector& Acceleration)
+void UExtendedPhysicsComponent::SetPVA(FVector Position, FVector Velocity, FVector Acceleration)
 {
     FScopeLock(&this->cs);
     set_position = true;

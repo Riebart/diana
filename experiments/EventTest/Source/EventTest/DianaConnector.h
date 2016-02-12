@@ -51,6 +51,10 @@ struct FSensorContact
         FString data;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
         FString contact_id;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        AActor* actor;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sensor Contact")
+        UExtendedPhysicsComponent* epc;
 };
 
 USTRUCT(BlueprintType, Blueprintable)
@@ -160,7 +164,7 @@ public:
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void SensorStatus(bool read_only, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
+        void SensorStatus(bool read_only, int32 system_id);// , TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void CreateShip(int32 class_id);
@@ -193,7 +197,7 @@ protected:
     void Goodbye(int32 client_id, int32 server_id);
     void SetThrust(int32 client_id, int32 server_id, FVector _thrust);
     void OffsetThrust(int32 client_id, int32 server_id, FVector _thrust);
-    void SensorStatus(int32 client_id, int32 server_id, bool read_only, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
+    void SensorStatus(int32 client_id, int32 server_id, bool read_only, int32 system_id);//, TArray<struct FSensorContact>& contacts, TArray<struct FSensorSystem>& scanners);
 
 private:
     FString host = "";
@@ -213,4 +217,5 @@ private:
     FCriticalSection map_cs;
 
     std::map<int32, struct DianaActor*> oa_map;
+    std::map<FString, struct FSensorContact> sc_map;
 };

@@ -102,7 +102,7 @@ int main(int32_t argc, char** argv)
     signal(SIGINT, &sighandler);
 
     struct Diana::Universe::Parameters params;
-    params.verbose_logging = true;
+    params.verbose_logging = false;
     Diana::Universe* u = new Diana::Universe(params);
 
     u->start_net();
