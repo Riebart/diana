@@ -36,12 +36,14 @@
 #define SOCKET int32_t
 #endif
 
-#define MAX_SOCKET_RETRIES 512
+#define MAX_SOCKET_RETRIES 256
+#define SOCKET_RETRY_DELAY 5 // in milliseconds
 
 namespace Diana
 {
     int64_t MIMOServer::socket_read(int fd, char* buf, int64_t count)
     {
+        std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         int64_t nbytes = 0;
         int64_t curbytes;
         int32_t nretries = MAX_SOCKET_RETRIES;
@@ -54,6 +56,7 @@ namespace Diana
             if (curbytes == -1)
             {
                 nretries--;
+                std::this_thread::sleep_for(dura);
             }
             else
             {
@@ -74,6 +77,7 @@ namespace Diana
 
     int64_t MIMOServer::socket_write(int fd, char* buf, int64_t count)
     {
+        std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         int64_t nbytes = 0;
         int64_t curbytes;
         int32_t nretries = MAX_SOCKET_RETRIES;
@@ -84,6 +88,7 @@ namespace Diana
             if (curbytes == -1)
             {
                 nretries--;
+                std::this_thread::sleep_for(dura);
             }
             else
             {

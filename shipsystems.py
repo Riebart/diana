@@ -73,7 +73,7 @@ class Sensors(System):
                 del new_contacts[contact]
 
         self.contacts = new_contacts
-        self.num_contacs = len(self.contacts)
+        self.num_contacts = len(self.contacts)
 
     #for now, just send complete state
     def send_update(self, client, contact):

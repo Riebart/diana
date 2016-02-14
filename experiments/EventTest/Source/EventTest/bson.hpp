@@ -148,7 +148,7 @@ public:
             {
                 // Otherwise, read the name.
                 el.name = msg + pos;
-                pos += strlen(msg + pos) + 1;;
+                pos += strlen(msg + pos) + 1;
             }
         }
         else

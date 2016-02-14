@@ -4,6 +4,8 @@
 #include <functional>
 #include <stdexcept>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 #include "messaging.hpp"
 
@@ -15,7 +17,8 @@
 
 #define SOCKET_WRITE socket_write
 #define SOCKET_READ socket_read
-#define MAX_SOCKET_RETRIES 512
+#define MAX_SOCKET_RETRIES 256
+#define SOCKET_RETRY_DELAY 5 // in milliseconds
 
 namespace Diana
 {
@@ -60,6 +63,7 @@ namespace Diana
             return 0;
         }
 
+        std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         uint32 count = (uint32)countS;
         uint8* dst = (uint8*)dstC;
         uint32 nbytes = 0;
@@ -88,6 +92,7 @@ namespace Diana
             if (!read_success)
             {
                 nretries--;
+                std::this_thread::sleep_for(dura);
             }
             else
             {
