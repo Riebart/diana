@@ -62,12 +62,16 @@ namespace Diana
         uint32 count = (uint32)countS;
         uint8* dst = (uint8*)dstC;
         uint32 nbytes = 0;
+        int32 nretries = 512;
         bool read_success;
         uint32 pending_bytes;
 
         // See if there's pending data
         read_success = s->HasPendingData(pending_bytes);
-        if (!read_success || (pending_bytes < count))
+
+        // Note that the number of pending bytes may not be the whole message, due to TCP window length
+        // reasons, and buffer reasons, so we can't trust it.
+        if (!read_success)// || (pending_bytes < count))
         {
             return 0;
         }
@@ -81,6 +85,11 @@ namespace Diana
             read_success = s->Recv(dst + nbytes, count - nbytes, curbytes, ESocketReceiveFlags::Type::None);
             //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::Post::(%d,%d,%d,%d)"), count, nbytes, curbytes, (int32)read_success);
             if (!read_success)
+            {
+                nretries--;
+            }
+            
+            if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -334,10 +343,16 @@ namespace Diana
         char* buf = (char*)malloc(message_len);
         if (buf == NULL)
         {
-            throw "OOM You twat";
+            throw std::runtime_error("BSONMessage::ReadMessage::BufferAllocateOOM");
         }
         *(int32_t*)buf = message_len;
         nbytes = SOCKET_READ(sock, buf + 4, message_len - 4);
+
+        if (nbytes != (message_len - 4))
+        {
+            free(buf);
+            return NULL;
+        }
 
         BSONReader br(buf);
         struct BSONReader::Element* el = br.get_next_element();

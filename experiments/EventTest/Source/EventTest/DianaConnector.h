@@ -164,7 +164,7 @@ public:
         TArray<struct FDirectoryItem> DirectoryListing(FString type, TArray<struct FDirectoryItem> items);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-        void SensorStatus(bool read_only, int32 system_id);
+        int32 SensorStatus(bool read_only, int32 system_id);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
         void CreateShip(int32 class_id);
@@ -197,7 +197,7 @@ protected:
     void Goodbye(int32 client_id, int32 server_id);
     void SetThrust(int32 client_id, int32 server_id, FVector _thrust);
     void OffsetThrust(int32 client_id, int32 server_id, FVector _thrust);
-    void SensorStatus(int32 client_id, int32 server_id, bool read_only, int32 system_id);
+    int32 SensorStatus(int32 client_id, int32 server_id, bool read_only, int32 system_id);
 
 private:
     FString host = "";
@@ -205,16 +205,21 @@ private:
     int64 vis_iteration = 1;
     ADianaConnector* proxy = NULL;
     FVisDataReceiver* vdr_thread = NULL;
+    FSensorManager* sensor_thread = NULL;
     bool ConnectSocket();
     void DisconnectSocket();
     FSocket* sock = NULL;
     FVector thrust = FVector(0.0, 0.0, 0.0);
+    float world_to_metres;
 
     // See: http://www.slideserve.com/maine/concurrency-parallelism-in-ue4
-    TQueue<struct DianaVDM> messages;
+    TQueue<struct DianaVDM> vis_messages;
+    TQueue<FString> sensor_messages;
 
     // See: https://answers.unrealengine.com/questions/207675/fcriticalsection-lock-causes-crash.html
     FCriticalSection map_cs;
+    FCriticalSection bson_cs;
+    FCriticalSection sensor_cs;
 
     std::map<int32, struct DianaActor*> oa_map;
     std::map<FString, struct FSensorContact> sc_map;

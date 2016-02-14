@@ -15,6 +15,7 @@
 #include <string.h>
 #include <thread>
 #include <list>
+#include <chrono>
 
 #define ALMOST_ZERO(v) (((v) >= -1e-8) || ((v) <= 1e-8))
 
@@ -42,19 +43,20 @@ private:
 class FSensorManager : public FRunnable
 {
 public:
-    FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct FSensorContact>* sc_map);
+    FSensorManager(int32 system_id, ADianaConnector* parent, std::map<FString, struct FSensorContact>* sc_map);
     ~FSensorManager();
 
     virtual bool Init();
     virtual uint32 Run();
     virtual void Stop();
+    volatile bool paused;
 
 private:
     FRunnableThread* rt = NULL;
     volatile bool running;
-    FSocket* sock = NULL;
+    int32 system_id;
     ADianaConnector* parent = NULL;
-    std::map<int32, struct FSensorContact>* sc_map = NULL;
+    std::map<FString, struct FSensorContact>* sc_map = NULL;
 };
 
 FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::map<int32, struct ADianaConnector::DianaActor*>* oa_map)
@@ -67,10 +69,10 @@ FVisDataReceiver::FVisDataReceiver(FSocket* sock, ADianaConnector* parent, std::
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
 
-FSensorManager::FSensorManager(FSocket* sock, ADianaConnector* parent, std::map<int32, struct FSensorContact>*sc_map)
+FSensorManager::FSensorManager(int32 system_id, ADianaConnector* parent, std::map<FString, struct FSensorContact>*sc_map)
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Constructor"));
-    this->sock = sock;
+    this->system_id = system_id;
     this->parent = parent;
     this->sc_map = sc_map;
     rt = FRunnableThread::Create(this, TEXT("FSensorManager"), 0, EThreadPriority::TPri_Normal); // Don't set an affinity mask
@@ -104,6 +106,7 @@ bool FSensorManager::Init()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::FSensorManager::Init"));
     running = true;
+    paused = true;
     return true;
 }
 
@@ -145,7 +148,10 @@ uint32 FVisDataReceiver::Run()
         read_available = sock->Wait(ESocketWaitConditions::Type::WaitForRead, sock_wait_time);
         if (read_available)
         {
-            m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
+            {
+                FScopeLock(&parent->bson_cs);
+                m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
+            }
 
             // Only consider messages that are VisualData, and have our client_id, and have the phys_id specced[2]
             if ((m != NULL) &&
@@ -188,7 +194,7 @@ uint32 FVisDataReceiver::Run()
                         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::ListLength %u"), last_seen.size());
 
                         dm.da = NULL;
-                        parent->messages.Enqueue(dm);
+                        parent->vis_messages.Enqueue(dm);
 
                         FScopeLock Lock(&parent->map_cs);
                         oa_map->insert(std::pair<int32, struct ADianaConnector::DianaActor*>(dm.server_id, da));
@@ -241,7 +247,7 @@ uint32 FVisDataReceiver::Run()
                         dm.da = *lit;
                         dm.server_id = (*lit)->server_id;
                         lit = last_seen.erase(lit);
-                        parent->messages.Enqueue(dm);
+                        parent->vis_messages.Enqueue(dm);
                     }
 
                     vis_iterations++;
@@ -274,6 +280,24 @@ uint32 FVisDataReceiver::Run()
 uint32 FSensorManager::Run()
 {
     uint32 ncontacts = 0;
+    uint32 cur_contacts;
+    while (running)
+    {
+        std::chrono::milliseconds dura(10);
+        if (!paused)
+        {
+            cur_contacts = parent->SensorStatus(true, system_id);
+        }
+        else
+        {
+            cur_contacts = 0;
+        }
+        ncontacts += cur_contacts;
+        if (cur_contacts == 0)
+        {
+            std::this_thread::sleep_for(dura);
+        }
+    }
     return ncontacts;
 }
 
@@ -354,6 +378,12 @@ ADianaConnector::ADianaConnector()
 ADianaConnector::~ADianaConnector()
 {
     RegisterForVisData(false);
+    if (sensor_thread != NULL)
+    {
+        sensor_thread->Stop();
+        delete sensor_thread;
+        sensor_thread = NULL;
+    }
     DisconnectSocket();
 }
 
@@ -362,7 +392,7 @@ void ADianaConnector::BeginPlay()
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging:BeginPlay"));
     Super::BeginPlay();
-
+    world_to_metres = this->GetWorld()->GetWorldSettings()->WorldToMeters / 2.0;;
 }
 
 // Called every frame
@@ -372,10 +402,10 @@ void ADianaConnector::Tick(float DeltaTime)
     struct DianaVDM dm;
     struct DianaActor* da;
 
-    while (!messages.IsEmpty())
+    while (!vis_messages.IsEmpty())
     {
-        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandlingQueueMessage"));
-        messages.Dequeue(dm);
+        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandlingQueue::VisMessage"));
+        vis_messages.Dequeue(dm);
 
         // If the object disappeared, call out to Blueprints to handle that event
         if (dm.da != NULL)
@@ -398,6 +428,31 @@ void ADianaConnector::Tick(float DeltaTime)
         {
             // The object is new
             NewVisDataObject(dm.server_id, dm.radius, dm.pos);
+        }
+    }
+
+    FString contact_id;
+    std::map<FString, struct FSensorContact>::iterator it;
+    struct FSensorContact* sc;
+    while (!sensor_messages.IsEmpty())
+    {
+        sensor_messages.Dequeue(contact_id);
+        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandlingQueue::SensorMessage %s"), *contact_id);
+        {
+            FScopeLock(&this->map_cs);
+            it = sc_map.find(contact_id);
+        }
+
+        if (it != sc_map.end())
+        {
+            sc = &(it->second);
+            SensorContact(it->second, sc->actor, sc->epc);
+        }
+        // If it was in the queue, but we can't find it, it was likely removed almost immediately after
+        // being added.
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::Tick::HandlingQueue::SensorMessage::NotInMap %s"), *contact_id);
         }
     }
 }
@@ -483,7 +538,7 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(FString type, TA
     return proxy->DirectoryListing(client_id, server_id, type, items);
 }
 
-void ADianaConnector::SensorStatus(bool read_only, int32 system_id)
+int32 ADianaConnector::SensorStatus(bool read_only, int32 system_id)
 {
     return proxy->SensorStatus(client_id, server_id, read_only, system_id);
 }
@@ -570,7 +625,10 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id,
         Diana::BSONMessage* m = NULL;
         for (int i = 0; ((i < 50) && (m == NULL)); i++)
         {
-            m = Diana::BSONMessage::ReadMessage(sock);
+            {
+                FScopeLock(&this->bson_cs);
+                m = Diana::BSONMessage::ReadMessage(sock);
+            }
             std::this_thread::sleep_for(dura);
         }
 
@@ -608,7 +666,10 @@ void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_i
     Diana::BSONMessage* m = NULL;
     for (int i = 0; ((i < 50) && (m == NULL)); i++)
     {
-        m = Diana::BSONMessage::ReadMessage(sock);
+        {
+            FScopeLock(&this->bson_cs);
+            m = Diana::BSONMessage::ReadMessage(sock);
+        }
         std::this_thread::sleep_for(dura);
     }
 
@@ -634,7 +695,10 @@ int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
     Diana::BSONMessage* m = NULL;
     for (int i = 0; ((i < 50) && (m == NULL)); i++)
     {
-        m = Diana::BSONMessage::ReadMessage(sock);
+        {
+            FScopeLock(&this->bson_cs);
+            m = Diana::BSONMessage::ReadMessage(sock);
+        }
         std::this_thread::sleep_for(dura);
     }
 
@@ -780,8 +844,17 @@ struct FSensorSystem read_scanner(std::map<std::string, struct BSONReader::Eleme
     return v;
 }
 
-void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_only, int32_t system_id)
+int32 ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_only, int32_t system_id)
 {
+    FScopeLock(&this->sensor_cs);
+    ConnectSocket();
+
+    if (sensor_thread == NULL)
+    {
+        sensor_thread = new FSensorManager(system_id, this, &sc_map);
+        sensor_thread->paused = false;
+    }
+
     if (!read_only)
     {
         Diana::CommandMsg cm;
@@ -797,10 +870,20 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
         cm.send(sock);
         cm.command->name = NULL;
         cm.command->str_val = NULL;
+        return 0;
     }
 
+    int32 ncontacts = 0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    start = std::chrono::high_resolution_clock::now();
+
     Diana::BSONMessage* m = NULL;;
-    m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
+    //std::chrono::milliseconds dura(20);
+    //std::this_thread::sleep_for(dura);
+    {
+        FScopeLock(&this->bson_cs);
+        m = Diana::BSONMessage::BSONMessage::ReadMessage(sock);
+    }
 
     //std::chrono::milliseconds dura(20);
     //for (int i = 0; ((i < 50) && (m == NULL)); i++)
@@ -818,7 +901,7 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
         Diana::SystemUpdateMsg* msg = (Diana::SystemUpdateMsg*)m;
         if (msg->properties->map_val == NULL)
         {
-            return;
+            return ncontacts;
         }
 
         //SEND OrderedDict([('', 23), ('\x01', 3), ('\x02', 1L), 
@@ -883,7 +966,6 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
             struct BSONReader::Element* el = &(props->at("contacts"));
             if (el->map_val != NULL)
             {
-                float world_to_metres = this->GetWorld()->GetWorldSettings()->WorldToMeters / 2.0;
                 FVector position;
                 FVector velocity;
                 FVector acceleration;
@@ -898,6 +980,7 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                         std::map<FString, struct FSensorContact>::iterator scit;
                         FScopeLock(&this->map_cs);
                         scit = sc_map.find(v.contact_id);
+                        ncontacts++;
 
                         // If we don't currently have an entry for this contact
                         // None of this involves updating the epc components.
@@ -906,11 +989,13 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                             sc_map[v.contact_id] = v;
                             v.actor = NULL;
                             v.epc = NULL;
-                            SensorContact(v, NULL, NULL);
+                            sensor_messages.Enqueue(v.contact_id);
+                            //SensorContact(v, NULL, NULL);
                             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::NewContact %s"), *v.contact_id);
                         }
-                        else
+                        else if (v.time_seen > scit->second.time_seen)
                         {
+                            UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::UpdatedContact %s"), *v.contact_id);
                             v.actor = scit->second.actor;
                             v.epc = scit->second.epc;
                             if (v.epc != NULL)
@@ -920,7 +1005,9 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
                                 acceleration = world_to_metres * (ALMOST_ZERO(v.mass) ? FVzero : v.thrust / v.mass);
                                 v.epc->SetPVA(position, velocity, acceleration);
                             }
+                            
                             scit->second = v;
+                            sensor_messages.Enqueue(v.contact_id);
                         }
                     }
                 }
@@ -957,6 +1044,18 @@ void ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_o
     {
         delete m;
     }
+
+    end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed;
+    elapsed = end - start;
+    double e = elapsed.count();
+    if (e > 1e-4)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::MessageHandleTime %g"), e);
+    }
+
+    return ncontacts;
 }
 
 void ADianaConnector::UpdateExistingSensorContact(const FString& ID, AActor* ActorRef, UExtendedPhysicsComponent* EPCRef)

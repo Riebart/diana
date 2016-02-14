@@ -275,7 +275,14 @@ def test_sensors():
     message.DirectoryMsg.send(sock, ship_server_id, 1, msg.build())
     rmsg = message.Message.get_message(sock)
 
-    flight_school(ball_radius = 1.0, num_balls = 50, z = 0.0, k = 5.0, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 30, z = 0.0, k = 1.5, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 30, z = 0.0, k = 2.0, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 30, z = 0.0, k = 2.5, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 30, z = 0.0, k = 3.0, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 40, z = 0.0, k = 3.0, vel_scale = 0.0)
+    flight_school(ball_radius = 1.0, num_balls = 50, z = 0.0, k = 3.0, vel_scale = 0.0)
+    #for i in range(-30, 31, 1):
+    #    flight_school(1.0, 40, i, 1.0, 0.0)
 
     msg = message.CommandMsg()
     msg.system_id = 0
@@ -286,9 +293,9 @@ def test_sensors():
 
     #continually return results of ping
     while (True):
-        print "Waiting for results..."
+        #print "Waiting for results..."
         rmsg = message.Message.get_message(sock)
-        print str(rmsg)
+        #print str(rmsg)
         #pprinter.pprint(rmsg.__dict__)
 
 #osim = objectsim.ObjectSim()
@@ -307,7 +314,7 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
 
-    for i in range(-1, 2, 1):
-        flight_school(5, 20, i, 3.0, 0.0)
+    for i in range(-20, 21, 1):
+       flight_school(1.0, 30, i, 3.0, 0.3)
 
     #test_sensors()

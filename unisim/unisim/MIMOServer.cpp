@@ -42,12 +42,19 @@ namespace Diana
     {
         int64_t nbytes = 0;
         int64_t curbytes;
+        int32_t nretries = 512;
+        
         while (nbytes < count)
         {
             //! @todo Maybe use recvmsg()?
             // Try to wait for all of the data, if possible.
             curbytes = recv(fd, buf + (size_t)nbytes, (int)(count - nbytes), MSG_WAITALL);
             if (curbytes == -1)
+            {
+                nretries--;
+            }
+            
+            if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -63,11 +70,17 @@ namespace Diana
     {
         int64_t nbytes = 0;
         int64_t curbytes;
+        int32_t nretries = 512;
 
         while (nbytes < count)
         {
             curbytes = send(fd, buf + (size_t)nbytes, (int)(count - nbytes), 0);
             if (curbytes == -1)
+            {
+                nretries--;
+            }
+
+            if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -274,7 +287,7 @@ namespace Diana
                 }
 
                 hungup -= server->inputs.size();
-                fprintf(stderr, "Successfully hung up %lu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+                fprintf(stderr, "Successfully hung up %llu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
                 server->hangups.clear();
                 UNLOCK(server->hangup_lock);
