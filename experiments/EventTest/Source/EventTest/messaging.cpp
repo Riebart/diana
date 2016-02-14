@@ -15,6 +15,7 @@
 
 #define SOCKET_WRITE socket_write
 #define SOCKET_READ socket_read
+#define MAX_SOCKET_RETRIES 512
 
 namespace Diana
 {
@@ -62,7 +63,7 @@ namespace Diana
         uint32 count = (uint32)countS;
         uint8* dst = (uint8*)dstC;
         uint32 nbytes = 0;
-        int32 nretries = 512;
+        int32 nretries = MAX_SOCKET_RETRIES;
         bool read_success;
         uint32 pending_bytes;
 
@@ -87,6 +88,10 @@ namespace Diana
             if (!read_success)
             {
                 nretries--;
+            }
+            else
+            {
+                nretries = MAX_SOCKET_RETRIES;
             }
             
             if (nretries == 0)
