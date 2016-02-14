@@ -6,8 +6,8 @@ import math
 import json
 
 class System(Observable):
-    def __init__(self, ship):
-        Observable.__init__(self, ship.osim_id)
+    def __init__(self, ship, delayed_updates = False):
+        Observable.__init__(self, ship.osim_id, delayed_updates)
         self._ship = ship
         self.system_id = -1
         self.controlled = 0
@@ -49,11 +49,12 @@ class Contact:
 
 class Sensors(System):
     def __init__(self, ship):
-        System.__init__(self, ship)
+        System.__init__(self, ship, delayed_updates = True)
         self.name = "Sensors"
         self.contacts = dict()
         self.scanners = []
         self.fade_time = 15.0
+        self.num_contacts = 0 #for the messaging
 
     def perform_scan():
         pass
@@ -72,6 +73,7 @@ class Sensors(System):
                 del new_contacts[contact]
 
         self.contacts = new_contacts
+        self.num_contacs = len(self.contacts)
 
     #for now, just send complete state
     def send_update(self, client, contact):

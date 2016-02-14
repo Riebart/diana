@@ -296,7 +296,7 @@ def test_sensors():
         #print "Waiting for results..."
         rmsg = message.Message.get_message(sock)
         #print str(rmsg)
-        #pprinter.pprint(rmsg.__dict__)
+        pprinter.pprint(rmsg.__dict__)
 
 #osim = objectsim.ObjectSim()
 #rand = random.Random()
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     #spawn_sol()
     #signature_test()
 
-    for i in range(-20, 21, 1):
-       flight_school(1.0, 30, i, 3.0, 0.3)
+    #for i in range(-20, 21, 1):
+    #   flight_school(1.0, 30, i, 3.0, 0.3)
 
-    #test_sensors()
+    test_sensors()
