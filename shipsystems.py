@@ -76,8 +76,8 @@ class Sensors(System):
         self.num_contacs = len(self.contacts)
 
     #for now, just send complete state
-    def send_update(self, client, contact):
-        self.send_state(client)
+    #def send_update(self, client, contact):
+        #self.send_state(client)
 
     def handle_scanresult(self, mess):
         #on reception of a scan result, check if contact is in the contact_list,
@@ -93,7 +93,7 @@ class Sensors(System):
         self.contacts[key] = contact
 
         #in the future, perhaps just notify about what's changed
-        self.notify()
+        self.notify(contact)
 
     #for now, send a general 360 scan ("One. Ping. Only.")
     def handle_command(self, msg):
