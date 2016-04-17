@@ -22,20 +22,22 @@ six.py
 *.exe.config
 *.user
 
-# Uunrel Engine stuff
+# Unrel Engine stuff
 */Saved/Backup/*
 *.dll.response
-#*\Development\UE4Editor*
-*\Intermediate\Build\*
-*\Saved\Autosaves\*
-*\Saved\Logs\*
-*\Intermediate\*bin
-*\Build\Receipts\*
-*\Saved\HardwareSurvey\*
-*\StagedBuilds\*
-*\Saved\Cooked\*
-*\Binaries\*
-*\Saved\Config\*
+#*/Development/UE4Editor*
+*/Intermediate/Build/*
+*/Saved/Autosaves/*
+*/Saved/Logs/*
+*/Intermediate/*bin
+*/Build/Receipts/*
+*/Saved/HardwareSurvey/*
+*/StagedBuilds/*
+*/Saved/Stats/*
+*/Saved/Cooked*
+*/Binaries/*
+*/Saved/Config/*
+Reference\ material
 
 syntax: regexp
 ^([^/]*)/.*/\1[^/]*.log$

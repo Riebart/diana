@@ -1385,6 +1385,7 @@ namespace Diana
             for (size_t i = 0; i < u->radiators.size(); i++)
             {
                 other = u->radiators[i];
+                // Don't collide an object with it's own radiation
                 if (other->phys_id == o->phys_id)
                 {
                     continue;

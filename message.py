@@ -158,9 +158,9 @@ class Message:
         #print "SEND", omsg
         num_sent = Message.big_send(client, bson.dumps(omsg))
         if num_sent == 0:
-            return 0
+            return ""
 
-        return 1
+        return bson.dumps(omsg)
 
     @staticmethod
     def ReadMsgEl(key, msg):

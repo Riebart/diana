@@ -281,7 +281,7 @@ def test_sensors():
     #flight_school(ball_radius = 1.0, num_balls = 30, z = 0.0, k = 3.0, vel_scale = 0.0)
     #flight_school(ball_radius = 1.0, num_balls = 40, z = 0.0, k = 3.0, vel_scale = 0.0)
     #flight_school(ball_radius = 1.0, num_balls = 50, z = 0.0, k = 3.0, vel_scale = 0.0)
-    for i in range(-20, 21, 1):
+    for i in range(-5, 6, 1):
       flight_school(1.0, 30, i, 3.0, 0.3)
 
     msg = message.CommandMsg()
@@ -311,10 +311,10 @@ def test_sensors():
 
 if __name__ == "__main__":
     #pool_rack(C = 1.01, num_rows = 25)
-    #spawn_sol()
+    spawn_sol()
     #signature_test()
 
-    for i in range(-20, 21, 1):
-      flight_school(1.0, 30, i, 3.0, 0.3)
+    #for i in range(-20, 21, 1):
+    #    flight_school(1.0, 30, i, 3.0, 0.3)
 
     #test_sensors()

@@ -365,7 +365,17 @@ namespace Diana
         }
 
         BSONReader br(buf);
-        struct BSONReader::Element* el = br.get_next_element();
+        struct BSONReader::Element* el = NULL;
+        try
+        {
+            el = br.get_next_element();
+        }
+        catch (std::runtime_error e)
+        {
+            fprintf(stderr, "Caught error in ReadMessage()\n");
+            free(buf);
+            return NULL;
+        }
 
         // Sanity checks:
         // The element should be an int32 (type 16), and a name of "".
@@ -378,81 +388,90 @@ namespace Diana
         {
             BSONMessage* ret = NULL;
             MessageType mt = (MessageType)el->i32_val;
-            switch (mt)
+            try
             {
-            case MessageType::Hello:
-                ret = new HelloMsg(&br);
-                break;
-            case MessageType::PhysicalProperties:
-                ret = new PhysicalPropertiesMsg(&br);
-                break;
-            case MessageType::VisualProperties:
-                ret = new VisualPropertiesMsg(&br);
-                break;
-            case MessageType::VisualDataEnable:
-                ret = new VisualDataEnableMsg(&br);
-                break;
-            case MessageType::VisualMetaDataEnable:
-                ret = new VisualMetaDataEnableMsg(&br);
-                break;
-            case MessageType::VisualMetaData:
-                ret = new VisualMetaDataMsg(&br);
-                break;
-            case MessageType::VisualData:
-                ret = new VisualDataMsg(&br);
-                break;
-            case MessageType::Beam:
-                ret = new BeamMsg(&br);
-                break;
-            case MessageType::Collision:
-                ret = new CollisionMsg(&br);
-                break;
-            case MessageType::Spawn:
-                ret = new SpawnMsg(&br);
-                break;
-            case MessageType::ScanResult:
-                ret = new ScanResultMsg(&br);
-                break;
-            case MessageType::ScanQuery:
-                ret = new ScanQueryMsg(&br);
-                break;
-            case MessageType::ScanResponse:
-                ret = new ScanResponseMsg(&br);
-                break;
-            case MessageType::Goodbye:
-                ret = new GoodbyeMsg(&br);
-                break;
-            case MessageType::Directory:
-                ret = new DirectoryMsg(&br);
-                break;
-            case MessageType::Name:
-                ret = new NameMsg(&br);
-                break;
-            case MessageType::Ready:
-                ret = new ReadyMsg(&br);
-                break;
-            case MessageType::Thrust:
-                ret = new ThrustMsg(&br);
-                break;
-            case MessageType::Velocity:
-                ret = new VelocityMsg(&br);
-                break;
-            case MessageType::Jump:
-                ret = new JumpMsg(&br);
-                break;
-            case MessageType::InfoUpdate:
-                ret = new InfoUpdateMsg(&br);
-                break;
-            case MessageType::RequestUpdate:
-                ret = new RequestUpdateMsg(&br);
-                break;
-            case MessageType::SystemUpdate:
-                ret = new SystemUpdateMsg(&br);
-                break;
-            case MessageType::Command:
-                ret = new CommandMsg(&br);
-                break;
-            default:
+                switch (mt)
+                {
+                case MessageType::Hello:
+                    ret = new HelloMsg(&br);
+                    break;
+                case MessageType::PhysicalProperties:
+                    ret = new PhysicalPropertiesMsg(&br);
+                    break;
+                case MessageType::VisualProperties:
+                    ret = new VisualPropertiesMsg(&br);
+                    break;
+                case MessageType::VisualDataEnable:
+                    ret = new VisualDataEnableMsg(&br);
+                    break;
+                case MessageType::VisualMetaDataEnable:
+                    ret = new VisualMetaDataEnableMsg(&br);
+                    break;
+                case MessageType::VisualMetaData:
+                    ret = new VisualMetaDataMsg(&br);
+                    break;
+                case MessageType::VisualData:
+                    ret = new VisualDataMsg(&br);
+                    break;
+                case MessageType::Beam:
+                    ret = new BeamMsg(&br);
+                    break;
+                case MessageType::Collision:
+                    ret = new CollisionMsg(&br);
+                    break;
+                case MessageType::Spawn:
+                    ret = new SpawnMsg(&br);
+                    break;
+                case MessageType::ScanResult:
+                    ret = new ScanResultMsg(&br);
+                    break;
+                case MessageType::ScanQuery:
+                    ret = new ScanQueryMsg(&br);
+                    break;
+                case MessageType::ScanResponse:
+                    ret = new ScanResponseMsg(&br);
+                    break;
+                case MessageType::Goodbye:
+                    ret = new GoodbyeMsg(&br);
+                    break;
+                case MessageType::Directory:
+                    ret = new DirectoryMsg(&br);
+                    break;
+                case MessageType::Name:
+                    ret = new NameMsg(&br);
+                    break;
+                case MessageType::Ready:
+                    ret = new ReadyMsg(&br);
+                    break;
+                case MessageType::Thrust:
+                    ret = new ThrustMsg(&br);
+                    break;
+                case MessageType::Velocity:
+                    ret = new VelocityMsg(&br);
+                    break;
+                case MessageType::Jump:
+                    ret = new JumpMsg(&br);
+                    break;
+                case MessageType::InfoUpdate:
+                    ret = new InfoUpdateMsg(&br);
+                    break;
+                case MessageType::RequestUpdate:
+                    ret = new RequestUpdateMsg(&br);
+                    break;
+                case MessageType::SystemUpdate:
+                    ret = new SystemUpdateMsg(&br);
+                    break;
+                case MessageType::Command:
+                    ret = new CommandMsg(&br);
+                    break;
+                default:
+                    ret = NULL;
+                }
+            }
+            catch (std::runtime_error e)
+            {
+                fprintf(stderr, "Caught error in ReadMessage() at message object creation swithc()\n");
+                free(buf);
                 ret = NULL;
             }
 

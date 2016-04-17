@@ -33,7 +33,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32768
+        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32768, UnrecognizedType = -32767
     };
 
     // Every element is returned in this structure, with the type field and the relevant
@@ -191,7 +191,7 @@ public:
                 struct Element* elp;
                 root_el.map_val = new std::map<std::string, struct Element>();
                 elp = get_next_element(read_complex);
-                while (el.type != EndOfDocument)
+                while (elp->type != EndOfDocument)
                 {
                     i_el.copy(elp);
                     root_el.map_val->operator[](std::string(i_el.name)) = i_el;

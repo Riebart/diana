@@ -270,6 +270,11 @@ public:
         return &el;
     }
 
+    int32_t size()
+    {
+        return len;
+    }
+
 private:
     struct Element el;
     int32_t len;
