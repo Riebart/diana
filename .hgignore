@@ -3,6 +3,7 @@ syntax: glob
 bson
 pytz
 six.py
+Reference*
 
 # VS user-local, debugging symbols, intermediate files, and object files.
 *.suo
@@ -21,8 +22,13 @@ six.py
 *.idb
 *.exe.config
 *.user
+unisim/Debug/*
+unisim/Release/*
+unisim/x64/Debug/*
+unisim/*db
 
 # Unrel Engine stuff
+*/AutoScreenshot.png
 */Saved/Backup/*
 *.dll.response
 #*/Development/UE4Editor*
@@ -37,7 +43,9 @@ six.py
 */Saved/Cooked*
 */Binaries/*
 */Saved/Config/*
-Reference\ material
+*/Intermediate/AssetRegistryCache/*
+*OpenOrder*
+*Cache*
 
 syntax: regexp
 ^([^/]*)/.*/\1[^/]*.log$

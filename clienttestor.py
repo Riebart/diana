@@ -12,6 +12,33 @@ import pprint
 from vector import Vector3, Vector4
 from shiptypes import Firefly
 
+def basic():
+    sock = socket.socket()
+    sock.connect(('localhost', 5505))
+
+    from message import SpawnMsg
+    sm = SpawnMsg()
+    sm.srv_id = -1
+    sm.cli_id = -1
+    sm.is_smart = False
+    sm.velocity = [0.0,0.0,0.0]
+    sm.thrust = [0.0,0.0,0.0]
+    sm.orientation = [0.0,0.0,0.0,0.0]
+    sm.radius = 1.0
+    sm.mass = 1.0
+
+    sm.object_type = 'Obj1'
+    sm.position = [10,0.0,0.0]
+    SpawnMsg.send(sock, None, -1, sm.build())
+
+    sm.object_type = 'Obj2'
+    sm.position = [-10.0,0.5,0.0]
+    sm.velocity = [2.0,0.0,0.0]
+    SpawnMsg.send(sock, None, -1, sm.build())
+
+    sock.shutdown(socket.SHUT_RDWR)
+    sock.close()
+
 def pool_rack(C = 1.0, num_rows = 5):
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
@@ -96,6 +123,7 @@ def spawn_sol():
     sm.is_smart = False
     sm.thrust = [0.0,0.0,0.0]
     sm.orientation = [0.0,0.0,0.0,0.0]
+    sm.velocity = [0.0,0.0,0.0]
 
     phys_id = 1
     for k in sorted(objects.keys()):
@@ -310,8 +338,9 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
+    basic()
     #pool_rack(C = 1.01, num_rows = 25)
-    spawn_sol()
+    #spawn_sol()
     #signature_test()
 
     #for i in range(-20, 21, 1):
