@@ -178,8 +178,8 @@ namespace Diana
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
-    const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
-    const struct Vector4 v4_nan = { dbl_nan, dbl_nan, dbl_nan, dbl_nan };
+    //const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
+    //const struct Vector4 v4_nan = { dbl_nan, dbl_nan, dbl_nan, dbl_nan };
 
     // Static lambdas for reading IDs from the message, to supplement the 
     static read_lambda id_readers[2] = {

@@ -93,7 +93,7 @@ void bson_test()
         BSONReader br(input + pos);
         pos += br.size();
         struct BSONReader::Element* el = br.get_next_element(true);
-        printf("\"%s\" %d %u %u\n", el->name, el->i32_val, br.size(), pos);
+        printf("\"%s\" %d %u %u\n", el->name, el->i32_val, br.size(), (uint32_t)pos);
         while (el->type != BSONReader::ElementType::EndOfDocument)
         {
             el = br.get_next_element(true);
@@ -123,7 +123,7 @@ int main(int32_t argc, char** argv)
 
     struct Diana::Universe::Parameters params;
     params.verbose_logging = true;
-    params.realtime_physics = false;
+    params.realtime_physics = true;
     params.min_physics_frametime = 0.001;
     Diana::Universe* u = new Diana::Universe(params);
 

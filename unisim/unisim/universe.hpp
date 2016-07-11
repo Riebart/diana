@@ -114,6 +114,7 @@ namespace Diana
                 num_worker_threads(1),
                 simulation_rate(1.0),
                 realtime_physics(true),
+                scale_to_metres(1),
                 gravitational_constant(6.67384e-11),
                 speed_of_light(299792458),
                 collision_energy_cutoff(1e-9),
@@ -183,6 +184,12 @@ namespace Diana
             // fine simulation without forcing overly fine simulation at the expense of a
             // slowdown.
             bool realtime_physics;
+
+            // What is the scale of units that the universe calculations are being done it,
+            // relative to a metre. This is important for fixed-point calculations and units
+            // where this will likely be a non-zero value. For example, in a fixed-point case
+            // where the unit is a millimetre, this value is 1000.
+            uint64_t scale_to_metres;
 
             // Universal gravitational constant.
             double gravitational_constant;
@@ -326,7 +333,7 @@ namespace Diana
             int64_t client_id;
             int64_t phys_id;
 
-            bool operator <(const struct vis_client& rhs) const
+            bool operator<(const struct vis_client& rhs) const
             {
                 // Could also use std::tie
                 if (socket == rhs.socket)
@@ -346,7 +353,7 @@ namespace Diana
                 }
             }
 
-            bool operator ==(const struct vis_client& rhs) const
+            bool operator==(const struct vis_client& rhs) const
             {
                 return ((socket == rhs.socket) && (client_id == rhs.client_id) && (phys_id == rhs.phys_id));
             }
@@ -387,13 +394,13 @@ namespace Diana
             int64_t beam_id;
             int64_t target_id;
 
-            bool operator <(const struct scan_target& rhs) const
+            bool operator<(const struct scan_target& rhs) const
             {
                 // Could also use std::tie
                 return (beam_id == rhs.beam_id ? target_id < rhs.target_id : beam_id < rhs.beam_id);
             }
 
-            bool operator ==(const struct scan_target& rhs) const
+            bool operator==(const struct scan_target& rhs) const
             {
                 return ((beam_id == rhs.beam_id) && (target_id == rhs.target_id));
             }

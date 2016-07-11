@@ -77,9 +77,9 @@ namespace Diana
         obj->obj_type = const_cast<char*>(obj_type);
         obj->t = 0.0;
 
-        Vector3_init(&obj->forward, 1, 0, 0);
-        Vector3_init(&obj->right, 0, 1, 0);
-        Vector3_init(&obj->up, 0, 0, 1);
+        obj->forward.init(1, 0, 0);
+        obj->right.init(0, 1, 0);
+        obj->up.init(0, 0, 1);
 
         obj->health = mass * 1000000;
         obj->emits_gravity = is_big_enough(mass, radius, universe->params.gravity_magnitude_cutoff);
@@ -115,21 +115,21 @@ namespace Diana
 
         // Note that velocity components are handled in the collision portion, so subtract off any
         // portion of the tick time that's already been handled by the collision events.
-        Vector3_fmad(&obj->position, dt - obj->t, &obj->velocity);
+        obj->position.fmad(dt - obj->t, obj->velocity);
         obj->t = 0.0;
 
         //! @todo We can save these divisions by not multiplying by mass when we calcualte g
-        Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, g);
-        Vector3_fmad(&obj->position, 0.5 * dt * dt / obj->mass, &obj->thrust);
+        obj->position.fmad(0.5 * dt * dt / obj->mass, *g);
+        obj->position.fmad(0.5 * dt * dt / obj->mass, obj->thrust);
 
-        Vector3_fmad(&obj->velocity, dt / obj->mass, g);
+        obj->velocity.fmad(dt / obj->mass, *g);
         // We account for the position delta above with the FMAD.
-        Vector3_fmad(&obj->velocity, dt / obj->mass, &obj->thrust);
+        obj->velocity.fmad(dt / obj->mass, obj->thrust);
 
-        if (!Vector3_almost_zero(&obj->ang_velocity))
+        if (!obj->ang_velocity.almost_zero())
         {
-            V3 a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
-            Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
+            Vector3T<double> a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
+            V3::apply_yaw_pitch_roll(obj->forward, obj->up, obj->right, a);
         }
     }
 
@@ -227,7 +227,7 @@ namespace Diana
             found = false;
             for (uint32_t j = 0; j < n_unique_wavelengths; j++)
             {
-                if (Vector3_almost_zeroS(d_components[j].wavelength - i_components[i].wavelength))
+                if (V3::almost_zeroS(d_components[j].wavelength - i_components[i].wavelength))
                 {
                     // If we find a matching wavelength, add the incremental
                     // power component
@@ -322,15 +322,18 @@ namespace Diana
         //! @todo Scale the velocity bu the time-step (in essence turning it into a position delta), aftet
         //! we check to see if it's too small. dt could cause a small velocity to shrink past the cutoff.
         V3 v1 = obj1->velocity;
-        Vector3_scale(&v1, dt);
+        v1 *= dt;
+        //Vector3_scale(&v1, dt);
 
         V3 v2 = obj2->velocity;
-        Vector3_scale(&v2, dt);
+        v2 *= dt;
+        //Vector3_scale(&v2, dt);
 
         V3 vd;
-        Vector3_subtract(&vd, &v1, &v2);
+        vd = v1 - v2;
+        //Vector3_subtract(&vd, &v1, &v2);
 
-        if (Vector3_almost_zero(&vd))
+        if (vd.almost_zero())
         {
             cr->t = -1.0;
             return;
@@ -340,15 +343,16 @@ namespace Diana
         V3 p2 = obj2->position;
 
         V3 pd;
-        Vector3_subtract(&pd, &p1, &p2);
+        pd = p1 - p2;
+        //Vector3_subtract(&pd, &p1, &p2);
 
         // Note we can't reject early here based on od since it is possible that the
         // two objects have components along the collision normal that are of equal
         // magnitude and opposite direction. These won't show here, so that rejection
         // will have to wait until later.
-        double od = Vector3_dot(&vd, &pd);
-        double oo = Vector3_dot(&pd, &pd);
-        double dd = Vector3_dot(&vd, &vd);
+        double od = vd.dot(pd);// Vector3_dot(&vd, &pd);
+        double oo = pd.dot(pd);// Vector3_dot(&pd, &pd);
+        double dd = vd.dot(vd);// Vector3_dot(&vd, &vd);
         double r = (obj1->radius + obj2->radius);
         r *= r;
 
@@ -356,7 +360,7 @@ namespace Diana
         double t = od * od - dd * (oo - r);
 
         // If there's no solutions reject, because this method is perfectly precise.
-        if (!Vector3_almost_zeroS(t) && (t < 0))
+        if (!V3::almost_zeroS(t) && (t < 0))
         {
             cr->t = -1.0;
             return;
@@ -369,7 +373,7 @@ namespace Diana
         t = sqrt(t);
         // If it is 'zero' or positive, then we need a positive value to offset it
         // (or its subtraction)
-        if (Vector3_almost_zeroS(od) || (od > 0))
+        if (V3::almost_zeroS(od) || (od > 0))
         {
             t = (t - od) / dd;
         }
@@ -381,7 +385,7 @@ namespace Diana
 
         // Note that for almost exactly touching objects, t might chop to zero here.
         //  - This arose during multi-pass collision testing during a pool break.
-        t = (Vector3_almost_zeroS(t) ? 0.0 : t);
+        t = (V3::almost_zeroS(t) ? 0.0 : t);
 
         // We only accept t in [0,1] here. All other results do not help us.
         // Also check for NaN.
@@ -392,8 +396,8 @@ namespace Diana
         }
 
         cr->t = t;
-        Vector3_fmad(&p1, t, &v1);
-        Vector3_fmad(&p2, t, &v2);
+        p1.fmad(t, v1);
+        p2.fmad(t, v2);
 
         // =====
         // At this point, we know that the objects touch, but they may not collide
@@ -405,8 +409,8 @@ namespace Diana
 
         // collision normal: unit vector from points from obj1 to obj2
         V3 n;
-        Vector3_subtract(&n, &p2, &p1);
-        Vector3_normalize(&n);
+        n = p2 - p1;
+        n.normalize();
 
         // We only care about collisions where objects are moving towards each other.
         // By not caring about 'collisions' where objects are moving away from each other
@@ -417,9 +421,9 @@ namespace Diana
         cr->e = 0.0;
 
         // This dot is positive if obj1 is moving towards obj2
-        double vdn1 = Vector3_dot(&obj1->velocity, &n);
+        double vdn1 = obj1->velocity.dot(n);
         // This dot is negative if obj2 is moving towards obj1
-        double vdn2 = Vector3_dot(&obj2->velocity, &n);
+        double vdn2 = obj2->velocity.dot(n);
 
         // Early rejection: The total velocity along the normal should be net 'positive'.
         // Sum these, paying attention to the signs in a way that will do this.
@@ -427,7 +431,7 @@ namespace Diana
         // in the case of a 'proper' collision, which means that velocities away from a
         // collision will move the value negative.
         double c = vdn1 - vdn2;
-        if (Vector3_almost_zeroS(c) || (c < 0))
+        if (V3::almost_zeroS(c) || (c < 0))
         {
             cr->t = -1.0;
             return;
@@ -453,7 +457,7 @@ namespace Diana
         // At this point, cr->e is sum of the kinetic energies of the two objects along the
         // normal of collision.
         // If cr->e is almost zero, bail because we don't want to count tiny collisions.
-        if (Vector3_almost_zeroS(cr->e))
+        if (V3::almost_zeroS(cr->e))
         {
             cr->t = -1.0;
             return;
@@ -462,8 +466,8 @@ namespace Diana
         // Set the normal component
         cr->pce1.n = n;
         cr->pce2.n = n;
-        Vector3_scale(&cr->pce1.n, vdn1);
-        Vector3_scale(&cr->pce2.n, vdn2);
+        cr->pce1.n *= vdn1;
+        cr->pce2.n *= vdn2;
 
         // Clone te normal vector here, we're going to use this later after we calculate the
         // new normal velcoity, we'll subtract off the old one (this) to find the contribution (stored here).
@@ -471,17 +475,15 @@ namespace Diana
         cr->pce2.dn = cr->pce2.n;
 
         // Set the tangential velocity to the original velocity minus the portion along the normal
-        Vector3_subtract(&cr->pce1.t, &obj1->velocity, &cr->pce1.n);
-        Vector3_subtract(&cr->pce2.t, &obj2->velocity, &cr->pce2.n);
+        cr->pce1.t = obj1->velocity - cr->pce1.n;
+        cr->pce2.t = obj2->velocity - cr->pce2.n;
 
         // Compute the positions of collision on the bounding sphere before the rest because we
         // repurpose the n variable to store obj1's normal for use in computer obj2's post-collision
         // normal.
         // This position plus the direction can give rise to angular effects.
-        cr->pce1.p = n;
-        Vector3_scale(&cr->pce1.p, obj1->radius);
-        cr->pce2.p = n;
-        Vector3_scale(&cr->pce2.p, -obj2->radius);
+        cr->pce1.p = n * obj1->radius;
+        cr->pce2.p = n * (-obj2->radius);
 
         // Now do the elastic velocity composition a-la http://en.wikipedia.org/wiki/Elastic_collision
         // This is eventually where we'd implement relativistic velocity composition.
@@ -517,21 +519,21 @@ namespace Diana
         // the second object's velocity.
         n = cr->pce1.n;
 
-        Vector3_scale(&cr->pce1.n, (obj1->mass - obj2->mass));
-        Vector3_fmad(&cr->pce1.n, 2 * obj2->mass, &cr->pce2.n);
-        Vector3_scale(&cr->pce1.n, mscale);
-        Vector3_subtract(&cr->pce1.dn, &cr->pce1.n, &cr->pce1.dn);
+        cr->pce1.n *= (obj1->mass - obj2->mass);
+        cr->pce1.n.fmad(2 * obj2->mass, cr->pce2.n);
+        cr->pce1.n *= mscale;
+        cr->pce1.dn = cr->pce1.n - cr->pce1.dn;
 
-        Vector3_scale(&cr->pce2.n, (obj2->mass - obj1->mass));
-        Vector3_fmad(&cr->pce2.n, 2 * obj1->mass, &n); // We use the backed-up velocity here, see the third argument to fmad()
-        Vector3_scale(&cr->pce2.n, mscale);
-        Vector3_subtract(&cr->pce2.dn, &cr->pce2.n, &cr->pce2.dn);
+        cr->pce2.n *= (obj2->mass - obj1->mass);
+        cr->pce2.n.fmad(2 * obj1->mass, n); // We use the backed-up velocity here, see the third argument to fmad()
+        cr->pce2.n *= mscale;
+        cr->pce2.dn = cr->pce2.n - cr->pce2.dn;
 
         // Now set the direction of original trajectory
-        Vector3_subtract(&cr->pce1.d, &obj2->velocity, &obj1->velocity);
-        Vector3_normalize(&cr->pce1.d);
+        cr->pce1.d = obj2->velocity - obj1->velocity;
+        cr->pce1.d.normalize();
         cr->pce2.d = cr->pce1.d;
-        Vector3_scale(&cr->pce2.d, -1);
+        cr->pce2.d *= -1;
     }
 
     void PhysicsObject_resolve_damage(PO* obj, double energy, double cutoff)
@@ -577,13 +579,13 @@ namespace Diana
         // had before the end of the tick (if it was in a collision, the position of the
         // last collision, otherwise, the position at the start of the tick).
         // The error will be minimal, so I think that's fine.
-        Vector3_fmad(&obj->position, dt, &obj->velocity);
+        obj->position.fmad(dt, obj->velocity);
 
         // Adjust the velocity accordingly to be the sum of the new tangential and normal
         // components, which is equivalent to adding the delta in velocity along the normal
         // to the current velocity.
         //Vector3_add(&obj->velocity, &pce->t, &pce->n);
-        Vector3_add(&obj->velocity, &pce->dn);
+        obj->velocity += pce->dn;
     }
 
     void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
@@ -833,22 +835,21 @@ namespace Diana
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
     {
         V3 direction = *velocity;
-        Vector3_normalize(&direction);
+        direction.normalize();
         V3 up2 = *up;
-        Vector3_normalize(&up2);
+        up2.normalize();
 
-        V3 right = { 0, 0, 0 };
-        Vector3_cross(&right, &direction, &up2);
+        V3 right = direction.cross(up2);
 
-        double speed = Vector3_length(velocity);
+        double speed = velocity->length();
         double area_factor = BEAM_SOLID_ANGLE_FACTOR * (angle_h * angle_v);
         double cosh = cos(angle_h / 2);
-        if (Vector3_almost_zeroS(cosh))
+        if (V3::almost_zeroS(cosh))
         {
             cosh = 0.0;
         }
         double cosv = cos(angle_v / 2);
-        if (Vector3_almost_zeroS(cosv))
+        if (V3::almost_zeroS(cosv))
         {
             cosv = 0.0;
         }
@@ -874,25 +875,22 @@ namespace Diana
         bcr->d = b->direction;
 
         // Relative position of object to beam origin.
-        V3 p = obj->position;
-        Vector3_subtract(&p, &p, &b->origin);
+        V3 p = obj->position - b->origin;
 
         // If the position delta is almost zero (or less than the object's radius),
         // and the beam hasn't gone anywhere yet, then just bail, because we don't care
         // about hitting the object we started at.
-        if (Vector3_almost_zero(&p) && Vector3_almost_zeroS(b->distance_travelled))
+        if (p.almost_zero() && V3::almost_zeroS(b->distance_travelled))
         {
             bcr->t = -1.0;
             return;
         }
 
         // Object position delta in this tick.
-        V3 dp = obj->velocity;
-        Vector3_scale(&dp, dt);
+        V3 dp = obj->velocity * dt;
 
         // The object's position at the end of the physics tick.
-        V3 p2;
-        Vector3_add(&p2, &p, &dp);
+        V3 p2 = p + dp;
 
         //! @todo Early rejection if we're WAY outside of collision distance.
 
@@ -909,16 +907,16 @@ namespace Diana
         // - proj_*[1] is the projection DOWN the right vector into the UP/FORWARD plane
         
         V3 proj_s[2];
-        Vector3_project_down(&proj_s[0], &p, &b->up);
-        Vector3_project_down(&proj_s[1], &p, &b->right);
-        Vector3_normalize(&proj_s[0]);
-        Vector3_normalize(&proj_s[1]);
+        proj_s[0] = p.project_down(b->up);
+        proj_s[1] = p.project_down(b->right);
+        proj_s[0].normalize();
+        proj_s[1].normalize();
 
         V3 proj_e[2];
-        Vector3_project_down(&proj_e[0], &p2, &b->up);
-        Vector3_project_down(&proj_e[1], &p2, &b->right);
-        Vector3_normalize(&proj_e[0]);
-        Vector3_normalize(&proj_e[1]);
+        proj_e[0] = p2.project_down(b->up);
+        proj_e[1] = p2.project_down(b->right);
+        proj_e[0].normalize();
+        proj_e[1].normalize();
 
         // Now dot with the beam direction to get the angles of the rays make. Do it for
         // the original position, and for the position plus the position delta. Projecting
@@ -930,8 +928,8 @@ namespace Diana
         // is symmetric about 0, the beam's cosines are actually from the direction to the
         // edge of the volume, and we can just test this half-angle.
 
-        double current[2] = { Vector3_dot(&proj_s[0], &b->direction), Vector3_dot(&proj_s[1], &b->direction) };
-        double future[2] = { Vector3_dot(&proj_e[0], &b->direction), Vector3_dot(&proj_e[1], &b->direction) };
+        double current[2] = { proj_s[0].dot(b->direction), proj_s[1].dot(b->direction) };
+        double future[2] = { proj_e[0].dot(b->direction), proj_e[1].dot(b->direction) };
         double delta[2] = { future[0] - current[0], future[1] - current[1] };
 
         bool current_b[2] = { (current[0] >= b->cosines[0]), (current[1] >= b->cosines[1]) };
@@ -960,36 +958,37 @@ namespace Diana
         // If the relative position vector lies in the up/right plane...
 
         // Current
-        if (Vector3_almost_zeroS(Vector3_dot(&p, &b->direction)))
+        if (V3::almost_zeroS(p.dot(b->direction)))
         {
             // Figure out which one failed the cosine test, Then check that the other cosine is < 0 or almost 0.
             // If that checks out, then get the cosine of the position vector with the appropriate vector:
             //  - horizontal spread (cosines[0]) => up vector
             //  - vertical spread => right vector
             // Then, check that cosine against the cosines of the beam.
-            if (!current_b[0] && ((b->cosines[1] < 0) || Vector3_almost_zeroS(b->cosines[1])))
+            if (!current_b[0] && ((b->cosines[1] < 0) || V3::almost_zeroS(b->cosines[1])))
             {
-                current[0] = Vector3_dot(&p, &b->up) / Vector3_length(&p);
+                // We check the length of p earlier in an early rejection test.
+                current[0] = p.dot(b->up) / p.length();
                 current_b[0] = (current[0] >= b->cosines[0]);
             }
-            else if (!current_b[1] && ((b->cosines[0] < 0) || Vector3_almost_zeroS(b->cosines[0])))
+            else if (!current_b[1] && ((b->cosines[0] < 0) || V3::almost_zeroS(b->cosines[0])))
             {
-                current[1] = Vector3_dot(&p, &b->right) / Vector3_length(&p);
+                current[1] = p.dot(b->right) / p.length();
                 current_b[1] = (current[1] >= b->cosines[1]);
             }
         }
 
         // Future
-        if (Vector3_almost_zeroS(Vector3_dot(&p2, &b->direction)))
+        if (V3::almost_zeroS(p2.dot(b->direction)))
         {
-            if (!future_b[0] && ((b->cosines[1] < 0) || Vector3_almost_zeroS(b->cosines[1])))
+            if (!future_b[0] && ((b->cosines[1] < 0) || V3::almost_zeroS(b->cosines[1])))
             {
-                future[0] = Vector3_dot(&p2, &b->up) / Vector3_length(&p);
+                future[0] = p2.dot(b->up) / p.length();
                 future_b[0] = (future[0] >= b->cosines[0]);
             }
-            else if (!future_b[1] && ((b->cosines[0] < 0) || Vector3_almost_zeroS(b->cosines[0])))
+            else if (!future_b[1] && ((b->cosines[0] < 0) || V3::almost_zeroS(b->cosines[0])))
             {
-                future[1] = Vector3_dot(&p2, &b->right) / Vector3_length(&p);
+                future[1] = p2.dot(b->right) / p.length();
                 future_b[1] = (future[1] >= b->cosines[1]);
             }
         }
@@ -1087,8 +1086,8 @@ namespace Diana
         }
 
         bcr->p = p;
-        Vector3_fmad(&bcr->p, bcr->t, &dp);
-        double collision_dist = abs(Vector3_dot(&bcr->p, &b->direction));
+        bcr->p.fmad(bcr->t, dp);
+        double collision_dist = abs(bcr->p.dot(b->direction));
 
         // If we want collisions for as long as the bounding sphere is intersecting
         // the front, use:
@@ -1115,7 +1114,7 @@ namespace Diana
     void Beam_tick(B* beam, double dt)
     {
         beam->distance_travelled += beam->speed * dt;
-        Vector3_fmad(&beam->front_position, dt * beam->speed, &beam->direction);
+        beam->front_position.fmad(dt * beam->speed, beam->direction);
 
         if (beam->distance_travelled > beam->max_distance)
         {
@@ -1126,16 +1125,22 @@ namespace Diana
     B* Beam_make_return_beam(B* beam, double energy, V3* origin, PhysicsObjectType type)
     {
         V3 d = *origin;
-        Vector3_normalize(&d);
-        Vector3_scale(&d, -1);
+        //Vector3_normalize(&d);
+        //Vector3_scale(&d, -1);
+        d.normalize();
+        d *= -1;
 
-        V3 absolute_origin;
-        Vector3_add(&absolute_origin, origin, &beam->origin);
+        //V3 absolute_origin;
+        //Vector3_add(&absolute_origin, origin, &beam->origin);
+        V3 absolute_origin = *origin + beam->origin;
 
-        V3 up = { -1 * d.y, d.x, 0.0 };
-        Vector3_normalize(&up);
-        V3 right;
-        Vector3_cross(&right, &d, &up);
+        V3 up = { -1 * d.y, d.x, 0 };
+        //Vector3_normalize(&up);
+        up.normalize();
+        
+        //V3 right;
+        //Vector3_cross(&right, &d, &up);
+        V3 right = d.cross(up);
 
         B* ret = (B*)malloc(sizeof(B));
         Beam_init(ret, beam->universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);

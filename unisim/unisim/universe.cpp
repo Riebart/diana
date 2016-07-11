@@ -103,9 +103,9 @@ namespace Diana
 
     void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = G * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
-        Vector3_ray(out, &small->position, &big->position);
-        Vector3_scale(out, m);
+        double m = G * big->mass * small->mass / big->position.distance2(small->position);
+        *out = big->position - small->position;
+        *out *= m;
     }
 
     void* sim(void* uV)
@@ -469,6 +469,8 @@ namespace Diana
                 }
                 else
                 {
+                    // Simple obfuscation involves the object's PhysId, and the memory
+                    // location of the object (minus the sign bit).
                     visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
                 }
 
@@ -476,11 +478,11 @@ namespace Diana
 
                 if (ro != NULL)
                 {
-                    Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
+                    visdata_msg.position = visdata_msg.position - ro->position;
                 }
 
                 // Apply the visual acuity cutoff
-                if ((4 * visdata_msg.radius * visdata_msg.radius / Vector3_length2(&visdata_msg.position)) < params.visual_acuity)
+                if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2()) < params.visual_acuity)
                 {
                     continue;
                 }
@@ -597,8 +599,8 @@ namespace Diana
                 }
 
                 // If the mass or radius changes, we need to update attractors if the values changes
-                if ((msg->specced[3] && !Vector3_almost_zeroS(smarty->pobj.mass - msg->mass)) ||
-                    (msg->specced[17] && !Vector3_almost_zeroS(smarty->pobj.radius - msg->radius)))
+                if ((msg->specced[3] && !V3::almost_zeroS(smarty->pobj.mass - msg->mass)) ||
+                    (msg->specced[17] && !V3::almost_zeroS(smarty->pobj.radius - msg->radius)))
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
@@ -705,9 +707,9 @@ namespace Diana
             //! @todo This should also apply for non-smarties.
             if (smarty != NULL)
             {
-                Vector3_add(&msg->origin, &smarty->pobj.position);
+                msg->origin += smarty->pobj.position;
                 //! @todo Relativistic velocity composition
-                Vector3_add(&msg->velocity, &smarty->pobj.velocity);
+                msg->velocity += smarty->pobj.velocity;
             }
 
             //! @todo Couple the energy of the beam to the power of the spectrum somehow.
@@ -789,8 +791,8 @@ namespace Diana
             // are relative.
             if (smarty != NULL)
             {
-                Vector3_add(&obj->position, &smarty->pobj.position);
-                Vector3_add(&obj->velocity, &smarty->pobj.velocity);
+                obj->position += smarty->pobj.position;
+                obj->velocity += smarty->pobj.velocity;
             }
 
             // We need to assign type BEFORE adding to the universe, because the adding to smarties{} is async from this.
@@ -864,13 +866,13 @@ namespace Diana
                         continue;
                     }
 
-                    Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
-                    distance_sq = Vector3_length2(&dp);
+                    dp = other->position - smarty->pobj.position;
+                    distance_sq = dp.length2();
 
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
                     // is (0,0,0), so we can leave the power spectrum alone.
-                    if (Vector3_almost_zeroS(distance_sq))
+                    if (V3::almost_zeroS(distance_sq))
                     {
                         power_scale = 1.0;
                     }
@@ -893,9 +895,9 @@ namespace Diana
                     }
 
                     // Make the position a unit direction vector if it isn't (0,0,0)
-                    if (!Vector3_almost_zeroS(distance_sq))
+                    if (!V3::almost_zeroS(distance_sq))
                     {
-                        Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
+                        dp *= 1.0 / sqrt(distance_sq);
                     }
 
                     srm.position = dp;
@@ -1013,7 +1015,8 @@ namespace Diana
             }
 
             gravity(params.gravitational_constant, &cg, attractors[i], obj);
-            Vector3_add(g, &cg);
+            cg /= (double)(params.scale_to_metres * params.scale_to_metres);
+            *g += cg;
         }
     }
 
@@ -1099,16 +1102,17 @@ namespace Diana
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
-                if (Vector3_almost_zeroS(d) || (d > 0))
+                if (V3::almost_zeroS(d) || (d > 0))
                 {
                     // Now do a full test on the Y axis.
-                    if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
+                    //if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
+                    if (!AABB::intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
                     {
                         continue;
                     }
 
                     // And then a full test on Z
-                    if (!Vector3_intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
+                    if (!AABB::intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
                     {
                         continue;
                     }
@@ -1183,7 +1187,7 @@ namespace Diana
             //! @todo Could the AABB comparisons be costly?
 
             // Compare to the previous one if we're not at the first one.
-            int c = Vector3_compare_aabbX(&phys_objects[i]->box, &phys_objects[i - 1]->box);
+            int32_t c = phys_objects[i]->box.compare_x(phys_objects[i - 1]->box);
 
             if (c < 0)
             {
@@ -1205,7 +1209,7 @@ namespace Diana
     //! @todo Convert this to a private member function.
     void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     {
-        V3 g = { 0.0, 0.0, 0.0 };
+        V3 g = { 0, 0, 0 };
         struct BeamCollisionResult beam_result;
 
         // Needed to resolve the physical effects of the collision.
@@ -1244,7 +1248,7 @@ namespace Diana
                     cm.server_id = o->phys_id;
                     cm.direction = beam_result.d;
                     cm.position = beam_result.p;
-                    Vector3_subtract(&cm.position, &o->position);
+                    cm.position -= o->position;
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
                     // It makes sense that we know about the power levels of the beam here,
@@ -1323,9 +1327,9 @@ namespace Diana
                         srm.client_id = s->client_id;
                         srm.server_id = s->pobj.phys_id;
                         srm.position = b->scan_target->position;
-                        Vector3_subtract(&srm.position, &o->position);
+                        srm.position -= o->position;
                         srm.velocity = b->scan_target->velocity;
-                        Vector3_subtract(&srm.velocity, &o->velocity);
+                        srm.velocity -= o->velocity;
                         srm.thrust = b->scan_target->thrust;
                         srm.mass = b->scan_target->mass;
                         srm.radius = b->scan_target->radius;
@@ -1391,8 +1395,8 @@ namespace Diana
                     continue;
                 }
 
-                Vector3_subtract(&pd, &other->position, &o->position);
-                distance_sq = Vector3_length2(&pd);
+                pd = other->position - o->position;
+                distance_sq = pd.length2();
                 if (distance_sq < other->spectrum->safe_distance_sq)
                 {
                     double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
@@ -1403,9 +1407,13 @@ namespace Diana
                         CollisionMsg cm;
                         cm.client_id = s->client_id;
                         cm.server_id = o->phys_id;
-                        Vector3_scale(&pd, 1.0 / Vector3_length(&pd));
+
+                        // Because of collisions, it is extremely unlikely 
+                        // that this will result in a divide by zero.
+                        pd *= 1.0 / pd.length();
+                        
                         cm.direction = pd;
-                        Vector3_scale(&pd, o->radius);
+                        pd *= o->radius;
                         cm.position = pd;
                         cm.energy = energy;
                         cm.comm_msg = NULL;
@@ -1784,7 +1792,7 @@ namespace Diana
                 double energy0 = 0.0;
 
                 while ((n_simultaneous < collisions.size()) &&
-                    (Vector3_almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
+                    (V3::almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
                 {
                     // For each collision that happens at the same time as the first, apply it to the objects involved
                     // Retrieve the earliest collision details.
@@ -1817,11 +1825,11 @@ namespace Diana
                     // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj1->mass * Vector3_length2(&obj1->velocity) : 0.0);
+                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2() : 0.0);
                     PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj2->mass * Vector3_length2(&obj2->velocity) : 0.0);
+                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2() : 0.0);
                     PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
@@ -1871,7 +1879,7 @@ namespace Diana
                     double energy1 = 0.0;
                     for (size_t i = 0; i < n_objs; i++)
                     {
-                        energy1 += phys_objects[objs[i]]->mass * Vector3_length2(&phys_objects[objs[i]]->velocity);
+                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2();
                     }
 
                     // If there's more than one collision, then this factor is the ratio of original to final
@@ -1886,7 +1894,7 @@ namespace Diana
                 // Only both if there's collisions that didn't happen 'now'.
                 for (size_t i = 0; i < n_objs; i++)
                 {
-                    Vector3_scale(&phys_objects[objs[i]]->velocity, k);
+                    phys_objects[objs[i]]->velocity *= k;
                     if (collisions.size() > n_simultaneous)
                     {
                         for (std::vector<struct PhysCollisionEvent>::iterator it = collisions.begin() + n_simultaneous; it != collisions.end();)
