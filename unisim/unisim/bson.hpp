@@ -42,8 +42,8 @@ public:
     struct Element
     {
         Element() :
-            bin_val(NULL), str_val(NULL), map_val(NULL),
-            managed_pointers(false) {}
+            managed_pointers(false), bin_val(NULL), str_val(NULL),
+            map_val(NULL) {}
 
         Element(struct Element* src) : Element()
         {
