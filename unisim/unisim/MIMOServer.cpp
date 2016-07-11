@@ -302,7 +302,13 @@ namespace Diana
                 }
 
                 hungup -= server->inputs.size();
+                
+#ifdef _WIN32
                 fprintf(stderr, "Successfully hung up %llu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+#else
+                fprintf(stderr, "Successfully hung up %lu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+#endif
+                
 
                 server->hangups.clear();
                 UNLOCK(server->hangup_lock);
