@@ -11,7 +11,7 @@ all: vectortests
 clean:
 	rm vectortests
 
-vectortests:
+vectortests: vectortests.cpp ../vector.hpp ../vector.cpp
 	$(CXX) $(CFLAGS)  vectortests.cpp $(INCLUDE_DIR) $(LIB_DIR) $(EXT_LIBS) $(EXT_ST_LIBS) -o vectortests
 	
 	
