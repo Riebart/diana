@@ -4,6 +4,7 @@ bson
 pytz
 six.py
 Reference*
+*Temp*
 
 # VS user-local, debugging symbols, intermediate files, and object files.
 *.suo
@@ -46,6 +47,7 @@ unisim/*db
 */Intermediate/AssetRegistryCache/*
 *OpenOrder*
 *Cache*
+*EventTest.exe
 
 syntax: regexp
 ^([^/]*)/.*/\1[^/]*.log$

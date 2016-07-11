@@ -12,20 +12,6 @@ namespace Diana
     typedef struct Vector3 V3;
     typedef struct Vector4 V4;
 
-    //void Vector3_project_onto(V3* out, V3* v, V3* axis)
-    //{
-    //    //*out = *axis;
-    //    *out *= (v->dot(*axis) / axis->length2());
-    //    //Vector3_scale(out, Vector3_dot(v, axis) / Vector3_length2(axis));
-    //}
-
-    //void Vector3_project_down(V3* out, V3* v, V3* axis)
-    //{
-    //    Vector3_project_onto(out, v, axis);
-    //    *out = *v - *out;
-    //    //Vector3_subtract(out, v, out);
-    //}
-
     //V3* Vector3_easy_look_at(V3* look)
     //{
     //    // Produce some arbitrary up and right vectors for a given look-at vector.

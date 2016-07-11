@@ -101,10 +101,11 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    void gravity(double G, V3* out, PO* big, PO* small)
+    inline void gravity(double G, V3* out, PO* big, PO* small)
     {
         double m = G * big->mass * small->mass / big->position.distance2(small->position);
-        *out = big->position - small->position;
+        *out = big->position;
+        *out -= small->position;
         *out *= m / out->length();
     }
 
