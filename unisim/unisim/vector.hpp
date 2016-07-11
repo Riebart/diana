@@ -47,7 +47,7 @@ namespace Diana
             T l = length();
             if (!Vector3T<T>::almost_zeroS(l))
             {
-                this->operator*=(1 / l);
+                this->operator/=(l);
             }
             else
             {
@@ -118,7 +118,7 @@ namespace Diana
             up.rotate_around(forward, angles.z);
         }
 
-        void fmad(T a, struct Vector3T<T>& b) { x = x * a + b.x; y = y * a + b.y; z = z * a + b.z; }
+        void fmad(T a, struct Vector3T<T>& b) { x += a * b.x; y += a * b.y; z += a * b.z; }
 
         const struct Vector3T<T> operator+(const struct Vector3T<T>& a) { return{ x + a.x, y + a.y, z + a.z }; }
         const struct Vector3T<T> operator-(const struct Vector3T<T>& a) { return{ x - a.x, y - a.y, z - a.z }; }

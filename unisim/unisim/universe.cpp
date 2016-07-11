@@ -105,7 +105,7 @@ namespace Diana
     {
         double m = G * big->mass * small->mass / big->position.distance2(small->position);
         *out = big->position - small->position;
-        *out *= m;
+        *out *= m / out->length();
     }
 
     void* sim(void* uV)
@@ -479,12 +479,12 @@ namespace Diana
                 if (ro != NULL)
                 {
                     visdata_msg.position = visdata_msg.position - ro->position;
-                }
-
-                // Apply the visual acuity cutoff
-                if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2()) < params.visual_acuity)
-                {
-                    continue;
+                    // Apply the visual acuity cutoff when considering relative visual
+                    // object positioning only.
+                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2()) < params.visual_acuity)
+                    {
+                        continue;
+                    }
                 }
 
                 visdata_msg.orientation.w = o->forward.x;
