@@ -9,7 +9,7 @@ namespace Diana
 {
     template<typename T = double> struct VectorT
     {
-        static bool almost_zeroS(double a) { { return ((a > -1e-8) && (a < 1e-8)); } }
+        static bool almost_zeroS(double a) { return ((a > -1e-8) && (a < 1e-8)); }
         static bool almost_zeroS(int64_t a) { return (a == 0); }
     };
 
@@ -24,7 +24,7 @@ namespace Diana
         void init(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
         void init(const struct Vector3T<T>& a) { x = a.x; y = a.y; z = a.z; }
 
-        const bool almost_zero()
+        bool almost_zero() const
         {
             return VectorT<T>::almost_zeroS(x) &&
                 VectorT<T>::almost_zeroS(y) &&
@@ -33,14 +33,14 @@ namespace Diana
 
         // @todo For integer T, it might be faster to get the integar part only
         // See: http://stackoverflow.com/questions/4930307/fastest-way-to-get-the-integer-part-of-sqrtn
-        const static T length(T x, T y, T z) { return (T)sqrt(Vector3T<T>::length2(x, y, z)); }
-        const static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
+        static T length(T x, T y, T z) { return (T)sqrt(x * x + y * y + z * z); }
+        static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
 
-        const T length() { return (T)sqrt(length2()); }
-        const T length2() { return x * x + y * y + z * z; }
+        T length() const { return (T)sqrt(length2()); }
+        T length2() const { return x * x + y * y + z * z; }
 
-        const T distance(const struct Vector3T<T>& a) { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
-        const T distance2(const struct Vector3T<T>& a) { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
+        T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
+        T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
 
         void normalize()
         {
@@ -55,16 +55,16 @@ namespace Diana
             }
         }
 
-        const static struct Vector3T<T> normalize(const struct Vector3T<T>& a)
+        static struct Vector3T<T> normalize(const struct Vector3T<T>& a)
         {
             struct Vector3T<T> v = a;
             v.normalize();
             return v;
         }
 
-        const T dot(const struct Vector3T<T>& a) { return x * a.x + y * a.y + z * a.z; }
+        T dot(const struct Vector3T<T>& a) const { return x * a.x + y * a.y + z * a.z; }
 
-        const struct Vector3T<T> cross(const struct Vector3T<T>& a)
+        struct Vector3T<T> cross(const struct Vector3T<T>& a) const
         {
             return{
                 y * a.z - z * a.y,
@@ -120,31 +120,29 @@ namespace Diana
 
         void fmad(T a, struct Vector3T<T>& b) { x += a * b.x; y += a * b.y; z += a * b.z; }
 
-        const struct Vector3T<T> operator+(const struct Vector3T<T>& a) { return{ x + a.x, y + a.y, z + a.z }; }
-        const struct Vector3T<T> operator-(const struct Vector3T<T>& a) { return{ x - a.x, y - a.y, z - a.z }; }
-        const struct Vector3T<T> operator*(const struct Vector3T<T>& a) { return{ x * a.x, y * a.y, z * a.z }; }
-        const struct Vector3T<T> operator/(const struct Vector3T<T>& a) { return{ x / a.x, y / a.y, z / a.z }; }
+        struct Vector3T<T> operator+(const struct Vector3T<T>& a) const { return{ x + a.x, y + a.y, z + a.z }; }
+        struct Vector3T<T> operator-(const struct Vector3T<T>& a) const { return{ x - a.x, y - a.y, z - a.z }; }
+        struct Vector3T<T> operator*(const struct Vector3T<T>& a) const { return{ x * a.x, y * a.y, z * a.z }; }
+        struct Vector3T<T> operator/(const struct Vector3T<T>& a) const { return{ x / a.x, y / a.y, z / a.z }; }
         void operator+=(const struct Vector3T<T>& a) { x += a.x; y += a.y; z += a.z; }
         void operator-=(const struct Vector3T<T>& a) { x -= a.x; y -= a.y; z -= a.z; }
         void operator*=(const struct Vector3T<T>& a) { x *= a.x; y *= a.y; z *= a.z; }
         void operator/=(const struct Vector3T<T>& a) { x /= a.x; y /= a.y; z /= a.z; }
-        const struct Vector3T<T> operator+(T a) { return{ x + a, y + a, z + a }; }
-        const struct Vector3T<T> operator-(T a) { return{ x - a, y - a, z - a }; }
-        const struct Vector3T<T> operator*(T a) { return{ x * a, y * a, z * a }; }
-        const struct Vector3T<T> operator/(T a) { return{ x / a, y / a, z / a }; }
+        struct Vector3T<T> operator+(T a) const { return{ x + a, y + a, z + a }; }
+        struct Vector3T<T> operator-(T a) const { return{ x - a, y - a, z - a }; }
+        struct Vector3T<T> operator*(T a) const { return{ x * a, y * a, z * a }; }
+        struct Vector3T<T> operator/(T a) const { return{ x / a, y / a, z / a }; }
         void operator+=(T a) { x += a; y += a; z += a; }
         void operator-=(T a) { x -= a; y -= a; z -= a; }
         void operator*=(T a) { x *= a; y *= a; z *= a; }
         void operator/=(T a) { x /= a; y /= a; z /= a; }
 
-        const struct Vector3T<T> project_onto(const struct Vector3T<T>& a)
+        struct Vector3T<T> project_onto(const struct Vector3T<T>& a) const
         {
-            struct Vector3T<T> r = a;
-            r *= this->dot(a) / r.length2();
-            return r;
+            return a * (this->dot(a) / a.length2());
         }
 
-        const struct Vector3T<T> project_down(const struct Vector3T<T>& a)
+        struct Vector3T<T> project_down(const struct Vector3T<T>& a) const
         {
             return (*this - this->project_onto(a));
         }
@@ -161,7 +159,7 @@ namespace Diana
         void init(T _w, T _x, T _y, T _z) { w = _w;  x = _x; y = _y; z = _z; }
         void init(const struct Vector4T<T>& a) { w = a.w;  x = a.x; y = a.y; z = a.z; }
 
-        bool almost_zero()
+        bool almost_zero() const 
         {
             return VectorT<T>::almost_zeroS(w) &&
                 VectorT<T>::almost_zeroS(x) &&
@@ -179,9 +177,9 @@ namespace Diana
         struct Vector3T<T> u;
 
         int32_t operator<(struct AABBT<T>& b);
-        int32_t compare_x(struct AABBT<T>& b) { return tiz(l.x - b.l.x); }
-        int32_t compare_y(struct AABBT<T>& b) { return tiz(l.y - b.l.y); }
-        int32_t compare_z(struct AABBT<T>& b) { return tiz(l.z - b.l.z); }
+        int32_t compare_x(struct AABBT<T>& b) const { return tiz(l.x - b.l.x); }
+        int32_t compare_y(struct AABBT<T>& b) const { return tiz(l.y - b.l.y); }
+        int32_t compare_z(struct AABBT<T>& b) const { return tiz(l.z - b.l.z); }
 
         static bool intersect_interval(T al, T au, T bl, T bu)
         {
@@ -256,8 +254,8 @@ namespace Diana
         }
 
     private:
-        int32_t sgn(T val) { return (T(0) < val) - (val < T(0)); }
-        int32_t tiz(T val) { return (VectorT<T>::almost_zeroS(val) ? 0 : sgn(val)); }
+        int32_t sgn(T val) const { return (T(0) < val) - (val < T(0)); }
+        int32_t tiz(T val) const { return (VectorT<T>::almost_zeroS(val) ? 0 : sgn(val)); }
     };
 
 #define Vector3 Vector3T<double>
