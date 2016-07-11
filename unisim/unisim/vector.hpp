@@ -24,7 +24,7 @@ namespace Diana
         void init(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
         void init(const struct Vector3T<T>& a) { x = a.x; y = a.y; z = a.z; }
 
-        bool almost_zero()
+        const bool almost_zero()
         {
             return VectorT<T>::almost_zeroS(x) &&
                 VectorT<T>::almost_zeroS(y) &&
@@ -33,7 +33,7 @@ namespace Diana
 
         // @todo For integer T, it might be faster to get the integar part only
         // See: http://stackoverflow.com/questions/4930307/fastest-way-to-get-the-integer-part-of-sqrtn
-        const static T length(T x, T y, T z) { return (T)sqrt(Vector3T<T>::length(x, y, z)); }
+        const static T length(T x, T y, T z) { return (T)sqrt(Vector3T<T>::length2(x, y, z)); }
         const static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
 
         const T length() { return (T)sqrt(length2()); }

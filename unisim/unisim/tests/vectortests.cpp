@@ -29,6 +29,16 @@ SUITE(Vector3Ds)
     //check if two zero vectors are equal
     TEST_FIXTURE(Vector3DFixture, CheckZeroEquality)
     {
+        
+        CHECK_CLOSE(v3a.distance(v3b), 0.0, 0.000000000001);
+        CHECK_CLOSE(v3b.distance(v3a), 0.0, 0.000000000001);
+        
+        Vector3 v3c = v3a-v3b;
+        CHECK(v3c.almost_zero());
+        
+        //Fails
+        //CHECK( (v3a - v3b).almost_zero());
+        
         v3a-=v3b;
         CHECK( v3a.almost_zero() );
     }
