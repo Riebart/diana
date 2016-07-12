@@ -73,26 +73,33 @@ namespace Diana
         struct AABB box;
         //! For collisions, this is in [0,1] and is how far into the interval we've already traversed.
         double t;
-        //! Position in metres relative to universal origin
-        struct Vector3 position,
+        
+        struct Vector3
+            //! Position in metres relative to universal origin
+            position,
             //! Velocity in metres/second
             velocity,
             //! Angular velocity in radians/second
             ang_velocity,
             //! Thrust in Newtons
-            thrust,
+            thrust;
+        
+        struct Vector3T<double>
             //! Normal vector indicating forward of its local basis
             forward,
             //! Normal vector indicating up of its local basis
             up,
             //! Normal vector indicating right of its local basis
             right;
-        //! Mass in kilograms.
-        double mass,
+        
+        double
+            //! Mass in kilograms.
+            mass,
             //! Radius of bounding sphere in metres centres on its position
             radius,
             //! Health in some arbitrary hit points.
             health;
+        
         //! Arbitrary C-string offering an object description of some sort
         //! @todo Promote this to a dict with full text keys.
         char* obj_type;
@@ -168,7 +175,7 @@ namespace Diana
     struct PhysCollisionEffect
     {
         //! Direction the other object was moving, relative to this, at time of impact (normalized).
-        struct Vector3 d;
+        struct Vector3T<double> d;
         //! Position of impact on object's bounding sphere, relative to centre.
         struct Vector3 p;
         //! Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n+dn=v'
@@ -216,7 +223,7 @@ namespace Diana
     struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit, std::function<double(void)> get_rand);
     struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment);
 
-    void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation);
+    void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4T<double>* orientation);
 
     void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
     void PhysicsObject_collision(struct PhysicsObject* obj, struct PhysicsObject* other, double energy, double dt, struct PhysCollisionEffect* effect, double health_cutoff);
@@ -226,8 +233,8 @@ namespace Diana
 
     //void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
 
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3T<double>* direction, struct Vector3T<double>* up, struct Vector3T<double>* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
     
     void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
     void Beam_tick(struct Beam* beam, double dt);

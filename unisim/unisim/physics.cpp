@@ -807,7 +807,7 @@ namespace Diana
     //    obj->client_id = client_id;
     //}
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)
+    void Beam_init(B* beam, Universe* universe, V3* origin, struct Vector3T<double>* direction, struct Vector3T<double>* up, struct Vector3T<double>* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)
     {
         beam->phys_id = 0;
         beam->universe = universe;
@@ -832,7 +832,7 @@ namespace Diana
         beam->spectrum = Spectrum_clone(spectrum);
     }
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
+    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
     {
         V3 direction = *velocity;
         direction.normalize();
