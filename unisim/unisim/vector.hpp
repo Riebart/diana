@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
@@ -7,13 +9,14 @@
 
 namespace Diana
 {
-    template<typename T = double> struct VectorT
+    struct VectorT
     {
         static bool almost_zeroS(double a) { return ((a > -1e-8) && (a < 1e-8)); }
         static bool almost_zeroS(int64_t a) { return (a == 0); }
+        template<typename T> static bool almost_zeroS(T a) { return VectorT::almost_zeroS((double)a); }
     };
 
-    template<typename T = double> struct Vector3T : VectorT<T>
+    template<typename T = double> struct Vector3T : VectorT
     {
         T x, y, z;
 
@@ -26,9 +29,9 @@ namespace Diana
 
         bool almost_zero() const
         {
-            return VectorT<T>::almost_zeroS(x) &&
-                VectorT<T>::almost_zeroS(y) &&
-                VectorT<T>::almost_zeroS(z);
+            return VectorT::almost_zeroS(x) &&
+                VectorT::almost_zeroS(y) &&
+                VectorT::almost_zeroS(z);
         }
 
         // @todo For integer T, it might be faster to get the integar part only
@@ -45,19 +48,32 @@ namespace Diana
         void normalize()
         {
             T l = length();
-            if (!Vector3T<T>::almost_zeroS(l))
+            if (Vector3T<T>::almost_zeroS(l))
             {
-                this->operator/=(l);
+
+                init(0, 0, 0);
             }
             else
             {
-                init(0, 0, 0);
+                this->operator/=(l);
             }
         }
 
-        static struct Vector3T<T> normalize(const struct Vector3T<T>& a)
+        struct Vector3T<double> normalizeD()
         {
-            struct Vector3T<T> v = a;
+            // Doing this in two lines results in using the operator=() function,
+            // however if it's done in one line (assignment and declaration on the
+            // same line), it uses the converstion operations (not defined, so results
+            // in a compiler error).
+            struct Vector3T<double> r;
+            r = *this;
+            r.normalize();
+            return r;
+        }
+
+        static struct Vector3T<double> normalize(const struct Vector3T<T>& a)
+        {
+            struct Vector3T<double> v = a;
             v.normalize();
             return v;
         }
@@ -123,6 +139,9 @@ namespace Diana
         // (since this code is specialized at compile-time) for operations that have
         // the same types for both the argument and the object that owns the member
         // being called.
+        template<typename T2>
+        struct Vector3T<T> operator=(const struct Vector3T<T2>& a) { x = static_cast<T>(a.x); y = static_cast<T>(a.y); z = static_cast<T>(a.z); return *this; }
+
         template <typename T2, typename T3>
         void fmad(T2 a, struct Vector3T<T3>& b) { x += static_cast<T>(a * b.x); y += static_cast<T>(a * b.y); z += static_cast<T>(a * b.z); }
 
@@ -173,7 +192,34 @@ namespace Diana
         }
     };
 
-    template<typename T = double> struct Vector4T : VectorT<T>
+    void Vector3T<double>::normalize()
+    {
+        double l = length();
+        if (Vector3T<double>::almost_zeroS(l))
+        {
+            init(0, 0, 0);
+        }
+        else
+        {
+            this->operator/=(l);
+        }
+    }
+
+    void Vector3T<int64_t>::normalize()
+    {
+        int64_t l = length();
+        if (Vector3T<int64_t>::almost_zeroS(l))
+        {
+
+            init(0, 0, 0);
+        }
+        else
+        {
+            this->operator/=(l);
+        }
+    }
+
+    template<typename T = double> struct Vector4T : VectorT
     {
         T w, x, y, z;
 
@@ -280,7 +326,7 @@ namespace Diana
 
     private:
         int32_t sgn(T val) const { return (T(0) < val) - (val < T(0)); }
-        int32_t tiz(T val) const { return (VectorT<T>::almost_zeroS(val) ? 0 : sgn(val)); }
+        int32_t tiz(T val) const { return (VectorT::almost_zeroS(val) ? 0 : sgn(val)); }
     };
 
 #define Vector3 Vector3T<>
