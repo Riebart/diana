@@ -482,7 +482,7 @@ namespace Diana
                     visdata_msg.position = visdata_msg.position - ro->position;
                     // Apply the visual acuity cutoff when considering relative visual
                     // object positioning only.
-                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2()) < params.visual_acuity)
+                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2_dbl()) < params.visual_acuity)
                     {
                         continue;
                     }
@@ -868,7 +868,7 @@ namespace Diana
                     }
 
                     dp = other->position - smarty->pobj.position;
-                    distance_sq = dp.length2();
+                    distance_sq = dp.length2_dbl();
 
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
@@ -1397,7 +1397,7 @@ namespace Diana
                 }
 
                 pd = other->position - o->position;
-                distance_sq = pd.length2();
+                distance_sq = pd.length2_dbl();
                 if (distance_sq < other->spectrum->safe_distance_sq)
                 {
                     double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
@@ -1826,11 +1826,11 @@ namespace Diana
                     // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2() : 0.0);
+                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2_dbl() : 0.0);
                     PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2() : 0.0);
+                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2_dbl() : 0.0);
                     PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
@@ -1880,7 +1880,7 @@ namespace Diana
                     double energy1 = 0.0;
                     for (size_t i = 0; i < n_objs; i++)
                     {
-                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2();
+                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2_dbl();
                     }
 
                     // If there's more than one collision, then this factor is the ratio of original to final
