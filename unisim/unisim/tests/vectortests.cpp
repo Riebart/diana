@@ -2,6 +2,7 @@
 #include "../vector.hpp"
 
 #define ERROR_MARG 0.000000000001
+#define BASIC_ITERATIONS 1000000L
 
 using namespace Diana;
 
@@ -33,7 +34,14 @@ SUITE(Vector3Ds)
     
     TEST_FIXTURE(Vector3DFixture, Addition)
     {
-        
+        for (int i=0; i<BASIC_ITERATIONS; i++)
+        {
+            v3a += v3unita;
+        }
+        CHECK_CLOSE( BASIC_ITERATIONS, v3a.x, ERROR_MARG);
+        CHECK_CLOSE( BASIC_ITERATIONS, v3a.y, ERROR_MARG);
+        CHECK_CLOSE( BASIC_ITERATIONS, v3a.z, ERROR_MARG);  
+        CHECK_CLOSE( sqrt(3*BASIC_ITERATIONS*BASIC_ITERATIONS), v3a.length(), ERROR_MARG);  
     }
     
     TEST_FIXTURE(Vector3DFixture, Subtraction)
@@ -108,6 +116,15 @@ SUITE(Vector3Is)
         
         CHECK_EQUAL(3, (v3unita+v3unitb).length() );
         CHECK_EQUAL(3, (v3unitb+v3unitb).length() );        
+        
+        for (int i=0; i<BASIC_ITERATIONS; i++)
+        {
+            v3a += v3unita;
+        }
+        CHECK_EQUAL( BASIC_ITERATIONS, v3a.x);
+        CHECK_EQUAL( BASIC_ITERATIONS, v3a.y);
+        CHECK_EQUAL( BASIC_ITERATIONS, v3a.z);
+        CHECK_CLOSE( sqrt(3.0*BASIC_ITERATIONS*BASIC_ITERATIONS), (double)v3a.length(), 0.1); 
     }
     
     TEST_FIXTURE(Vector3IFixture, Subtraction)

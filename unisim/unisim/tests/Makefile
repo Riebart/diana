@@ -19,5 +19,5 @@ physicstests: physicstests.cpp ../physics.hpp ../physics.cpp ../libdiana.so
 	$(CXX) $(CFLAGS) physicstests.cpp  $(INCLUDE_DIR) $(LIB_DIR) -ldiana  $(EXT_LIBS) $(EXT_ST_LIBS) -o physicstests
 	
 runtests:all
-	./vectortests
-	LD_LIBRARY_PATH=.. ./physicstests
+	-./vectortests
+	-LD_LIBRARY_PATH=.. ./physicstests
