@@ -94,7 +94,7 @@ SUITE(Vector3Is)
     TEST_FIXTURE(Vector3IFixture, ZeroVector)
     {
         CHECK(v3a.almost_zero());
-        CHECK_EQUAL(v3a.length(), 0);
+        CHECK_EQUAL(0, v3a.length());
 
     }
     
@@ -110,32 +110,32 @@ SUITE(Vector3Is)
     
     TEST_FIXTURE(Vector3IFixture, Dot)
     {
-        CHECK_EQUAL(v3a.dot(v3b), 0);
-        CHECK_EQUAL(v3b.dot(v3a), 0);
+        CHECK_EQUAL(0, v3a.dot(v3b));
+        CHECK_EQUAL(0, v3b.dot(v3a));
         
-        CHECK_EQUAL(v3a.dot(v3unita), 0);
-        CHECK_EQUAL(v3unita.dot(v3a), 0);
+        CHECK_EQUAL(0, v3a.dot(v3unita));
+        CHECK_EQUAL(0, v3unita.dot(v3a));
         
-        CHECK_EQUAL(v3unita.dot(v3unitb), 3);
-        CHECK_EQUAL(v3unitb.dot(v3unita), 3);
+        CHECK_EQUAL(3, v3unita.dot(v3unitb));
+        CHECK_EQUAL(3, v3unitb.dot(v3unita));
     }
     
     //run some tests on zero vectors
     TEST_FIXTURE(Vector3IFixture, CheckZeroEquality)
     {
         
-        CHECK_EQUAL(v3a.distance(v3b), 0);
-        CHECK_EQUAL(v3b.distance(v3a), 0);
+        CHECK_EQUAL(0, v3a.distance(v3b));
+        CHECK_EQUAL(0, v3b.distance(v3a));
                  
-        CHECK_EQUAL( (v3a - v3b).length(), 0);
+        CHECK_EQUAL(0, (v3a - v3b).length());
         Vector3I v3c = v3a-v3b;
         
-        CHECK_EQUAL(v3c.length(), 0);
-        CHECK_EQUAL(v3a.dot(v3b), 0);
-        CHECK_EQUAL(v3b.dot(v3a), 0);
+        CHECK_EQUAL(0, v3c.length());
+        CHECK_EQUAL(0, v3a.dot(v3b));
+        CHECK_EQUAL(0, v3b.dot(v3a));
         
         v3a-=v3b;
-        CHECK_EQUAL( v3a.length(), 0 );
+        CHECK_EQUAL(0, v3a.length());
     }
     
 }
