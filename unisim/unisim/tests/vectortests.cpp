@@ -27,7 +27,7 @@ SUITE(Vector3Ds)
     TEST_FIXTURE(Vector3DFixture, ZeroVector)
     {
         CHECK(v3a.almost_zero());
-        CHECK_CLOSE(v3a.length(), 0.0, ERROR_MARG);
+        CHECK_CLOSE(0.0, v3a.length(), ERROR_MARG);
 
     }
     
@@ -38,8 +38,8 @@ SUITE(Vector3Ds)
     
     TEST_FIXTURE(Vector3DFixture, Subtraction)
     {
-        CHECK_CLOSE( 0, (v3a-v3b).length(), ERROR_MARG);
-        CHECK_CLOSE( 0, (v3a-v3a).length(), ERROR_MARG);
+        CHECK_CLOSE(0, (v3a-v3b).length(), ERROR_MARG);
+        CHECK_CLOSE(0, (v3a-v3a).length(), ERROR_MARG);
     }
     
     TEST_FIXTURE(Vector3DFixture, Dot)
