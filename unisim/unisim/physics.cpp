@@ -59,7 +59,7 @@ namespace Diana
         return spectrum->safe_distance_sq;
     }
 
-    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
+    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, Vector3T<double>* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
     {
         obj->type = PHYSOBJECT;
         obj->phys_id = 0;
@@ -133,7 +133,7 @@ namespace Diana
         }
     }
 
-    void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation)
+    void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4T<double>* orientation)
     {
         obj->forward.x = orientation->w;
         obj->forward.y = orientation->x;
@@ -834,12 +834,12 @@ namespace Diana
 
     void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
     {
-        V3 direction = *velocity;
-        direction.normalize();
-        V3 up2 = *up;
+        // In the init() called at the end, the members are set by value,
+        // so the fact that these are stack allocated isn't a problem.
+        Vector3T<double> direction = velocity->normalize_dbl();
+        Vector3T<double> up2 = *up;
         up2.normalize();
-
-        V3 right = direction.cross(up2);
+        Vector3T<double> right = direction.cross(*up);
 
         double speed = velocity->length();
         double area_factor = BEAM_SOLID_ANGLE_FACTOR * (angle_h * angle_v);
@@ -1124,23 +1124,21 @@ namespace Diana
 
     B* Beam_make_return_beam(B* beam, double energy, V3* origin, PhysicsObjectType type)
     {
-        V3 d = *origin;
-        //Vector3_normalize(&d);
-        //Vector3_scale(&d, -1);
+        struct Vector3T<double> d = origin->normalize_dbl();
         d.normalize();
-        d *= -1;
+        d *= -1.0;
 
         //V3 absolute_origin;
         //Vector3_add(&absolute_origin, origin, &beam->origin);
         V3 absolute_origin = *origin + beam->origin;
 
-        V3 up = { -1 * d.y, d.x, 0 };
+        struct Vector3T<double> up = { -1 * d.y, d.x, 0 };
         //Vector3_normalize(&up);
         up.normalize();
         
         //V3 right;
         //Vector3_cross(&right, &d, &up);
-        V3 right = d.cross(up);
+        struct Vector3T<double> right = d.cross(up);
 
         B* ret = (B*)malloc(sizeof(B));
         Beam_init(ret, beam->universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);

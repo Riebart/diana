@@ -103,7 +103,7 @@ namespace Diana
 
     inline void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = G * big->mass * small->mass / big->position.distance2(small->position);
+        double m = G * big->mass * small->mass / big->position.distance2_dbl(small->position);
         *out = big->position;
         *out -= small->position;
         *out *= m / out->length();
@@ -127,6 +127,9 @@ namespace Diana
             // If we're paused, then just sleep. We're not picky on how long we sleep for.
             // Sleep for max_frametime time so that we're responsive to unpausing, but not
             // waking up too often.
+            //
+            // While paused, new objects will be queued for addition to the unvierse at the
+            // end of the 'next' physics tick (once pause is disabled).
             if (u->paused)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
@@ -775,7 +778,7 @@ namespace Diana
             }
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
-                const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
+                const_cast<struct Vector3T<double>*>(&vector3d_zero), &msg->thrust,
                 msg->mass, msg->radius, obj_type, spectrum);
 
             // Now that the object contains a cloned version of the spectrum, perturb it.

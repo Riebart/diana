@@ -156,8 +156,9 @@ namespace Diana
         //! Tha radiation spectrum of this object.
         struct Spectrum* spectrum;
         struct Vector3 origin,
+            front_position;
+        struct Vector3T<double>
             direction,
-            front_position,
             up,
             right;
         double cosines[2];
@@ -214,7 +215,7 @@ namespace Diana
         void* occlusion;
     };
 
-    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
+    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3T<double>* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
     struct PhysicsObject* PhysicsObject_clone(struct PhysicsObject* obj);
     void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
 
