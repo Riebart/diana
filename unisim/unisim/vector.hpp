@@ -62,8 +62,8 @@ namespace Diana
 
         T maxabs() const
         {
-            const auto l = [max](T v) { return (v > max ? v : max); };
             T max = Vector::abs(x);
+            const auto l = [max](T v) { return (v > max ? v : max); };
             max = l(Vector::abs(y));
             max = l(Vector::abs(z));
             return max;
@@ -220,7 +220,7 @@ namespace Diana
 
     // Implementation of a more numerically stable Euclidean norm function that
     // is less likely to result in integer overflows.
-    int64_t Vector3T<int64_t>::length(int64_t x, int64_t y, int64_t z)
+    template <> inline int64_t Vector3T<int64_t>::length(int64_t x, int64_t y, int64_t z)
     {
         int64_t max = Vector::abs(x);
         const auto l = [max](int64_t v) { return (v > max ? v : max); };
@@ -238,7 +238,7 @@ namespace Diana
     // int64_t normalization equates to setting the maximal value to
     // SGN(maximal_value), if there's multiple values of equal magnitude,
     // all values are 0.
-    void Vector3T<int64_t>::normalize()
+    template <> inline void Vector3T<int64_t>::normalize()
     {
         int64_t max = Vector::abs(x);
         const auto l = [max](int64_t v) { return (v > max ? v : max); };
@@ -273,7 +273,7 @@ namespace Diana
     // - During the dot product, the int values will be implicitly casted to doubles,
     //   divided by the double length2(), and the int vector will be scaled by a double,
     //   resulting in the double scalar being cast back to an int.
-    struct Vector3T<int64_t> Vector3T<int64_t>::project_onto(const struct Vector3T<int64_t>& a) const
+    template <> inline struct Vector3T<int64_t> Vector3T<int64_t>::project_onto(const struct Vector3T<int64_t>& a) const
     {
         return this->project_onto((struct Vector3T<double>)a);
     }
@@ -291,10 +291,10 @@ namespace Diana
 
         bool almost_zero() const
         {
-            return Vector<T>::almost_zeroS(w) &&
-                Vector<T>::almost_zeroS(x) &&
-                Vector<T>::almost_zeroS(y) &&
-                Vector<T>::almost_zeroS(z);
+            return Vector::almost_zeroS(w) &&
+                Vector::almost_zeroS(x) &&
+                Vector::almost_zeroS(y) &&
+                Vector::almost_zeroS(z);
         }
     };
 
