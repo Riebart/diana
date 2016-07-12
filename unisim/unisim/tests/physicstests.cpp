@@ -54,7 +54,7 @@ SUITE(Physics)
     TEST_FIXTURE(PhysicsFixture, PhysicsObjectTest)
     {
         PhysicsObject * po;
-        CHECK_EQUAL(PhysicsObject_clone(NULL), (void*)NULL);
+        CHECK_EQUAL((void *)NULL, PhysicsObject_clone(NULL));
         REQUIRE CHECK(PhysicsObject_clone(&physObjA) != (void*)NULL);
     
     }
@@ -80,7 +80,7 @@ SUITE(Physics)
         
         //run some checks on an invalid spectrum (one with no coponents
         newSpectrum->n = 0;
-        CHECK_EQUAL(Spectrum_clone(newSpectrum), (void *)NULL);
+        CHECK_EQUAL((void *)NULL, Spectrum_clone(newSpectrum));
         CHECK_CLOSE(total_spectrum_power(newSpectrum), 0.0, ERROR_MARG);
         CHECK_CLOSE(radiates_strong_enough(newSpectrum, 1000), 0.0, ERROR_MARG);
         //TODO: after figuring out the rand()
