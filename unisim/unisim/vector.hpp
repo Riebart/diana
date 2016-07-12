@@ -227,12 +227,19 @@ namespace Diana
         max = l(Vector::abs(y));
         max = l(Vector::abs(z));
 
-        double x2 = (double)x / max;
-        double y2 = (double)y / max;
-        double z2 = (double)z / max;
+        if (max != 0)
+        {
+            double x2 = (double)x / max;
+            double y2 = (double)y / max;
+            double z2 = (double)z / max;
 
-        double sum = x2 * x2 + y2 * y2 + z2 * z2;
-        return (int64_t)(max * sqrt(sum));
+            double sum = x2 * x2 + y2 * y2 + z2 * z2;
+            return (int64_t)(max * sqrt(sum));
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     // int64_t normalization equates to setting the maximal value to
