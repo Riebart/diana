@@ -41,8 +41,8 @@ namespace Diana
         static T length(T x, T y, T z) { return (T)sqrt(x * x + y * y + z * z); }
         static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
 
-        T length() const { return (T)sqrt(length2()); }
-        T length2() const { return x * x + y * y + z * z; }
+        T length() const { return Vector3T<T>::length(x, y, z); }
+        T length2() const { return Vector3T<T>::length2(x, y, z); }
 
         T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
         T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
@@ -52,7 +52,6 @@ namespace Diana
             T l = length();
             if (Vector3T<T>::almost_zeroS(l))
             {
-
                 init(0, 0, 0);
             }
             else
@@ -193,6 +192,23 @@ namespace Diana
             return (*this - this->project_onto(a));
         }
     };
+
+    // Implementation of a more numerically stable Euclidean norm function that
+    // is less likely to result in integer overflows.
+    int64_t Vector3T<int64_t>::length(int64_t x, int64_t y, int64_t z)
+    {
+        int64_t max = Vector::abs(x);
+        const auto l = [max](int64_t v) { return (v > max ? v : max); };
+        max = l(Vector::abs(y));
+        max = l(Vector::abs(z));
+
+        double x2 = (double)x / max;
+        double y2 = (double)y / max;
+        double z2 = (double)z / max;
+
+        double sum = x2 * x2 + y2 * y2 + z2 * z2;
+        return (int64_t)(max * sqrt(sum));
+    }
 
     void Vector3T<double>::normalize()
     {
