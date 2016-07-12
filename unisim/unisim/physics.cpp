@@ -627,6 +627,11 @@ namespace Diana
     PO* PhysicsObject_clone(PO* obj)
     {
         //! @todo There's a bunch of code reuse here that should be taken care of.
+        if (obj == NULL)
+        {
+            return NULL;
+        }
+        
         PO* ret = NULL;
         switch (obj->type)
         {
@@ -653,6 +658,7 @@ namespace Diana
                 }
                 ret->spectrum = Spectrum_clone(obj->spectrum);
             }
+            break;
         }
         case PHYSOBJECT_SMART:
         {
