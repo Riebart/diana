@@ -600,8 +600,8 @@ namespace Diana
                 }
 
                 // If the mass or radius changes, we need to update attractors if the values changes
-                if ((msg->specced[3] && !V3::almost_zeroS(smarty->pobj.mass - msg->mass)) ||
-                    (msg->specced[17] && !V3::almost_zeroS(smarty->pobj.radius - msg->radius)))
+                if ((msg->specced[3] && !Vector::almost_zeroS(smarty->pobj.mass - msg->mass)) ||
+                    (msg->specced[17] && !Vector::almost_zeroS(smarty->pobj.radius - msg->radius)))
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
@@ -873,7 +873,7 @@ namespace Diana
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
                     // is (0,0,0), so we can leave the power spectrum alone.
-                    if (V3::almost_zeroS(distance_sq))
+                    if (Vector::almost_zeroS(distance_sq))
                     {
                         power_scale = 1.0;
                     }
@@ -896,7 +896,7 @@ namespace Diana
                     }
 
                     // Make the position a unit direction vector if it isn't (0,0,0)
-                    if (!V3::almost_zeroS(distance_sq))
+                    if (!Vector::almost_zeroS(distance_sq))
                     {
                         dp *= 1.0 / sqrt(distance_sq);
                     }
@@ -1103,7 +1103,7 @@ namespace Diana
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
-                if (V3::almost_zeroS(d) || (d > 0))
+                if (Vector::almost_zeroS(d) || (d > 0))
                 {
                     // Now do a full test on the Y axis.
                     //if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
@@ -1793,7 +1793,7 @@ namespace Diana
                 double energy0 = 0.0;
 
                 while ((n_simultaneous < collisions.size()) &&
-                    (V3::almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
+                    (Vector::almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
                 {
                     // For each collision that happens at the same time as the first, apply it to the objects involved
                     // Retrieve the earliest collision details.

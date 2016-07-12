@@ -9,14 +9,16 @@
 
 namespace Diana
 {
-    struct VectorT
+    struct Vector
     {
         static bool almost_zeroS(double a) { return ((a > -1e-8) && (a < 1e-8)); }
         static bool almost_zeroS(int64_t a) { return (a == 0); }
-        template<typename T> static bool almost_zeroS(T a) { return VectorT::almost_zeroS((double)a); }
+        template<typename T> static bool almost_zeroS(T a) { return Vector::almost_zeroS((double)a); }
+        template<typename T> static int64_t sgn(T val) { return (T(0) < val) - (val < T(0)); }
+        template<typename T> static int64_t abs(T val) { return (Vector::sgn(val) * val); }
     };
 
-    template<typename T = double> struct Vector3T : VectorT
+    template<typename T = double> struct Vector3T
     {
         T x, y, z;
 
@@ -29,9 +31,9 @@ namespace Diana
 
         bool almost_zero() const
         {
-            return VectorT::almost_zeroS(x) &&
-                VectorT::almost_zeroS(y) &&
-                VectorT::almost_zeroS(z);
+            return Vector::almost_zeroS(x) &&
+                Vector::almost_zeroS(y) &&
+                Vector::almost_zeroS(z);
         }
 
         // @todo For integer T, it might be faster to get the integar part only
@@ -91,7 +93,7 @@ namespace Diana
 
         void rotate_around(double aX, double aY, double aZ, double theta)
         {
-            if (Vector3T<T>::almost_zeroS(theta))
+            if (Vector::almost_zeroS(theta))
             {
                 return;
             }
@@ -101,7 +103,7 @@ namespace Diana
             T l2 = aX * aX + aY * aY + aZ * aZ;
             double l = sqrt(l2);
 
-            if (Vector3T<T>::almost_zeroS(l2))
+            if (Vector::almost_zeroS(l2))
             {
                 return;
             }
@@ -195,7 +197,7 @@ namespace Diana
     void Vector3T<double>::normalize()
     {
         double l = length();
-        if (Vector3T<double>::almost_zeroS(l))
+        if (Vector::almost_zeroS(l))
         {
             init(0, 0, 0);
         }
@@ -205,21 +207,30 @@ namespace Diana
         }
     }
 
+    // int64_t normalization equates to setting the maximal value to
+    // SGN(maximal_value), if there's multiple values of equal magnitude,
+    // all values are 0.
     void Vector3T<int64_t>::normalize()
     {
-        int64_t l = length();
-        if (Vector3T<int64_t>::almost_zeroS(l))
+        int64_t max = Vector::abs(x);
+        const auto l = [max](int64_t v) { return (v > max ? v : max); };
+        max = l(Vector::abs(y));
+        max = l(Vector::abs(z));
+        if (max != 0)
         {
-
-            init(0, 0, 0);
-        }
-        else
-        {
-            this->operator/=(l);
+            x /= max;
+            y /= max;
+            z /= max;
+            if ((Vector::abs(x) + Vector::abs(y) + Vector::abs(z)) > 1)
+            {
+                x = 0;
+                y = 0;
+                z = 0;
+            }
         }
     }
 
-    template<typename T = double> struct Vector4T : VectorT
+    template<typename T = double> struct Vector4T
     {
         T w, x, y, z;
 
@@ -232,10 +243,10 @@ namespace Diana
 
         bool almost_zero() const
         {
-            return VectorT<T>::almost_zeroS(w) &&
-                VectorT<T>::almost_zeroS(x) &&
-                VectorT<T>::almost_zeroS(y) &&
-                VectorT<T>::almost_zeroS(z);
+            return Vector<T>::almost_zeroS(w) &&
+                Vector<T>::almost_zeroS(x) &&
+                Vector<T>::almost_zeroS(y) &&
+                Vector<T>::almost_zeroS(z);
         }
     };
 
@@ -326,7 +337,7 @@ namespace Diana
 
     private:
         int32_t sgn(T val) const { return (T(0) < val) - (val < T(0)); }
-        int32_t tiz(T val) const { return (VectorT::almost_zeroS(val) ? 0 : sgn(val)); }
+        int32_t tiz(T val) const { return (Vector::almost_zeroS(val) ? 0 : sgn(val)); }
     };
 
 #define Vector3 Vector3T<>

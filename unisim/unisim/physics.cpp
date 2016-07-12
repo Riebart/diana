@@ -227,7 +227,7 @@ namespace Diana
             found = false;
             for (uint32_t j = 0; j < n_unique_wavelengths; j++)
             {
-                if (V3::almost_zeroS(d_components[j].wavelength - i_components[i].wavelength))
+                if (Vector::almost_zeroS(d_components[j].wavelength - i_components[i].wavelength))
                 {
                     // If we find a matching wavelength, add the incremental
                     // power component
@@ -360,7 +360,7 @@ namespace Diana
         double t = od * od - dd * (oo - r);
 
         // If there's no solutions reject, because this method is perfectly precise.
-        if (!V3::almost_zeroS(t) && (t < 0))
+        if (!Vector::almost_zeroS(t) && (t < 0))
         {
             cr->t = -1.0;
             return;
@@ -373,7 +373,7 @@ namespace Diana
         t = sqrt(t);
         // If it is 'zero' or positive, then we need a positive value to offset it
         // (or its subtraction)
-        if (V3::almost_zeroS(od) || (od > 0))
+        if (Vector::almost_zeroS(od) || (od > 0))
         {
             t = (t - od) / dd;
         }
@@ -385,7 +385,7 @@ namespace Diana
 
         // Note that for almost exactly touching objects, t might chop to zero here.
         //  - This arose during multi-pass collision testing during a pool break.
-        t = (V3::almost_zeroS(t) ? 0.0 : t);
+        t = (Vector::almost_zeroS(t) ? 0.0 : t);
 
         // We only accept t in [0,1] here. All other results do not help us.
         // Also check for NaN.
@@ -431,7 +431,7 @@ namespace Diana
         // in the case of a 'proper' collision, which means that velocities away from a
         // collision will move the value negative.
         double c = vdn1 - vdn2;
-        if (V3::almost_zeroS(c) || (c < 0))
+        if (Vector::almost_zeroS(c) || (c < 0))
         {
             cr->t = -1.0;
             return;
@@ -457,7 +457,7 @@ namespace Diana
         // At this point, cr->e is sum of the kinetic energies of the two objects along the
         // normal of collision.
         // If cr->e is almost zero, bail because we don't want to count tiny collisions.
-        if (V3::almost_zeroS(cr->e))
+        if (Vector::almost_zeroS(cr->e))
         {
             cr->t = -1.0;
             return;
@@ -844,12 +844,12 @@ namespace Diana
         double speed = velocity->length();
         double area_factor = BEAM_SOLID_ANGLE_FACTOR * (angle_h * angle_v);
         double cosh = cos(angle_h / 2);
-        if (V3::almost_zeroS(cosh))
+        if (Vector::almost_zeroS(cosh))
         {
             cosh = 0.0;
         }
         double cosv = cos(angle_v / 2);
-        if (V3::almost_zeroS(cosv))
+        if (Vector::almost_zeroS(cosv))
         {
             cosv = 0.0;
         }
@@ -880,7 +880,7 @@ namespace Diana
         // If the position delta is almost zero (or less than the object's radius),
         // and the beam hasn't gone anywhere yet, then just bail, because we don't care
         // about hitting the object we started at.
-        if (p.almost_zero() && V3::almost_zeroS(b->distance_travelled))
+        if (p.almost_zero() && Vector::almost_zeroS(b->distance_travelled))
         {
             bcr->t = -1.0;
             return;
@@ -958,20 +958,20 @@ namespace Diana
         // If the relative position vector lies in the up/right plane...
 
         // Current
-        if (V3::almost_zeroS(p.dot(b->direction)))
+        if (Vector::almost_zeroS(p.dot(b->direction)))
         {
             // Figure out which one failed the cosine test, Then check that the other cosine is < 0 or almost 0.
             // If that checks out, then get the cosine of the position vector with the appropriate vector:
             //  - horizontal spread (cosines[0]) => up vector
             //  - vertical spread => right vector
             // Then, check that cosine against the cosines of the beam.
-            if (!current_b[0] && ((b->cosines[1] < 0) || V3::almost_zeroS(b->cosines[1])))
+            if (!current_b[0] && ((b->cosines[1] < 0) || Vector::almost_zeroS(b->cosines[1])))
             {
                 // We check the length of p earlier in an early rejection test.
                 current[0] = p.dot(b->up) / p.length();
                 current_b[0] = (current[0] >= b->cosines[0]);
             }
-            else if (!current_b[1] && ((b->cosines[0] < 0) || V3::almost_zeroS(b->cosines[0])))
+            else if (!current_b[1] && ((b->cosines[0] < 0) || Vector::almost_zeroS(b->cosines[0])))
             {
                 current[1] = p.dot(b->right) / p.length();
                 current_b[1] = (current[1] >= b->cosines[1]);
@@ -979,14 +979,14 @@ namespace Diana
         }
 
         // Future
-        if (V3::almost_zeroS(p2.dot(b->direction)))
+        if (Vector::almost_zeroS(p2.dot(b->direction)))
         {
-            if (!future_b[0] && ((b->cosines[1] < 0) || V3::almost_zeroS(b->cosines[1])))
+            if (!future_b[0] && ((b->cosines[1] < 0) || Vector::almost_zeroS(b->cosines[1])))
             {
                 future[0] = p2.dot(b->up) / p.length();
                 future_b[0] = (future[0] >= b->cosines[0]);
             }
-            else if (!future_b[1] && ((b->cosines[0] < 0) || V3::almost_zeroS(b->cosines[0])))
+            else if (!future_b[1] && ((b->cosines[0] < 0) || Vector::almost_zeroS(b->cosines[0])))
             {
                 future[1] = p2.dot(b->right) / p.length();
                 future_b[1] = (future[1] >= b->cosines[1]);
