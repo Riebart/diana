@@ -38,27 +38,28 @@ SUITE(Vector3Ds)
     
     TEST_FIXTURE(Vector3DFixture, Subtraction)
     {
-        
+        CHECK_CLOSE( 0, (v3a-v3b).length(), ERROR_MARG);
+        CHECK_CLOSE( 0, (v3a-v3a).length(), ERROR_MARG);
     }
     
     TEST_FIXTURE(Vector3DFixture, Dot)
     {
-        CHECK_CLOSE(v3a.dot(v3b), 0, ERROR_MARG);
-        CHECK_CLOSE(v3b.dot(v3a), 0, ERROR_MARG);
+        CHECK_CLOSE(0, v3a.dot(v3b), ERROR_MARG);
+        CHECK_CLOSE(0, v3b.dot(v3a), ERROR_MARG);
         
-        CHECK_CLOSE(v3a.dot(v3unita), 0, ERROR_MARG);
-        CHECK_CLOSE(v3unita.dot(v3a), 0, ERROR_MARG);
+        CHECK_CLOSE(0, v3a.dot(v3unita), ERROR_MARG);
+        CHECK_CLOSE(0, v3unita.dot(v3a), ERROR_MARG);
         
-        CHECK_CLOSE(v3unita.dot(v3unitb), 3, ERROR_MARG);
-        CHECK_CLOSE(v3unitb.dot(v3unita), 3, ERROR_MARG);
+        CHECK_CLOSE(3, v3unita.dot(v3unitb), ERROR_MARG);
+        CHECK_CLOSE(3, v3unitb.dot(v3unita), ERROR_MARG);
     }
     
     //run some tests on zero vectors
     TEST_FIXTURE(Vector3DFixture, CheckZeroVectors)
     {
         
-        CHECK_CLOSE(v3a.distance(v3b), 0.0, ERROR_MARG);
-        CHECK_CLOSE(v3b.distance(v3a), 0.0, ERROR_MARG);
+        CHECK_CLOSE(0, v3a.distance(v3b), ERROR_MARG);
+        CHECK_CLOSE(0, v3b.distance(v3a), ERROR_MARG);
                  
         CHECK( (v3a - v3b).almost_zero());
         Vector3 v3c = v3a-v3b;
@@ -100,7 +101,13 @@ SUITE(Vector3Is)
     
     TEST_FIXTURE(Vector3IFixture, Addition)
     {
+        CHECK_EQUAL(0, (v3a+v3b).length() );
+        CHECK_EQUAL(0, (v3a+v3a).length() );
         
+        CHECK_EQUAL(1, (v3a+v3unita).length() );
+        
+        CHECK_EQUAL(3, (v3unita+v3unitb).length() );
+        CHECK_EQUAL(3, (v3unitb+v3unitb).length() );        
     }
     
     TEST_FIXTURE(Vector3IFixture, Subtraction)
