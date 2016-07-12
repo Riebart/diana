@@ -306,6 +306,8 @@ namespace Diana
         //! Upper coordinates
         struct Vector3T<T> u;
 
+        struct AABBT<T> operator=(const struct AABBT<T>& a) { l = a.l; u = a.u; return *this; }
+
         int32_t compare_x(struct AABBT<T>& b) const { return tiz(l.x - b.l.x); }
         int32_t compare_y(struct AABBT<T>& b) const { return tiz(l.y - b.l.y); }
         int32_t compare_z(struct AABBT<T>& b) const { return tiz(l.z - b.l.z); }

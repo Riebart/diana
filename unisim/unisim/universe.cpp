@@ -103,10 +103,23 @@ namespace Diana
 
     inline void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = G * big->mass * small->mass / big->position.distance2_dbl(small->position);
+        double d = big->position.distance2_dbl(small->position);
+        double m = G * big->mass * small->mass / d;
         *out = big->position;
         *out -= small->position;
         *out *= m / out->length();
+        //double d = big->position.distance2_dbl(small->position);
+        //if (Vector::almost_zeroS(d))
+        //{
+        //    out->init(0, 0, 0);
+        //}
+        //else
+        //{
+        //    double m = G * big->mass * small->mass / d;
+        //    *out = big->position;
+        //    *out -= small->position;
+        //    *out *= m / out->length();
+        //}
     }
 
     void* sim(void* uV)
@@ -1009,9 +1022,9 @@ namespace Diana
 
     void Universe::get_grav_pull(V3* g, PO* obj)
     {
-        V3 cg;
         for (size_t i = 0; i < attractors.size(); i++)
         {
+            V3 cg = { 0,0,0 };
             // An object can't attract itself.
             if (attractors[i]->phys_id == obj->phys_id)
             {
@@ -1019,9 +1032,9 @@ namespace Diana
             }
 
             gravity(params.gravitational_constant, &cg, attractors[i], obj);
-            cg /= (double)(params.scale_to_metres * params.scale_to_metres);
             *g += cg;
         }
+        g->operator/=((double)(params.scale_to_metres * params.scale_to_metres));
     }
 
     bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
@@ -1102,7 +1115,7 @@ namespace Diana
                 double d;
                 d = a->u.x - b->l.x;
 
-                // This is to text if they intersect/touch in X
+                // This is to test if they intersect/touch in X
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
@@ -1213,7 +1226,6 @@ namespace Diana
     //! @todo Convert this to a private member function.
     void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     {
-        V3 g = { 0, 0, 0 };
         struct BeamCollisionResult beam_result;
 
         // Needed to resolve the physical effects of the collision.
@@ -1438,6 +1450,7 @@ namespace Diana
             }
         }
 
+        V3 g = { 0, 0, 0 };
         u->get_grav_pull(&g, o);
         PhysicsObject_tick(o, &g, dt);
     }
