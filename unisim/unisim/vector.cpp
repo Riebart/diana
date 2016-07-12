@@ -115,28 +115,28 @@ namespace Diana
     //    Vector3_rotate_around(up, forward, angles->z);
     //}
 
-    template<typename T> int32_t AABBT<T>::operator<(struct AABBT<T>& b)
-    {
-        T c = l.x - b.l.x;
-        if (!Vector3T<T>::almost_zeroS(c))
-        {
-            return SIGN(c);
-        }
+    //template<typename T> int32_t AABBT<T>::operator<(struct AABBT<T>& b)
+    //{
+    //    T c = l.x - b.l.x;
+    //    if (!Vector3T<T>::almost_zeroS(c))
+    //    {
+    //        return SIGN(c);
+    //    }
 
-        c = l.y - b.l.y;
-        if (!Vector3T<T>::almost_zeroS(c))
-        {
-            return SIGN(c);
-        }
+    //    c = l.y - b.l.y;
+    //    if (!Vector3T<T>::almost_zeroS(c))
+    //    {
+    //        return SIGN(c);
+    //    }
 
-        c = l.z - b.l.z;
-        if (!Vector3T<T>::almost_zeroS(c))
-        {
-            return SIGN(c);
-        }
+    //    c = l.z - b.l.z;
+    //    if (!Vector3T<T>::almost_zeroS(c))
+    //    {
+    //        return SIGN(c);
+    //    }
 
-        return 0;
-    }
+    //    return 0;
+    //}
 
     //template<typename T> int32_t AABBT<T>::compare_y(struct AABBT<T>& b)
     //{
