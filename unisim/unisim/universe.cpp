@@ -101,7 +101,7 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    inline void gravity(double G, V3* out, PO* big, PO* small)
+    inline void gravity(double G, struct Vector3T<double>* out, PO* big, PO* small)
     {
         double d = big->position.distance2_dbl(small->position);
         double m = G * big->mass * small->mass / d;
@@ -498,7 +498,7 @@ namespace Diana
                     visdata_msg.position = visdata_msg.position - ro->position;
                     // Apply the visual acuity cutoff when considering relative visual
                     // object positioning only.
-                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2_dbl()) < params.visual_acuity)
+                    if ((4 * visdata_msg.radius * visdata_msg.radius / Vector3T<double>::length2(visdata_msg.position)) < params.visual_acuity)
                     {
                         continue;
                     }
@@ -883,8 +883,9 @@ namespace Diana
                         continue;
                     }
 
-                    dp = other->position - smarty->pobj.position;
-                    distance_sq = dp.length2_dbl();
+                    dp = other->position;
+                    dp -= smarty->pobj.position;
+                    distance_sq = Vector3T<double>::length2(dp);
 
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
@@ -1020,11 +1021,11 @@ namespace Diana
         delete msg_base;
     }
 
-    void Universe::get_grav_pull(V3* g, PO* obj)
+    void Universe::get_grav_pull(struct Vector3T<double>* g, PO* obj)
     {
         for (size_t i = 0; i < attractors.size(); i++)
         {
-            V3 cg = { 0,0,0 };
+            struct Vector3T<double> cg = { 0,0,0 };
             // An object can't attract itself.
             if (attractors[i]->phys_id == obj->phys_id)
             {
@@ -1411,8 +1412,9 @@ namespace Diana
                     continue;
                 }
 
-                pd = other->position - o->position;
-                distance_sq = pd.length2_dbl();
+                pd = other->position;
+                pd -= o->position;
+                distance_sq = Vector3T<double>::length2(pd);
                 if (distance_sq < other->spectrum->safe_distance_sq)
                 {
                     double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
@@ -1450,7 +1452,7 @@ namespace Diana
             }
         }
 
-        V3 g = { 0, 0, 0 };
+        struct Vector3T<double> g = { 0, 0, 0 };
         u->get_grav_pull(&g, o);
         PhysicsObject_tick(o, &g, dt);
     }
@@ -1842,11 +1844,11 @@ namespace Diana
                     // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2_dbl() : 0.0);
+                    energy0 += (never_seen ? obj1->mass * Vector3T<double>::length2(obj1->velocity) : 0.0);
                     PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2_dbl() : 0.0);
+                    energy0 += (never_seen ? obj2->mass * Vector3T<double>::length2(obj2->velocity) : 0.0);
                     PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
@@ -1896,7 +1898,7 @@ namespace Diana
                     double energy1 = 0.0;
                     for (size_t i = 0; i < n_objs; i++)
                     {
-                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2_dbl();
+                        energy1 += phys_objects[objs[i]]->mass * Vector3T<double>::length2(phys_objects[objs[i]]->velocity);
                     }
 
                     // If there's more than one collision, then this factor is the ratio of original to final

@@ -73,10 +73,11 @@ namespace Diana
         struct AABB box;
         //! For collisions, this is in [0,1] and is how far into the interval we've already traversed.
         double t;
+       
+        //! Position in metres relative to universal origin
+        struct Vector3 position;
         
-        struct Vector3
-            //! Position in metres relative to universal origin
-            position,
+        struct Vector3T<double>
             //! Velocity in metres/second
             velocity,
             //! Angular velocity in radians/second
@@ -180,11 +181,11 @@ namespace Diana
         //! Position of impact on object's bounding sphere, relative to centre.
         struct Vector3 p;
         //! Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n+dn=v'
-        struct Vector3 t;
+        struct Vector3T<double> t;
         //! Existing velocity along the normal of impact imparted due to impact. t+n+dn=v'
-        struct Vector3 n;
+        struct Vector3T<double> n;
         //! New velocity CONTRIBUTION along the normal of impact imparted due to impact. t+n+dn=v'
-        struct Vector3 dn;
+        struct Vector3T<double> dn;
     };
 
     //! The structure that holds the effects of a phys-phys collision
@@ -208,16 +209,16 @@ namespace Diana
         //! Energy absorbed by the object given it's shadow, and the size of the wave front
         double e;
         //! Direction beam is travelling.
-        struct Vector3 d;
-        //! Collition point
+        struct Vector3T<double> d;
+        //! Collition point, relative to beam origin.
         struct Vector3 p;
         //! Occlusion information
         void* occlusion;
     };
 
-    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3T<double>* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
+    void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3T<double>* velocity, struct Vector3T<double>* ang_velocity, struct Vector3T<double>* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
     struct PhysicsObject* PhysicsObject_clone(struct PhysicsObject* obj);
-    void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3* g, double dt);
+    void PhysicsObject_tick(struct PhysicsObject* obj, struct Vector3T<double>* g, double dt);
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src);
     struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size = NULL);
@@ -235,7 +236,7 @@ namespace Diana
     //void SmartPhysicsObject_init(struct SmartPhysicsObject* obj, int32_t socket, int64_t client_id, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
 
     void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3T<double>* direction, struct Vector3T<double>* up, struct Vector3T<double>* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
-    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
+    void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3T<double>* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char* data, struct Spectrum* spectrum);
     
     void Beam_collide(struct BeamCollisionResult* bcr, struct Beam* beam, struct PhysicsObject* obj, double dt);
     void Beam_tick(struct Beam* beam, double dt);

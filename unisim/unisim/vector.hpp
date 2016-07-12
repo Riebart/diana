@@ -41,19 +41,17 @@ namespace Diana
         inline static T length(T x, T y, T z) { return (T)sqrt(x * x + y * y + z * z); }
         inline static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
 
-        inline static T length(const struct Vector3T<T>& a) { return Vector3T<T>::length(a.x, a.y.a.z); }
-        inline static T length2(const struct Vector3T<T>& a) { return Vector3T<T>::length2(a.x, a.y.a.z); }
+        // Support asking the static struct for the length of a vector in a different type.
+        template<typename T2>
+        inline static T length(const struct Vector3T<T2>& a) { return Vector3T<T>::length((T)a.x, (T)a.y, (T)a.z); }
+        template<typename T2>
+        inline static T length2(const struct Vector3T<T2>& a) { return Vector3T<T>::length2((T)a.x, (T)a.y, (T)a.z); }
 
         inline T length() const { return Vector3T<T>::length(x, y, z); }
         inline T length2() const { return Vector3T<T>::length2(x, y, z); }
 
         inline T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
         inline T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
-
-        inline double length2_dbl() const
-        {
-            return Vector3T<double>::length2((double)x, (double)y, (double)z);
-        }
 
         inline double distance2_dbl(const struct Vector3T<T>& a) const
         {
@@ -82,21 +80,10 @@ namespace Diana
             }
         }
 
-        struct Vector3T<double> normalize_dbl()
-        {
-            // Doing this in two lines results in using the operator=() function,
-            // however if it's done in one line (assignment and declaration on the
-            // same line), it uses the converstion operations (not defined, so results
-            // in a compiler error).
-            struct Vector3T<double> r = *this;
-            r.normalize();
-            return r;
-        }
-
         template<typename T2>
-        static struct Vector3T<double> normalize(const struct Vector3T<T2>& a)
+        static struct Vector3T<T> normalize(const struct Vector3T<T2>& a)
         {
-            struct Vector3T<double> v = a;
+            struct Vector3T<T> v = a;
             v.normalize();
             return v;
         }

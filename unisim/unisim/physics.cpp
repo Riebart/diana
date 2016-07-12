@@ -59,7 +59,7 @@ namespace Diana
         return spectrum->safe_distance_sq;
     }
 
-    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, Vector3T<double>* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
+    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, struct Vector3T<double>* velocity, struct Vector3T<double>* ang_velocity, struct Vector3T<double>* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
     {
         obj->type = PHYSOBJECT;
         obj->phys_id = 0;
@@ -98,7 +98,7 @@ namespace Diana
         }
     }
 
-    void PhysicsObject_tick(PO* obj, V3* g, double dt)
+    void PhysicsObject_tick(PO* obj, struct Vector3T<double>* g, double dt)
     {
         //! @todo Relativistic mass
         // Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -128,8 +128,8 @@ namespace Diana
 
         if (!obj->ang_velocity.almost_zero())
         {
-            Vector3T<double> a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
-            V3::apply_yaw_pitch_roll(obj->forward, obj->up, obj->right, a);
+            struct Vector3T<double> a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
+            Vector3T<double>::apply_yaw_pitch_roll(obj->forward, obj->up, obj->right, a);
         }
     }
 
@@ -321,17 +321,14 @@ namespace Diana
 
         //! @todo Scale the velocity bu the time-step (in essence turning it into a position delta), aftet
         //! we check to see if it's too small. dt could cause a small velocity to shrink past the cutoff.
-        V3 v1 = obj1->velocity;
+        struct Vector3T<double> v1 = obj1->velocity;
         v1 *= dt;
-        //Vector3_scale(&v1, dt);
 
-        V3 v2 = obj2->velocity;
+        struct Vector3T<double> v2 = obj2->velocity;
         v2 *= dt;
-        //Vector3_scale(&v2, dt);
 
-        V3 vd;
+        struct Vector3T<double> vd;
         vd = v1 - v2;
-        //Vector3_subtract(&vd, &v1, &v2);
 
         if (vd.almost_zero())
         {
@@ -408,9 +405,9 @@ namespace Diana
         //! @todo Angular velocity, which reqires location of impact and shape and stuff
 
         // collision normal: unit vector from points from obj1 to obj2
-        V3 n;
-        n = p2 - p1;
-        n.normalize();
+        pd = p2;
+        pd -= p1;
+        struct Vector3T<double> n = Vector3T<double>::normalize(pd);
 
         // We only care about collisions where objects are moving towards each other.
         // By not caring about 'collisions' where objects are moving away from each other
@@ -838,14 +835,14 @@ namespace Diana
         beam->spectrum = Spectrum_clone(spectrum);
     }
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
+    void Beam_init(B* beam, Universe* universe, V3* origin, struct Vector3T<double>* velocity, struct Vector3T<double>* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
     {
         // In the init() called at the end, the members are set by value,
         // so the fact that these are stack allocated isn't a problem.
-        Vector3T<double> direction = velocity->normalize_dbl();
-        Vector3T<double> up2 = *up;
+        struct Vector3T<double> direction = Vector3T<double>::normalize(*velocity);
+        struct Vector3T<double> up2 = *up;
         up2.normalize();
-        Vector3T<double> right = direction.cross(*up);
+        struct Vector3T<double> right = direction.cross(*up);
 
         double speed = velocity->length();
         double area_factor = BEAM_SOLID_ANGLE_FACTOR * (angle_h * angle_v);
@@ -882,6 +879,7 @@ namespace Diana
 
         // Relative position of object to beam origin.
         V3 p = obj->position - b->origin;
+        struct Vector3T<double> p_norm = Vector3T<double>::normalize(p);
 
         // If the position delta is almost zero (or less than the object's radius),
         // and the beam hasn't gone anywhere yet, then just bail, because we don't care
@@ -893,10 +891,12 @@ namespace Diana
         }
 
         // Object position delta in this tick.
-        V3 dp = obj->velocity * dt;
+        struct Vector3T<double> dp = obj->velocity * dt;
 
         // The object's position at the end of the physics tick.
-        V3 p2 = p + dp;
+        V3 p2 = p;
+        p2 += dp;
+        struct Vector3T<double> p2_norm = Vector3T<double>::normalize(p2);
 
         //! @todo Early rejection if we're WAY outside of collision distance.
 
@@ -912,15 +912,15 @@ namespace Diana
         // - proj_*[0] is the projection DOWN the up vector into the RIGHT/FORWARD plane
         // - proj_*[1] is the projection DOWN the right vector into the UP/FORWARD plane
         
-        V3 proj_s[2];
-        proj_s[0] = p.project_down(b->up);
-        proj_s[1] = p.project_down(b->right);
+        struct Vector3T<double> proj_s[2];
+        proj_s[0] = p_norm.project_down(b->up);
+        proj_s[1] = p_norm.project_down(b->right);
         proj_s[0].normalize();
         proj_s[1].normalize();
 
-        V3 proj_e[2];
-        proj_e[0] = p2.project_down(b->up);
-        proj_e[1] = p2.project_down(b->right);
+        struct Vector3T<double> proj_e[2];
+        proj_e[0] = p2_norm.project_down(b->up);
+        proj_e[1] = p2_norm.project_down(b->right);
         proj_e[0].normalize();
         proj_e[1].normalize();
 
@@ -964,7 +964,7 @@ namespace Diana
         // If the relative position vector lies in the up/right plane...
 
         // Current
-        if (Vector::almost_zeroS(p.dot(b->direction)))
+        if (Vector::almost_zeroS(p_norm.dot(b->direction)))
         {
             // Figure out which one failed the cosine test, Then check that the other cosine is < 0 or almost 0.
             // If that checks out, then get the cosine of the position vector with the appropriate vector:
@@ -974,27 +974,27 @@ namespace Diana
             if (!current_b[0] && ((b->cosines[1] < 0) || Vector::almost_zeroS(b->cosines[1])))
             {
                 // We check the length of p earlier in an early rejection test.
-                current[0] = p.dot(b->up) / p.length();
+                current[0] = p_norm.dot(b->up);
                 current_b[0] = (current[0] >= b->cosines[0]);
             }
             else if (!current_b[1] && ((b->cosines[0] < 0) || Vector::almost_zeroS(b->cosines[0])))
             {
-                current[1] = p.dot(b->right) / p.length();
+                current[1] = p_norm.dot(b->right);
                 current_b[1] = (current[1] >= b->cosines[1]);
             }
         }
 
         // Future
-        if (Vector::almost_zeroS(p2.dot(b->direction)))
+        if (Vector::almost_zeroS(p2_norm.dot(b->direction)))
         {
             if (!future_b[0] && ((b->cosines[1] < 0) || Vector::almost_zeroS(b->cosines[1])))
             {
-                future[0] = p2.dot(b->up) / p.length();
+                future[0] = p2_norm.dot(b->up);
                 future_b[0] = (future[0] >= b->cosines[0]);
             }
             else if (!future_b[1] && ((b->cosines[0] < 0) || Vector::almost_zeroS(b->cosines[0])))
             {
-                future[1] = p2.dot(b->right) / p.length();
+                future[1] = p2_norm.dot(b->right);
                 future_b[1] = (future[1] >= b->cosines[1]);
             }
         }
@@ -1130,20 +1130,15 @@ namespace Diana
 
     B* Beam_make_return_beam(B* beam, double energy, V3* origin, PhysicsObjectType type)
     {
-        struct Vector3T<double> d = origin->normalize_dbl();
+        struct Vector3T<double> d = Vector3T<double>::normalize(*origin);
         d.normalize();
         d *= -1.0;
 
-        //V3 absolute_origin;
-        //Vector3_add(&absolute_origin, origin, &beam->origin);
         V3 absolute_origin = *origin + beam->origin;
 
         struct Vector3T<double> up = { -1 * d.y, d.x, 0 };
-        //Vector3_normalize(&up);
         up.normalize();
         
-        //V3 right;
-        //Vector3_cross(&right, &d, &up);
         struct Vector3T<double> right = d.cross(up);
 
         B* ret = (B*)malloc(sizeof(B));
