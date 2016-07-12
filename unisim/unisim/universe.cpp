@@ -101,11 +101,25 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    void gravity(double G, V3* out, PO* big, PO* small)
+    inline void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = G * big->mass * small->mass / big->position.distance2(small->position);
-        *out = big->position - small->position;
+        double d = big->position.distance2_dbl(small->position);
+        double m = G * big->mass * small->mass / d;
+        *out = big->position;
+        *out -= small->position;
         *out *= m / out->length();
+        //double d = big->position.distance2_dbl(small->position);
+        //if (Vector::almost_zeroS(d))
+        //{
+        //    out->init(0, 0, 0);
+        //}
+        //else
+        //{
+        //    double m = G * big->mass * small->mass / d;
+        //    *out = big->position;
+        //    *out -= small->position;
+        //    *out *= m / out->length();
+        //}
     }
 
     void* sim(void* uV)
@@ -126,6 +140,9 @@ namespace Diana
             // If we're paused, then just sleep. We're not picky on how long we sleep for.
             // Sleep for max_frametime time so that we're responsive to unpausing, but not
             // waking up too often.
+            //
+            // While paused, new objects will be queued for addition to the unvierse at the
+            // end of the 'next' physics tick (once pause is disabled).
             if (u->paused)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
@@ -481,7 +498,7 @@ namespace Diana
                     visdata_msg.position = visdata_msg.position - ro->position;
                     // Apply the visual acuity cutoff when considering relative visual
                     // object positioning only.
-                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2()) < params.visual_acuity)
+                    if ((4 * visdata_msg.radius * visdata_msg.radius / visdata_msg.position.length2_dbl()) < params.visual_acuity)
                     {
                         continue;
                     }
@@ -599,8 +616,8 @@ namespace Diana
                 }
 
                 // If the mass or radius changes, we need to update attractors if the values changes
-                if ((msg->specced[3] && !V3::almost_zeroS(smarty->pobj.mass - msg->mass)) ||
-                    (msg->specced[17] && !V3::almost_zeroS(smarty->pobj.radius - msg->radius)))
+                if ((msg->specced[3] && !Vector::almost_zeroS(smarty->pobj.mass - msg->mass)) ||
+                    (msg->specced[17] && !Vector::almost_zeroS(smarty->pobj.radius - msg->radius)))
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
@@ -774,7 +791,7 @@ namespace Diana
             }
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
-                const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
+                const_cast<struct Vector3T<double>*>(&vector3d_zero), &msg->thrust,
                 msg->mass, msg->radius, obj_type, spectrum);
 
             // Now that the object contains a cloned version of the spectrum, perturb it.
@@ -867,12 +884,12 @@ namespace Diana
                     }
 
                     dp = other->position - smarty->pobj.position;
-                    distance_sq = dp.length2();
+                    distance_sq = dp.length2_dbl();
 
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
                     // is (0,0,0), so we can leave the power spectrum alone.
-                    if (V3::almost_zeroS(distance_sq))
+                    if (Vector::almost_zeroS(distance_sq))
                     {
                         power_scale = 1.0;
                     }
@@ -895,7 +912,7 @@ namespace Diana
                     }
 
                     // Make the position a unit direction vector if it isn't (0,0,0)
-                    if (!V3::almost_zeroS(distance_sq))
+                    if (!Vector::almost_zeroS(distance_sq))
                     {
                         dp *= 1.0 / sqrt(distance_sq);
                     }
@@ -1005,9 +1022,9 @@ namespace Diana
 
     void Universe::get_grav_pull(V3* g, PO* obj)
     {
-        V3 cg;
         for (size_t i = 0; i < attractors.size(); i++)
         {
+            V3 cg = { 0,0,0 };
             // An object can't attract itself.
             if (attractors[i]->phys_id == obj->phys_id)
             {
@@ -1015,9 +1032,9 @@ namespace Diana
             }
 
             gravity(params.gravitational_constant, &cg, attractors[i], obj);
-            cg /= (double)(params.scale_to_metres * params.scale_to_metres);
             *g += cg;
         }
+        g->operator/=((double)(params.scale_to_metres * params.scale_to_metres));
     }
 
     bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
@@ -1098,11 +1115,11 @@ namespace Diana
                 double d;
                 d = a->u.x - b->l.x;
 
-                // This is to text if they intersect/touch in X
+                // This is to test if they intersect/touch in X
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
-                if (V3::almost_zeroS(d) || (d > 0))
+                if (Vector::almost_zeroS(d) || (d > 0))
                 {
                     // Now do a full test on the Y axis.
                     //if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
@@ -1209,7 +1226,6 @@ namespace Diana
     //! @todo Convert this to a private member function.
     void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
     {
-        V3 g = { 0, 0, 0 };
         struct BeamCollisionResult beam_result;
 
         // Needed to resolve the physical effects of the collision.
@@ -1396,7 +1412,7 @@ namespace Diana
                 }
 
                 pd = other->position - o->position;
-                distance_sq = pd.length2();
+                distance_sq = pd.length2_dbl();
                 if (distance_sq < other->spectrum->safe_distance_sq)
                 {
                     double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
@@ -1434,6 +1450,7 @@ namespace Diana
             }
         }
 
+        V3 g = { 0, 0, 0 };
         u->get_grav_pull(&g, o);
         PhysicsObject_tick(o, &g, dt);
     }
@@ -1792,7 +1809,7 @@ namespace Diana
                 double energy0 = 0.0;
 
                 while ((n_simultaneous < collisions.size()) &&
-                    (V3::almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
+                    (Vector::almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
                 {
                     // For each collision that happens at the same time as the first, apply it to the objects involved
                     // Retrieve the earliest collision details.
@@ -1825,11 +1842,11 @@ namespace Diana
                     // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2() : 0.0);
+                    energy0 += (never_seen ? obj1->mass * obj1->velocity.length2_dbl() : 0.0);
                     PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
-                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2() : 0.0);
+                    energy0 += (never_seen ? obj2->mass * obj2->velocity.length2_dbl() : 0.0);
                     PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
@@ -1879,7 +1896,7 @@ namespace Diana
                     double energy1 = 0.0;
                     for (size_t i = 0; i < n_objs; i++)
                     {
-                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2();
+                        energy1 += phys_objects[objs[i]]->mass * phys_objects[objs[i]]->velocity.length2_dbl();
                     }
 
                     // If there's more than one collision, then this factor is the ratio of original to final

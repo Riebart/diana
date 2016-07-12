@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
@@ -7,13 +9,16 @@
 
 namespace Diana
 {
-    template<typename T = double> struct VectorT
+    struct Vector
     {
         static bool almost_zeroS(double a) { return ((a > -1e-8) && (a < 1e-8)); }
         static bool almost_zeroS(int64_t a) { return (a == 0); }
+        template<typename T> static bool almost_zeroS(T a) { return Vector::almost_zeroS((double)a); }
+        template<typename T> static int32_t sgn(T val) { return (T(0) < val) - (val < T(0)); }
+        template<typename T> static T abs(T val) { return (Vector::sgn(val) * val); }
     };
 
-    template<typename T = double> struct Vector3T : VectorT<T>
+    template<typename T = double> struct Vector3T
     {
         T x, y, z;
 
@@ -24,40 +29,74 @@ namespace Diana
         void init(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
         void init(const struct Vector3T<T>& a) { x = a.x; y = a.y; z = a.z; }
 
-        bool almost_zero() const
+        inline bool almost_zero() const
         {
-            return VectorT<T>::almost_zeroS(x) &&
-                VectorT<T>::almost_zeroS(y) &&
-                VectorT<T>::almost_zeroS(z);
+            return Vector::almost_zeroS(x) &&
+                Vector::almost_zeroS(y) &&
+                Vector::almost_zeroS(z);
         }
 
         // @todo For integer T, it might be faster to get the integar part only
         // See: http://stackoverflow.com/questions/4930307/fastest-way-to-get-the-integer-part-of-sqrtn
-        static T length(T x, T y, T z) { return (T)sqrt(x * x + y * y + z * z); }
-        static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
+        inline static T length(T x, T y, T z) { return (T)sqrt(x * x + y * y + z * z); }
+        inline static T length2(T x, T y, T z) { return x * x + y * y + z * z; }
 
-        T length() const { return (T)sqrt(length2()); }
-        T length2() const { return x * x + y * y + z * z; }
+        inline static T length(const struct Vector3T<T>& a) { return Vector3T<T>::length(a.x, a.y.a.z); }
+        inline static T length2(const struct Vector3T<T>& a) { return Vector3T<T>::length2(a.x, a.y.a.z); }
 
-        T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
-        T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
+        inline T length() const { return Vector3T<T>::length(x, y, z); }
+        inline T length2() const { return Vector3T<T>::length2(x, y, z); }
 
-        void normalize()
+        inline T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
+        inline T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
+
+        inline double length2_dbl() const
+        {
+            return Vector3T<double>::length2((double)x, (double)y, (double)z);
+        }
+
+        inline double distance2_dbl(const struct Vector3T<T>& a) const
+        {
+            return Vector3T<double>::length2((double)(x - a.x), (double)(y - a.y), (double)(z - a.z));
+        }
+
+        T maxabs() const
+        {
+            const auto l = [max](T v) { return (v > max ? v : max); };
+            T max = Vector::abs(x);
+            max = l(Vector::abs(y));
+            max = l(Vector::abs(z));
+            return max;
+        }
+
+        inline void normalize()
         {
             T l = length();
-            if (!Vector3T<T>::almost_zeroS(l))
-            {
-                this->operator/=(l);
-            }
-            else
+            if (Vector::almost_zeroS(l))
             {
                 init(0, 0, 0);
             }
+            else
+            {
+                this->operator/=(l);
+            }
         }
 
-        static struct Vector3T<T> normalize(const struct Vector3T<T>& a)
+        struct Vector3T<double> normalize_dbl()
         {
-            struct Vector3T<T> v = a;
+            // Doing this in two lines results in using the operator=() function,
+            // however if it's done in one line (assignment and declaration on the
+            // same line), it uses the converstion operations (not defined, so results
+            // in a compiler error).
+            struct Vector3T<double> r = *this;
+            r.normalize();
+            return r;
+        }
+
+        template<typename T2>
+        static struct Vector3T<double> normalize(const struct Vector3T<T2>& a)
+        {
+            struct Vector3T<double> v = a;
             v.normalize();
             return v;
         }
@@ -73,9 +112,9 @@ namespace Diana
             };
         }
 
-        void rotate_around(T aX, T aY, T aZ, double theta)
+        void rotate_around(double aX, double aY, double aZ, double theta)
         {
-            if (Vector3T<T>::almost_zeroS(theta))
+            if (Vector::almost_zeroS(theta))
             {
                 return;
             }
@@ -85,7 +124,7 @@ namespace Diana
             T l2 = aX * aX + aY * aY + aZ * aZ;
             double l = sqrt(l2);
 
-            if (Vector3T<T>::almost_zeroS(l2))
+            if (Vector::almost_zeroS(l2))
             {
                 return;
             }
@@ -97,15 +136,15 @@ namespace Diana
             init(x2, y2, z2);
         }
 
-        void rotate_around(struct Vector3T<T>& axis, double theta)
+        void rotate_around(struct Vector3T<double>& axis, double theta)
         {
             rotate_around(axis.x, axis.y, axis.z, theta);
         }
 
         static void apply_yaw_pitch_roll(
-            struct Vector3T<T>& forward,
-            struct Vector3T<T>& up,
-            struct Vector3T<T>& right,
+            struct Vector3T<double>& forward,
+            struct Vector3T<double>& up,
+            struct Vector3T<double>& right,
             struct Vector3T<double>& angles)
         {
             forward.rotate_around(up, angles.x);
@@ -118,28 +157,59 @@ namespace Diana
             up.rotate_around(forward, angles.z);
         }
 
-        void fmad(T a, struct Vector3T<T>& b) { x += a * b.x; y += a * b.y; z += a * b.z; }
+        // For all of the following, using static_cast<T> as opposed to (T) results
+        // in more stable and predictable performance. These should be all compiled out
+        // (since this code is specialized at compile-time) for operations that have
+        // the same types for both the argument and the object that owns the member
+        // being called.
+        template<typename T2>
+        struct Vector3T<T> operator=(const struct Vector3T<T2>& a) { x = static_cast<T>(a.x); y = static_cast<T>(a.y); z = static_cast<T>(a.z); return *this; }
 
-        struct Vector3T<T> operator+(const struct Vector3T<T>& a) const { return{ x + a.x, y + a.y, z + a.z }; }
-        struct Vector3T<T> operator-(const struct Vector3T<T>& a) const { return{ x - a.x, y - a.y, z - a.z }; }
-        struct Vector3T<T> operator*(const struct Vector3T<T>& a) const { return{ x * a.x, y * a.y, z * a.z }; }
-        struct Vector3T<T> operator/(const struct Vector3T<T>& a) const { return{ x / a.x, y / a.y, z / a.z }; }
-        void operator+=(const struct Vector3T<T>& a) { x += a.x; y += a.y; z += a.z; }
-        void operator-=(const struct Vector3T<T>& a) { x -= a.x; y -= a.y; z -= a.z; }
-        void operator*=(const struct Vector3T<T>& a) { x *= a.x; y *= a.y; z *= a.z; }
-        void operator/=(const struct Vector3T<T>& a) { x /= a.x; y /= a.y; z /= a.z; }
-        struct Vector3T<T> operator+(T a) const { return{ x + a, y + a, z + a }; }
-        struct Vector3T<T> operator-(T a) const { return{ x - a, y - a, z - a }; }
-        struct Vector3T<T> operator*(T a) const { return{ x * a, y * a, z * a }; }
-        struct Vector3T<T> operator/(T a) const { return{ x / a, y / a, z / a }; }
-        void operator+=(T a) { x += a; y += a; z += a; }
-        void operator-=(T a) { x -= a; y -= a; z -= a; }
-        void operator*=(T a) { x *= a; y *= a; z *= a; }
-        void operator/=(T a) { x /= a; y /= a; z /= a; }
+        template<typename T2>
+        operator Vector3T<T2>() const { return{ (T2)x, (T2)y, (T2)z }; }
+
+        template <typename T2, typename T3>
+        inline void fmad(T2 a, struct Vector3T<T3>& b) { x += static_cast<T>(a * b.x); y += static_cast<T>(a * b.y); z += static_cast<T>(a * b.z); }
+
+        template <typename T2>
+        struct Vector3T<T> operator+(const struct Vector3T<T2>& a) const { return{ x + static_cast<T>(a.x), y + static_cast<T>(a.y), z + static_cast<T>(a.z) }; }
+        template <typename T2>
+        struct Vector3T<T> operator-(const struct Vector3T<T2>& a) const { return{ x - static_cast<T>(a.x), y - static_cast<T>(a.y), z - static_cast<T>(a.z) }; }
+        template <typename T2>
+        struct Vector3T<T> operator*(const struct Vector3T<T2>& a) const { return{ x * static_cast<T>(a.x), y * static_cast<T>(a.y), z * static_cast<T>(a.z) }; }
+        template <typename T2>
+        struct Vector3T<T> operator/(const struct Vector3T<T2>& a) const { return{ x / static_cast<T>(a.x), y / static_cast<T>(a.y), z / static_cast<T>(a.z) }; }
+
+        template <typename T2>
+        inline void operator+=(const struct Vector3T<T2>& a) { x += static_cast<T>(a.x); y += static_cast<T>(a.y); z += static_cast<T>(a.z); }
+        template <typename T2>
+        inline void operator-=(const struct Vector3T<T2>& a) { x -= static_cast<T>(a.x); y -= static_cast<T>(a.y); z -= static_cast<T>(a.z); }
+        template <typename T2>
+        inline void operator*=(const struct Vector3T<T2>& a) { x *= static_cast<T>(a.x); y *= static_cast<T>(a.y); z *= static_cast<T>(a.z); }
+        template <typename T2>
+        inline void operator/=(const struct Vector3T<T2>& a) { x /= static_cast<T>(a.x); y /= static_cast<T>(a.y); z /= static_cast<T>(a.z); }
+
+        template <typename T2>
+        struct Vector3T<T> operator+(T2 a) const { return{ x + static_cast<T>(a), y + static_cast<T>(a), z + static_cast<T>(a) }; }
+        template <typename T2>
+        struct Vector3T<T> operator-(T2 a) const { return{ x - static_cast<T>(a), y - static_cast<T>(a), z - static_cast<T>(a) }; }
+        template <typename T2>
+        struct Vector3T<T> operator*(T2 a) const { return{ x * static_cast<T>(a), y * static_cast<T>(a), z * static_cast<T>(a) }; }
+        template <typename T2>
+        struct Vector3T<T> operator/(T2 a) const { return{ x / static_cast<T>(a), y / static_cast<T>(a), z / static_cast<T>(a) }; }
+
+        template <typename T2>
+        inline void operator+=(T2 a) { x += static_cast<T>(a); y += static_cast<T>(a); z += static_cast<T>(a); }
+        template <typename T2>
+        inline void operator-=(T2 a) { x -= static_cast<T>(a); y -= static_cast<T>(a); z -= static_cast<T>(a); }
+        template <typename T2>
+        inline void operator*=(T2 a) { x *= static_cast<T>(a); y *= static_cast<T>(a); z *= static_cast<T>(a); }
+        template <typename T2>
+        inline void operator/=(T2 a) { x /= static_cast<T>(a); y /= static_cast<T>(a); z /= static_cast<T>(a); }
 
         struct Vector3T<T> project_onto(const struct Vector3T<T>& a) const
         {
-            return a * (this->dot(a) / a.length2());
+            return a * (a.dot(*this) / a.length2());
         }
 
         struct Vector3T<T> project_down(const struct Vector3T<T>& a) const
@@ -148,7 +218,67 @@ namespace Diana
         }
     };
 
-    template<typename T = double> struct Vector4T : VectorT<T>
+    // Implementation of a more numerically stable Euclidean norm function that
+    // is less likely to result in integer overflows.
+    int64_t Vector3T<int64_t>::length(int64_t x, int64_t y, int64_t z)
+    {
+        int64_t max = Vector::abs(x);
+        const auto l = [max](int64_t v) { return (v > max ? v : max); };
+        max = l(Vector::abs(y));
+        max = l(Vector::abs(z));
+
+        double x2 = (double)x / max;
+        double y2 = (double)y / max;
+        double z2 = (double)z / max;
+
+        double sum = x2 * x2 + y2 * y2 + z2 * z2;
+        return (int64_t)(max * sqrt(sum));
+    }
+
+    // int64_t normalization equates to setting the maximal value to
+    // SGN(maximal_value), if there's multiple values of equal magnitude,
+    // all values are 0.
+    void Vector3T<int64_t>::normalize()
+    {
+        int64_t max = Vector::abs(x);
+        const auto l = [max](int64_t v) { return (v > max ? v : max); };
+        max = l(Vector::abs(y));
+        max = l(Vector::abs(z));
+        if (max != 0)
+        {
+            x /= max;
+            y /= max;
+            z /= max;
+            if ((Vector::abs(x) + Vector::abs(y) + Vector::abs(z)) > 1)
+            {
+                x = 0;
+                y = 0;
+                z = 0;
+            }
+        }
+    }
+
+    // Specialized implementation for int64_t projected onto int64_t, achieved
+    // by using an intermediate representation as doubles. This is necessary
+    // for two reasons:
+    // - There is a .length2(), which suffers from overflow issues with int types.
+    // - There is a dot product of two int64_t vectors, which, like length2(),
+    //   suffers from an overflow problem.
+    //
+    // By delegating, and casting the return values to/from double precision, both
+    // of the above issues are addressed.
+    // - It is crucial that the parameter be case to a double, as it is the one
+    //   that has the length2() member called.
+    // - By casting a to doubles, the number of casts is minimized.
+    // - During the dot product, the int values will be implicitly casted to doubles,
+    //   divided by the double length2(), and the int vector will be scaled by a double,
+    //   resulting in the double scalar being cast back to an int.
+    struct Vector3T<int64_t> Vector3T<int64_t>::project_onto(const struct Vector3T<int64_t>& a) const
+    {
+        return this->project_onto((struct Vector3T<double>)a);
+    }
+
+    template<typename T = double> struct Vector4T
     {
         T w, x, y, z;
 
@@ -159,12 +289,12 @@ namespace Diana
         void init(T _w, T _x, T _y, T _z) { w = _w;  x = _x; y = _y; z = _z; }
         void init(const struct Vector4T<T>& a) { w = a.w;  x = a.x; y = a.y; z = a.z; }
 
-        bool almost_zero() const 
+        bool almost_zero() const
         {
-            return VectorT<T>::almost_zeroS(w) &&
-                VectorT<T>::almost_zeroS(x) &&
-                VectorT<T>::almost_zeroS(y) &&
-                VectorT<T>::almost_zeroS(z);
+            return Vector<T>::almost_zeroS(w) &&
+                Vector<T>::almost_zeroS(x) &&
+                Vector<T>::almost_zeroS(y) &&
+                Vector<T>::almost_zeroS(z);
         }
     };
 
@@ -176,7 +306,8 @@ namespace Diana
         //! Upper coordinates
         struct Vector3T<T> u;
 
-        int32_t operator<(struct AABBT<T>& b);
+        struct AABBT<T> operator=(const struct AABBT<T>& a) { l = a.l; u = a.u; return *this; }
+
         int32_t compare_x(struct AABBT<T>& b) const { return tiz(l.x - b.l.x); }
         int32_t compare_y(struct AABBT<T>& b) const { return tiz(l.y - b.l.y); }
         int32_t compare_z(struct AABBT<T>& b) const { return tiz(l.z - b.l.z); }
@@ -254,8 +385,7 @@ namespace Diana
         }
 
     private:
-        int32_t sgn(T val) const { return (T(0) < val) - (val < T(0)); }
-        int32_t tiz(T val) const { return (VectorT<T>::almost_zeroS(val) ? 0 : sgn(val)); }
+        int32_t tiz(T val) const { return (Vector::almost_zeroS(val) ? 0 : Vector::sgn(val)); }
     };
 
 #define Vector3 Vector3T<double>
@@ -265,9 +395,9 @@ namespace Diana
 #define AABB AABBT<double>
 #define AABBI AABBT<int64_t>
 
-    const struct Vector3 vector3d_zero = { 0, 0, 0 };
-    const struct Vector4 vector4d_zero = { 0, 0, 0, 0 };
-
-
+    const struct Vector3T<double> vector3d_zero = { 0.0, 0.0, 0.0 };
+    const struct Vector3T<int64_t> vector3i_zero = { 0, 0, 0 };
+    const struct Vector4T<double> vector4d_zero = { 0.0, 0.0, 0.0, 0.0 };
+    const struct Vector4T<int64_t> vector4i_zero = { 0, 0, 0, 0 };
 }
 #endif

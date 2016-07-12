@@ -92,8 +92,8 @@ namespace Diana
         friend void Universe_hangup_objects(int32_t c, void* arg);
         friend void Universe_handle_message(int32_t socket, void* arg);
 
-        friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
-        friend void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum);
+        friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3T<double>* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
+        friend void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3T<double>* direction, struct Vector3T<double>* up, struct Vector3T<double>* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum);
 
         friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
         friend void* thread_check_collisions(void* argsV);

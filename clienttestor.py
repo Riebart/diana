@@ -12,6 +12,8 @@ import pprint
 from vector import Vector3, Vector4
 from shiptypes import Firefly
 
+random.seed(0)
+
 def basic():
     sock = socket.socket()
     sock.connect(('localhost', 5505))
@@ -338,9 +340,9 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    basic()
+    #basic()
     #pool_rack(C = 1.01, num_rows = 25)
-    #spawn_sol()
+    spawn_sol()
     #signature_test()
 
     #for i in range(-20, 21, 1):

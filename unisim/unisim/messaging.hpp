@@ -100,7 +100,7 @@ namespace Diana
         char* obj_type;
         double mass, radius;
         struct Vector3 position, velocity, thrust;
-        struct Vector4 orientation;
+        struct Vector4T<double> orientation;
         struct Spectrum* spectrum;
 
     protected:
@@ -159,7 +159,7 @@ namespace Diana
         int64_t phys_id;
         double radius;
         struct Vector3 position;
-        struct Vector4 orientation;
+        struct Vector4T<double> orientation;
         double red, green, blue;
 
     protected:
@@ -176,7 +176,8 @@ namespace Diana
         char beam_type[5];
         char* comm_msg;
         double spread_h, spread_v, energy;
-        struct Vector3 origin, velocity, up;
+        struct Vector3 origin, velocity;
+        struct Vector3T<double> up;
         struct Spectrum* spectrum;
 
     protected:
@@ -212,7 +213,7 @@ namespace Diana
         char* obj_type;
         double mass, radius;
         struct Vector3 position, velocity, thrust;
-        struct Vector4 orientation;
+        struct Vector4T<double> orientation;
         struct Spectrum* spectrum;
 
     protected:
@@ -231,7 +232,7 @@ namespace Diana
         char* data;
         double mass, radius;
         struct Vector3 position, velocity, thrust;
-        struct Vector4 orientation;
+        struct Vector4T<double> orientation;
         struct Spectrum* obj_spectrum;
         struct Spectrum* beam_spectrum;
 
