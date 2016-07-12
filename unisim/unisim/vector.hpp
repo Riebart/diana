@@ -47,6 +47,25 @@ namespace Diana
         T distance(const struct Vector3T<T>& a) const { return Vector3T<T>::length(x - a.x, y - a.y, z - a.z); }
         T distance2(const struct Vector3T<T>& a) const { return Vector3T<T>::length2(x - a.x, y - a.y, z - a.z); }
 
+        double length2_dbl() const
+        {
+            return Vector3T<double>::length2((double)x, (double)y, (double)z);
+        }
+
+        double distance2_dbl(const struct Vector3T<T>& a) const
+        {
+            return Vector3T<double>::length2((double)(x - a.x), (double)(y - a.y), (double)(z - a.z));
+        }
+
+        T maxabs() const
+        {
+            const auto l = [max](T v) { return (v > max ? v : max); };
+            T max = Vector::abs(x);
+            max = l(Vector::abs(y));
+            max = l(Vector::abs(z));
+            return max;
+        }
+
         void normalize()
         {
             T l = length();
@@ -143,6 +162,9 @@ namespace Diana
         template<typename T2>
         struct Vector3T<T> operator=(const struct Vector3T<T2>& a) { x = static_cast<T>(a.x); y = static_cast<T>(a.y); z = static_cast<T>(a.z); return *this; }
 
+        template<typename T2>
+        operator Vector3T<T2>() const { return{ (T2)x, (T2)y, (T2)z }; }
+
         template <typename T2, typename T3>
         void fmad(T2 a, struct Vector3T<T3>& b) { x += static_cast<T>(a * b.x); y += static_cast<T>(a * b.y); z += static_cast<T>(a * b.z); }
 
@@ -184,7 +206,7 @@ namespace Diana
 
         struct Vector3T<T> project_onto(const struct Vector3T<T>& a) const
         {
-            return a * (this->dot(a) / a.length2());
+            return a * (a.dot(*this) / a.length2());
         }
 
         struct Vector3T<T> project_down(const struct Vector3T<T>& a) const
@@ -244,6 +266,26 @@ namespace Diana
                 z = 0;
             }
         }
+    }
+
+    // Specialized implementation for int64_t projected onto int64_t, achieved
+    // by using an intermediate representation as doubles. This is necessary
+    // for two reasons:
+    // - There is a .length2(), which suffers from overflow issues with int types.
+    // - There is a dot product of two int64_t vectors, which, like length2(),
+    //   suffers from an overflow problem.
+    //
+    // By delegating, and casting the return values to/from double precision, both
+    // of the above issues are addressed.
+    // - It is crucial that the parameter be case to a double, as it is the one
+    //   that has the length2() member called.
+    // - By casting a to doubles, the number of casts is minimized.
+    // - During the dot product, the int values will be implicitly casted to doubles,
+    //   divided by the double length2(), and the int vector will be scaled by a double,
+    //   resulting in the double scalar being cast back to an int.
+    struct Vector3T<int64_t> Vector3T<int64_t>::project_onto(const struct Vector3T<int64_t>& a) const
+    {
+        return this->project_onto((struct Vector3T<double>)a);
     }
 
     template<typename T = double> struct Vector4T
