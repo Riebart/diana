@@ -99,7 +99,6 @@ namespace Diana
     typedef PhysicsObjectType POT;
     typedef struct PhysicsObject PO;
     typedef struct SmartPhysicsObject SPO;
-    typedef struct Vector3 V3;
 
     inline void gravity(double G, struct Vector3T<double>* out, PO* big, PO* small)
     {
@@ -498,7 +497,9 @@ namespace Diana
                     visdata_msg.position = visdata_msg.position - ro->position;
                     // Apply the visual acuity cutoff when considering relative visual
                     // object positioning only.
-                    if ((4 * visdata_msg.radius * visdata_msg.radius / Vector3T<double>::length2(visdata_msg.position)) < params.visual_acuity)
+                    if ((4 * visdata_msg.radius * visdata_msg.radius * 
+                        params.scale_to_metres * params.scale_to_metres / 
+                        Vector3T<double>::length2(visdata_msg.position)) < params.visual_acuity)
                     {
                         continue;
                     }
@@ -867,7 +868,8 @@ namespace Diana
                 srm.specced[24] = true;
 
                 PO* other;
-                V3 dp;
+                // The final return use of this is normalized, so a double is fine.
+                struct Vector3T<double> dp;
                 double distance_sq;
                 double power_scale;
 
@@ -883,9 +885,10 @@ namespace Diana
                         continue;
                     }
 
-                    dp = other->position;
-                    dp -= smarty->pobj.position;
-                    distance_sq = Vector3T<double>::length2(dp);
+                    // @todo Computationally inefficient due to stack allocated vectors.
+                    dp = other->position - smarty->pobj.position;
+                    dp *= unscale_units(1.0);
+                    distance_sq = dp.length2();
 
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
@@ -913,10 +916,7 @@ namespace Diana
                     }
 
                     // Make the position a unit direction vector if it isn't (0,0,0)
-                    if (!Vector::almost_zeroS(distance_sq))
-                    {
-                        dp *= 1.0 / sqrt(distance_sq);
-                    }
+                    dp.normalize();
 
                     srm.position = dp;
                     srm.send(smarty->socket);
@@ -1234,174 +1234,177 @@ namespace Diana
 
         struct Beam* b;
 
-        for (size_t bi = 0; bi < u->beams.size(); bi++)
+        if (u->params.collision_testing)
         {
-            b = u->beams[bi];
-            Beam_collide(&beam_result, b, o, dt);
-
-            if (beam_result.t >= 0.0)
+            for (size_t bi = 0; bi < u->beams.size(); bi++)
             {
-                phys_result.pce1.d = beam_result.d;
-                phys_result.pce1.p = beam_result.p;
+                b = u->beams[bi];
+                Beam_collide(&beam_result, b, o, dt);
 
-                if (u->params.verbose_logging)
+                if (beam_result.t >= 0.0)
                 {
+                    phys_result.pce1.d = beam_result.d;
+                    phys_result.pce1.p = beam_result.p;
+
+                    if (u->params.verbose_logging)
+                    {
 #if __x86_64__
-                    fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                        fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
-                    fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                        fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
-                }
+                    }
 
-                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
+                    PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
-                //! @todo Smarty beam collision messages
-                //! @todo Beam collision messages
-                if (o->type == PHYSOBJECT_SMART)
-                {
-                    struct SmartPhysicsObject* s = (SPO*)o;
-                    CollisionMsg cm;
-                    cm.client_id = s->client_id;
-                    cm.server_id = o->phys_id;
-                    cm.direction = beam_result.d;
-                    cm.position = beam_result.p;
-                    cm.position -= o->position;
-                    cm.energy = beam_result.e;
-                    cm.comm_msg = NULL;
-                    // It makes sense that we know about the power levels of the beam here,
-                    // since in theory the ship would know about the duration of the beam, 
-                    // even if we're not simulating that.
-                    cm.spectrum = Spectrum_clone(b->spectrum);
-                    cm.spec_all();
-
-                    // Note that there is no comm message (yet, maybe), so that's unspecced.
-                    cm.specced[cm.num_el - 4] = false;
-
-                    switch (b->type)
+                    //! @todo Smarty beam collision messages
+                    //! @todo Beam collision messages
+                    if (o->type == PHYSOBJECT_SMART)
                     {
-                    case BEAM_COMM:
-                        cm.specced[cm.num_el - 4] = true;
-                        cm.set_colltype((char*)"COMM");
-                        cm.comm_msg = b->comm_msg;
-                        cm.send(s->socket);
-                        break;
-                    case BEAM_SCAN:
-                    {
-                        cm.set_colltype((char*)"SCAN");
-                        cm.send(s->socket);
+                        struct SmartPhysicsObject* s = (SPO*)o;
+                        CollisionMsg cm;
+                        cm.client_id = s->client_id;
+                        cm.server_id = o->phys_id;
+                        cm.direction = beam_result.d;
+                        cm.position = beam_result.p;
+                        cm.position -= o->position;
+                        cm.energy = beam_result.e;
+                        cm.comm_msg = NULL;
+                        // It makes sense that we know about the power levels of the beam here,
+                        // since in theory the ship would know about the duration of the beam, 
+                        // even if we're not simulating that.
+                        cm.spectrum = Spectrum_clone(b->spectrum);
+                        cm.spec_all();
 
-                        ScanQueryMsg sqm;
-                        sqm.client_id = s->client_id;
-                        sqm.server_id = o->phys_id;
-                        sqm.scan_id = b->phys_id;
-                        sqm.energy = cm.energy;
-                        sqm.direction = cm.direction;
-                        sqm.spectrum = Spectrum_clone(b->spectrum);
-                        sqm.spec_all();
+                        // Note that there is no comm message (yet, maybe), so that's unspecced.
+                        cm.specced[cm.num_el - 4] = false;
 
-                        // Note that we need to ensure that the queries map is ready for a response before sending
-                        // the query, otherwise we're in one hell of a race condition.
-
-                        // Ignore multiple hits of the same beam/object pair.
-                        // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
-                        struct Universe::scan_target st = { b->phys_id, o->phys_id };
-                        LOCK(u->query_lock);
-                        const std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
-                        if ((it == u->queries.end()) || !(st == (it->first)))
+                        switch (b->type)
                         {
-                            // Add the query to the universe so that it can send the response beam
-                            // when the osim responds.
-                            // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
-                            // Clone the beam so that if the beam expires before the return beam is sent, we don't access the freed space.
-                            B* b_copy = (B*)malloc(sizeof(B));
-                            PO* o_copy = PhysicsObject_clone(o);
-                            if ((b_copy == NULL) || (o_copy == NULL))
+                        case BEAM_COMM:
+                            cm.specced[cm.num_el - 4] = true;
+                            cm.set_colltype((char*)"COMM");
+                            cm.comm_msg = b->comm_msg;
+                            cm.send(s->socket);
+                            break;
+                        case BEAM_SCAN:
+                        {
+                            cm.set_colltype((char*)"SCAN");
+                            cm.send(s->socket);
+
+                            ScanQueryMsg sqm;
+                            sqm.client_id = s->client_id;
+                            sqm.server_id = o->phys_id;
+                            sqm.scan_id = b->phys_id;
+                            sqm.energy = cm.energy;
+                            sqm.direction = cm.direction;
+                            sqm.spectrum = Spectrum_clone(b->spectrum);
+                            sqm.spec_all();
+
+                            // Note that we need to ensure that the queries map is ready for a response before sending
+                            // the query, otherwise we're in one hell of a race condition.
+
+                            // Ignore multiple hits of the same beam/object pair.
+                            // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
+                            struct Universe::scan_target st = { b->phys_id, o->phys_id };
+                            LOCK(u->query_lock);
+                            const std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
+                            if ((it == u->queries.end()) || !(st == (it->first)))
                             {
-                                throw std::runtime_error("OOM::Universe::BeamHitObjClone");
+                                // Add the query to the universe so that it can send the response beam
+                                // when the osim responds.
+                                // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+                                // Clone the beam so that if the beam expires before the return beam is sent, we don't access the freed space.
+                                B* b_copy = (B*)malloc(sizeof(B));
+                                PO* o_copy = PhysicsObject_clone(o);
+                                if ((b_copy == NULL) || (o_copy == NULL))
+                                {
+                                    throw std::runtime_error("OOM::Universe::BeamHitObjClone");
+                                }
+
+                                *b_copy = *b;
+                                b_copy->data = NULL;
+                                b_copy->comm_msg = NULL;
+                                b_copy->scan_target = o_copy;
+                                b_copy->spectrum = Spectrum_clone(b->spectrum);
+                                u->queries[st] = { b_copy, cm.energy, beam_result.p };
+                            }
+                            UNLOCK(u->query_lock);
+
+                            sqm.send(s->socket);
+                            break;
+                        }
+                        case BEAM_SCANRESULT:
+                        {
+                            //! @todo This feels forced, ugh... Enum?
+                            cm.set_colltype((char*)"SCRE");
+                            cm.send(s->socket);
+
+                            //! @todo Should we consider only sending this message if the phys_id of the object matches that of the originator?
+                            // We'd need to add that information to the beaming chain.
+                            ScanResultMsg srm;
+                            srm.client_id = s->client_id;
+                            srm.server_id = s->pobj.phys_id;
+                            srm.position = b->scan_target->position;
+                            srm.position -= o->position;
+                            srm.velocity = b->scan_target->velocity;
+                            srm.velocity -= o->velocity;
+                            srm.thrust = b->scan_target->thrust;
+                            srm.mass = b->scan_target->mass;
+                            srm.radius = b->scan_target->radius;
+                            srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
+                            srm.obj_type = b->scan_target->obj_type;
+                            srm.beam_spectrum = Spectrum_clone(b->spectrum);
+                            srm.data = b->data;
+                            srm.spec_all();
+
+                            if (b->data == NULL)
+                            {
+                                srm.specced[srm.num_el - 7] = false;
                             }
 
-                            *b_copy = *b;
-                            b_copy->data = NULL;
-                            b_copy->comm_msg = NULL;
-                            b_copy->scan_target = o_copy;
-                            b_copy->spectrum = Spectrum_clone(b->spectrum);
-                            u->queries[st] = { b_copy, cm.energy, beam_result.p };
+                            // If the spectrum for the object we hit is NULL, then we should unmark
+                            // the spectrum parts of the message.
+                            if (b->scan_target->spectrum == NULL)
+                            {
+                                srm.specced[srm.num_el - 3] = false;
+                                srm.specced[srm.num_el - 2] = false;
+                                srm.specced[srm.num_el - 1] = false;
+                                srm.obj_spectrum = NULL;
+                            }
+                            else
+                            {
+                                srm.obj_spectrum = Spectrum_clone(b->scan_target->spectrum);
+                            }
+
+                            srm.send(s->socket);
+
+                            // The message object will go out-of-scope, but is currently pointing to the beam's
+                            // target's object type, which we don't want to free in the message's constructor.
+                            // Re-point it to NULL here, so we don't try to free it in the next line.
+                            srm.obj_type = NULL;
+                            srm.data = NULL;
+
+                            break;
                         }
-                        UNLOCK(u->query_lock);
-
-                        sqm.send(s->socket);
-                        break;
-                    }
-                    case BEAM_SCANRESULT:
-                    {
-                        //! @todo This feels forced, ugh... Enum?
-                        cm.set_colltype((char*)"SCRE");
-                        cm.send(s->socket);
-
-                        //! @todo Should we consider only sending this message if the phys_id of the object matches that of the originator?
-                        // We'd need to add that information to the beaming chain.
-                        ScanResultMsg srm;
-                        srm.client_id = s->client_id;
-                        srm.server_id = s->pobj.phys_id;
-                        srm.position = b->scan_target->position;
-                        srm.position -= o->position;
-                        srm.velocity = b->scan_target->velocity;
-                        srm.velocity -= o->velocity;
-                        srm.thrust = b->scan_target->thrust;
-                        srm.mass = b->scan_target->mass;
-                        srm.radius = b->scan_target->radius;
-                        srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
-                        srm.obj_type = b->scan_target->obj_type;
-                        srm.beam_spectrum = Spectrum_clone(b->spectrum);
-                        srm.data = b->data;
-                        srm.spec_all();
-
-                        if (b->data == NULL)
-                        {
-                            srm.specced[srm.num_el - 7] = false;
+                        case BEAM_WEAP:
+                            cm.set_colltype((char*)"WEAP");
+                            cm.send(s->socket);
+                            break;
+                        default:
+                            break;
                         }
-
-                        // If the spectrum for the object we hit is NULL, then we should unmark
-                        // the spectrum parts of the message.
-                        if (b->scan_target->spectrum == NULL)
-                        {
-                            srm.specced[srm.num_el - 3] = false;
-                            srm.specced[srm.num_el - 2] = false;
-                            srm.specced[srm.num_el - 1] = false;
-                            srm.obj_spectrum = NULL;
-                        }
-                        else
-                        {
-                            srm.obj_spectrum = Spectrum_clone(b->scan_target->spectrum);
-                        }
-
-                        srm.send(s->socket);
-
-                        // The message object will go out-of-scope, but is currently pointing to the beam's
-                        // target's object type, which we don't want to free in the message's constructor.
-                        // Re-point it to NULL here, so we don't try to free it in the next line.
-                        srm.obj_type = NULL;
-                        srm.data = NULL;
-
-                        break;
-                    }
-                    case BEAM_WEAP:
-                        cm.set_colltype((char*)"WEAP");
-                        cm.send(s->socket);
-                        break;
-                    default:
-                        break;
                     }
                 }
             }
         }
 
         //! @todo Multithread this.
-        V3 pd;
+        struct Vector3T<double> pd;
         PO* other;
         double distance_sq;
 
-        if ((u->total_time - u->last_effect_time) >= 1.0)
+        if (u->params.collision_testing && ((u->total_time - u->last_effect_time) >= 1.0))
         {
             for (size_t i = 0; i < u->radiators.size(); i++)
             {
@@ -1412,9 +1415,9 @@ namespace Diana
                     continue;
                 }
 
-                pd = other->position;
-                pd -= o->position;
-                distance_sq = Vector3T<double>::length2(pd);
+                // @todo Computationally expensive in terms fo stack allocated vectors.
+                pd = (other->position - o->position) / u->params.scale_to_metres;
+                distance_sq = pd.length2();
                 if (distance_sq < other->spectrum->safe_distance_sq)
                 {
                     double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
@@ -1426,9 +1429,15 @@ namespace Diana
                         cm.client_id = s->client_id;
                         cm.server_id = o->phys_id;
 
-                        // Because of collisions, it is extremely unlikely 
-                        // that this will result in a divide by zero.
-                        pd *= 1.0 / pd.length();
+                        // Because of collisions, it is extremely unlikely that this will result
+                        // in a divide by zero, which will result in a (0,0,0) vector after
+                        // an attempt to normalize.
+                        //
+                        // The case in which this could end up in (0,0,0) is if two objects
+                        // inside one another, and ended up overlapping precisely at the end
+                        // of a physics tick. Overlapping in the middle of a tick won't be a
+                        // problem, since this runs at start of a tick.
+                        pd.normalize();
                         
                         cm.direction = pd;
                         pd *= o->radius;
@@ -1647,9 +1656,10 @@ namespace Diana
         LOCK(phys_lock);
 
         // Only the visdata thread conflicts with this...
-        // Are we OK with it getting data that is in the middle of being updated to?
+        // Are we OK with it getting data that is in the middle of being updated?
         // This can be done single-threaded for now, and we'll thread it later.
 
+        //! !!! The below paragraph is done! Note the sort_aabb()
         //! @todo Think about something proper. Temporally ordered collisions, for one, 
         //! and something smarter than an N choose 2 approach, such as Axis Aligned Bounding Boxes,
         //! or Oriented Bounding Boxes. The former with gnome-sort turns it into O(NlogN+N) complexity
@@ -1661,10 +1671,20 @@ namespace Diana
         //! @todo Have some concept of collision destruction criteria here.
         //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
 
-        if (phys_objects.size() > 1)
+        if (params.collision_testing && (phys_objects.size() > 1))
         {
+            // Update and sort the axis-aligned-bounding-boxes of all objects by their
+            // lower x value (that is, along the X axis) using gnome-sort. The input list
+            // is updated in-place, and then sorted in-place, resulting in efficient re-use
+            // of temporal coherence of objects.
             sort_aabb(dt, true);
 
+
+            // This section is so weird because it was originally done this way to support
+            // threading, which didn't result in a lot of speedup.
+            // <<<<<<<<<<
+            // <<<<<<<<<<
+            // <<<<<<<<<<
             int32_t n = (int32_t)(phys_objects.size() / MIN_OBJECTS_PER_THREAD);
             n = CLAMP(0, n, num_threads - 1);
             //n = MAX(0, MIN(num_threads - 1, n));
@@ -1708,18 +1728,22 @@ namespace Diana
             phys_worker_args[0].stride = 1;
             phys_worker_args[0].done = false;
             phys_worker_args[0].test_all = true;
+            // <<<<<<<<<<
+            // <<<<<<<<<<
+            // <<<<<<<<<<
+            // End of non-threaded threading-compatible code. Back to regular programming. (hah)
 
             // At this point all collisions should be in the collision list.
             // Sort it by time of collisions (everything should be >= 0), and then resolve them one by one
             // Each collision resolution should have the following steps:
             // - The effects are applied to the two objects, including updating how 'far' into the tick
-            //    the collisions have taken the objects ths far.
+            //    the collisions have taken the objects thus far.
             // - Any collisions involving either of the two involved objects are discarded from the vector
             // - The two objects are re-collided with all other objects
             //   > Test the sizes of the vector before and after the re-collide, any collisions resulting
             //     from that operation will require a re-sort of the list. Don't re-sort if there's no new events.
 
-            // WHether or not to re-sort the vector after handling a collision, this will be determined by whether
+            // Whether or not to re-sort the vector after handling a collision, this will be determined by whether
             // a collision resolution results in new collisions being added.
             bool re_sort = true;
 
@@ -1741,7 +1765,7 @@ namespace Diana
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
             // negligible.
 
-            // Number of rounds of collisions we've gone through, for fun.
+            // Number of rounds of collisions we've gone through, for fun and logging.
             uint32_t n_rounds = 0;
 
             while (collisions.size() != 0)

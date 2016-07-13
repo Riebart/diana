@@ -327,8 +327,8 @@ namespace Diana
         struct Vector3T<double> v2 = obj2->velocity;
         v2 *= dt;
 
-        struct Vector3T<double> vd;
-        vd = v1 - v2;
+        struct Vector3T<double> vd = v1;
+        vd -= v2;
 
         if (vd.almost_zero())
         {
@@ -336,21 +336,26 @@ namespace Diana
             return;
         }
 
-        V3 p1 = obj1->position;
-        V3 p2 = obj2->position;
-
-        V3 pd;
-        pd = p1 - p2;
-        //Vector3_subtract(&pd, &p1, &p2);
+        // When p1 and p2 are close, double-types contain enough precision to be accurate.
+        // When p1 and p2 are far, then doubles still contain enough precision to determine
+        // a collision (unless one object is the size of a solar system, and the other is
+        // the size of a marble).
+        // @todo This is expensive, with the stack object creations.
+        struct Vector3T<double> p1 = obj1->position;
+        p1 *= obj1->universe->unscale_units(1.0);
+        struct Vector3T<double> p2 = obj2->position;
+        p2 *= obj2->universe->unscale_units(1.0);
+        struct Vector3T<double> pd = p1;
+        pd -= p2;
 
         // Note we can't reject early here based on od since it is possible that the
         // two objects have components along the collision normal that are of equal
         // magnitude and opposite direction. These won't show here, so that rejection
         // will have to wait until later.
-        double od = vd.dot(pd);// Vector3_dot(&vd, &pd);
-        double oo = pd.dot(pd);// Vector3_dot(&pd, &pd);
-        double dd = vd.dot(vd);// Vector3_dot(&vd, &vd);
-        double r = (obj1->radius + obj2->radius);
+        double od = vd.dot(pd);
+        double oo = pd.dot(pd);
+        double dd = vd.dot(vd);
+        double r = obj1->radius + obj2->radius;
         r *= r;
 
         // Calculate the discriminant
@@ -587,37 +592,39 @@ namespace Diana
 
     void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
     {
+        // @todo THis should be the same type as the AABB template type.
+        double r = obj->universe->scale_units(obj->radius);
         if (obj->velocity.x < 0)
         {
-            b->l.x = obj->position.x + dt * obj->velocity.x - obj->radius;
-            b->u.x = obj->position.x + obj->radius;
+            b->l.x = obj->position.x + dt * obj->velocity.x - r;
+            b->u.x = obj->position.x + r;
         }
         else
         {
-            b->u.x = obj->position.x + dt * obj->velocity.x + obj->radius;
-            b->l.x = obj->position.x - obj->radius;
+            b->u.x = obj->position.x + dt * obj->velocity.x + r;
+            b->l.x = obj->position.x - r;
         }
 
         if (obj->velocity.y < 0)
         {
-            b->l.y = obj->position.y + dt * obj->velocity.y - obj->radius;
-            b->u.y = obj->position.y + obj->radius;
+            b->l.y = obj->position.y + dt * obj->velocity.y - r;
+            b->u.y = obj->position.y + r;
         }
         else
         {
-            b->u.y = obj->position.y + dt * obj->velocity.y + obj->radius;
-            b->l.y = obj->position.y - obj->radius;
+            b->u.y = obj->position.y + dt * obj->velocity.y + r;
+            b->l.y = obj->position.y - r;
         }
 
         if (obj->velocity.z < 0)
         {
-            b->l.z = obj->position.z + dt * obj->velocity.z - obj->radius;
-            b->u.z = obj->position.z + obj->radius;
+            b->l.z = obj->position.z + dt * obj->velocity.z - r;
+            b->u.z = obj->position.z + r;
         }
         else
         {
-            b->u.z = obj->position.z + dt * obj->velocity.z + obj->radius;
-            b->l.z = obj->position.z - obj->radius;
+            b->u.z = obj->position.z + dt * obj->velocity.z + r;
+            b->l.z = obj->position.z - r;
         }
     }
 
@@ -877,8 +884,13 @@ namespace Diana
         // start, end, and difference vectors.
         bcr->d = b->direction;
 
+        // @todo This is inefficient due to stack vectors.
         // Relative position of object to beam origin.
-        V3 p = obj->position - b->origin;
+        struct Vector3T<double> p = obj->position - b->origin;
+        // It is safe to assume that theyre in the same universe, otherwise the two objects
+        // will never collide.
+        p *= obj->universe->unscale_units(1.0);
+
         struct Vector3T<double> p_norm = Vector3T<double>::normalize(p);
 
         // If the position delta is almost zero (or less than the object's radius),
@@ -894,7 +906,7 @@ namespace Diana
         struct Vector3T<double> dp = obj->velocity * dt;
 
         // The object's position at the end of the physics tick.
-        V3 p2 = p;
+        struct Vector3T<double> p2 = p;
         p2 += dp;
         struct Vector3T<double> p2_norm = Vector3T<double>::normalize(p2);
 

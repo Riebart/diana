@@ -179,7 +179,7 @@ namespace Diana
         //! Direction the other object was moving, relative to this, at time of impact (normalized).
         struct Vector3T<double> d;
         //! Position of impact on object's bounding sphere, relative to centre.
-        struct Vector3 p;
+        struct Vector3T<double> p;
         //! Velocity of the 'hit' object tangential to impact. This remains unchanged. t+n+dn=v'
         struct Vector3T<double> t;
         //! Existing velocity along the normal of impact imparted due to impact. t+n+dn=v'
