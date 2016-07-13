@@ -24,6 +24,7 @@ SUITE(Physics)
         
         Vector3T< double > zeroVector = {0, 0, 0};
         Vector3T< double > oneVector = {1, 1, 1};
+        Vector3T< double > negoneVector = {-1, -1, -1};
         
         PhysicsFixture ()
         {
@@ -56,11 +57,45 @@ SUITE(Physics)
         PhysicsObject * po;
         CHECK_EQUAL((void *)NULL, PhysicsObject_clone(NULL));
         REQUIRE CHECK(PhysicsObject_clone(&physObjA) != (void*)NULL);
+
+    }
     
+    TEST_FIXTURE(PhysicsFixture, PhysicsTickTest)
+    {
+        PhysicsObject_tick(&physObjA, &oneVector, 1.0);
+        CHECK_CLOSE(0.5, physObjA.position.x, ERROR_MARG);
+        CHECK_CLOSE(0.5, physObjA.position.y, ERROR_MARG);
+        CHECK_CLOSE(0.5, physObjA.position.z, ERROR_MARG);
+        
+        CHECK_CLOSE(1.0, physObjA.velocity.x, ERROR_MARG);
+        CHECK_CLOSE(1.0, physObjA.velocity.y, ERROR_MARG);
+        CHECK_CLOSE(1.0, physObjA.velocity.z, ERROR_MARG);
+    
+        PhysicsObject_tick(&physObjA, &negoneVector, 1.0);
+        CHECK_CLOSE(1.0, physObjA.position.x, ERROR_MARG);
+        CHECK_CLOSE(1.0, physObjA.position.y, ERROR_MARG);
+        CHECK_CLOSE(1.0, physObjA.position.z, ERROR_MARG);
+        
+        CHECK_CLOSE(0.0, physObjA.velocity.x, ERROR_MARG);
+        CHECK_CLOSE(0.0, physObjA.velocity.y, ERROR_MARG);
+        CHECK_CLOSE(0.0, physObjA.velocity.z, ERROR_MARG);
     }
     
     TEST_FIXTURE(PhysicsFixture, CollisionTest)
     {
+        struct PhysCollisionResult pcr;
+        
+        PhysicsObject_collide(&pcr, NULL, &physObjB, 1.0);
+        CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
+        PhysicsObject_collide(&pcr, &physObjA, NULL, 1.0);
+        CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
+        PhysicsObject_collide(&pcr, &physObjA, &physObjB, 0);
+        CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
+        
+        PhysicsObject_collide(&pcr, &physObjA, &physObjB, 1.0);
+        CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
+        
+        physObjA.velocity = {100,100,100};
         
     }
         
@@ -107,6 +142,8 @@ SUITE(Physics)
 TEST(Sanity)
 {
     CHECK_EQUAL(1, 1);
+    CHECK(true);
+    CHECK_CLOSE(1.0, 1.01, 0.01);
 }
 
 int main(int, const char *[])

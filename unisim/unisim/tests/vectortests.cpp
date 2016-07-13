@@ -167,6 +167,8 @@ SUITE(Vector3Is)
 TEST(Sanity)
 {
     CHECK_EQUAL(1, 1);
+    CHECK(true);
+    CHECK_CLOSE(1.0, 1.01, 0.01);
 }
 
 int main(int, const char *[])
