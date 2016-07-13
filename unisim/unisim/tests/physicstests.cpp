@@ -42,8 +42,8 @@ SUITE(Physics)
             small_spectrum->components.wavelength = 1;
             
             
-            PhysicsObject_init(&physObjA, myUniverse, &zeroVector, &zeroVector, &zeroVector, &zeroVector, 1.0, 1.0, (char *)"Object A", small_spectrum);
-            PhysicsObject_init(&physObjB, myUniverse, &oneVector, &zeroVector, &zeroVector, &zeroVector, 1.0, 1.0, (char *)"Object B", small_spectrum);
+            PhysicsObject_init(&physObjA, myUniverse, &zeroVector, &zeroVector, &zeroVector, &zeroVector, 1.0, 0.01, (char *)"Object A", small_spectrum);
+            PhysicsObject_init(&physObjB, myUniverse, &oneVector, &zeroVector, &zeroVector, &zeroVector, 1.0, 0.01, (char *)"Object B", small_spectrum);
         }
     };
     
@@ -54,10 +54,8 @@ SUITE(Physics)
     
     TEST_FIXTURE(PhysicsFixture, PhysicsObjectTest)
     {
-        PhysicsObject * po;
         CHECK_EQUAL((void *)NULL, PhysicsObject_clone(NULL));
         REQUIRE CHECK(PhysicsObject_clone(&physObjA) != (void*)NULL);
-
     }
     
     TEST_FIXTURE(PhysicsFixture, PhysicsTickTest)
@@ -81,7 +79,7 @@ SUITE(Physics)
         CHECK_CLOSE(0.0, physObjA.velocity.z, ERROR_MARG);
     }
     
-    TEST_FIXTURE(PhysicsFixture, CollisionTest)
+    TEST_FIXTURE(PhysicsFixture, CollisionResultTest)
     {
         struct PhysCollisionResult pcr;
         
@@ -92,10 +90,48 @@ SUITE(Physics)
         PhysicsObject_collide(&pcr, &physObjA, &physObjB, 0);
         CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
         
+        //no collisoins, objects have not moved yet
         PhysicsObject_collide(&pcr, &physObjA, &physObjB, 1.0);
         CHECK_CLOSE(-1.0, pcr.t, ERROR_MARG);
         
         physObjA.velocity = {100,100,100};
+        PhysicsObject_collide(&pcr, &physObjA, &physObjB, 1.0);
+        //printf("%0.13lf,%0.13lf\n", pcr.t, pcr.pce1.d.x);
+        CHECK_CLOSE(0.0098845299462, pcr.t, ERROR_MARG);
+        CHECK_CLOSE(15000, pcr.e, ERROR_MARG);
+        
+        CHECK_CLOSE(-0.5773502691896, pcr.pce1.d.x, ERROR_MARG);
+        CHECK_CLOSE(0.005773502691896, pcr.pce1.p.x, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.t.x, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.n.x, ERROR_MARG);
+        CHECK_CLOSE(-100, pcr.pce1.dn.x, ERROR_MARG);
+        CHECK_CLOSE(0.5773502691896, pcr.pce2.d.x, ERROR_MARG);
+        CHECK_CLOSE(-0.005773502691896, pcr.pce2.p.x, ERROR_MARG);
+        CHECK_CLOSE(0, pcr.pce2.t.x, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.n.x, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.dn.x, ERROR_MARG);
+        
+        CHECK_CLOSE(-0.5773502691896, pcr.pce1.d.y, ERROR_MARG);
+        CHECK_CLOSE(0.005773502691896, pcr.pce1.p.y, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.t.y, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.n.y, ERROR_MARG);
+        CHECK_CLOSE(-100, pcr.pce1.dn.y, ERROR_MARG);
+        CHECK_CLOSE(0.5773502691896, pcr.pce2.d.y, ERROR_MARG);
+        CHECK_CLOSE(-0.005773502691896, pcr.pce2.p.y, ERROR_MARG);
+        CHECK_CLOSE(0, pcr.pce2.t.y, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.n.y, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.dn.y, ERROR_MARG);
+        
+        CHECK_CLOSE(-0.5773502691896, pcr.pce1.d.z, ERROR_MARG);
+        CHECK_CLOSE(0.005773502691896, pcr.pce1.p.z, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.t.z, ERROR_MARG);
+        CHECK_CLOSE(0.0, pcr.pce1.n.z, ERROR_MARG);
+        CHECK_CLOSE(-100, pcr.pce1.dn.z, ERROR_MARG);
+        CHECK_CLOSE(0.5773502691896, pcr.pce2.d.z, ERROR_MARG);
+        CHECK_CLOSE(-0.005773502691896, pcr.pce2.p.z, ERROR_MARG);
+        CHECK_CLOSE(0, pcr.pce2.t.z, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.n.z, ERROR_MARG);
+        CHECK_CLOSE(100, pcr.pce2.dn.z, ERROR_MARG);
         
     }
         
