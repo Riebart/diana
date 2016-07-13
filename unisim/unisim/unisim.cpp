@@ -122,9 +122,10 @@ int main(int32_t argc, char** argv)
     signal(SIGINT, &sighandler);
 
     struct Diana::Universe::Parameters params;
-    params.verbose_logging = false;
+    params.verbose_logging = true;
     params.realtime_physics = false;
     params.min_physics_frametime = 0.001;
+
     Diana::Universe* u = new Diana::Universe(params);
 
     u->start_net();

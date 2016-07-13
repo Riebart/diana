@@ -76,7 +76,8 @@ namespace Diana
             }
             else
             {
-                this->operator/=(l);
+                // @todo For floating point, this is far more expensive than *=(1/l)
+                this->operator*=(1 / l);
             }
         }
 

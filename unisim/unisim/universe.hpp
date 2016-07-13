@@ -107,6 +107,7 @@ namespace Diana
         {
             Parameters() :
                 verbose_logging(true),
+                collision_testing(true),
                 min_physics_frametime(0.002),
                 max_physics_frametime(0.002),
                 min_vis_frametime(0.1),
@@ -133,6 +134,11 @@ namespace Diana
             // Print verbose information, such as collision rounds per tick, and when a
             // collision happens, and which objects were involved.
             bool verbose_logging;
+
+            // Whether or not collisions between objects should be tested for. If this is
+            // set to false, then objects will intersect, potentially resulting in unstable
+            // or unpredictable gravitational interactions.
+            bool collision_testing;
             
             // Minimum unscaled simulated time that is allowed to pass in a single tick.
             // If the previous phsyics tick took less wall-clock time than this, the time
@@ -265,6 +271,18 @@ namespace Diana
 
         Universe(struct Parameters _params);
         ~Universe();
+
+        // Multiplicatively scale the given value by the scale_to_metres parameter
+        template<typename T> T scale_units(T v)
+        {
+            return (T)(params.scale_to_metres * v);
+        }
+
+        // Divisively scale the given value by the scale_to_metres parameter
+        template<typename T> double unscale_units(T v)
+        {
+            return v / params.scale_to_metres;
+        }
 
         void start_net();
         void stop_net();
