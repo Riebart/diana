@@ -318,6 +318,19 @@ namespace Diana
         // (and isn't too close to zero)
         //
         // So, here we go!
+        
+        //Some sanity checks
+        if (cr == NULL)
+        {
+            //nothing can be done and there is no way to alert
+            return;
+        }
+        if (obj1 == NULL || obj2 == NULL || dt <= 0.0)
+        {
+            //no collision
+            cr->t = -1.0;
+            return;
+        }
 
         //! @todo Scale the velocity bu the time-step (in essence turning it into a position delta), aftet
         //! we check to see if it's too small. dt could cause a small velocity to shrink past the cutoff.
