@@ -1787,7 +1787,7 @@ namespace Diana
                 if (re_sort && (collisions.size() > 1))
                 {
                     std::sort(collisions.begin(), collisions.end(),
-                        [](struct PhysCollisionEvent& a, struct PhysCollisionEvent& b) { return a.pcr.t < b.pcr.t; });
+                        [](const struct PhysCollisionEvent& a, const struct PhysCollisionEvent& b) { return a.pcr.t < b.pcr.t; });
                 }
 
                 // Simultaneous collision handling is not obvious, but ends up working out to be not too complex.
