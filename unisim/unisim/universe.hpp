@@ -338,7 +338,7 @@ namespace Diana
         //! conditional boolean as appropriate.
         void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
 
-        void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+        void get_grav_pull(struct Vector3T<double>* g, struct PhysicsObject* obj);
 
         struct Parameters params;
 

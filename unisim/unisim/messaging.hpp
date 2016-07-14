@@ -76,6 +76,7 @@ namespace Diana
         virtual bool all_specced(int start_index = 0, int stop_index = -1, int except = -1);
 
     protected:
+        typedef struct Vector3T<double> PositionType;
         BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, MessageType _msg_type = Reservedx00);
         virtual const read_lambda* handlers() { return NULL; };
     };
@@ -99,7 +100,8 @@ namespace Diana
 
         char* obj_type;
         double mass, radius;
-        struct Vector3 position, velocity, thrust;
+        BSONMessage::PositionType position;
+        struct Vector3T<double> velocity, thrust;
         struct Vector4T<double> orientation;
         struct Spectrum* spectrum;
 
@@ -158,7 +160,7 @@ namespace Diana
 
         int64_t phys_id;
         double radius;
-        struct Vector3 position;
+        BSONMessage::PositionType position;
         struct Vector4T<double> orientation;
         double red, green, blue;
 
@@ -176,7 +178,8 @@ namespace Diana
         char beam_type[5];
         char* comm_msg;
         double spread_h, spread_v, energy;
-        struct Vector3 origin, velocity;
+        BSONMessage::PositionType origin;
+        struct Vector3T<double> velocity;
         struct Vector3T<double> up;
         struct Spectrum* spectrum;
 
@@ -195,7 +198,8 @@ namespace Diana
         char coll_type[5];
         char* comm_msg;
         double energy;
-        struct Vector3 position, direction;
+        BSONMessage::PositionType position;
+        struct Vector3T<double> direction;
         struct Spectrum* spectrum;
 
     protected:
@@ -212,7 +216,8 @@ namespace Diana
         bool is_smart;
         char* obj_type;
         double mass, radius;
-        struct Vector3 position, velocity, thrust;
+        BSONMessage::PositionType position;
+        struct Vector3T<double> velocity, thrust;
         struct Vector4T<double> orientation;
         struct Spectrum* spectrum;
 
@@ -231,7 +236,8 @@ namespace Diana
         //! @todo Promote this to a dict with full text keys. Can probably just store the BSON dict to spit back.
         char* data;
         double mass, radius;
-        struct Vector3 position, velocity, thrust;
+        BSONMessage::PositionType position;
+        struct Vector3T<double> velocity, thrust;
         struct Vector4T<double> orientation;
         struct Spectrum* obj_spectrum;
         struct Spectrum* beam_spectrum;
@@ -249,7 +255,7 @@ namespace Diana
 
         int64_t scan_id;
         double energy;
-        struct Vector3 direction;
+        struct Vector3T<double> direction;
         struct Spectrum* spectrum;
 
     protected:
@@ -336,7 +342,7 @@ namespace Diana
         ThrustMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Thrust) { }
         int64_t send(sock_t sock);
 
-        Vector3 thrust;
+        struct Vector3T<double>  thrust;
 
     protected:
         const read_lambda* handlers();
@@ -348,7 +354,7 @@ namespace Diana
         VelocityMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Velocity) { }
         int64_t send(sock_t sock);
 
-        Vector3 velocity;
+        struct Vector3T<double>  velocity;
 
     protected:
         const read_lambda* handlers();
@@ -360,7 +366,7 @@ namespace Diana
         JumpMsg(BSONReader* _br = NULL) : BSONMessage(_br, 3, handlers(), Jump) { }
         int64_t send(sock_t sock);
 
-        Vector3 destination;
+       BSONMessage::PositionType destination;
 
     protected:
         const read_lambda* handlers();

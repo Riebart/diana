@@ -115,12 +115,13 @@ namespace Diana
 
         // Note that velocity components are handled in the collision portion, so subtract off any
         // portion of the tick time that's already been handled by the collision events.
-        obj->position.fmad(dt - obj->t, obj->velocity);
+        double s = obj->universe->scale_units(1.0);
+        obj->position.fmad(s * (dt - obj->t), obj->velocity);
         obj->t = 0.0;
 
         //! @todo We can save these divisions by not multiplying by mass when we calcualte g
-        obj->position.fmad(0.5 * dt * dt / obj->mass, *g);
-        obj->position.fmad(0.5 * dt * dt / obj->mass, obj->thrust);
+        obj->position.fmad(s * 0.5 * dt * dt / obj->mass, *g);
+        obj->position.fmad(s * 0.5 * dt * dt / obj->mass, obj->thrust);
 
         obj->velocity.fmad(dt / obj->mass, *g);
         // We account for the position delta above with the FMAD.
@@ -789,7 +790,9 @@ namespace Diana
                 Beam* b = (Beam*)other;
                 // Note that the effect->p position marks the position in 3-space, relative to the beam
                 // origin, of the impact. To obtain the direction, this should negate that direction
-                Beam* res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+                // 
+                // @todo This is an abuse of the PCE effect parameter
+                Beam* res = Beam_make_return_beam(b, energy, (struct Vector3*)effect, BEAM_SCANRESULT);
 
                 res->scan_target = PhysicsObject_clone(obj);
                 if (res->scan_target == NULL)
@@ -1116,7 +1119,7 @@ namespace Diana
             bcr->t = (entering + leaving) / 2.0;
         }
 
-        bcr->p = p;
+        bcr->p = obj->position - b->origin;
         bcr->p.fmad(bcr->t, dp);
         double collision_dist = abs(bcr->p.dot(b->direction));
 
@@ -1145,7 +1148,7 @@ namespace Diana
     void Beam_tick(B* beam, double dt)
     {
         beam->distance_travelled += beam->speed * dt;
-        beam->front_position.fmad(dt * beam->speed, beam->direction);
+        beam->front_position.fmad(dt * beam->speed * beam->universe->scale_units(1.0), beam->direction);
 
         if (beam->distance_travelled > beam->max_distance)
         {

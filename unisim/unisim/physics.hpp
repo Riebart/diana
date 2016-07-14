@@ -210,7 +210,7 @@ namespace Diana
         double e;
         //! Direction beam is travelling.
         struct Vector3T<double> d;
-        //! Collition point, relative to beam origin.
+        //! Collition point, relative to beam origin, in the same coordinate space as the beam origin.
         struct Vector3 p;
         //! Occlusion information
         void* occlusion;

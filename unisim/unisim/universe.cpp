@@ -140,10 +140,11 @@ namespace Diana
             // Sleep for max_frametime time so that we're responsive to unpausing, but not
             // waking up too often.
             //
-            // While paused, new objects will be queued for addition to the unvierse at the
-            // end of the 'next' physics tick (once pause is disabled).
-            if (u->paused)
+            // Also don't tick while there are no objects or beams, which requires that handling
+            // added objects occur in this operation.
+            if ((u->paused) || ((u->phys_objects.size() == 0) && (u->beams.size() == 0)))
             {
+                u->handle_added();
                 std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
                 continue;
             }
@@ -491,6 +492,7 @@ namespace Diana
                 }
 
                 visdata_msg.position = o->position;
+                visdata_msg.position *= unscale_units(1.0);
 
                 if (ro != NULL)
                 {
@@ -734,7 +736,8 @@ namespace Diana
 
             // Note that the spectrum is a non-optional component, so we can assume it exists
             // as enforcement of that condition occurs earlier with the all_specced() call.
-            Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
+            struct Vector3 mo = msg->origin * scale_units(1LL);
+            Beam_init(b, this, &mo, &msg->velocity, &msg->up,
                 msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
 
             // Now that the beam has a cloned version of the spectrum, perturb it.
@@ -791,7 +794,8 @@ namespace Diana
                 spectrum = msg->spectrum;
             }
 
-            PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
+            struct Vector3 mo = msg->position * scale_units(1LL);
+            PhysicsObject_init(obj, this, &mo, &msg->velocity,
                 const_cast<struct Vector3T<double>*>(&vector3d_zero), &msg->thrust,
                 msg->mass, msg->radius, obj_type, spectrum);
 
@@ -1120,6 +1124,10 @@ namespace Diana
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
+                //
+                // When the situation is reached where the lower bound of the upper box (b)
+                // starts after the upper bound of the lower box, then there's a guarantee that
+                // no box 'after' b will match either, so shuffle a along (by break-ing).
                 if (Vector::almost_zeroS(d) || (d > 0))
                 {
                     // Now do a full test on the Y axis.
@@ -1230,7 +1238,7 @@ namespace Diana
         struct BeamCollisionResult beam_result;
 
         // Needed to resolve the physical effects of the collision.
-        struct PhysCollisionResult phys_result;
+        //struct PhysCollisionResult phys_result;
 
         struct Beam* b;
 
@@ -1243,8 +1251,8 @@ namespace Diana
 
                 if (beam_result.t >= 0.0)
                 {
-                    phys_result.pce1.d = beam_result.d;
-                    phys_result.pce1.p = beam_result.p;
+                    //phys_result.pce1.d = beam_result.d;
+                    //phys_result.pce1.p = beam_result.p;
 
                     if (u->params.verbose_logging)
                     {
@@ -1255,7 +1263,9 @@ namespace Diana
 #endif
                     }
 
-                    PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
+                    PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, 
+                        (struct PhysCollisionEffect*)&beam_result.p,
+                        u->params.health_damage_threshold);
 
                     //! @todo Smarty beam collision messages
                     //! @todo Beam collision messages
@@ -1327,6 +1337,8 @@ namespace Diana
                                 b_copy->comm_msg = NULL;
                                 b_copy->scan_target = o_copy;
                                 b_copy->spectrum = Spectrum_clone(b->spectrum);
+                                //! @todo Figure out a way to fast-forward a beam from the time it
+                                // collided to the time the ship send it's response.
                                 u->queries[st] = { b_copy, cm.energy, beam_result.p };
                             }
                             UNLOCK(u->query_lock);
