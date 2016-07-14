@@ -14,6 +14,46 @@ from shiptypes import Firefly
 
 random.seed(0)
 
+def performance_test(dim=1, n_collision = 10, n_gravity=10):
+    sock = socket.socket()
+    sock.connect(('localhost', 5505))
+
+    from message import SpawnMsg
+    sm = SpawnMsg()
+    sm.mass = 1.0
+    sm.radius = 1.0
+    sm.orientation = [0.0,0.0,0.0,0.0]
+    sm.thrust = [0.0,0.0,0.0]
+    sm.srv_id = -1
+    sm.cli_id = -1
+    sm.is_smart = False
+    sm.object_type = 'CollisionObj'
+
+    shape = [[-1.0,-1.0], [-1.0,1.0], [1.0,-1.0], [1.0,1.0]]
+
+    for i in range(n_collision):
+        for s in shape:
+            # Perturb the box by a micron
+            sm.position = [ si * (random.random() * 1e-6 + (1-1e-6)) for si in s ]
+            sm.position.insert(dim, sm.radius*i)
+            sm.velocity = [ 2*random.random()-1, 2*random.random()-1, 2*random.random()-1 ]
+            SpawnMsg.send(sock, None, -1, sm.build())
+
+    if n_gravity > 0:
+        # Place a bunch of Jupters, in a circle around the origin, at it's orbital distance.
+        sm.mass = 1.898e27
+        sm.radius = 70000000
+        orbital_radius = 778000000000
+        orbital_velocity = 0*13100000
+        for i in range(n_gravity):
+            t = i * (2 * math.pi / n_gravity)
+            sm.position = [ orbital_radius * math.cos(t), orbital_radius * math.sin(t), 0.0 ]
+            sm.velocity = [ orbital_velocity * math.sin(t), -orbital_velocity * math.cos(t), 0.0 ]
+            SpawnMsg.send(sock, None, -1, sm.build())
+
+    sock.shutdown(socket.SHUT_RDWR)
+    sock.close()
+
 def basic():
     sock = socket.socket()
     sock.connect(('localhost', 5505))
@@ -26,16 +66,16 @@ def basic():
     sm.velocity = [0.0,0.0,0.0]
     sm.thrust = [0.0,0.0,0.0]
     sm.orientation = [0.0,0.0,0.0,0.0]
-    sm.radius = 1.0
+    sm.radius = 1.5
     sm.mass = 1.0
 
     sm.object_type = 'Obj1'
-    sm.position = [10,0.0,0.0]
+    sm.position = [2.0,0.5,0.0]
     SpawnMsg.send(sock, None, -1, sm.build())
 
     sm.object_type = 'Obj2'
-    sm.position = [-10.0,0.5,0.0]
-    sm.velocity = [2.0,0.0,0.0]
+    sm.position = [-2.0,-0.5,0.0]
+    sm.velocity = [0.5,0,0.0]
     SpawnMsg.send(sock, None, -1, sm.build())
 
     sock.shutdown(socket.SHUT_RDWR)
@@ -340,12 +380,16 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
+    performance_test(0, 1000, 0)
+    performance_test(1, 300, 0)
+    performance_test(2, 300, 0)
+    performance_test(0, 0, 250)
     #basic()
     #pool_rack(C = 1.01, num_rows = 25)
-    spawn_sol()
+    #spawn_sol()
     #signature_test()
 
-    for i in range(-20, 21, 1):
-        flight_school(1.0, 30, i + 150000000000, 3.0, 0.3)
+    #for i in range(-20, 21, 1):
+    #    flight_school(1.0, 30, i + 150000000000, 3.0, 0.3)
 
     #test_sensors()
