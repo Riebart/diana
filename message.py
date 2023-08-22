@@ -6,7 +6,7 @@ import struct # Needed to unpack the first four bytes of the BSON message for re
 import sys
 import socket
 from vector import Vector3, zero3d
-from cStringIO import StringIO
+from io import StringIO, BytesIO
 from collections import OrderedDict
 
 class Spectrum:
@@ -54,7 +54,7 @@ class Message:
     @staticmethod
     def big_read(client, num_bytes):
         num_got = 0
-        file_str = StringIO()
+        file_str = BytesIO()
 
         while num_got < num_bytes:
             if client.fileno() == -1:
