@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventTest.h"
 #include "DianaConnector.h"
+#include "EventTest.h"
 
-#include "Array.h"
+//#include "Array.h"
 
 #include "Networking.h"
 #include "Sockets.h"
@@ -462,7 +462,7 @@ bool ADianaConnector::RegisterForVisData(bool enable)
     return proxy->RegisterForVisData(enable, client_id, server_id);
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 server_id)
+bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p)
 {
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
@@ -472,7 +472,7 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 ser
 
     ConnectSocket();
 
-    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin (%d) %d %d"), enable, client_id, server_id);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Begin (%d) %d %d"), enable, client_id_p, server_id_p);
     if (sock == NULL)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::NULLSocket"));
@@ -481,8 +481,8 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id, int32 ser
 
     Diana::VisualDataEnableMsg vdm;
     vdm.enabled = enable;
-    vdm.client_id = client_id;
-    vdm.server_id = server_id;
+    vdm.client_id = client_id_p;
+    vdm.server_id = server_id_p;
     vdm.spec_all();
 
     if (enable)
@@ -584,7 +584,7 @@ char* fstring_to_char(FString s)
     return dst;
 }
 
-TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items)
+TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id_p, int32 server_id_p, FString type, TArray<struct FDirectoryItem> items)
 {
     ConnectSocket();
 
@@ -594,8 +594,8 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id,
     dm.specced[2] = true;
     dm.specced[3] = true;
 
-    dm.server_id = server_id;
-    dm.client_id = client_id;
+    dm.server_id = server_id_p;
+    dm.client_id = client_id_p;
     dm.item_count = items.Num();
     dm.item_type = fstring_to_char(type);
 
@@ -635,7 +635,7 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id,
         if ((m != NULL) && (m->msg_type == Diana::BSONMessage::MessageType::Directory))
         {
             Diana::DirectoryMsg* dmr = (Diana::DirectoryMsg*)m;
-            if ((dmr->server_id == server_id) && (dmr->client_id == client_id) &&
+            if ((dmr->server_id == server_id_p) && (dmr->client_id == client_id_p) &&
                 (strcmp(TCHAR_TO_ANSI(*type), dmr->item_type) == 0))
             {
                 struct FDirectoryItem item;
@@ -652,7 +652,7 @@ TArray<struct FDirectoryItem> ADianaConnector::DirectoryListing(int32 client_id,
     return ret;
 }
 
-void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_id)
+void ADianaConnector::CreateShip(int32 client_id_p, int32 server_id_p, int32 class_id)
 {
     std::chrono::milliseconds dura(20);
     TArray<struct FDirectoryItem> selection;
@@ -662,7 +662,7 @@ void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_i
     selection.Add(item);
     FString type = "CLASS";
 
-    DirectoryListing(client_id, server_id, type, selection);
+    DirectoryListing(client_id_p, server_id_p, type, selection);
     Diana::BSONMessage* m = NULL;
     for (int i = 0; ((i < 50) && (m == NULL)); i++)
     {
@@ -680,7 +680,7 @@ void ADianaConnector::CreateShip(int32 client_id, int32 server_id, int32 class_i
     delete m;
 }
 
-int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
+int32 ADianaConnector::JoinShip(int32 client_id_p, int32 server_id_p, int32 ship_id)
 {
     std::chrono::milliseconds dura(20);
     TArray<struct FDirectoryItem> selection;
@@ -691,7 +691,7 @@ int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
     FString type = "SHIP";
     int32 ret = -1;
 
-    DirectoryListing(client_id, server_id, type, selection);
+    DirectoryListing(client_id_p, server_id_p, type, selection);
     Diana::BSONMessage* m = NULL;
     for (int i = 0; ((i < 50) && (m == NULL)); i++)
     {
@@ -711,32 +711,32 @@ int32 ADianaConnector::JoinShip(int32 client_id, int32 server_id, int32 ship_id)
     return ret;
 }
 
-void ADianaConnector::RenameShip(int32 client_id, int32 server_id, FString new_name)
+void ADianaConnector::RenameShip(int32 client_id_p, int32 server_id_p, FString new_name)
 {
     Diana::NameMsg nm;
-    nm.client_id = client_id;
-    nm.server_id = server_id;
+    nm.client_id = client_id_p;
+    nm.server_id = server_id_p;
     nm.name = TCHAR_TO_ANSI(*new_name);
     nm.spec_all();
     nm.send(sock);
     nm.name = NULL;
 }
 
-void ADianaConnector::Ready(int32 client_id, int32 server_id)
+void ADianaConnector::Ready(int32 client_id_p, int32 server_id_p)
 {
     Diana::ReadyMsg rm;
-    rm.client_id = client_id;
-    rm.server_id = server_id;
+    rm.client_id = client_id_p;
+    rm.server_id = server_id_p;
     rm.ready = true;
     rm.spec_all();
     rm.send(sock);
 }
 
-void ADianaConnector::Goodbye(int32 client_id, int32 server_id)
+void ADianaConnector::Goodbye(int32 client_id_p, int32 server_id_p)
 {
     Diana::GoodbyeMsg gm;
-    gm.server_id = server_id;
-    gm.client_id = client_id;
+    gm.server_id = server_id_p;
+    gm.client_id = client_id_p;
     gm.spec_all();
     gm.send(sock);
 }
@@ -746,12 +746,12 @@ void ADianaConnector::SetThrust(FVector _thrust)
     proxy->SetThrust(client_id, server_id, _thrust);
 }
 
-void ADianaConnector::SetThrust(int32 client_id, int32 server_id, FVector _thrust)
+void ADianaConnector::SetThrust(int32 client_id_p, int32 server_id_p, FVector _thrust)
 {
     thrust = _thrust;
     Diana::ThrustMsg tm;
-    tm.client_id = client_id;
-    tm.server_id = server_id;
+    tm.client_id = client_id_p;
+    tm.server_id = server_id_p;
     tm.thrust.x = thrust.X;
     tm.thrust.y = thrust.Y;
     tm.thrust.z = thrust.Z;
@@ -764,12 +764,12 @@ void ADianaConnector::OffsetThrust(FVector _thrust)
     proxy->OffsetThrust(client_id, server_id, _thrust);
 }
 
-void ADianaConnector::OffsetThrust(int32 client_id, int32 server_id, FVector _thrust)
+void ADianaConnector::OffsetThrust(int32 client_id_p, int32 server_id_p, FVector _thrust)
 {
     thrust += _thrust;
     Diana::ThrustMsg tm;
-    tm.client_id = client_id;
-    tm.server_id = server_id;
+    tm.client_id = client_id_p;
+    tm.server_id = server_id_p;
     tm.thrust.x = thrust.X;
     tm.thrust.y = thrust.Y;
     tm.thrust.z = thrust.Z;
@@ -844,7 +844,7 @@ struct FSensorSystem read_scanner(std::map<std::string, struct BSONReader::Eleme
     return v;
 }
 
-int32 ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_only, int32_t system_id)
+int32 ADianaConnector::SensorStatus(int32 client_id_p, int32 server_id_p, bool read_only, int32_t system_id)
 {
     FScopeLock(&this->sensor_cs);
     ConnectSocket();
@@ -858,8 +858,8 @@ int32 ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_
     if (!read_only)
     {
         Diana::CommandMsg cm;
-        cm.client_id = client_id;
-        cm.server_id = server_id;
+        cm.client_id = client_id_p;
+        cm.server_id = server_id_p;
         cm.system_id = system_id;
         cm.command = new BSONReader::Element();
         cm.command->type = BSONReader::ElementType::String;
@@ -895,7 +895,7 @@ int32 ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_
     if ((m != NULL) &&
         (m->msg_type == Diana::BSONMessage::MessageType::SystemUpdate) &&
         (m->specced[0] && m->specced[1] && m->specced[2]) &&
-        (m->client_id == client_id) &&
+        (m->client_id == client_id_p) &&
         (m->server_id == m->server_id))
     {
         Diana::SystemUpdateMsg* msg = (Diana::SystemUpdateMsg*)m;
@@ -986,9 +986,9 @@ int32 ADianaConnector::SensorStatus(int32 client_id, int32 server_id, bool read_
                         // None of this involves updating the epc components.
                         if (scit == sc_map.end())
                         {
-                            sc_map[v.contact_id] = v;
                             v.actor = NULL;
                             v.epc = NULL;
+                            sc_map[v.contact_id] = v;
                             sensor_messages.Enqueue(v.contact_id);
                             //SensorContact(v, NULL, NULL);
                             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus::NewContact %s"), *v.contact_id);
@@ -1068,10 +1068,10 @@ void ADianaConnector::UpdateExistingSensorContact(const FString& ID, AActor* Act
         c.actor = ActorRef;
         c.epc = EPCRef;
 
-        float world_to_metres = this->GetWorld()->GetWorldSettings()->WorldToMeters / 2.0;
+        float world_to_metres_here = this->GetWorld()->GetWorldSettings()->WorldToMeters / 2.0;
         FVector position = world_to_metres * c.position;
         FVector velocity = world_to_metres * c.velocity;
-        FVector acceleration = world_to_metres * (ALMOST_ZERO(c.mass) ? FVzero : c.thrust / c.mass);
+        FVector acceleration = world_to_metres_here * (ALMOST_ZERO(c.mass) ? FVzero : c.thrust / c.mass);
         EPCRef->SetPVA(position, velocity, acceleration);
         sc_map[ID] = c;
     }

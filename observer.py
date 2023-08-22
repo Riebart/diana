@@ -43,9 +43,8 @@ class Observable:
                 self.send_update(observer, data)
 
     def send_update(self, observer, data):
-        msg = message.SystemUpdateMsg()
-        msg.properties = nest_dict(data)
-        message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], msg.build())
+        #for now, just re-send everything
+        self.send_state(observer)
 
     def send_state(self, observer):
         cur_time = time.gmtime()

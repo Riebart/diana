@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventTest.h"
 #include "ExtendedPhysicsComponent.h"
+#include "EventTest.h"
 
 
 // Sets default values for this component's properties
@@ -9,7 +9,7 @@ UExtendedPhysicsComponent::UExtendedPhysicsComponent()
 {
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
     // off to improve performance if you don't need them.
-    bWantsBeginPlay = true;
+//    bWantsBeginPlay = true;
     PrimaryComponentTick.bCanEverTick = true;
 
     // ...
@@ -195,7 +195,7 @@ void UExtendedPhysicsComponent::TickComponent(float DeltaTime, ELevelTick TickTy
         // Since client-side collisions are approximations, set the velocities they
         // got to zero on every tick to undo any local collision events.
         static_mesh->SetPhysicsLinearVelocity(z, false, NAME_None);
-        static_mesh->SetAllPhysicsAngularVelocity(z, false);
+//        static_mesh->SetAllPhysicsAngularVelocity(z, false);
         static_mesh->SetAllPhysicsPosition(position);
         //}
     }
