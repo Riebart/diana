@@ -1,7 +1,7 @@
 from __future__ import print_function
 from vector import Vector3
 from observer import Observable
-from shipparts import *
+from . shipparts import *
 import math
 import json
 

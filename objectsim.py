@@ -7,7 +7,7 @@ import threading
 
 from mimosrv import MIMOServer
 from vector import Vector3
-from spaceobj import SmartObject
+from spaceobjects.spaceobj import SmartObject
 
 from message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
 
