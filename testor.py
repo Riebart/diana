@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import message
 import objectsim
 #import unisim
@@ -18,19 +19,19 @@ def testSimple():
     miss1 = spaceobj.Missile(osim)
     osim.spawn_object(miss1)
 
-    print "miss1 osimid is: %d" % miss1.osim_id
-    print "miss1 unisim is: %d" % miss1.phys_id
+    print("miss1 osimid is: %d" % miss1.osim_id)
+    print("miss1 unisim is: %d" % miss1.phys_id)
 
 def testSimpleShip():
     ship1 = Firefly(osim)
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osim_id
-    print "ship1 unisim is: %d" % ship1.phys_id
+    print("ship1 osimid is: %d" % ship1.osim_id)
+    print("ship1 unisim is: %d" % ship1.phys_id)
 
-    print "Sleeping for 5 seconds, then disconnecting the ship."
+    print("Sleeping for 5 seconds, then disconnecting the ship.")
     time.sleep(5)
-    print "Disconnecting ship."
+    print("Disconnecting ship.")
 
 
 #test currently broken
@@ -43,17 +44,17 @@ def testVisData():
     miss2.position[0] = 100.0
     osim.spawn_object(miss2)
 
-    print "miss1 osimid is: %d" % miss1.osim_id
-    print "miss1 unisim is: %d" % miss1.phys_id
+    print("miss1 osimid is: %d" % miss1.osim_id)
+    print("miss1 unisim is: %d" % miss1.phys_id)
 
-    print "miss2 osimid is: %d" % miss2.osim_id
-    print "miss2 unisim is: %d" % miss2.phys_id
+    print("miss2 osimid is: %d" % miss2.osim_id)
+    print("miss2 unisim is: %d" % miss2.phys_id)
 
 
     miss1.enable_visdata()
 
     while True:
-        print miss1.sock.recv(1024)
+        print(miss1.sock.recv(1024))
 
     pass
 
@@ -64,23 +65,23 @@ def testShip():
     ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osim_id
-    print "ship1 unisim is: %d" % ship1.phys_id
+    print("ship1 osimid is: %d" % ship1.osim_id)
+    print("ship1 unisim is: %d" % ship1.phys_id)
     sys.stdout.flush()
 
     ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osim_id
-    print "ship2 unisim is: %d" % ship2.phys_id
+    print("ship2 osimid is: %d" % ship2.osim_id)
+    print("ship2 unisim is: %d" % ship2.phys_id)
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_missile(direction, 50000.0)
 
-    print "miss1 osimid is: %d" % miss1.osim_id
-    print "miss1 unisim is: %d" % miss1.phys_id
+    print("miss1 osimid is: %d" % miss1.osim_id)
+    print("miss1 unisim is: %d" % miss1.phys_id)
     sys.stdout.flush()
 
 #spawns two stationary ships. The first fires a beam at the other
@@ -89,20 +90,20 @@ def testBeam():
     ship1 = Firefly(osim, name="Ship 1")
     osim.spawn_object(ship1)
 
-    print "ship1 osimid is: %d" % ship1.osim_id
-    print "ship1 unisim is: %d" % ship1.phys_id
+    print("ship1 osimid is: %d" % ship1.osim_id)
+    print("ship1 unisim is: %d" % ship1.phys_id)
     sys.stdout.flush()
 
     ship2 = Firefly(osim, name="Ship 2")
     ship2.position = Vector3( (1000.0,0.0,0.0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osim_id
-    print "ship2 unisim is: %d" % ship2.phys_id
+    print("ship2 osimid is: %d" % ship2.osim_id)
+    print("ship2 unisim is: %d" % ship2.phys_id)
     sys.stdout.flush()
 
     dir = Vector3(1.0,0.0,0.0)
-    ship1.fire_laser(dir, power = 1000)
+    ship1.fire_laser(bank_id=1, direction=dir, power = 1000)
 
     sys.stdout.flush()
 
@@ -117,26 +118,26 @@ def stressTest(ships=1000, area=10000):
         ship1 = Firefly(osim)
         ship1.position = rand_vec(rand, area)
         osim.spawn_object(ship1)
-        print "ship%d osimid is: %d" % (i, ship1.osim_id)
-        print "ship%d unisim is: %d" % (i, ship1.phys_id)
+        print("ship%d osimid is: %d" % (i, ship1.osim_id))
+        print("ship%d unisim is: %d" % (i, ship1.phys_id))
 
         direction = Vector3((1.0, 0.0,0.0))
         miss1 = ship1.fire_missile(direction, 500)
 
-        print "miss%d osimid is: %d" % (i, miss1.osim_id)
-        print "miss%d unisim is: %d" % (i, miss1.phys_id)
+        print("miss%d osimid is: %d" % (i, miss1.osim_id))
+        print("miss%d unisim is: %d" % (i, miss1.phys_id))
 
 
 def testHoming():
-    print "Building ship ..."
+    print("Building ship ...")
     ship1 = Firefly(osim)
-    print "Building ship ... Done"
-    print "Spawning ship ..."
+    print("Building ship ... Done")
+    print("Spawning ship ...")
     osim.spawn_object(ship1)
-    print "Spawning ship ... Done"
+    print("Spawning ship ... Done")
 
-    print "ship1 osimid is: %d" % ship1.osim_id
-    print "ship1 unisim is: %d" % ship1.phys_id
+    print("ship1 osimid is: %d" % ship1.osim_id)
+    print("ship1 unisim is: %d" % ship1.phys_id)
     sys.stdout.flush()
 
     ship2 = Firefly(osim)
@@ -144,15 +145,15 @@ def testHoming():
     ship2.velocity = Vector3( (0.0, 1000.0, 0.0) )
     osim.spawn_object(ship2)
 
-    print "ship2 osimid is: %d" % ship2.osim_id
-    print "ship2 unisim is: %d" % ship2.phys_id
+    print("ship2 osimid is: %d" % ship2.osim_id)
+    print("ship2 unisim is: %d" % ship2.phys_id)
     sys.stdout.flush()
 
     direction = Vector3((1.0, 0.0,0.0))
     miss1 = ship1.fire_homing(direction, 50000.0)
 
-    print "miss1 osimid is: %d" % miss1.osim_id
-    print "miss1 unisim is: %d" % miss1.phys_id
+    print("miss1 osimid is: %d" % miss1.osim_id)
+    print("miss1 unisim is: %d" % miss1.phys_id)
     sys.stdout.flush()
 
 #unism.test()
@@ -170,7 +171,7 @@ def test_threads():
     for i in range (0, 10000):
         t = TThread()
         t.start()
-        print "Started thread %d" % i
+        print("Started thread %d" % i)
 
 
 def test_pbs():
@@ -188,15 +189,15 @@ def test_pbs():
 """
 
 
-print "Spawning OSIM ..."
+print("Spawning OSIM ...")
 osim = objectsim.ObjectSim()
-print "Spawning OSIM ... Done"
+print("Spawning OSIM ... Done")
 rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
-#testSimpleShip()
+testShip()
+testSimpleShip()
 #stressTest()
 #test_threads()
 #testBeam()

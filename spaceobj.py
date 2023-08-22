@@ -1,3 +1,4 @@
+from __future__ import print_function
 import threading
 #import multiprocessing
 import message
@@ -69,11 +70,11 @@ class SmartObject(SpaceObject, threading.Thread):
     def handle_collision(self, collision):
         if collision.collision_type == "PHYS":
             #hit by a physical object, take damage
-            print "%d suffered a Physical collision! %fJ!" % (self.osim_id, collision.energy)
+            print("%d suffered a Physical collision! %fJ!" % (self.osim_id, collision.energy))
             self.handle_phys(collision)
         elif collision.collision_type == "WEAP":
             #hit by a weapon, take damage
-            print "%d suffered a weapon collision! %fJ!" % (self.osim_id, collision.energy)
+            print("%d suffered a weapon collision! %fJ!" % (self.osim_id, collision.energy))
             self.handle_weap(collision)
         elif collision.collision_type == "COMM":
             #hit by a comm beam, perform apropriate action
@@ -85,7 +86,7 @@ class SmartObject(SpaceObject, threading.Thread):
             #self.handle_scanresult(collision)
             pass
         else:
-            print "Bad collision: " + str(collision) + " " + collision.collision_type
+            print("Bad collision: " + str(collision) + " " + collision.collision_type)
 
     def handle_phys(self, mess):
         pass
@@ -102,10 +103,10 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
 
     def handle_scanresult(self, mess):
-        print "Got a scanresult for %s" % mess.object_type
+        print("Got a scanresult for %s" % mess.object_type)
 
     def handle_visdata(self, mess):
-        print str(mess)
+        print(str(mess))
 
     def make_response(self, energy):
         return [ self.object_type, self.name ]
@@ -333,9 +334,9 @@ class HomingMissile1(Missile):
                 #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
                 new_dir = tar_new_pos.unit()
                 new_dir.scale(self.thrust.length())
-                print ("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + \
+                print(("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + \
                     (". Distance to target: %2f " % (distance-mess.radius)) + \
-                        ("Relative velocity: " + str(mess.velocity))
+                        ("Relative velocity: " + str(mess.velocity)))
                 self.set_thrust(new_dir)
                 epos = enemy_pos.unit()
                 [ self.forward, self.up, self.right ] = Vector3.easy_look_at(epos)

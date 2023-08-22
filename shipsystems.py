@@ -1,3 +1,4 @@
+from __future__ import print_function
 from vector import Vector3
 from observer import Observable
 from shipparts import *
@@ -132,4 +133,4 @@ class Shields(System):
         self.name = "Shields"
 
 if __name__ == "__main__":
-    print nest_dict(Sensors())
+    print(nest_dict(Sensors()))

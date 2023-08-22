@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math
 import time
 from vector import Vector3
@@ -106,5 +107,5 @@ class ScanEmitter(BeamDevice):
         self.type = "Scan Emitter"        
         
 if __name__ == "__main__":
-    print Laser().__dict__
-    print Launcher().__dict__
+    print(Laser().__dict__)
+    print(Launcher().__dict__)

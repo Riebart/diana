@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 import ship
 import message
 import socket
@@ -40,7 +41,7 @@ def pool_rack():
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
             sm.position = [  C * (i - 2 * j) * ball_radius, y_offset - C * y_scale * (1 + 2 * i) * ball_radius, 0.0 ]
-            print sm.position
+            print(sm.position)
             SpawnMsg.send(sock, None, -1, sm.build())
 
     # This makes us a cue ball
@@ -96,7 +97,7 @@ def spawn_sol():
         sm.radius = objects[k]["radius"]
         sm.position = objects[k]["position"]
         sm.velocity = objects[k]["velocity"]
-        print str(phys_id) + ": " + sm.object_type
+        print(str(phys_id) + ": " + sm.object_type)
         message.SpawnMsg.send(sock, None, -1, sm.build())
         phys_id += 1
 
@@ -150,14 +151,14 @@ def signature_test():
 
     while True:
         msg = message.Message.get_message(sock)
-        print msg.__dict__
+        print(msg.__dict__)
 
 
 def dirmsg(sock, msg):
     message.DirectoryMsg.send(sock, 0,0, msg)    
     res = sock.recv(5000)
     newmsg = bson.loads(res)
-    print newmsg
+    print(newmsg)
     return newmsg
 
 

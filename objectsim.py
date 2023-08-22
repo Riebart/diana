@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import socket
 import message
 import threading
@@ -191,18 +192,18 @@ class ObjectSim:
             try:
                 reply = message.Message.get_message(obj.sock)
             except TypeError:
-                print "Fail2!"
+                print("Fail2!")
                 return None
 
             if not isinstance(reply, message.HelloMsg):
-                print "Fail!"
+                print("Fail!")
                 return None
             else:
                 obj.phys_id = reply.srv_id
 
             # We now should wait for a Hello back, so add this ship to the ship list
             # so that we can grab the universe's HelloMsg when it comes.
-            print obj
+            print(obj)
             self.ship_list[sm.cli_id] = obj
 
             if obj.tout_val > 0:
@@ -212,12 +213,12 @@ class ObjectSim:
             obj.start()
 
         else:
-            print "Fail!"
+            print("Fail!")
             #do what? If there's no connection, how do I send data?
             #will non-smart objects be multiplexed over a single osim connection (probably)
 
     def destroy_object(self, osim_id):
-        print "DESTROYING", osim_id
+        print("DESTROYING", osim_id)
         obj = self.object_list[osim_id]
         del self.object_list[osim_id]
         del self.ship_list[osim_id]
@@ -241,8 +242,8 @@ if __name__ == "__main__":
     osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
 
-    print "Press Enter to close the server..."
+    print("Press Enter to close the server...")
     raw_input()
-    print "Stopping network"
+    print("Stopping network")
     osim.stop_net()
-    print "Stopped"
+    print("Stopped")
