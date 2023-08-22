@@ -204,21 +204,21 @@ class Ship(SmartObject):
 
         self.fire_beam(laser)
 
-    def fire_laser(self, bank_id, direction, h_focus, v_focus, power = None):
-        if bank_id not in self.laser_list:
+    def fire_laser(self, bank_id, direction, h_focus=1, v_focus=1, power = None):
+        if bank_id not in self.weapons.laser_list:
             return None
 
         cur_time = time.time()
 
-        if self.laser_list[bank_id].time_fired + self.laser_list[bank_id].recharge_time > cur_time:
+        if self.weapons.laser_list[bank_id].time_fired + self.weapons.laser_list[bank_id].recharge_time > cur_time:
             return None
 
         if power == None:
-            power = self.laser_list[bank_id].power
+            power = self.weapons.laser_list[bank_id].power
 
         #TODO: other checks that the beam is appropriate
 
-        self.laser_list[bank_id].time_fired = cur_time
+        self.weapons.laser_list[bank_id].time_fired = cur_time
 
         lsr = WeaponBeam(self.osim)
         self.init_beam(lsr, power, 299792458.0, direction, h_focus, v_focus)
@@ -227,7 +227,7 @@ class Ship(SmartObject):
 
     #fire a dumb-fire missile in a particular direction. thrust_power is a scalar
     def fire_missile(self, direction, thrust_power):
-        if (self.cur_missiles > 0):
+        if (self.weapons.cur_missiles > 0):
             missile = Missile(self.osim)
 
             #set the initial position of the missile some small distance outside the ship
@@ -245,7 +245,7 @@ class Ship(SmartObject):
 
             self.osim.spawn_object(missile)
 
-            self.cur_missiles -= 1
+            self.weapons.cur_missiles -= 1
 
 
             #shouldn't really return this, but for now, testing, etc
@@ -272,4 +272,4 @@ class Ship(SmartObject):
         self.osim.spawn_object(missile)
 
         return missile
-        #self.cur_missiles -= 1
+

@@ -103,7 +103,7 @@ def testBeam():
     sys.stdout.flush()
 
     dir = Vector3(1.0,0.0,0.0)
-    ship1.fire_laser(dir, power = 1000)
+    ship1.fire_laser(bank_id=1, direction=dir, power = 1000)
 
     sys.stdout.flush()
 
@@ -196,8 +196,8 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-#testShip()
-#testSimpleShip()
+testShip()
+testSimpleShip()
 #stressTest()
 #test_threads()
 #testBeam()
