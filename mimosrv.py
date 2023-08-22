@@ -7,7 +7,6 @@ import select
 import socket
 import sys
 import signal
-import thread
 import threading
 import traceback
 import struct
