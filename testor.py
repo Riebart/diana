@@ -5,12 +5,12 @@ import message
 import objectsim
 #import unisim
 import threading
-import ship
-from shiptypes import Firefly
+from spaceobjects.ship import ship
+from spaceobjects.ship.shiptypes import Firefly
 from vector import Vector3
 import random
 import time
-import spaceobj
+from spaceobjects import spaceobj
 import sys
 import math
 

@@ -2,13 +2,13 @@
 
 from __future__ import print_function
 from vector import Vector3
-from spaceobj import *
+from .. spaceobj import *
 import math
 from mimosrv import MIMOServer
 import message
 import time
-from shipparts import *
-from shipsystems import *
+from . shipparts import *
+from . shipsystems import *
 
 import sys
 
