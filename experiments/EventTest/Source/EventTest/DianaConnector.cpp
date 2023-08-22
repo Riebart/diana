@@ -17,6 +17,11 @@
 #include <list>
 #include <chrono>
 
+// Ref: https://docs.microsoft.com/en-us/cpp/cpp/try-except-statement?view=msvc-160
+#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION, and __try/__except
+#include <excpt.h>
+
+
 #define ALMOST_ZERO(v) (((v) >= -1e-8) || ((v) <= 1e-8))
 
 FVector FVzero = FVector(0.0, 0.0, 0.0);
@@ -785,7 +790,7 @@ struct FSensorContact read_contact(std::map<std::string, struct BSONReader::Elem
     char* str;
     std::map<std::string, struct BSONReader::Element>* tmp;
 
-    try
+    __try
     {
         CHILD_MAP(tmp, map, "position");
         v.position = FVector(tmp->at("x").dbl_val, tmp->at("y").dbl_val, tmp->at("z").dbl_val);
@@ -808,7 +813,7 @@ struct FSensorContact read_contact(std::map<std::string, struct BSONReader::Elem
         str = map->at("data").str_val;
         v.data = (str != NULL ? str : "");
     }
-    catch (std::out_of_range e)
+    __except (EXCEPTION_EXECUTE_HANDLER)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::read_contact Missing critial key or NULL sub-map"));
     }
@@ -821,7 +826,7 @@ struct FSensorSystem read_scanner(std::map<std::string, struct BSONReader::Eleme
     struct FSensorSystem v;
     char* str;
 
-    try
+    __try
     {
         v.horizontal_focus_min = map->at("h_min").dbl_val;
         v.horizontal_focus_max = map->at("h_max").dbl_val;
@@ -836,7 +841,7 @@ struct FSensorSystem read_scanner(std::map<std::string, struct BSONReader::Eleme
         str = map->at("type").str_val;
         v.type = (str != NULL ? str : "");
     }
-    catch (std::out_of_range e)
+    __except (EXCEPTION_EXECUTE_HANDLER)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::read_contact Missing critial key or NULL sub-map"));
     }
@@ -961,7 +966,7 @@ int32 ADianaConnector::SensorStatus(int32 client_id_p, int32 server_id_p, bool r
         std::map<std::string, struct BSONReader::Element>::iterator it;
 
         //TArray<struct FSensorContact> contacts;
-        try
+        __try
         {
             struct BSONReader::Element* el = &(props->at("contacts"));
             if (el->map_val != NULL)
@@ -1013,12 +1018,12 @@ int32 ADianaConnector::SensorStatus(int32 client_id_p, int32 server_id_p, bool r
                 }
             }
         }
-        catch (std::out_of_range e)
+        __except (EXCEPTION_EXECUTE_HANDLER)
         {
             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus Expected 'contacts' element at root, not found."));
         }
 
-        try
+        __try
         {
             struct BSONReader::Element* el = &(props->at("scanners"));
             if (el->map_val != NULL)
@@ -1033,7 +1038,7 @@ int32 ADianaConnector::SensorStatus(int32 client_id_p, int32 server_id_p, bool r
                 }
             }
         }
-        catch (std::out_of_range e)
+        __except (EXCEPTION_EXECUTE_HANDLER)
         {
             UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SensorStatus Expected 'scanners' element at root, not found."));
         }

@@ -15,6 +15,10 @@
 #include "SocketSubsystem.h"
 #include "SocketTypes.h"
 
+// Ref: https://docs.microsoft.com/en-us/cpp/cpp/try-except-statement?view=msvc-160
+#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION, and __try/__except
+#include <excpt.h>
+
 #define SOCKET_WRITE socket_write
 #define SOCKET_READ socket_read
 #define MAX_SOCKET_RETRIES 256
@@ -155,9 +159,13 @@ namespace Diana
 }
 #else
 #include "MIMOServer.hpp"
+#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION
+#include <excpt.h>
+
 #define SOCKET_WRITE MIMOServer::socket_write
 #define SOCKET_READ MIMOServer::socket_read
 #endif
+
 
 namespace Diana
 {
@@ -366,11 +374,11 @@ namespace Diana
 
         BSONReader br(buf);
         struct BSONReader::Element* el = NULL;
-        try
+        __try
         {
             el = br.get_next_element();
         }
-        catch (std::runtime_error e)
+        __except (EXCEPTION_EXECUTE_HANDLER)
         {
             fprintf(stderr, "Caught error in ReadMessage()\n");
             free(buf);
@@ -388,7 +396,7 @@ namespace Diana
         {
             BSONMessage* ret = NULL;
             MessageType mt = (MessageType)el->i32_val;
-            try
+            __try
             {
                 switch (mt)
                 {
@@ -468,7 +476,7 @@ namespace Diana
                     ret = NULL;
                 }
             }
-            catch (std::runtime_error e)
+            __except (EXCEPTION_EXECUTE_HANDLER)
             {
                 fprintf(stderr, "Caught error in ReadMessage() at message object creation swithc()\n");
                 free(buf);
