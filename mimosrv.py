@@ -2,6 +2,7 @@
 
 # Source: http://code.activestate.com/recipes/531824/
 
+from __future__ import print_function
 import select
 import socket
 import sys
@@ -86,10 +87,10 @@ class MIMOServer:
             try:
                 self.client.shutdown(socket.SHUT_RDWR)
                 self.client.close()
-            except socket.error, e:
+            except socket.error as e:
                 if e.errno != 10053 and e.errno != 10054:
-                    print "Error hanging up %d" % self.client.fileno()
-                    print "Error:", sys.exc_info()
+                    print("Error hanging up %d" % self.client.fileno())
+                    print("Error:", sys.exc_info())
 
     # ======================================================================
 
@@ -113,7 +114,7 @@ class MIMOServer:
             self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.server.bind(('', self.port))
-            print 'Listening to port', self.port, '...'
+            print('Listening to port', self.port, '...')
             self.server.listen(self.backlog)
             self.inputs = []
             self.running = 1
@@ -123,7 +124,7 @@ class MIMOServer:
 
     def stop(self):
         if self.running == 1:
-            print "Shutting down server..."
+            print("Shutting down server...")
             sys.stdout.flush()
             self.server.close()
             self.running = 0
@@ -131,14 +132,14 @@ class MIMOServer:
 
             stubborn = 0
             while len(self.inputs) > 0:
-                print "Hanging up %d %sclient%s" % (len(self.inputs) - 1,
+                print("Hanging up %d %sclient%s" % (len(self.inputs) - 1,
                                                     "stubborn " if stubborn == 1 else "",
-                                                    "s" if len(self.inputs) > 2 else "")
+                                                    "s" if len(self.inputs) > 2 else ""))
                 for c in self.inputs:
                     self.hangup(c)
                 stubborn = 1
 
-            print "All hungup"
+            print("All hungup")
 
             self.hangups = []
 
@@ -151,7 +152,7 @@ class MIMOServer:
 
     # This gets called when a client hangs up on us.
     def hangup(self, client):
-        print "Hanging up %d" % client.fileno()
+        print("Hanging up %d" % client.fileno())
         if client.fileno() == -1:
             # Detect an already hung-up client
             if client in self.inputs:
@@ -172,11 +173,11 @@ class MIMOServer:
             try:
                 # ### PARAMETER ### How often the server select times out to service hangups
                 inputready, outputready, exceptready = select.select([self.server], [], [], 0.1)
-            except select.error, e:
-                print e
+            except select.error as e:
+                print(e)
                 break
-            except socket.error, e:
-                print e
+            except socket.error as e:
+                print(e)
                 break
 
             if not self.running:
@@ -190,7 +191,7 @@ class MIMOServer:
                     self.hangup(h)
 
                 num_hung_up = pre_hangup - len(self.inputs)
-                print "Successfully hung up %d client%s" % (num_hung_up, "s" if num_hung_up > 1 else "")
+                print("Successfully hung up %d client%s" % (num_hung_up, "s" if num_hung_up > 1 else ""))
                 self.hangups = []
                 self.hangup_lock.release()
                 continue
@@ -199,10 +200,10 @@ class MIMOServer:
                 # handle the server socket
                 try:
                     client, address = self.server.accept()
-                except socket.error, e:
+                except socket.error as e:
                     pass
 
-                print "got connection %d from %s" % (client.fileno(), address)
+                print("got connection %d from %s" % (client.fileno(), address))
                 sys.stdout.flush()
 
                 self.threadmap[client] = MIMOServer.ThreadSocket(client, self.data_callback, self.on_hangup)
@@ -216,9 +217,9 @@ class Tester:
         self.client = client
 
     def handle(self, client):
-        print "handling %d" % client.fileno()
+        print("handling %d" % client.fileno())
         sys.stdout.flush()
-        print client.recv(1024)
+        print(client.recv(1024))
 
 def cb(client):
     return Tester(client)

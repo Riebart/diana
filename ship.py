@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from vector import Vector3
 from spaceobj import *
 import math
@@ -100,7 +101,7 @@ class Ship(SmartObject):
 
     #this function handles messages from the clients
     def handle(self, client, msg):
-        print "SHIP HANDLING", msg, client
+        print("SHIP HANDLING", msg, client)
         if isinstance(msg, message.NameMsg):
             if msg.name != None:
                 self.name = msg.name

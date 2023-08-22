@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import bson
 import struct # Needed to unpack the first four bytes of the BSON message for read-length.
 import sys
@@ -11,8 +12,8 @@ from collections import OrderedDict
 class Spectrum:
     def __init__(self, wavelengths, powers):
         if wavelengths != None and powers != None:
-            print wavelengths
-            print powers
+            print(wavelengths)
+            print(powers)
             self.spectrum = dict(zip(wavelengths, powers))
         else:
             self.spectrum = None
@@ -37,16 +38,17 @@ class Message:
             msg_length = struct.unpack('<l', bytes)[0]
             return (bytes, msg_length)
         except ValueError:
-            print "Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno())
+            print("Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno()))
             return (None, None)
         except socket.timeout as e:
             raise e
-        except socket.error, (errno, errmsg):
+        except socket.error as xxx_todo_changeme2:
+            (errno, errmsg) = xxx_todo_changeme2.args
             if client.fileno() == -1 or errno == 10054 or errno == 10053:
                 return (None, None)
 
-            print "There was an error getting message size header from client %d" % client.fileno()
-            print "Error:", sys.exc_info()
+            print("There was an error getting message size header from client %d" % client.fileno())
+            print("Error:", sys.exc_info())
             return (None, None)
 
     @staticmethod
@@ -68,8 +70,8 @@ class Message:
                 if client.fileno() == -1:
                     return None
 
-                print "There was an error getting message from client %d" % client.fileno()
-                print "Error:", sys.exc_info()
+                print("There was an error getting message from client %d" % client.fileno())
+                print("Error:", sys.exc_info())
                 return None
             num_got += len(cur_msg)
             file_str.write(cur_msg)
@@ -91,12 +93,13 @@ class Message:
 
                 try:
                     cur_sent = client.send(msg[num_sent:])
-                except socket.error, (errno, errstr):
+                except socket.error as xxx_todo_changeme:
+                    (errno, errstr) = xxx_todo_changeme.args
                     if client.fileno() == -1 or errno == 10504:
                         return num_sent
                     else:
-                        print "There was an error sendall-ing message to client %d" % client.fileno()
-                        print "Error:", sys.exc_info()
+                        print("There was an error sendall-ing message to client %d" % client.fileno())
+                        print("Error:", sys.exc_info())
                         return num_sent
 
                 num_sent += cur_sent
@@ -105,10 +108,11 @@ class Message:
         else:
             try:
                 client.sendall(msg)
-            except socket.error, (errno, errmsg):
+            except socket.error as xxx_todo_changeme1:
+                (errno, errmsg) = xxx_todo_changeme1.args
                 if errno != 10054 and errno != 10053:
-                    print "There was an error sendall-ing message to client %d" % client.fileno()
-                    print "Error:", sys.exc_info()
+                    print("There was an error sendall-ing message to client %d" % client.fileno())
+                    print("Error:", sys.exc_info())
 
                 return 0
 
@@ -137,7 +141,7 @@ class Message:
                 m.socket = client
                 return m
             else:
-                print "Unknown message type: \"%s\"" % msgtype
+                print("Unknown message type: \"%s\"" % msgtype)
                 sys.stdout.flush()
                 return None
         else:
@@ -458,7 +462,7 @@ class ScanQueryMsg(Message):
 
     def build(self):
         msg = {}
-        print self.scan_dir
+        print(self.scan_dir)
         vals = [ self.scan_id, self.scan_energy ] + self.scan_dir + self.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
         return msg
