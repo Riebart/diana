@@ -1,0 +1,11 @@
+resources:
+  - quartzite #aka silicon ore
+  - carbon
+  - iron_ore
+  - copper_ore
+  - lead_ore
+  - unobtainium_ore
+
+  #not sure this is a raw resource, but it can't be transported
+  - energy:
+    exportable: false
