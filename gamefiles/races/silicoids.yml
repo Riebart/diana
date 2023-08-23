@@ -1,0 +1,39 @@
+#Another example, idea cribbed from MOO
+name: Silicoids
+
+#scale of this tbd
+growth_rate: 0.3
+
+atmosphere:
+  # %composition
+  max:
+    - so2:
+  min:
+    - oxygen: 0.
+  #bars
+  pressure_min: 0.1
+  pressure_max: 100.0
+
+#per unit of pop.
+resource_demands:
+  - food:
+    demand: 0.5
+    subtypes:
+      - quartzite
+      - silicon
+      - carbon
+  - water: 0.1
+  - data: 0.1
+  - entertainment:
+      demand: 0.2
+    subtypes:
+      - who
+      - knows
+
+classes:
+  #this allows us to tweak resource demands of the various classes over the base or common resource demands
+  lower_class:
+    resource_demands:
+  middle_class:
+    resource_demands:
+
