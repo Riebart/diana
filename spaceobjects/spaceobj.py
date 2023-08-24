@@ -36,15 +36,20 @@ class SpaceObject:
 
 class SmartObject(SpaceObject, threading.Thread):
 #class SmartObject(SpaceObject, multiprocessing.Process):
-    def __init__(self, osim, osim_id = None):
+    def __init__(self, osim, osim_id = None, independent = True):
         SpaceObject.__init__(self, osim, None)
-        threading.Thread.__init__(self)
+
+        self.done = True
+        self.independent = independent
+
+        if independent:
+            threading.Thread.__init__(self)
+            self.done = False
+            self.sock = socket.socket()
         #multiprocessing.Process.__init__(self)
 
         self.up = Vector3([0.0, 0.0, 1.0])
         self.object_type = None
-        self.sock = socket.socket()
-        self.done = False
         self.tout_val = 0
         self.phys_id = None
 
@@ -63,6 +68,18 @@ class SmartObject(SpaceObject, threading.Thread):
             ret = None
 
         return ret
+
+    def handle_message(self, msg):
+        if isinstance(msg, message.CollisionMsg):
+            self.handle_collision(msg)
+        elif isinstance(msg, message.VisualDataMsg):
+            self.handle_visdata(msg)
+        elif isinstance(msg, message.ScanResultMsg):
+            self.handle_scanresult(msg)
+        elif isinstance(msg, message.ScanQueryMsg):
+            self.handle_query(msg)
+        else:
+            print(f"Error, unknown message! {msg}")
 
     def handle_client_message(self, client, msg):
         pass
@@ -88,35 +105,35 @@ class SmartObject(SpaceObject, threading.Thread):
         else:
             print("Bad collision: " + str(collision) + " " + collision.collision_type)
 
-    def handle_phys(self, mess):
+    def handle_phys(self, msg):
         pass
 
-    def handle_weap(self, mess):
+    def handle_weap(self, msg):
         pass
 
-    def handle_comm(self, mess):
+    def handle_comm(self, msg):
         pass
 
-    def handle_scan(self, mess):
+    def handle_scan(self, msg):
         ## From Mike: This would be where you
         ## alert to the fact that "I just got my skirt looked up!"
         pass
 
-    def handle_scanresult(self, mess):
-        print("Got a scanresult for %s" % mess.object_type)
+    def handle_scanresult(self, msg):
+        print("Got a scanresult for %s" % msg.object_type)
 
-    def handle_visdata(self, mess):
-        print(str(mess))
+    def handle_visdata(self, msg):
+        print(str(msg))
 
     def make_response(self, energy):
         return [ self.object_type, self.name ]
 
-    def handle_query(self, mess):
+    def handle_query(self, msg):
         # This is where we respond to SCANQUERY messages.
-        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ mess.scan_id, self.make_response(), mess.energy ])
+        # return msgage.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ msg.scan_id, self.make_response(), msg.energy ])
         srm = message.ScanResponseMsg()
-        srm.scan_id = mess.scan_id
-        srm.data = " ".join(self.make_response(mess.scan_energy))
+        srm.scan_id = msg.scan_id
+        srm.data = " ".join(self.make_response(msg.scan_energy))
         return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, srm.build())
 
     # ++++++++++++++++++++++++++++++++
@@ -276,7 +293,7 @@ class Missile(SmartObject):
         self.mass = 100.0
         #self.sock.settimeout(self.tout_val)
 
-    def handle_phys(self, mess):
+    def handle_phys(self, msg):
         self.detonate()
 
     def detonate(self):
@@ -307,12 +324,12 @@ class HomingMissile1(Missile):
         self.fuse = 100.0    #distance in meters to explode from target
 
     #so this is not great. Only works if there is a single target 'in front of' the missile
-    #def handle_scanresult(self, mess):
-        #enemy_pos = Vector3(mess.position)
-        #enemy_vel = Vector3(mess.velocity)
+    #def handle_scanresult(self, msg):
+        #enemy_pos = Vector3(msg.position)
+        #enemy_vel = Vector3(msg.velocity)
         ##distance = self.position.distance(enemy_pos)
         #distance = enemy_pos.length()
-        #if distance < self.fuse+mess.radius:
+        #if distance < self.fuse+msg.radius:
             #self.detonate()
         #else:
             #new_dir = enemy_pos.unit()
@@ -321,12 +338,12 @@ class HomingMissile1(Missile):
             #self.set_thrust(new_dir)
 
 
-    def handle_scanresult(self, mess):
-        if ("ship" in mess.object_type or "Ship" in mess.object_type or "SHIP" in mess.object_type):
-            enemy_pos = Vector3(mess.position)
-            enemy_vel = Vector3(mess.velocity)
+    def handle_scanresult(self, msg):
+        if ("ship" in msg.object_type or "Ship" in msg.object_type or "SHIP" in msg.object_type):
+            enemy_pos = Vector3(msg.position)
+            enemy_vel = Vector3(msg.velocity)
             distance = enemy_pos.length()
-            if distance < self.fuse+mess.radius:
+            if distance < self.fuse+msg.radius:
                 self.detonate()
             else:
                 time_to_target = sqrt(2*distance/(self.thrust.length()/self.mass))
@@ -336,8 +353,8 @@ class HomingMissile1(Missile):
                 new_dir = tar_new_pos.unit()
                 new_dir.scale(self.thrust.length())
                 print(("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + \
-                    (". Distance to target: %2f " % (distance-mess.radius)) + \
-                        ("Relative velocity: " + str(mess.velocity)))
+                    (". Distance to target: %2f " % (distance-msg.radius)) + \
+                        ("Relative velocity: " + str(msg.velocity)))
                 self.set_thrust(new_dir)
                 epos = enemy_pos.unit()
                 [ self.forward, self.up, self.right ] = Vector3.easy_look_at(epos)
