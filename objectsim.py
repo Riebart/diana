@@ -184,10 +184,16 @@ class ObjectSim:
 
         return ret
 
+    def connect_manager(self, manager):
+        manager.sock.connect(self.unisim)
+
     #assume object already constructed, with appropriate vals
-    def spawn_object(self, obj):
-        obj.sock.connect(self.unisim)
+    def spawn_object(self, obj, sock = None):
         if isinstance(obj, SmartObject):
+            if obj.independent:
+                obj.sock.connect(self.unisim)
+                sock = obj.sock
+
             sm = message.SpawnMsg()
             sm.srv_id = obj.phys_id
             sm.cli_id = obj.osim_id
@@ -199,11 +205,11 @@ class ObjectSim:
             sm.thrust = obj.thrust
             sm.radius = obj.radius
             sm.orientation = [ obj.forward[0], obj.forward[1], obj.up[0], obj.up[1] ]
-            message.SpawnMsg.send(obj.sock, sm.srv_id, sm.cli_id, sm.build())
+            message.SpawnMsg.send(sock, sm.srv_id, sm.cli_id, sm.build())
 
             reply = None
             try:
-                reply = message.Message.get_message(obj.sock)
+                reply = message.Message.get_message(sock)
             except TypeError:
                 print("Fail2!")
                 return None

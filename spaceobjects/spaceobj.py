@@ -130,7 +130,7 @@ class SmartObject(SpaceObject, threading.Thread):
 
     def handle_query(self, msg):
         # This is where we respond to SCANQUERY messages.
-        # return msgage.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ msg.scan_id, self.make_response(), msg.energy ])
+        # return message.ScanResponseMsg.send(self.sock, self.phys_id, self.osim_id, [ msg.scan_id, self.make_response(), msg.energy ])
         srm = message.ScanResponseMsg()
         srm.scan_id = msg.scan_id
         srm.data = " ".join(self.make_response(msg.scan_energy))
@@ -200,7 +200,6 @@ class SmartObject(SpaceObject, threading.Thread):
         self.sock.close()
 
     def run(self):
-        #TODO: properly parse and branch wrt message recieved
         while not self.done:
             mess = self.messageHandler()
 
