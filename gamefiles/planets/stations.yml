@@ -3,6 +3,8 @@ stations:
       description: A basic space station
       gravity: 0.4
       size: 0.2
+      radius: 300 #in meters
+      mass: 5972200 #in tons, I think
       temperature: 293.15
       pressure: 1.0
       atmosphere:
