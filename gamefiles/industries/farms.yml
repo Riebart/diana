@@ -1,28 +1,28 @@
 industries:
   - basic_farm:
-    input:
-      - water: 0.5
-      - energy: 0.1
-      - maintenance: 0.1
-    output:
-      - wheat: 1.0
-      - meat: 0.5
-      - pollution: -0.1
-    build_cost:
-      - credits: 100000
-    #restrict what can be built where via tags or other conditions
-    build_restriction:
-      habitable: true
-    size: 10
+      input:
+        - water: 0.5
+        - energy: 0.1
+        - maintenance: 0.1
+      output:
+        - wheat: 1.0
+        - meat: 0.5
+        - pollution: -0.1
+      build_cost:
+        - credits: 100000
+      #restrict what can be built where via tags or other conditions
+      build_restriction:
+        habitable: true
+      size: 10
   - hydroponics:
-    input:
-      - water: 0.1
-      - energy: 0.6
-      - maintenance: 0.5
-    output:
-      - wheat: 1.0
-      - pollution: 0.1
-    build_cost:
-      - credits: 1000000
-      - some_resources: 10.0
-    size: 2
+      input:
+        - water: 0.1
+        - energy: 0.6
+        - maintenance: 0.5
+      output:
+        - wheat: 1.0
+        - pollution: 0.1
+      build_cost:
+        - credits: 1000000
+        - some_resources: 10.0
+      size: 2
