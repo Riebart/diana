@@ -5,7 +5,7 @@ name: Human
 #scale of this tbd
 growth_rate: 1.0
 
-atmosphere:
+conditions:
   # %composition
   max:
     - so2: 0.1
@@ -22,6 +22,10 @@ atmosphere:
     optimal: 293.15
   pollution:
     max: 100
+  gravity:
+    min: 0.2
+    max: 1.5
+    optimal: 1.0
 
 #per unit of pop.
 resource_demands:

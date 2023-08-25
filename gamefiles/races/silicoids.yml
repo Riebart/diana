@@ -4,7 +4,7 @@ name: Silicoids
 #scale of this tbd
 growth_rate: 0.3
 
-atmosphere:
+conditions:
   # %composition
   max:
     - so2:
@@ -21,6 +21,10 @@ atmosphere:
     optimal: 900
   pollution:
     max: 100000
+  gravity:
+    min: 0.7
+    max: 5.0
+    optimal: 2.0
 
 #per unit of pop.
 resource_demands:
