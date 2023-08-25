@@ -29,7 +29,9 @@ osim.connect_manager(st)
 
 planet1 = Planet(osim)
 
-planet1.parse_in(yaml.safe_load(Path('gamefiles/planets/planets.yml').read_text())["planets"][0], "Earth")
+print(yaml.safe_load(Path('gamefiles/planets/planets.yml').read_text())["planets"][0]["Earth"])
+
+planet1.parse_in(yaml.safe_load(Path('gamefiles/planets/planets.yml').read_text())["planets"][0]["Earth"], "Earth")
 planet1.position = Vector3(0,0,0)
 
 print(planet1)
