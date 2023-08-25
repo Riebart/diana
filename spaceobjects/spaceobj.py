@@ -58,6 +58,19 @@ class SmartObject(SpaceObject, threading.Thread):
 
         #self.phys_id = osim.get_phys_id(self.sock, self.osim_id)
 
+
+    #Take in a dict of values, and use those to populate various class variables
+    #cribbed from https://stackoverflow.com/a/6993694
+    def parse_in(self, data):
+        for name, value in data.items():
+            setattr(self, name, self._wrap(value))
+
+    def _wrap(self, value):
+        if isinstance(value, (tuple, list, set, frozenset)):
+            return type(value)([self._wrap(v) for v in value])
+        else:
+            return Struct(value) if isinstance(value, dict) else value
+
     # ++++++++++++++++++++++++++++++++
     # All of the handlers
     # ++++++++++++++++++++++++++++++++

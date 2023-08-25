@@ -19,4 +19,3 @@ class Planet(SmartObject):
 
     def handle_comm(self, msg):
         pass
-
