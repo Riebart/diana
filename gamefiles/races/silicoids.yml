@@ -11,8 +11,16 @@ atmosphere:
   min:
     - oxygen: 0.
   #bars
-  pressure_min: 0.1
-  pressure_max: 100.0
+  pressure:
+    min: 0.001
+    max: 15.0
+    optimal: 1.0
+  temperature: #in kelvin
+    min: 100 #-40C
+    max: 1500 # +50
+    optimal: 900
+  pollution:
+    max: 100000
 
 #per unit of pop.
 resource_demands:

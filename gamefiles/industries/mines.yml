@@ -5,6 +5,7 @@ industries:
       - energy: 0.5
     output:
       - quartzite: 1.0
+      - pollution: 0.5
     build_cost:
       - credits: 1000000
       - some_resources: 10.0
