@@ -1,0 +1,34 @@
+stations:
+  - Deep Space 1:
+    description: A basic space station
+    gravity: 0.4
+    size: 0.2
+    temperature: 293.15
+    pressure: 1.0
+    atmosphere:
+      - nitrogen: 0.80
+      - oxygen: 0.19
+      - co2: 0.01
+    population:
+      - human:
+        lower_class: 20
+        middle_class: 20
+        upper_class: 10
+      - silicoids:
+        lower_class: 2
+    taxes:
+      - lower_class: 0.1
+      - middle_class: 0.1
+      - upper_class: 0.1
+      - tariff: 0.04 #maybe make this more fine-grained in the future, per resource
+    trade_style:
+      - sharing: reciprocal #free = freely shares resource data, reciprocal = only shares if first shared with, closed = never shares
+      - all_data: false #shares everything it knows, false = only shares its own data
+    industries:
+      - solar_plant:
+        quantity: 10
+    resource_availability:
+      default: none
+      rich:
+      rare:
+      none:
