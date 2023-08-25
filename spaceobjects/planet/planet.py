@@ -10,6 +10,11 @@ class Planet(SmartObject):
         self.known_price_list = dict()
 
     def do_industries():
+        #1. determine which industry would generate the most wealth
+        #2. consume the resource(s) for that industry and produce the results
+        #3. update the prices
+        #4. mark that industry as 'done'
+        #5. repeat until industry done
         pass
 
     def handle_comm(self, msg):
