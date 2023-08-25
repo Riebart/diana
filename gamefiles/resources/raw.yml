@@ -8,8 +8,8 @@ resources:
 
   #not sure this is a raw resource, but it can't be transported
   - energy:
-    exportable: false
+      exportable: false
   - pollution:
-    exportable: false
+      exportable: false
   - maintenance:
-    exportable: false
+      exportable: false
