@@ -206,6 +206,7 @@ class ObjectSim:
             sm.radius = obj.radius
             sm.orientation = [ obj.forward[0], obj.forward[1], obj.up[0], obj.up[1] ]
             message.SpawnMsg.send(sock, sm.srv_id, sm.cli_id, sm.build())
+            print(sm)
 
             reply = None
             try:
@@ -215,7 +216,7 @@ class ObjectSim:
                 return None
 
             if not isinstance(reply, message.HelloMsg):
-                print("Fail!")
+                print("Fail! Response is not a HelloMsg")
                 return None
             else:
                 obj.phys_id = reply.srv_id
@@ -232,7 +233,7 @@ class ObjectSim:
             obj.start()
 
         else:
-            print("Fail!")
+            print(f"Fail! Not a SmartObject {obj}")
             #do what? If there's no connection, how do I send data?
             #will non-smart objects be multiplexed over a single osim connection (probably)
 

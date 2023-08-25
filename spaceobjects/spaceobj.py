@@ -5,6 +5,7 @@ import message
 from vector import Vector3
 import socket
 from math import pi, sqrt
+from struct import Struct
 
 import time
 
@@ -18,14 +19,14 @@ class SpaceObject:
             self.osim_id = osim_id
         self.phys_id = None
 
-        self.mass = None
+        self.mass = 1.0
         self.position = None
-        self.velocity = None
-        self.thrust = None
+        self.velocity = Vector3([0.0,0.0,0.0])
+        self.thrust = Vector3([0.0,0.0,0.0])
         self.forward = Vector3([1.0,0.0,0.0])
         self.up = Vector3([0.0,0.0,1.0])
         self.right = Vector3([0.0,1.0,0.0])
-        self.radius = None
+        self.radius = 1.0
         self.joinable = False
 
 
@@ -42,13 +43,14 @@ class SmartObject(SpaceObject, threading.Thread):
         self.done = True
         self.independent = independent
 
-        if independent:
-            threading.Thread.__init__(self)
-            self.done = False
-            self.sock = socket.socket()
+        #TODO: make a separate subclass that include threads
+        threading.Thread.__init__(self)
         #multiprocessing.Process.__init__(self)
 
-        self.up = Vector3([0.0, 0.0, 1.0])
+        if independent:
+            self.done = False
+            self.sock = socket.socket()
+
         self.object_type = None
         self.tout_val = 0
         self.phys_id = None
@@ -61,15 +63,18 @@ class SmartObject(SpaceObject, threading.Thread):
 
     #Take in a dict of values, and use those to populate various class variables
     #cribbed from https://stackoverflow.com/a/6993694
-    def parse_in(self, data):
-        for name, value in data.items():
-            setattr(self, name, self._wrap(value))
+    def parse_in(self, data, name = None):
+        if name:
+            self.object_name = name
 
-    def _wrap(self, value):
-        if isinstance(value, (tuple, list, set, frozenset)):
-            return type(value)([self._wrap(v) for v in value])
-        else:
-            return Struct(value) if isinstance(value, dict) else value
+        for name, value in data.items():
+            setattr(self, name, value)
+
+    #def _wrap(self, value):
+        #if isinstance(value, (tuple, list, set, frozenset)):
+            #return type(value)([self._wrap(v) for v in value])
+        #else:
+            #return Struct(value) if isinstance(value, dict) else value
 
     # ++++++++++++++++++++++++++++++++
     # All of the handlers

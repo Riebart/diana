@@ -2,7 +2,7 @@ from __future__ import print_function
 import threading
 import multiprocessing
 import message
-#from vector import Vector3
+from vector import Vector3
 import socket
 import time
 
@@ -13,24 +13,36 @@ class SmartObjectManager(multiprocessing.Process):
         self.done = False
         self.osim = osim
         self.tick_rate = tick_rate
-        self.sock.settimeout(self.tick_rate)
+        self.ticks_done = 0
 
         multiprocessing.Process.__init__(self, target=self.run)
 
     #add an already constructed (but not connected) SmartObject to our portfolio
     def add_object(self, obj):
+        #maybe not the best place to init these, but an extra check never hurts
+        if not hasattr(obj, "thrust"):
+            obj.thrust = Vector3(0,0,0)
+        if not hasattr(obj, "velocity"):
+            obj.velocity = Vector3(0,0,0)
+        if not hasattr(obj, "orientation"):
+            obj.orientation = Vector3(0,0,0)
+
         obj.sock = self.sock
         self.objects[obj.osim_id] = obj
-        osim.spawn_object(obj)
+        self.osim.spawn_object(obj, self.sock)
 
     def run(self):
         print("SOM running!")
+        self.sock.settimeout(self.tick_rate)
         while not self.done:
             msg = self.messageHandler()
 
             #the socket timedout, do a tick
             if msg == 0:
+                print(f"\nSOM tick: {self.ticks_done}")
                 self.do_industries()
+                self.do_populations()
+                self.ticks_done = self.ticks_done +1
             else:
                 self.handle_message(msg)
 
@@ -48,8 +60,11 @@ class SmartObjectManager(multiprocessing.Process):
 
 
     def do_industries(self):
-        print("SOM doing industries...")
-        for obj in self.objects:
-            if callable(getattr(obj, do_industry, None)):
-                obj.do_industry()
+        for obj in self.objects.values():
+            print(f"SOM doing inudstrues for {obj}")
+            #if callable(getattr(obj, "do_industries", None)):
+            if hasattr(obj, "do_industries"):
+                obj.do_industries()
 
+    def do_populations(self):
+        pass
