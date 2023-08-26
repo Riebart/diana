@@ -1,7 +1,7 @@
 
 races:
     #Another example, idea cribbed from MOO
-  Silicoids:
+  silicoids:
 
     #scale of this tbd
     growth_rate: 0.3
