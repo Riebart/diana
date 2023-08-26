@@ -1,14 +1,14 @@
 industries:
-  - quartzite_mine:
-      input:
-        - water: 0.1
-        - energy: 0.5
-      output:
-        - quartzite: 1.0
-        - pollution: 0.5
-      build_cost:
-        - credits: 1000000
-        - some_resources: 10.0
-      build_restrictions:
-        - has_quartzite: true
-      size: 10
+  quartzite_mine:
+    input:
+      water: 0.1
+      energy: 0.5
+    output:
+      quartzite: 1.0
+      pollution: 0.5
+    build_cost:
+      credits: 1000000
+      some_resources: 10.0
+    build_restrictions:
+      has_quartzite: true
+    size: 10

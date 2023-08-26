@@ -1,57 +1,57 @@
 #This is to serve as a general example of how such things can be constructed
 races:
-  - Human:
+  Human:
 
-      #scale of this tbd
-      growth_rate: 1.0
+    #scale of this tbd
+    growth_rate: 1.0
 
-      conditions:
-        # %composition
-        max:
-          - so2: 0.1
-        min:
-          - oxygen: 0.2
-        #bars
-        pressure:
-          min: 0.47
-          max: 7.0
-          optimal: 1.0
-        temperature: #in kelvin
-          min: 233.15 #-40C
-          max: 323.15 # +50
-          optimal: 293.15
-        pollution:
-          max: 100
-        gravity:
-          min: 0.2
-          max: 1.5
-          optimal: 1.0
+    conditions:
+      # %composition
+      max:
+        so2: 0.1
+      min:
+        oxygen: 0.2
+      #bars
+      pressure:
+        min: 0.47
+        max: 7.0
+        optimal: 1.0
+      temperature: #in kelvin
+        min: 233.15 #-40C
+        max: 323.15 # +50
+        optimal: 293.15
+      pollution:
+        max: 100
+      gravity:
+        min: 0.2
+        max: 1.5
+        optimal: 1.0
 
-      #per unit of pop.
-      resource_demands:
-        #the resource category 'food' has a deman of 1.0 per unit of pop, and can be satisfied by eg wheat or meat
-        - food:
-            demand: 1.0
-            subtypes:
-              - grain
-              - meat
-        - textiles: 1.0
-        - alcohol: 0.5
-        - water: 1.0
-        - data: 0.1
-        - entertainment:
-            demand: 0.4
-          subtypes:
-            - who
-            - knows
+    #per unit of pop.
+    resource_demands:
+      #the resource category 'food' has a deman of 1.0 per unit of pop, and can be satisfied by eg wheat or meat
+      food:
+        demand: 1.0
+        subtypes:
+          - grain
+          - meat
+      textiles: 1.0
+      alcohol: 0.5
+      water: 1.0
+      data: 0.1
+      entertainment:
+        demand: 0.4
+        subtypes:
+          - who
+          - knows
 
-      classes:
-        #this allows us to tweak resource demands of the various classes over the base or common resource demands
-        lower_class:
-          resource_demands:
-        middle_class:
-          resource_demands:
-            - art: 0.1
-        upper_class:
-          resource_demands:
-            - art: 0.3
+    classes:
+      #this allows us to tweak resource demands of the various classes over the base or common resource demands
+      lower_class:
+        resource_demands:
+      middle_class:
+        resource_demands:
+          art: 0.1
+      upper_class:
+        resource_demands:
+          art: 0.3
