@@ -1,11 +1,11 @@
 industries:
-  - solar_plant:
-      input:
-        - maintenance: 0.1
-      output:
-        - energy: 10.0
-      build_cost:
-        - credits: 100000
-      #restrict what can be built where via tags or other conditions
-      build_restriction:
-      size: 10
+  solar_plant:
+    input:
+      maintenance: 0.1
+    output:
+      energy: 10.0
+    build_cost:
+      credits: 100000
+    #restrict what can be built where via tags or other conditions
+    build_restriction:
+    size: 10

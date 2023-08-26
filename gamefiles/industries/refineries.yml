@@ -1,24 +1,24 @@
 industries:
-  - silicon_refinery:
-      input:
-        - quartzite: 1.0
-        - energy: 1.0
-      output:
-        - silicon_ore: 1.0
-        - pollution: 1.0
-      build_cost:
-        - credits: 1000000
-        - some_resource: 10.0
-      size: 4
+  silicon_refinery:
+    input:
+      quartzite: 1.0
+      energy: 1.0
+    output:
+      silicon_ore: 1.0
+      pollution: 1.0
+    build_cost:
+      credits: 1000000
+      some_resource: 10.0
+    size: 4
 
-  - distillery:
-      input:
-        - wheat: 1.0
-        - water: 1.0
-      output:
-        - alcohol: 0.5
-        - pollution: 0.25
-      build_cost:
-        - credits: 500000
-        - some_resource: 10.0
-      size: 3
+  distillery:
+    input:
+      wheat: 1.0
+      water: 1.0
+    output:
+      alcohol: 0.5
+      pollution: 0.25
+    build_cost:
+      credits: 500000
+      some_resource: 10.0
+    size: 3
