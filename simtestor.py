@@ -1,22 +1,43 @@
 #!/usr/bin/python
 
 from __future__ import print_function
-import message
 import objectsim
-#import unisim
-import threading
-from spaceobjects.ship import ship
-from spaceobjects.ship.shiptypes import Firefly
-from vector import Vector3
-import random
-import time
 from spaceobjects import spaceobj
+from spaceobjects.ship import ship
 from spaceobjects.objectmanager import SmartObjectManager
 from spaceobjects.planet.planet import Planet
-import sys
-import math
+from vector import Vector3
+import random
 import yaml
 from pathlib import Path
+
+
+random.seed(5)
+
+def random_vector(rng):
+    return Vector3(random.random()*rng, random.random()*rng, random.random()*rng)
+
+def load_data(osim, key):
+
+    print(f"\nLoading {key}...")
+    dictdata = dict()
+    listdata = []
+
+    for res_file in Path(f'gamefiles/{key}/').glob('*.yml'):
+        tmp = yaml.safe_load(res_file.read_text())[key]
+        if isinstance(tmp, dict):
+            dictdata = dictdata | tmp
+        else:
+            listdata = listdata + tmp
+
+    if len(dictdata) > 0:
+        osim.data[key] = dictdata
+    else:
+        osim.data[key] = listdata
+
+    print(osim.data[key])
+    print("Done!\n")
+
 
 
 print("Spawning OSIM ...")
@@ -27,17 +48,26 @@ print("Starting SOM")
 st = SmartObjectManager(osim)
 osim.connect_manager(st)
 
-planet1 = Planet(osim)
+osim.data = dict()
 
-print(yaml.safe_load(Path('gamefiles/planets/planets.yml').read_text())["planets"][0]["Earth"])
+load_data(osim, 'resources')
+load_data(osim, 'industries')
+load_data(osim, 'races')
 
-planet1.parse_in(yaml.safe_load(Path('gamefiles/planets/planets.yml').read_text())["planets"][0]["Earth"], "Earth")
-planet1.position = Vector3(0,0,0)
 
-print(planet1)
-st.add_object(planet1)
+print("\nLoading planets...")
+for res_file in Path('gamefiles/planets/').glob('*.yml'):
+    planets = yaml.safe_load(res_file.read_text())['planets']
+    for name, planet_data in planets.items():
+        print(planet_data)
+        planet = Planet(osim)
+        planet.position = random_vector(1000000)
+        planet.parse_in(planet_data, name)
+        print(planet)
+        st.add_object(planet)
+
+print("Done\n")
+
 
 st.start()
-
-while True:
-    pass
+st.join()
