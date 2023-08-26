@@ -31,15 +31,15 @@ races:
     #per unit of pop.
     resource_demands:
       food:
-          demand: 0.5
-          subtypes:
-            - quartzite
-            - silicon
-            - carbon
+        demand: 0.5
+        subtypes:
+          - quartzite
+          - silicon
+          - carbon
       water: 0.1
       data: 0.1
       entertainment:
-          demand: 0.2
+        demand: 0.2
         subtypes:
           - who
           - knows
