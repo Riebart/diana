@@ -1,4 +1,5 @@
-stations:
+#stations: # grouped with planets for now
+planets:
   Deep Space 1:
     description: A basic space station
     gravity: 0.4
