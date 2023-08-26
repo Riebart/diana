@@ -1,12 +1,13 @@
 from __future__ import print_function
 import threading
 import multiprocessing
+import threading #multiprocessing on Windows is a headache
 import message
 from vector import Vector3
 import socket
 import time
 
-class SmartObjectManager(multiprocessing.Process):
+class SmartObjectManager(threading.Thread):
     def __init__(self, osim, tick_rate = 1.0):
         self.sock = socket.socket()
         self.objects = dict()
@@ -15,7 +16,8 @@ class SmartObjectManager(multiprocessing.Process):
         self.tick_rate = tick_rate
         self.ticks_done = 0
 
-        multiprocessing.Process.__init__(self, target=self.run)
+        #multiprocessing.Process.__init__(self, target=self.run)
+        threading.Thread.__init__(self, target=self.run)
 
     #add an already constructed (but not connected) SmartObject to our portfolio
     def add_object(self, obj):
@@ -60,11 +62,15 @@ class SmartObjectManager(multiprocessing.Process):
 
 
     def do_industries(self):
-        for obj in self.objects.values():
-            print(f"SOM doing inudstrues for {obj}")
+        for name, obj in self.objects.items():
             #if callable(getattr(obj, "do_industries", None)):
             if hasattr(obj, "do_industries"):
+                print(f"SOM doing inudstrues for {name}")
                 obj.do_industries()
 
     def do_populations(self):
-        pass
+        for name, obj in self.objects.items():
+            #if callable(getattr(obj, "do_industries", None)):
+            if hasattr(obj, "do_populations"):
+                print(f"SOM doing populations for {name}")
+                obj.do_populations()
