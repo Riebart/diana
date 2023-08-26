@@ -1,6 +1,6 @@
 #This is to serve as a general example of how such things can be constructed
 races:
-  Human:
+  human:
 
     #scale of this tbd
     growth_rate: 1.0
