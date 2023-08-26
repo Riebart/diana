@@ -3,7 +3,7 @@ planets:
     gravity: 1.0
     size: 1.0
     radius: 6371000 #in meters
-    mass: 597220000000000000000 #in tons, I think
+    mass: 597220000000000000000.0 #in tons, I think
     temperature: 293.15 #long-term make this a calculated value based on insolance, atmosphere, etc
     pressure: 1.0
     atmosphere:
