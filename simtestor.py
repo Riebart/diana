@@ -63,13 +63,13 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         planet = Planet(osim)
         planet.position = random_vector(1000000)
         planet.parse_in(planet_data, name)
-        planet.init_industries()
+        planet.init_econ()
         print(planet)
         st.add_object(planet)
 
 print("Done\n")
 
 
-#st.start()
-#st.join()
+st.start()
+st.join()
 osim.stop_net()

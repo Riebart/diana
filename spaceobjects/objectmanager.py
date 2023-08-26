@@ -42,6 +42,7 @@ class SmartObjectManager(threading.Thread):
             #the socket timedout, do a tick
             if msg == 0:
                 print(f"\nSOM tick: {self.ticks_done}")
+                self.reset_econs()
                 self.do_industries()
                 self.do_populations()
                 self.ticks_done = self.ticks_done +1
@@ -60,6 +61,12 @@ class SmartObjectManager(threading.Thread):
     def handle_message(self, msg):
         self.objects[msg.cli_id].handle_message(msg)
 
+
+    def reset_econs(self):
+        for name, obj in self.objects.items():
+            #if callable(getattr(obj, "do_industries", None)):
+            if hasattr(obj, "do_industries"):
+                obj.reset_econ()
 
     def do_industries(self):
         for name, obj in self.objects.items():
