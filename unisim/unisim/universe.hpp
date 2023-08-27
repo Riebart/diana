@@ -86,12 +86,14 @@ namespace Diana
     class Universe
     {
         struct PhysCollisionEvent;
-        
+
         friend void* sim(void* u);
 
         friend void Universe_hangup_objects(int32_t c, void* arg);
         friend void Universe_handle_message(int32_t socket, void* arg);
-        friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc);
+
+        friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
+        friend void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum);
 
         friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
         friend void* thread_check_collisions(void* argsV);
@@ -101,8 +103,162 @@ namespace Diana
         friend void* vis_data_thread(void* argv);
 
     public:
-        Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate = 1.0, bool realtime = true);
+        struct Parameters
+        {
+            Parameters() :
+                verbose_logging(true),
+                min_physics_frametime(0.002),
+                max_physics_frametime(0.002),
+                min_vis_frametime(0.1),
+                network_port(5505),
+                num_worker_threads(1),
+                simulation_rate(1.0),
+                realtime_physics(true),
+                gravitational_constant(6.67384e-11),
+                speed_of_light(299792458),
+                collision_energy_cutoff(1e-9),
+                id_rand_max(1),
+                max_simultaneous_collision_rounds(100),
+                gravity_magnitude_cutoff(0.01),
+                beam_energy_cutoff(1e-10),
+                radiation_energy_cutoff(1.5e4),
+                spectrum_slush_range(0.01),
+                health_damage_threshold(0.1),
+                health_mass_scale(1e6),
+                visual_acuity(4e-7) // This assumes an acuity of approximately 60cm at 
+                                    // 1km, which roughly corresponds to a typical human
+            {}
+
+            // Print verbose information, such as collision rounds per tick, and when a
+            // collision happens, and which objects were involved.
+            bool verbose_logging;
+            
+            // Minimum unscaled simulated time that is allowed to pass in a single tick.
+            // If the previous phsyics tick took less wall-clock time than this, the time
+            // delta for the next tick is increased up to this amount.
+            // Setting this value too low will result in increased CPU use on the physics
+            // server to simulate at a time step that is finer than necessary.
+            // Setting this value too high may result in too coarse of a physics time step.
+            double min_physics_frametime;
+
+            // Maximum unscaled simulated time that is allowed to pass in a single tick.
+            // If the previous physics tick took more wall-clock time than this, the time 
+            // delta for the next tick is reduced to this amount.
+            // If physics ticks routinely take more wall clock time than this amount, the 
+            // clamping of simulated time will result in a perceived slowdown of the 
+            // simulation to slower than realtime.
+            // Setting this value too high may result in a physics simulation that is too
+            // coarse. Setting this value too low may result in unnecessary apparent slowdown
+            // of the game to achieve a time step that may be finer than necessary.
+            double max_physics_frametime;
+
+            // The minimum wall-clock time that will pass between subsequent rounds of
+            // vis-data transmission.
+            // Setting this value too low will result in vis data transmission beginning to
+            // interfere with the simulation's ability to effectively compute physics ticks
+            // at a sufficient rate.
+            // It is recommended that clients perform local interpolation to provide smooth
+            // apparent motion in between the vis data update frames. First-order interpolation
+            // should be considered minimal, with second-order interpolation preferable.
+            double min_vis_frametime;
+
+            // TCP port to listen for connections on.
+            int32_t network_port;
+
+            // Number of threads to use for service work tasks (physics, vis-data transmission,
+            // etc...).
+            // Note that this does not control the threads used for TCP clients, as every client
+            // receives it's own thread independent of this setting.
+            int32_t num_worker_threads;
+
+            // When paired with realtime_physics, this controls a simulation rate relative to 
+            // realtime. Values <1.0 result in simulations that are slower than real time, and
+            // values >1.0 result in simulations faster than realtime.
+            double simulation_rate;
+
+            // When set, the simulation will sleep as appropriate to try to match the amount of
+            // simulated time to the amount of elapsed wall-clock time.
+            // When using this option, careful and informed selection of minimum and maximum
+            // physics tick time limits should be used to ensure a smooth and sufficiently
+            // fine simulation without forcing overly fine simulation at the expense of a
+            // slowdown.
+            bool realtime_physics;
+
+            // Universal gravitational constant.
+            double gravitational_constant;
+
+            // The speed of light in this universe. The defualt speed for beams, and the speed at
+            // which relativistic effects do/would take effect.
+            double speed_of_light;
+
+            // Collisions (physical or beam) that result in a transfer of energy below this amount
+            // are ignored. This helps to ensure that spurious collisions (stiction) are gracefully
+            // handled.
+            double collision_energy_cutoff;
+
+            // Maximum value used when selecting the random increment for the next physics ID generated
+            // by the USim. Setting this to 1 will result in sequential IDs assigned to objects.
+            // For live servers, it is recommended to set this in the range of around 10-million (the
+            // exact value should be randomly chosen in that range, so as to provide an amount of
+            // entropy for hiding the actual IDs of objects from players).
+            int64_t id_rand_max = 1;
+
+            // Maximum number of rounds of collision simulation in which simultaneous collisions are
+            // considered. This value is only going to come into play with precisely placed objects
+            // like done in code. True simultaneous collisions are astronomically unlikely to occur
+            // in a real simulation scenario.
+            double max_simultaneous_collision_rounds;
+
+            // Objects that would produce a gravitational acceleration below this amount at their
+            // bounding radius are not considered attractors in the universe. This is used to
+            // optimize the selection of objects that are considered attractors for practical
+            // purposes, to reduce the O(N^2) nature of gravitational calculations.
+            double gravity_magnitude_cutoff;
+
+            // On initialization, a beam has a maximum distance that is calculated from it's spread
+            // values, energy, and this cutoff. The maximum distance, D, is the amount of distance
+            // travelled, such that the wavefront at D distance from the source has less than this
+            // amount of energy (Joules) per square metre of wavefront area.
+            // Raising this value will expire beams sooner, and this may improve performance if
+            // large number of beams are in use.
+            // This value is derived from commodity wireless transceivers that operate at -70dBmW.
+            double beam_energy_cutoff;
+
+            // This value is used to calculate the safe distance of a radiation source, that is the
+            // distance from the source at which other objects begin to incur radiation collision
+            // events (and damage). Raising this value will reduce the damage caused by radiation
+            // sources. The unts of this value is Watts per square metre.
+            // This value is derived from the black-body radiative power of steel at it's melting
+            // point. Steel absorbing this amount of radiative power.
+            // See: http://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
+            // See: https://en.wikipedia.org/wiki/Mercury_(planet)#Surface_conditions_and_exosphere
+            // To compare, Sol outputs 61.7MW/m^2 at it's surface.
+            double radiation_energy_cutoff;
+
+            // Spectrum power levels are randomly adjusted by this proportion upon receipt by the
+            // universe to provide a statistical guarantee that two objects don't have identical
+            // signature spectra. If teh power level is below this amount, then it is set to a
+            // random value between 0 and this value, inclusive.
+            double spectrum_slush_range;
+
+            // During a collision, non-smart objects make take damage equal to one point of health
+            // per Joule of collision energy that exceeds this proportion of the object's current
+            // health.
+            double health_damage_threshold;
+
+            // Non-smart physics objects are assigned a number of hit points that is their mass
+            // multiplied by this value.
+            double health_mass_scale;
+
+            // The cutoff (in (radius/distance)^2) used to determine whether a given object is sent
+            // as a piece of visual data. The square is to prevent unnecessary square roots being
+            // performed frequently. The physical units of this tan(radians).
+            double visual_acuity;
+        };
+
+        Universe(struct Parameters _params);
         ~Universe();
+
         void start_net();
         void stop_net();
         void start_sim();
@@ -143,18 +299,23 @@ namespace Diana
         void tick(double dt);
         void sort_aabb(double dt, bool calc);
         void handle_message(int32_t socket);
-        
+
         // Take care of expiring objects from the universe at the end of a physics tick.
         void handle_expired();
         // Take care of adding queued objects to the universe at the end of a physics tick.
         void handle_added();
 
+        //! Generate a random number according to the universe's spectrum perturbation rules.
+        double gen_rand(std::normal_distribution<double> dist);
+
         //! This is called to update either the attractors or radiators lists, and is supplied
         //! with the physics object in question, as well as the new and old values for the 
         //! conditional boolean as appropriate.
         void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
-        
+
         void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+
+        struct Parameters params;
 
         // Random generation engine used for generating random increments for the IDs.
         std::default_random_engine re;
@@ -286,6 +447,7 @@ namespace Diana
         LOCK_T vis_lock;
         LOCK_T query_lock;
         LOCK_T collision_lock;
+        LOCK_T rand_lock;
 
         //! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics.
         double rate;

@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #define SIGN(x) (((x) < 0) ? -1 : (((x) > 0) ? 1 : 0))
 #define CHOP_CUTOFF 1e-8
@@ -21,7 +22,7 @@ namespace Diana
         V3* ret = (V3*)malloc(sizeof(V3) * n);
         if (ret == NULL)
         {
-            throw "OOM";
+            throw new std::runtime_error("OOM");
         }
         return ret;
     }

@@ -1,1 +1,7 @@
 __pycache__*
+**/.**
+.**
+*.pyc
+bson
+pytz
+six.py

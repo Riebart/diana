@@ -2,6 +2,8 @@
 #define PHYSICS_HPP
 
 #include <stdint.h>
+#include <stddef.h>
+#include <functional>
 #include "vector.hpp"
 
 namespace Diana
@@ -39,6 +41,7 @@ namespace Diana
     struct Spectrum
     {
         // Number of components in the spectrum
+        //! @todo Check to see if we can drop this from the messaging component.
         uint32_t n;
         
         // How far away do we need to be before notifications start to arrive for radiation
@@ -91,6 +94,7 @@ namespace Diana
             //! Health in some arbitrary hit points.
             health;
         //! Arbitrary C-string offering an object description of some sort
+        //! @todo Promote this to a dict with full text keys.
         char* obj_type;
         //! A unique art ID for any art assets as assigned by an ArtCurator.
         int64_t art_id;
@@ -209,14 +213,14 @@ namespace Diana
 
     struct Spectrum* Spectrum_clone(struct Spectrum* src);
     struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size = NULL);
-    struct Spectrum* Spectrum_perturb(struct Spectrum* src);
+    struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit, std::function<double(void)> get_rand);
     struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment);
 
     void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation);
 
     void PhysicsObject_collide(struct PhysCollisionResult* cr, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt);
-    void PhysicsObject_collision(struct PhysicsObject* objt, struct PhysicsObject* othert, double energy, double dt, struct PhysCollisionEffect* args);
-    void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy);
+    void PhysicsObject_collision(struct PhysicsObject* obj, struct PhysicsObject* other, double energy, double dt, struct PhysCollisionEffect* effect, double health_cutoff);
+    void PhysicsObject_resolve_damage(struct PhysicsObject* obj, double energy, double cutoff);
     void PhysicsObject_resolve_phys_collision(struct PhysicsObject* obj, double energy, double dt, struct PhysCollisionEffect* pce);
     void PhysicsObject_estimate_aabb(struct PhysicsObject* obj, struct AABB* b, double dt);
 
@@ -229,7 +233,8 @@ namespace Diana
     void Beam_tick(struct Beam* beam, double dt);
     struct Beam* Beam_make_return_beam(struct Beam* b, double energy, struct Vector3* origin, PhysicsObjectType type);
 
-    bool is_big_enough(double m, double r);
-    double radiates_strong_enough(struct Spectrum* spectrum);
+    bool is_big_enough(double m, double r, double cutoff);
+    double total_spectrum_power(struct Spectrum* spectrum);
+    double radiates_strong_enough(struct Spectrum* spectrum, double cutoff);
 }
 #endif

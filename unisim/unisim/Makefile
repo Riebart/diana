@@ -1,7 +1,7 @@
 CXX=g++
 INCLUDE_DIR=-I .
-CFLAGS=-O2 -Wall -g -fopenmp -std=c++11
-FILES=vector.cpp physics.cpp universe.cpp MIMOServer.cpp messaging.cpp
+CFLAGS=-O2 -Wall -g -std=c++17
+FILES=utility.cpp vector.cpp physics.cpp universe.cpp MIMOServer.cpp messaging.cpp
 EXT_LIBS=
 EXT_ST_LIBS=
 

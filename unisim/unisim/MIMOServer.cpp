@@ -1,5 +1,7 @@
 #include "MIMOServer.hpp"
 
+#include "utility.hpp"
+
 #include <stdio.h>
 
 #define LOCK(l) l.lock()
@@ -36,18 +38,34 @@
 #define SOCKET int32_t
 #endif
 
+#define MAX_SOCKET_RETRIES 256
+#define SOCKET_RETRY_DELAY 5 // in milliseconds
+
 namespace Diana
 {
     int64_t MIMOServer::socket_read(int fd, char* buf, int64_t count)
     {
+        std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         int64_t nbytes = 0;
         int64_t curbytes;
+        int32_t nretries = MAX_SOCKET_RETRIES;
+        
         while (nbytes < count)
         {
             //! @todo Maybe use recvmsg()?
             // Try to wait for all of the data, if possible.
             curbytes = recv(fd, buf + (size_t)nbytes, (int)(count - nbytes), MSG_WAITALL);
             if (curbytes == -1)
+            {
+                nretries--;
+                std::this_thread::sleep_for(dura);
+            }
+            else
+            {
+                nretries = MAX_SOCKET_RETRIES;
+            }
+            
+            if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -61,13 +79,25 @@ namespace Diana
 
     int64_t MIMOServer::socket_write(int fd, char* buf, int64_t count)
     {
+        std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         int64_t nbytes = 0;
         int64_t curbytes;
+        int32_t nretries = MAX_SOCKET_RETRIES;
 
         while (nbytes < count)
         {
             curbytes = send(fd, buf + (size_t)nbytes, (int)(count - nbytes), 0);
             if (curbytes == -1)
+            {
+                nretries--;
+                std::this_thread::sleep_for(dura);
+            }
+            else
+            {
+                nretries = MAX_SOCKET_RETRIES;
+            }
+
+            if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
                 nbytes *= -1;
@@ -110,6 +140,7 @@ namespace Diana
 
     void* serve_SocketThread(void* sockV)
     {
+        fprintf(stderr, "Socket serving thread PID: %ld\n", get_this_thread_pid());
         SocketThread* sock = (SocketThread*)sockV;
 
         while (sock->running)
@@ -219,6 +250,8 @@ namespace Diana
     // More on non-blocking IO: https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm
     void* serve_MIMOServer(void* serverV)
     {
+        fprintf(stderr, "MIMOServer main thread PID: %ld\n", get_this_thread_pid());
+
         MIMOServer* server = (MIMOServer*)serverV;
 
         fd_set fds;
@@ -226,7 +259,11 @@ namespace Diana
 #ifdef _WIN32
         const timeval timeout = { 0, 10000 };
 #else
-        timeval timeout = { 0, 10000 };
+        // The select() syscall uses { seconds, microseconds } as the timeout
+        // The pselect() syscall, which modern gcc and kernels map select() to,
+        //    uses { seconds, nanoseconds }
+        // timeval timeout = { 0, 10000 }; // Use this for select()
+        timespec timeout = { 0, 10000000 }; // Use this for pselect()
         int32_t maxfd = (server->server6 > server->server4 ? server->server6 : server->server4) + 1;
         int32_t fd_array[] = { server->server4, server->server6 };
 #endif
@@ -244,7 +281,7 @@ namespace Diana
             FD_ZERO(&fds);
             FD_SET(server->server4, &fds);
             FD_SET(server->server6, &fds);
-            nready = select(maxfd, (fd_set*)&fds, NULL, NULL, &timeout);
+            nready = pselect(maxfd, (fd_set*)&fds, NULL, NULL, &timeout, NULL);
 #endif
 
             if (nready == SOCKET_ERROR)
@@ -274,7 +311,7 @@ namespace Diana
                 }
 
                 hungup -= server->inputs.size();
-                fprintf(stderr, "Successfully hung up %lu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+                fprintf(stderr, "Successfully hung up %llu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
                 server->hangups.clear();
                 UNLOCK(server->hangup_lock);

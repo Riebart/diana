@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <algorithm>
 
+#include "utility.hpp"
+
 // Memory allocation practices in the universe simulation
 //
 // An instance of the Universe class takes almost responsibility for the compelte
@@ -85,11 +87,7 @@
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
 #define THREAD_JOIN(t) if (t.joinable()) t.join()
 
-#define GRAVITATIONAL_CONSTANT  6.67384e-11
-#define COLLISION_ENERGY_CUTOFF 1e-9
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
-
-#define RANDOM_ID_RANGE 1000000
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -105,15 +103,16 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    void gravity(V3* out, PO* big, PO* small)
+    void gravity(double G, V3* out, PO* big, PO* small)
     {
-        double m = GRAVITATIONAL_CONSTANT * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
+        double m = G * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
         Vector3_ray(out, &small->position, &big->position);
         Vector3_scale(out, m);
     }
 
     void* sim(void* uV)
     {
+        fprintf(stderr, "Universe (%p) physics sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
         Universe* u = (Universe*)uV;
 
         // dt is the amount of time that will pass in the game world during the next tick.
@@ -132,7 +131,7 @@ namespace Diana
             // waking up too often.
             if (u->paused)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * u->max_frametime)));
                 continue;
             }
 
@@ -155,7 +154,7 @@ namespace Diana
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (u->min_frametime - e))));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
@@ -183,9 +182,10 @@ namespace Diana
         return NULL;
     }
 
-    void* vis_data_thread(void* argV)
+    void* vis_data_thread(void* uV)
     {
-        Universe* u = (Universe*)argV;
+        fprintf(stderr, "Universe (%p) visdata sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
+        Universe* u = (Universe*)uV;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
@@ -197,7 +197,7 @@ namespace Diana
             // waking up too often.
             if (u->visdata_paused)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * u->max_frametime)));
                 continue;
             }
 
@@ -233,21 +233,14 @@ namespace Diana
         u->handle_message(c);
     }
 
-    /// @todo Support minimum frametimes in the micro and nanosecond ranges without sleeping, maybe via a real_time boolean flag.
-    /// @in min_frametime Minimum time in the simulation between physics ticks, regardles of the real wall clock time of a physics tick.
-    ///    If this is set to a value lower than the wall-clock time of a physics tick, then the simulation thread will fully utilize the available CPU resources.
-    ///    To achieve a sense of throttling, set this to a value above the typical wall-clock time to cause the simulation thread to sleep between ticks.
-    /// @in max_frametime Maximum time allowed to pass by in the simulation in a single tick.
-    ///    If this is less than the wall clock time, it will result in a perceived slowdown of the simulation.
-    /// @in min_vis_frametime The minimum time between visualization updates, reduces load on the physics server.
-    /// @in port TCP port to listen on when start_net() is called.
-    /// @in num_threads Number of threads to use for collision detection, no more than 4 is recommended (there's no gains at that point)
-    /// @in rate Multiplier used to scale the time-tick in the simulation. Most useful in conjunction with realtime.
-    /// @in realtime If set to true, then the simulation attempts to pass in real time, with physics ticks sleeping to match wall-clock time if necessary.
-    /// The constructor to initialize a universe for physics simulation.
-    Universe::Universe(double min_frametime, double max_frametime, double min_vis_frametime, int32_t port, int32_t num_threads, double rate, bool realtime)
+    Universe::Universe(struct Parameters _params)
     {
-        this->rate = rate;
+        this->params = _params;
+        this->rate = _params.simulation_rate;
+        this->realtime = _params.realtime_physics;
+        this->min_frametime = _params.min_physics_frametime;
+        this->max_frametime = _params.max_physics_frametime;
+        this->min_vis_frametime = _params.min_vis_frametime;
 
         if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
         {
@@ -256,7 +249,7 @@ namespace Diana
             max_frametime = MAX(max_frametime, ABSOLUTE_MIN_FRAMETIME);
         }
 
-        this->num_threads = num_threads;
+        this->num_threads = _params.num_worker_threads;
         //sched = new libodb::Scheduler(this->num_threads - 1);
 
         phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
@@ -268,11 +261,6 @@ namespace Diana
             phys_worker_args[i].dt = 0.0;
             phys_worker_args[i].done = true;
         }
-
-        this->min_frametime = min_frametime;
-        this->max_frametime = max_frametime;
-        this->min_vis_frametime = min_vis_frametime;
-        this->realtime = realtime;
 
         total_time = 0.0;
         last_effect_time = 0.0;
@@ -289,7 +277,7 @@ namespace Diana
         visdata_paused = true;
         running = false;
 
-        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, port);
+        net = new MIMOServer(Universe_handle_message, this, Universe_hangup_objects, this, _params.network_port);
     }
 
     Universe::~Universe()
@@ -366,8 +354,18 @@ namespace Diana
 
     int64_t Universe::get_id()
     {
-        std::uniform_int_distribution<uint32_t> dist(1, RANDOM_ID_RANGE);
-        int64_t offset = dist(re);
+        int64_t offset;
+        if (params.id_rand_max > 1)
+        {
+
+            std::uniform_int_distribution<int64_t> dist(1, params.id_rand_max);
+            offset = dist(re);
+        }
+        else
+        {
+            offset = 1;
+        }
+
         int64_t r = total_objs.fetch_add(offset);
         return r;
     }
@@ -395,6 +393,7 @@ namespace Diana
         UNLOCK(expire_lock);
     }
 
+    //! @todo Do not expire smarty objects on disconnect.
     void Universe::hangup_objects(int32_t c)
     {
         LOCK(expire_lock);
@@ -452,63 +451,10 @@ namespace Diana
         {
             vc = *it;
 
-            // The socket is a 32-bit value, but likely only occupying the first 16-ish
-            // Use this for entropy when obfuscating the server ID, generate more random bits 
-            //
-            // Without this, since access to send messages to a phys_id is unauthenticated, if
-            // phys_ids were sent in the clear, clients could send messages to other ships.
-            //
-            // This method uses a client-specific data, the socket file descriptor ID, and a 
-            // global piece of entropy, the RAND_MAX for the inter-object ID increment, to
-            // generate a high entropy value to XOR the phys_id with. 
-            //
-            // Note that smarties know their own server IDs, exactly, and can relay this to
-            // another ship to allow them to derive the XOR key used on their own ship. This
-            // eliminates a portion of the entropy in the obfuscation process. This would be
-            // inadvisable, in general, as sending commands to a smarty is authenticated, in
-            // a sense, only by this mechanism. Giving someone else your ID would allow them
-            // to control your ship.
-            //
-            // Uncertainties:
-            //  - Unicity distance; how many objects/people working together would
-            // be required to determine the true ID of a smarty. I'm going to guess five-ish?
-            //  - Including the object's pointer as an integer (squared, to consider
-            // 32-bit pointers) to include a per-object piece of information. I don't THINK that
-            // these objects are being reallocated, or will ever be reallocated, but who knows.
-
-            // Hold the socket-specific entropy bits, generated from the global RANDOM_ID_RANGE
-            // value, which will be in the 20-30 bits range, and the socket, which is in the 16
-            // bits range. Total entropy is only in the 35-40 bits range, but that's good enough.
-            int64_t socket_bits;
-#if RANDOM_ID_RANGE > 1
-            // Mathematica justification:
-            ////   Function[{x}, Module[{a},
-            ////       a = x;
-            ////   a = a(a + 1);
-            ////   a = a(a + 1);
-            ////   a = a(a + 1);
-            ////   a
-            ////   ]];
-            ////   %[x]//Expand
-            ////       Map[%%, Table[i, { i,256,1024 }]];
-            ////   Total[IntegerDigits[#, 2, 64]] & / @%//Sort//ListPlot
-            socket_bits = vc.socket + RANDOM_ID_RANGE;
-            socket_bits = socket_bits * (socket_bits + 1);
-            socket_bits = socket_bits * (socket_bits + 1);
-            socket_bits = socket_bits * (socket_bits + 1);
-            // By this point, it's a an 8th order polynomial, and produces a solid bell curve
-            // around 32 set bits, even for values >256, and about 24 bits for values <256.
-            //
-            // Note that we're doing the efficient polynomial thing, 4 multiplications,
-            // 4 additions, and an 8th order polynomial.
-#else
-            socket_bits = 0;
-#endif
-
             // We're going to specify all of the options, so just set them all to specced.
             visdata_msg.spec_all(true);
             visdata_msg.client_id = vc.client_id;
-            
+
             //! @todo Unlocked access to the smarties map.
             ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
             bool disconnect = false;
@@ -519,15 +465,28 @@ namespace Diana
                 o = phys_objects[i];
                 visdata_msg.server_id = vc.phys_id;
                 visdata_msg.radius = o->radius;
-                
+
                 // Don't forget to unset the sign bits, negative IDs would be weird.
-                visdata_msg.phys_id = o->phys_id ^ socket_bits ^ (int64_t)o;
-                
+                if (params.id_rand_max == 1)
+                {
+                    visdata_msg.phys_id = o->phys_id;
+                }
+                else
+                {
+                    visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
+                }
+
                 visdata_msg.position = o->position;
 
                 if (ro != NULL)
                 {
                     Vector3_subtract(&visdata_msg.position, &visdata_msg.position, &(ro->position));
+                }
+
+                // Apply the visual acuity cutoff
+                if ((4 * visdata_msg.radius * visdata_msg.radius / Vector3_length2(&visdata_msg.position)) < params.visual_acuity)
+                {
+                    continue;
                 }
 
                 visdata_msg.orientation.w = o->forward.x;
@@ -569,6 +528,15 @@ namespace Diana
         UNLOCK(vis_lock);
     }
 
+    double Universe::gen_rand(std::normal_distribution<double> dist)
+    {
+        double ret = 0.0;
+        LOCK(rand_lock);
+        ret = dist(re);
+        UNLOCK(rand_lock);
+        return ret;
+    }
+
     void Universe::handle_message(int32_t socket)
     {
         //! @todo Support optional arguments with sensible defaults.
@@ -586,7 +554,10 @@ namespace Diana
         // If this smarty is non-NULL, then this points to the PARENT
         SPO* smarty = (it != smarties.end() ? it->second : NULL);
 
-        printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
+        if (params.verbose_logging)
+        {
+            printf("Received message of type %d from client %d\n", msg_base->msg_type, socket);
+        }
 
         switch (msg_base->msg_type)
         {
@@ -635,7 +606,7 @@ namespace Diana
                 {
                     // The mass and/or radius changed, so we need to recalculate whether or not
                     // it can be a gravity source now. Probably not, but who knows.
-                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius);
+                    bool newval = is_big_enough(smarty->pobj.mass, smarty->pobj.radius, params.gravity_magnitude_cutoff);
 
                     // We don't want to grab the lock unnecessarily
                     if (newval != smarty->pobj.emits_gravity)
@@ -649,17 +620,17 @@ namespace Diana
                     }
                 }
 
-#define ASSIGN_VAL(i, var) if (msg->specced[i]) { smarty->pobj.var = msg->var; };
-#define ASSIGN_V3(i, var) ASSIGN_VAL(i, var.x) ASSIGN_VAL(i + 1, var.y) ASSIGN_VAL(i + 2, var.z);
-                ASSIGN_VAL(3, mass);
-                ASSIGN_V3(4, position);
-                ASSIGN_V3(7, velocity);
+#define ASSIGN_VAL(i, var, absolute) if (msg->specced[i]) { smarty->pobj.var = (absolute ? 0.0 : smarty->pobj.var) + msg->var; };
+#define ASSIGN_V3(i, var, absolute) ASSIGN_VAL(i, var.x, absolute) ASSIGN_VAL(i + 1, var.y, absolute) ASSIGN_VAL(i + 2, var.z, absolute);
+                ASSIGN_VAL(3, mass, true);
+                ASSIGN_V3(4, position, false);
+                ASSIGN_V3(7, velocity, false);
                 if (msg->specced[10] && msg->specced[11] && msg->specced[12] && msg->specced[13])
                 {
                     PhysicsObject_from_orientation(&smarty->pobj, &msg->orientation);
                 }
-                ASSIGN_V3(14, thrust);
-                ASSIGN_VAL(17, radius);
+                ASSIGN_V3(14, thrust, true);
+                ASSIGN_VAL(17, radius, true);
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
 
@@ -667,11 +638,12 @@ namespace Diana
                 if (msg->all_specced(msg->num_el - 3))
                 {
                     struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
-                    spectrum = Spectrum_perturb(spectrum);
+                    spectrum = Spectrum_perturb(spectrum, params.spectrum_slush_range,
+                        [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
                     spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
                     smarty->pobj.spectrum = spectrum;
 
-                    radiates_strong_enough(spectrum);
+                    radiates_strong_enough(spectrum, params.radiation_energy_cutoff);
                     bool newval = (spectrum->safe_distance_sq > (smarty->pobj.radius * smarty->pobj.radius));
 
                     if (newval != smarty->pobj.dangerous_radiation)
@@ -715,7 +687,10 @@ namespace Diana
                 {
                     memcpy(comm_msg, msg->comm_msg, len);
                     b->comm_msg = comm_msg;
-                    //throw std::runtime_error("OOM");
+                }
+                else
+                {
+                    throw std::runtime_error("Universe::UnableToAllocateCommMsg");
                 }
             }
             if (strcmp(msg->beam_type, "WEAP") == 0)
@@ -747,7 +722,8 @@ namespace Diana
                 msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
 
             // Now that the beam has a cloned version of the spectrum, perturb it.
-            b->spectrum = Spectrum_perturb(b->spectrum);
+            b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range,
+                [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
 
             add_object(b);
             break;
@@ -806,7 +782,8 @@ namespace Diana
             // Now that the object contains a cloned version of the spectrum, perturb it.
             if (obj->spectrum != NULL)
             {
-                obj->spectrum = Spectrum_perturb(obj->spectrum);
+                obj->spectrum = Spectrum_perturb(obj->spectrum, params.spectrum_slush_range,
+                    [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
             }
 
             // Note that adding the object to the attractors and radiators lists is handled
@@ -851,12 +828,12 @@ namespace Diana
             // The signature's power levels are scaled based on the distance (the area of the 
             // wave front, total power amortized across the area, times the area of the object
             // intersection with that).
-            
+
             if (smarty != NULL)
             {
                 // The message to send back.
                 ScanResultMsg srm;
-                
+
                 // Spec the IDs
                 srm.specced[0] = true;
                 srm.server_id = msg->server_id;
@@ -878,8 +855,9 @@ namespace Diana
                 V3 dp;
                 double distance_sq;
                 double power_scale;
- 
+
                 //! @todo THIS IS BAD! Locking the physics lock synchronously for networking? Oh no.
+                //! @todo Use read/write locks, since most of the time, we only want read locks.
                 LOCK(phys_lock);
                 //! @todo Move all objects with spectra to their own vector
                 for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
@@ -889,10 +867,10 @@ namespace Diana
                     {
                         continue;
                     }
-                    
+
                     Vector3_subtract(&dp, &other->position, &smarty->pobj.position);
                     distance_sq = Vector3_length2(&dp);
-                    
+
                     // If we're looking at our own radiation signature, then we need to do
                     // things a little different. THis will stand out as having a position that
                     // is (0,0,0), so we can leave the power spectrum alone.
@@ -905,8 +883,8 @@ namespace Diana
                         // You can't absorb more power than it's outputting...
                         power_scale = MIN(1.0, smarty->pobj.radius * smarty->pobj.radius / (4 * distance_sq));
                     }
-                    
-                    if ((power_scale * other->spectrum->total_power) < COLLISION_ENERGY_CUTOFF)
+
+                    if ((power_scale * other->spectrum->total_power) < params.collision_energy_cutoff)
                     {
                         continue;
                     }
@@ -923,7 +901,7 @@ namespace Diana
                     {
                         Vector3_scale(&dp, 1.0 / sqrt(distance_sq));
                     }
-                    
+
                     srm.position = dp;
                     srm.send(smarty->socket);
                     free(srm.obj_spectrum);
@@ -984,6 +962,8 @@ namespace Diana
             UNLOCK(query_lock);
             break;
         }
+        //! @todo Use Hello messages to tell a smart to send it's response messages back to the socket
+        // the Hello came from.
         case BSONMessage::MessageType::Hello:
         {
             HelloMsg* msg = (HelloMsg*)msg_base;
@@ -997,6 +977,8 @@ namespace Diana
             }
             break;
         }
+        //! @todo Use Goodbye messages to expire smarty objects. Only expire them on a goodbye, not on
+        // socket disconnect.
         case BSONMessage::MessageType::Goodbye:
         {
             GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;
@@ -1020,7 +1002,6 @@ namespace Diana
             throw std::runtime_error("Universe::UnrecognizedMessageType");
         }
 
-        //! @todo Check that this calls the right desstructors, specifically of the children.
         delete msg_base;
     }
 
@@ -1035,7 +1016,7 @@ namespace Diana
                 continue;
             }
 
-            gravity(&cg, attractors[i], obj);
+            gravity(params.gravitational_constant, &cg, attractors[i], obj);
             Vector3_add(g, &cg);
         }
     }
@@ -1070,8 +1051,8 @@ namespace Diana
             // of energy from an 'impact effect' perspective, and that is in
             // the 'e' field of the collision result.
 
-            if ((phys_result.e < -COLLISION_ENERGY_CUTOFF) ||
-                (phys_result.e > COLLISION_ENERGY_CUTOFF))
+            if ((phys_result.e < -u->params.collision_energy_cutoff) ||
+                (phys_result.e > u->params.collision_energy_cutoff))
             {
                 ev.obj1 = obj1;
                 ev.obj2 = obj2;
@@ -1246,12 +1227,16 @@ namespace Diana
                 phys_result.pce1.d = beam_result.d;
                 phys_result.pce1.p = beam_result.p;
 
+                if (u->params.verbose_logging)
+                {
 #if __x86_64__
-                fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #else
-                fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
 #endif
-                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1);
+                }
+
+                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
                 //! @todo Smarty beam collision messages
                 //! @todo Beam collision messages
@@ -1404,11 +1389,12 @@ namespace Diana
             for (size_t i = 0; i < u->radiators.size(); i++)
             {
                 other = u->radiators[i];
+                // Don't collide an object with it's own radiation
                 if (other->phys_id == o->phys_id)
                 {
                     continue;
                 }
-                
+
                 Vector3_subtract(&pd, &other->position, &o->position);
                 distance_sq = Vector3_length2(&pd);
                 if (distance_sq < other->spectrum->safe_distance_sq)
@@ -1431,14 +1417,14 @@ namespace Diana
                         //! @todo Ok, this four-character string is starting to feel forced.
                         cm.set_colltype((char*)"RADN");
                         cm.spec_all();
-                        
+
                         // Note that there is no comm message, so that's unspecced.
                         cm.specced[cm.num_el - 4] = false;
                         cm.send(s->socket);
                     }
                     else if (o->type == PHYSOBJECT)
                     {
-                        PhysicsObject_resolve_damage(o, energy);
+                        PhysicsObject_resolve_damage(o, energy, u->params.health_damage_threshold);
                     }
                 }
             }
@@ -1574,8 +1560,8 @@ namespace Diana
                 throw std::runtime_error("WAT");
             }
             UNLOCK(expire_lock);
-            }
         }
+    }
 
     void Universe::handle_added()
     {
@@ -1710,10 +1696,6 @@ namespace Diana
             //   > Test the sizes of the vector before and after the re-collide, any collisions resulting
             //     from that operation will require a re-sort of the list. Don't re-sort if there's no new events.
 
-            // Keep track of how far the collisions have taken us through the time interval so far, so that we
-            // can make sure objects are only ticked along as necessary.
-            double total_dt = 0.0;
-
             // WHether or not to re-sort the vector after handling a collision, this will be determined by whether
             // a collision resolution results in new collisions being added.
             bool re_sort = true;
@@ -1730,11 +1712,11 @@ namespace Diana
             cm.specced[cm.num_el - 2] = false;
             cm.specced[cm.num_el - 3] = false;
 
-            // This constant defines the number of rounds that we'll consider multiple collision at the same instant.
+            // The value in params.max_simultaneous_collision_rounds defines the number of rounds that we'll consider 
+            // multiple collision at the same instant.
             // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
             // negligible.
-#define COLLISION_ROUNDS_CUTOFF 100
 
             // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
@@ -1815,7 +1797,7 @@ namespace Diana
                     struct PhysicsObject* obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
 
-                    if (n_rounds == 1)
+                    if ((n_rounds == 1) && params.verbose_logging)
                     {
 #if __x86_64__
                         fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
@@ -1823,7 +1805,7 @@ namespace Diana
                         fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
                     }
-                    
+
                     // Note that when applying the collision, we need to make sure that each object is observing the
                     // correct time-delta to have elapsed since their last physics event. This is why we take the
                     // collision results 't' parameter portion of the total tick time (t*dt), and subtract off the
@@ -1840,11 +1822,11 @@ namespace Diana
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
                     energy0 += (never_seen ? obj1->mass * Vector3_length2(&obj1->velocity) : 0.0);
-                    PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1);
+                    PhysicsObject_collision(obj1, obj2, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce1, params.health_damage_threshold);
                     never_seen = unique_append(objs, n_objs, collision_event.obj2_index);
                     n_objs += never_seen;
                     energy0 += (never_seen ? obj2->mass * Vector3_length2(&obj2->velocity) : 0.0);
-                    PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2);
+                    PhysicsObject_collision(obj2, obj1, phys_result.e, never_seen * phys_result.t * dt, &phys_result.pce2, params.health_damage_threshold);
 
                     //! @todo This messaging should probably be done asynchronously, out of the physics code,
                     //! but I don't think, in general, this will cause much of a problem for a 60hz
@@ -1878,7 +1860,7 @@ namespace Diana
 
                     // To prevent hanging in the situation where there's a constant feedback of collisions,
                     // limit the number of rounds we'll support.
-                    if (n_rounds > COLLISION_ROUNDS_CUTOFF)
+                    if (n_rounds > params.max_simultaneous_collision_rounds)
                     {
                         break;
                     }
@@ -1955,7 +1937,7 @@ namespace Diana
                 objs = NULL;
             }
 
-            if (n_rounds > 1)
+            if ((n_rounds > 1) && params.verbose_logging)
             {
                 printf("Collision set required %u rounds\n", n_rounds);
             }
@@ -2010,4 +1992,4 @@ namespace Diana
             }
         }
     }
-    }
+}

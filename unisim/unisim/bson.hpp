@@ -3,8 +3,11 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <map>
+#include <string>
 #include <string.h>
 #include <stdio.h>
+#include <stdexcept>
 
 // Partial implementation of bson that is self-contained and simple, both implementation
 // and API.
@@ -38,6 +41,59 @@ public:
     // have any reasonable values.
     struct Element
     {
+        Element() :
+            bin_val(NULL), str_val(NULL), map_val(NULL),
+            managed_pointers(false) {}
+
+        Element(struct Element* src) : Element()
+        {
+            copy(src);
+        }
+
+        ~Element()
+        {
+            if (managed_pointers)
+            {
+                delete name;
+                delete bin_val;
+                delete str_val;
+                delete map_val;
+
+                name = NULL;
+                bin_val = NULL;
+                str_val = NULL;
+                map_val = NULL;
+                managed_pointers = false;
+            }
+        }
+
+        void copy(struct Element* src)
+        {
+            *this = *src;
+            // Name isn't an optional field.
+            name = new char[strlen(src->name) + 1];
+            memcpy(name, src->name, strlen(src->name) + 1);
+
+            if (src->bin_val != NULL)
+            {
+                bin_val = new uint8_t[bin_len];
+                memcpy(bin_val, src->bin_val, bin_len);
+            }
+
+            if (src->str_val != NULL)
+            {
+                str_val = new char[str_len + 1];
+                memcpy(str_val, src->str_val, str_len);
+                // It's possible that the bin and str values are the same pointer,
+                // so since we have the luxury, make the string value properly ended.
+                str_val[str_len] = 0;
+            }
+
+            managed_pointers = true;
+        }
+
+        bool managed_pointers;
+
         ElementType type;
         int8_t subtype;
         char* name;
@@ -45,6 +101,7 @@ public:
         bool     bln_val;
         int32_t  i32_val;
         int64_t  i64_val;
+
         double   dbl_val;
 
         int32_t  bin_len;
@@ -52,6 +109,8 @@ public:
 
         char*    str_val;
         int32_t  str_len;
+
+        std::map<std::string, struct Element>* map_val;
     };
 
     BSONReader(char* _msg)
@@ -61,29 +120,34 @@ public:
         pos = 4;
     }
 
-    struct Element get_next_element()
+    struct Element* get_next_element(bool read_complex = false, bool from_here = false)
     {
-        // Return a sentinel NoMoreData type when we reach the end of the message
-        if ((int32_t)pos >= len)
+        if (!from_here)
         {
-            el.type = ElementType::NoMoreData;
-            return el;
-        }
+            el = Element();
 
-        el.type = (ElementType)(*(int8_t*)(msg + pos));
-        pos += 1;
+            // Return a sentinel NoMoreData type when we reach the end of the message
+            if ((int32_t)pos >= len)
+            {
+                el.type = ElementType::NoMoreData;
+                return &el;
+            }
 
-        // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
-        if (el.type == ElementType::EndOfDocument)
-        {
-            el.name = msg + pos - 1;
-            return el;
-        }
-        else
-        {
-            // Otherwise, read the name.
-            el.name = msg + pos;
-            pos += strlen(msg + pos) + 1;;
+            el.type = (ElementType)(*(int8_t*)(msg + pos));
+            pos += 1;
+
+            // If it's an EOF document, it doesn't have a name, so don't try that. Just return.
+            if (el.type == ElementType::EndOfDocument)
+            {
+                el.name = msg + pos - 1;
+                return &el;
+            }
+            else
+            {
+                // Otherwise, read the name.
+                el.name = msg + pos;
+                pos += strlen(msg + pos) + 1;;
+            }
         }
 
         // Switch on the element types.
@@ -107,8 +171,37 @@ public:
 
         case ElementType::SubDocument:
         case ElementType::Array:
-            // Just eat the 'length' field for the subdocument, we don't care.
+            // Eat the 'length' field for the subdocument, we don't care.
             pos += 4;
+            if (read_complex)
+            {
+                // Allocate a new element to return once we're done reading the subdoc.
+                struct Element root_el(&el);
+                struct Element i_el;
+                struct Element* elp;
+                root_el.map_val = new std::map<std::string, struct Element>();
+                elp = get_next_element(read_complex);
+                while (el.type != EndOfDocument)
+                {
+                    i_el.copy(elp);
+                    root_el.map_val->operator[](std::string(i_el.name)) = i_el;
+
+                    // Because of recursion, don't throw away the mapped value (array/subdoc), since that's
+                    // now being tracked in this higher level value. Set the mapped value to NULL to prevent
+                    // this before we get the next value, since that process calls the destructor.
+                    elp->map_val = NULL;
+                    elp = get_next_element(read_complex);
+                }
+
+                // Note that i_el is about to go out of scope, so it's destructor will be called, despite the
+                // fact that it's last value is stored in the map. Same with root_el.
+                i_el.name = NULL;
+                i_el.bin_val = NULL;
+                i_el.str_val = NULL;
+                i_el.map_val = NULL;
+                el = root_el;
+                root_el = i_el;
+            }
             break;
 
         case ElementType::Binary:
@@ -138,6 +231,8 @@ public:
 
         case ElementType::Boolean:
             el.bln_val = *(bool*)(msg + pos);
+            el.i32_val = (int32_t)el.bln_val;
+            el.i64_val = (int64_t)el.bln_val;
             pos += 1;
             break;
 
@@ -154,6 +249,7 @@ public:
             // Fill in the i32_val from the parsed value, as best we can, in case we were expected an i32
             el.i32_val = (int32_t)el.i64_val;
             el.dbl_val = (double)el.i64_val;
+            el.bln_val = (el.i64_val != 0);
             pos += 8;
             break;
 
@@ -163,14 +259,20 @@ public:
             // Fill in the i64_val from the parsed value, in case we were expected an i64
             el.i64_val = el.i32_val;
             el.dbl_val = (double)el.i32_val;
+            el.bln_val = (el.i32_val != 0);
             pos += 4;
             break;
         default:
-            throw "UnrecognizedType";
+            throw new std::runtime_error("BSONReader::UnrecognizedType");
             break;
         }
 
-        return el;
+        return &el;
+    }
+
+    int32_t size()
+    {
+        return len;
     }
 
 private:
@@ -211,12 +313,12 @@ public:
         out = (uint8_t*)calloc(1, 4);
         if (out == NULL)
         {
-            throw "OOM you twat";
+            throw new std::runtime_error("OOM you twat");
         }
 
         is_array = false;
         tag_index = 0;
-        
+
         pos = 4;
         child = NULL;
     }
@@ -258,7 +360,7 @@ public:
     {
         return push((char*)NULL, v);
     }
-    
+
     bool push(char* name, int32_t v)
     {
         if (child != NULL)
@@ -284,7 +386,7 @@ public:
     {
         return push((char*)NULL, v);
     }
-    
+
     bool push(char* name, int64_t v, int8_t type = BSONReader::ElementType::Int64)
     {
         if (child != NULL)
@@ -319,7 +421,7 @@ public:
     {
         return push((char*)NULL, v);
     }
-    
+
     bool push(char* name, double v)
     {
         if (child != NULL)
@@ -345,7 +447,7 @@ public:
     {
         return push((char*)NULL, v);
     }
-    
+
     bool push(char* name, char* v, int32_t len = -1, int8_t type = BSONReader::ElementType::String)
     {
         if (child != NULL)
@@ -423,7 +525,7 @@ public:
     {
         return push_array((char*)NULL);
     }
-    
+
     bool push_array(char* name)
     {
         if (child != NULL)
@@ -449,7 +551,7 @@ public:
     {
         return push_subdoc((char*)NULL);
     }
-    
+
     bool push_subdoc(char* name)
     {
         if (child != NULL)
@@ -497,6 +599,101 @@ public:
         }
     }
 
+    bool push(std::map<std::string, struct BSONReader::Element>* map, BSONReader::ElementType type)
+    {
+        return push((char*)NULL, map, type);
+    }
+
+    bool push(char* name, std::map<std::string, struct BSONReader::Element>* map, BSONReader::ElementType type)
+    {
+        if (map == NULL)
+        {
+            return false;
+        }
+
+        switch (type)
+        {
+        case BSONReader::ElementType::Array:
+            push_array(name);
+            break;
+        case BSONReader::ElementType::SubDocument:
+            push_subdoc(name);
+            break;
+        default:
+            return false;
+        }
+
+        struct BSONReader::Element* el;
+        std::map<std::string, struct BSONReader::Element>::iterator it;
+        for (it = map->begin(); it != map->end(); it++)
+        {
+            el = &(it->second);
+            push(el);
+        }
+
+        push_end();
+
+        return true;
+    }
+
+    bool push(struct BSONReader::Element* el)
+    {
+        // Switch on the element types.
+        switch (el->type)
+        {
+        case BSONReader::ElementType::Double:
+            push(el->name, el->dbl_val);
+            break;
+
+        case BSONReader::ElementType::String:
+        case BSONReader::ElementType::JavaScript:
+        case BSONReader::ElementType::Deprecatedx0E:
+            push(el->name, el->str_val, el->type);
+            break;
+
+        case BSONReader::ElementType::SubDocument:
+        case BSONReader::ElementType::Array:
+            push(el->name, el->map_val, el->type);
+            break;
+
+        case BSONReader::ElementType::Binary:
+            push(el->name, el->bin_val, el->bin_len);
+            break;
+
+        case BSONReader::ElementType::Deprecatedx06:
+        case BSONReader::ElementType::Null:
+        case BSONReader::ElementType::MinKey:
+        case BSONReader::ElementType::MaxKey:
+            break;
+
+        case BSONReader::ElementType::ObjectId:
+            break;
+
+        case BSONReader::ElementType::Boolean:
+            push(el->name, el->bln_val);
+            break;
+
+        case BSONReader::ElementType::Regex:
+            break;
+
+        case BSONReader::ElementType::UTCDateTime:
+        case BSONReader::ElementType::MongoTimeStamp:
+        case BSONReader::ElementType::Int64:
+            push(el->name, el->i64_val, el->type);
+            break;
+
+        case BSONReader::ElementType::Int32:
+            push(el->name, el->i32_val);
+            break;
+
+        default:
+            throw new std::runtime_error("BSONWriter::UnrecognizedType");
+            break;
+        }
+
+        return true;
+    }
+
     ~BSONWriter()
     {
         free(out);
@@ -514,11 +711,11 @@ private:
         reset();
         is_array = _is_array;
     }
-    
+
     bool is_array;
     int32_t tag_index = 0;
     char array_name[10];
-    
+
     uint8_t* out;
     uint64_t pos;
     BSONWriter* child;
@@ -528,7 +725,7 @@ private:
         uint8_t* out_new = (uint8_t*)realloc(out, (size_t)(pos + nbytes));
         if (out_new == NULL)
         {
-            throw "OOM you twat";
+            throw new std::runtime_error("OOM you twat");
         }
         else
         {
@@ -559,7 +756,7 @@ private:
             // printable, but this just uses this as an 8-bit unsigned field.
             if (tag_index > 254)
             {
-                throw "OutOfMinimalTags";
+                throw new std::runtime_error("OutOfMinimalTags");
             }
 
             // Because we're using the actual integer values, we need to start at 1, otherwise we'll have a pair of NULL characters.
@@ -578,49 +775,3 @@ private:
 };
 
 #endif
-
-//// f30000000461727200a90000000530000900000000537472756e676f757408310001103200f6ffffff123300cce32320fdffffff013400bbbdd7d9df7cdb3d04350038000000083000001031009cffffff12320000b21184170000000133005a62d7d718e774690534000a0000000053747261696768747570000336003400000005610004000000006273747210693300fa0500000862000001640047e51aaeab44e93f1269360001f05a2b17ffffff00000164626c00333333333333144010693332005000000012693634000010a5d4e800000008626c6e000005737472000d00000000537472696e6779737472696e6700
-//// {'arr': ['Strungout', True, -10, -12345678900, 1e-10, [False, -100, 101000000000, 1e+200, 'Straightup'], {'a': 'bstr', 'i3': 1530, 'b': False, 'd': 0.7896326447, 'i6': -999999999999}], 'dbl': 5.05, 'i32': 80, 'i64': 1000000000000, 'bln': False, 'str': 'Stringystring'}
-//// The Python bson library doesn't output strings as strings, but as binary tyoe 0 arrays.
-//BSONWriter bw;
-//bw.push_array("arr");
-//bw.push_binary((uint8_t*)"Strungout", 9);
-//bw.push_bool(true);
-//bw.push_int32(-10);
-//bw.push_int64(-12345678900);
-//bw.push_double(1e-10);
-//bw.push_array();
-//bw.push_bool(false);
-//bw.push_int32(-100);
-//bw.push_int64(101000000000);
-//bw.push_double(1e200);
-//bw.push_binary((uint8_t*)"Straightup", 10);
-//bw.push_end();
-//bw.push_subdoc();
-//bw.push_binary("a", (uint8_t*)"bstr", 4);
-//bw.push_int32("i3", 1530);
-//bw.push_bool("b", false);
-//bw.push_double("d", 0.7896326447);
-//bw.push_int64("i6", -999999999999);
-//bw.push_end();
-//bw.push_end();
-//bw.push_double("dbl", 5.05);
-//bw.push_int32("i32", 80);
-//bw.push_int64("i64", 1000000000000);
-//bw.push_bool("bln", false);
-//bw.push_binary("str", (uint8_t*)"Stringystring", 13);
-//uint8_t* out = bw.push_end();
-//for (int i = 0; i < *(int32_t*)out; i++)
-//{
-//    printf("%02x", out[i]);
-//}
-//printf("\n");
-//return 0;
-//BSONWriter bw;
-//bw.push_string("This is a string.");
-//uint8_t* bytes = bw.push_end();
-//for (int i = 0; i < *(int32_t*)bytes; i++)
-//{
-//    printf("%d\n", bytes[i]);
-//}
-//return 0;
