@@ -20,14 +20,18 @@ void sighandler(int32_t sig)
 
 int main(int32_t argc, char** argv)
 {
+    struct Diana::Universe::Parameters params;
+
+    #include "__universe_args.hpp"
+
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
     signal(SIGINT, &sighandler);
 
-    struct Diana::Universe::Parameters params;
-    params.verbose_logging = false;
-    params.realtime_physics = true;
-    params.min_physics_frametime = 0.001;
+    // params.verbose_logging = false;
+    // params.realtime_physics = true;
+    // params.min_physics_frametime = 0.001;
+    
     Diana::Universe* u = new Diana::Universe(params);
 
     u->start_net();

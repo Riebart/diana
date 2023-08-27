@@ -23,4 +23,5 @@ do
     else
         echo "${type} opt_${var} = get_basic_option(argc, argv, \"\", \"--${cli_arg_str}\", ${default_value}).result.option_value;"
     fi
-done
+    echo "params.${var} = opt_${var};"
+done > src/__universe_args.hpp

@@ -11,7 +11,11 @@ all: unisim-bin
 clean:
 	rm bin/unisim
 
+universe-cli-args:
+	bash build_args.sh
+
 unisim-bin:
+	make universe-cli-args
 	make unisim-bin-static
 
 unisim-bin-static:

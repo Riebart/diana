@@ -116,7 +116,7 @@ namespace Diana
                 simulation_rate(1.0),
                 realtime_physics(true),
                 gravitational_constant(6.67384e-11),
-                speed_of_light(299792458),
+                speed_of_light(299792458l),
                 collision_energy_cutoff(1e-9),
                 id_rand_max(1),
                 max_simultaneous_collision_rounds(100),

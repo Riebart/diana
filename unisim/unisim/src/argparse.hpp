@@ -148,7 +148,7 @@ template<typename T> struct option<T> get_basic_option(int argc, char** argv, st
     INIT_OPT_STRUCT(T);
     opt.is_flag = false;
     opt.validator = [](struct option_result<T> optr) {
-        T result;
+        T result = optr.option_value; // Set it to the current value, which by construction is the default value;
         // Technically, we should check the error code to make sure nothing bad happened.
         auto [prt, ec] = std::from_chars(
             optr.option_string.data(),
