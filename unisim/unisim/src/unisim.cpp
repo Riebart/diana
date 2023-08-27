@@ -20,7 +20,11 @@ int main(int32_t argc, char** argv)
 {
     struct Diana::Universe::Parameters params;
 
-    ArgumentParser parser(argc, argv, "unisim", "Simulates universes!");
+    ArgumentParser parser(
+        argc, argv,
+        "unisim", "Simulates universes!",
+        80, true);
+
     #include "__universe_args.hpp"
     bool parse_success = parser.finished_parsing();
     

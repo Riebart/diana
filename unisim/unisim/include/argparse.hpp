@@ -48,6 +48,8 @@ class ArgumentParser
     char** argv;
     size_t descrption_wrap_width = 80;
     bool error_while_parsing = false;
+    bool enforce_all_args_consumed = false;
+    bool* arg_consumed;
 
     std::string progname;
     std::string proghelp;
@@ -62,13 +64,13 @@ class ArgumentParser
 
     std::vector<struct arg_help> arg_help_strings;
 
-    void log_argument(std::string _name, std::string _description, bool _is_flag, bool _is_required)
+    void log_argument(std::string name, std::string description, bool is_flag, bool is_required)
     {
         struct arg_help item;
-        item.name = _name;
-        item.description = _description;
-        item.is_flag = _is_flag;
-        item.is_required = _is_required;
+        item.name = name;
+        item.description = description;
+        item.is_flag = is_flag;
+        item.is_required = is_required;
 
         this->arg_help_strings.push_back(item);
     }
@@ -102,17 +104,24 @@ class ArgumentParser
     }
 
     public:
-        ArgumentParser(int _argc, char** _argv, std::string _progname, std::string _proghelp, size_t wrap_width = 80)
+        ArgumentParser(int argc, char** argv, std::string progname, std::string proghelp, size_t wrap_width = 80, bool enforce_all_args_consumed = false)
         {
-            this->argc = _argc;
-            this->argv = _argv;
+            this->argc = argc;
+            this->argv = argv;
 
-            this->progname = _progname;
-            this->proghelp = _proghelp;
-
+            this->progname = progname;
+            this->proghelp = proghelp;
             this->descrption_wrap_width = wrap_width;
 
+            this->enforce_all_args_consumed = enforce_all_args_consumed;
+            this->arg_consumed = new bool[argc-1];
+
             this->error_while_parsing = false;
+        }
+
+        ~ArgumentParser()
+        {
+            delete this->arg_consumed;
         }
 
         // Perform final-parsing work, including checking for help, 
@@ -128,6 +137,27 @@ class ArgumentParser
             }
             else
             {
+                int num_args_consumed = 0;
+                for (int i = 1 ; i < this->argc ; i++)
+                {
+                    num_args_consumed += this->arg_consumed[i-1];
+                }
+
+                if (this->enforce_all_args_consumed && (num_args_consumed < (this->argc - 1)))
+                {
+                    std::cerr << "ERROR: Unparsed arguments provided: ";
+
+                    for (int i = 1 ; i < this->argc ; i++)
+                    {
+                        if (!this->arg_consumed[i-1])
+                        {
+                            std::cerr << "\"" << this->argv[i] << "\" ";
+                        }
+                    }
+                    std::cerr << std::endl;
+                    this->error_while_parsing = true;
+                }
+
                 parsing_success = !this->error_while_parsing;
             }
 
@@ -210,6 +240,7 @@ class ArgumentParser
                 // If we found either option
                 if (found_long_option || found_short_option)
                 {
+                    this->arg_consumed[i-1] = true;
                     option_def->result.option_present = true;
 
                     // For non-flag options, get the string that is the value.
@@ -232,8 +263,11 @@ class ArgumentParser
                         // Example: prog -a val
                         if ((arg.length() == option.length()) && (i < (this->argc - 1)))
                         {
+                            // This also consumes the next argument.
+                            this->arg_consumed[i] = true;
                             option_def->result.option_string = this->argv[i+1];
                             i++;
+                            break;
                         }
                         // If the character immediately following the option string is '='
                         // Then we can substring after '=' for the value string
@@ -242,6 +276,7 @@ class ArgumentParser
                         else if ((arg.length() >= option.length() + 1) && (arg[option.length()] == '='))
                         {
                             option_def->result.option_string = arg.substr(found + option.length() + 1);
+                            break;
                         }
                         // This is just, the last option.
                         //
@@ -249,6 +284,7 @@ class ArgumentParser
                         else if (arg.length() >= option.length() + 1)
                         {
                             option_def->result.option_string = arg.substr(found + option.length());
+                            break;
                         }
                         else
                         {
