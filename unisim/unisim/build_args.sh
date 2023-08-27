@@ -13,9 +13,7 @@ do
         tail -n+2 | tac |
         sed 's|^ *//||;s/^ *//;s/ *$//' |
         grep -v "^$" | tr '\n' ' ')
-    
-    echo "$description" | xxd >&2
-    
+        
     cli_arg_str=$(echo "$var" | tr '_' '-')
     default_value=$(cat lib/include/universe.hpp | sed -n "s/^ *${var}(\([^)]*\)),*$/\1/p")
 

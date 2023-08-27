@@ -22,9 +22,14 @@ int main(int32_t argc, char** argv)
 
     ArgumentParser parser(argc, argv, "unisim", "Simulates universes!");
     #include "__universe_args.hpp"
-    bool parse_complete = parser.finished_parsing();
-    fprintf(stderr, "Parse success %d\n", parse_complete);
-    return 0;
+    bool parse_success = parser.finished_parsing();
+    
+    if (!parse_success)
+    {
+        fprintf(stderr, "Error parsing arguments\n");
+        parser.print_help();
+        return 1;
+    }
 
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
