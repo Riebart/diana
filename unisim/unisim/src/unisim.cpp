@@ -73,51 +73,51 @@ void check_packing()
         (uint64_t)&b.max_distance - (uint64_t)&b);
 }
 
-#include "bson.hpp"
-#include <fstream>
-void bson_test()
-{
-    //char input[] = { '\x2b','\x00','\x00','\x00','\x04','\x48','\x69','\x00','\x22','\x00','\x00','\x00','\x10','\x30','\x00','\x00','\x00','\x00','\x00','\x10','\x31','\x00','\x01','\x00','\x00','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x0a' };
-    //char input[] = { '\x55','\x00','\x00','\x00','\x03','\x48','\x69','\x00','\x4c','\x00','\x00','\x00','\x04','\x42','\x79','\x65','\x00','\x42','\x00','\x00','\x00','\x10','\x30','\x00','\x12','\x00','\x00','\x00','\x04','\x31','\x00','\x24','\x00','\x00','\x00','\x05','\x30','\x00','\x01','\x00','\x00','\x00','\x00','\x61','\x05','\x31','\x00','\x03','\x00','\x00','\x00','\x00','\x62','\x63','\x64','\x01','\x32','\x00','\x00','\x00','\x00','\x00','\x00','\x00','\xe0','\x3f','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x00','\x0a' };
-    //char input[] = { '\x55','\x00','\x00','\x00','\x03','\x48','\x69','\x00','\x4c','\x00','\x00','\x00','\x04','\x42','\x79','\x65','\x00','\x42','\x00','\x00','\x00','\x10','\x30','\x00','\x12','\x00','\x00','\x00','\x04','\x31','\x00','\x24','\x00','\x00','\x00','\x05','\x30','\x00','\x01','\x00','\x00','\x00','\x00','\x61','\x05','\x31','\x00','\x03','\x00','\x00','\x00','\x00','\x62','\x63','\x64','\x01','\x32','\x00','\x00','\x00','\x00','\x00','\x00','\x00','\xe0','\x3f','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x00' };
-    std::ifstream infile ("C:\\Users\\Michael\\Documents\\Projects\\Diana\\tmp", std::ios::in | std::ios::binary);
-    infile.seekg(0, infile.end);
-    size_t len = infile.tellg();
-    infile.seekg(0, infile.beg);
+// #include "bson.hpp"
+// #include <fstream>
+// void bson_test()
+// {
+//     //bson_test();
+//     //return 0;
+//
+//     //char input[] = { '\x2b','\x00','\x00','\x00','\x04','\x48','\x69','\x00','\x22','\x00','\x00','\x00','\x10','\x30','\x00','\x00','\x00','\x00','\x00','\x10','\x31','\x00','\x01','\x00','\x00','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x0a' };
+//     //char input[] = { '\x55','\x00','\x00','\x00','\x03','\x48','\x69','\x00','\x4c','\x00','\x00','\x00','\x04','\x42','\x79','\x65','\x00','\x42','\x00','\x00','\x00','\x10','\x30','\x00','\x12','\x00','\x00','\x00','\x04','\x31','\x00','\x24','\x00','\x00','\x00','\x05','\x30','\x00','\x01','\x00','\x00','\x00','\x00','\x61','\x05','\x31','\x00','\x03','\x00','\x00','\x00','\x00','\x62','\x63','\x64','\x01','\x32','\x00','\x00','\x00','\x00','\x00','\x00','\x00','\xe0','\x3f','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x00','\x0a' };
+//     //char input[] = { '\x55','\x00','\x00','\x00','\x03','\x48','\x69','\x00','\x4c','\x00','\x00','\x00','\x04','\x42','\x79','\x65','\x00','\x42','\x00','\x00','\x00','\x10','\x30','\x00','\x12','\x00','\x00','\x00','\x04','\x31','\x00','\x24','\x00','\x00','\x00','\x05','\x30','\x00','\x01','\x00','\x00','\x00','\x00','\x61','\x05','\x31','\x00','\x03','\x00','\x00','\x00','\x00','\x62','\x63','\x64','\x01','\x32','\x00','\x00','\x00','\x00','\x00','\x00','\x00','\xe0','\x3f','\x00','\x01','\x32','\x00','\x66','\x66','\x66','\x66','\x66','\x66','\x16','\x40','\x08','\x33','\x00','\x00','\x00','\x00','\x00' };
+//     std::ifstream infile ("C:\\Users\\Michael\\Documents\\Projects\\Diana\\tmp", std::ios::in | std::ios::binary);
+//     infile.seekg(0, infile.end);
+//     size_t len = infile.tellg();
+//     infile.seekg(0, infile.beg);
     
-    char* input = new char[len];
-    infile.read(input, len);
+//     char* input = new char[len];
+//     infile.read(input, len);
 
-    size_t pos = 0;
-    while (pos < len)
-    {
-        BSONReader br(input + pos);
-        pos += br.size();
-        struct BSONReader::Element* el = br.get_next_element(true);
-        printf("\"%s\" %d %u %u\n", el->name, el->i32_val, br.size(), pos);
-        while (el->type != BSONReader::ElementType::EndOfDocument)
-        {
-            el = br.get_next_element(true);
-        }
+//     size_t pos = 0;
+//     while (pos < len)
+//     {
+//         BSONReader br(input + pos);
+//         pos += br.size();
+//         struct BSONReader::Element* el = br.get_next_element(true);
+//         printf("\"%s\" %d %u %lu\n", el->name, el->i32_val, br.size(), pos);
+//         while (el->type != BSONReader::ElementType::EndOfDocument)
+//         {
+//             el = br.get_next_element(true);
+//         }
 
-        //BSONWriter bw;
-        //bw.push(el);
-        //uint8_t* bytes = bw.push_end();
-        //int32_t nbytes = *(int32_t*)bytes;
-        //for (int i = 0; i < nbytes; i++)
-        //{
-        //    printf("%02x", bytes[i]);
-        //}
-        //printf("\n");
-    }
-    delete input;
-}
+//         //BSONWriter bw;
+//         //bw.push(el);
+//         //uint8_t* bytes = bw.push_end();
+//         //int32_t nbytes = *(int32_t*)bytes;
+//         //for (int i = 0; i < nbytes; i++)
+//         //{
+//         //    printf("%02x", bytes[i]);
+//         //}
+//         //printf("\n");
+//     }
+//     delete input;
+// }
 
 int main(int32_t argc, char** argv)
 {
-    //bson_test();
-    //return 0;
-
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
     signal(SIGINT, &sighandler);
@@ -137,7 +137,7 @@ int main(int32_t argc, char** argv)
 
     std::chrono::seconds dura(1);
 
-	fprintf(stderr, "Unisim main thread PID: %ld\n", get_this_thread_pid());
+	fprintf(stderr, "Unisim main thread PID: %u\n", get_this_thread_pid());
     fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
     while (running)
     {

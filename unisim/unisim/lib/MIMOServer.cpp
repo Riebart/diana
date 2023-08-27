@@ -140,7 +140,7 @@ namespace Diana
 
     void* serve_SocketThread(void* sockV)
     {
-        fprintf(stderr, "Socket serving thread PID: %ld\n", get_this_thread_pid());
+        fprintf(stderr, "Socket serving thread PID: %u\n", get_this_thread_pid());
         SocketThread* sock = (SocketThread*)sockV;
 
         while (sock->running)
@@ -250,7 +250,7 @@ namespace Diana
     // More on non-blocking IO: https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm
     void* serve_MIMOServer(void* serverV)
     {
-        fprintf(stderr, "MIMOServer main thread PID: %ld\n", get_this_thread_pid());
+        fprintf(stderr, "MIMOServer main thread PID: %u\n", get_this_thread_pid());
 
         MIMOServer* server = (MIMOServer*)serverV;
 
@@ -311,7 +311,7 @@ namespace Diana
                 }
 
                 hungup -= server->inputs.size();
-                fprintf(stderr, "Successfully hung up %llu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
+                fprintf(stderr, "Successfully hung up %lu client%s\n", hungup, ((hungup > 1) ? "s" : ""));
 
                 server->hangups.clear();
                 UNLOCK(server->hangup_lock);

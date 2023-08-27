@@ -109,6 +109,7 @@ namespace Diana
                 verbose_logging(true),
                 min_physics_frametime(0.002),
                 max_physics_frametime(0.002),
+                permit_spin_sleep(false),
                 min_vis_frametime(0.1),
                 network_port(5505),
                 num_worker_threads(1),
@@ -151,6 +152,9 @@ namespace Diana
             // coarse. Setting this value too low may result in unnecessary apparent slowdown
             // of the game to achieve a time step that may be finer than necessary.
             double max_physics_frametime;
+
+            // Permit spin sleeping to slow realtime simulations down to real time.
+            bool permit_spin_sleep;
 
             // The minimum wall-clock time that will pass between subsequent rounds of
             // vis-data transmission.

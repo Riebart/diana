@@ -41,8 +41,28 @@ public:
     // have any reasonable values.
     struct Element
     {
+        std::map<std::string, struct Element>* map_val = NULL;
+        
+        int32_t  bin_len;
+        uint8_t* bin_val;
+
+        char*    str_val;
+        int32_t  str_len;
+
+        bool managed_pointers;
+
+        ElementType type;
+        int8_t subtype;
+        char* name;
+
+        bool     bln_val;
+        int32_t  i32_val;
+        int64_t  i64_val;
+
+        double   dbl_val;
+
         Element() :
-            bin_val(NULL), str_val(NULL), map_val(NULL),
+            map_val(NULL), bin_val(NULL), str_val(NULL),
             managed_pointers(false) {}
 
         Element(struct Element* src) : Element()
@@ -91,26 +111,6 @@ public:
 
             managed_pointers = true;
         }
-
-        bool managed_pointers;
-
-        ElementType type;
-        int8_t subtype;
-        char* name;
-
-        bool     bln_val;
-        int32_t  i32_val;
-        int64_t  i64_val;
-
-        double   dbl_val;
-
-        int32_t  bin_len;
-        uint8_t* bin_val;
-
-        char*    str_val;
-        int32_t  str_len;
-
-        std::map<std::string, struct Element>* map_val;
     };
 
     BSONReader(char* _msg)

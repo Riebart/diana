@@ -82,16 +82,20 @@
 //   > Calls vector.cpp:Vector3_alloc()
 
 #include <chrono>
+
+#define ABSOLUTE_MIN_FRAMETIME 1e-7
+#define SPIN_SLEEP_MAX_US 2000
+
 #define LOCK(l) l.lock()
 #define UNLOCK(l) l.unlock()
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
 #define THREAD_JOIN(t) if (t.joinable()) t.join()
 
-#define ABSOLUTE_MIN_FRAMETIME 1e-7
-
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define CLAMP(m, v, M) MIN((M), MAX((v), (m)))
+
+void spin_sleep_for(std::chrono::microseconds sleep_duration);
 
 namespace Diana
 {
@@ -112,7 +116,7 @@ namespace Diana
 
     void* sim(void* uV)
     {
-        fprintf(stderr, "Universe (%p) physics sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
+        fprintf(stderr, "Universe (%p) physics sim thread PID: %u\n", uV, get_this_thread_pid());
         Universe* u = (Universe*)uV;
 
         // dt is the amount of time that will pass in the game world during the next tick.
@@ -154,7 +158,18 @@ namespace Diana
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
+                int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_frametime - e));
+                std::chrono::microseconds sleep_duration = std::chrono::microseconds(sleep_duration_us);
+                
+                if (u->params.permit_spin_sleep && (sleep_duration_us < SPIN_SLEEP_MAX_US))
+                {
+                    spin_sleep_for(sleep_duration);
+                }
+                else
+                {
+                    std::this_thread::sleep_for(sleep_duration);
+                }
+
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
@@ -184,7 +199,7 @@ namespace Diana
 
     void* vis_data_thread(void* uV)
     {
-        fprintf(stderr, "Universe (%p) visdata sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
+        fprintf(stderr, "Universe (%p) visdata sim thread PID: %u\n", uV, get_this_thread_pid());
         Universe* u = (Universe*)uV;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -197,7 +212,7 @@ namespace Diana
             // waking up too often.
             if (u->visdata_paused)
             {
-                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * u->max_frametime)));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_vis_frametime))));
                 continue;
             }
 
@@ -211,7 +226,18 @@ namespace Diana
             // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
             if (e < u->min_vis_frametime)
             {
-                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_vis_frametime - e))));
+                int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_frametime - e));
+                std::chrono::microseconds sleep_duration = std::chrono::microseconds(sleep_duration_us);
+                
+                if (u->params.permit_spin_sleep && (sleep_duration_us < SPIN_SLEEP_MAX_US))
+                {
+                    spin_sleep_for(sleep_duration);
+                }
+                else
+                {
+                    std::this_thread::sleep_for(sleep_duration);
+                }
+                
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
@@ -1991,5 +2017,26 @@ namespace Diana
                 }
             }
         }
+    }
+}
+
+// TODO This is subject to some wild variation in actual sleep time,
+// occasionally up and and including an extra order of magnitude.
+//
+// This needs to be more precise to be able to work with write time divs
+// smaller than 1ms. 
+//
+// This can, in theory, be used to provide the ability to spin_sleep for
+// frametimes smaller than about 2ms, and maintain realtime processing.
+// Important for precise realtime activities.
+void spin_sleep_for(std::chrono::microseconds dura)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    auto end = start;
+    auto elapsed = end - start;
+    while (elapsed < dura)
+    {
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     }
 }
