@@ -6,6 +6,8 @@
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
+#include "argparse.hpp"
+
 volatile bool running = true;
 
 void sighandler(int32_t sig)
@@ -14,19 +16,10 @@ void sighandler(int32_t sig)
     running = false;
 }
 
-#include "argparse.hpp"
+#define s(str) (std::string)(str)
 
 int main(int32_t argc, char** argv)
 {
-    // struct option_result<std::string> optr;
-    // optr = getCmdOption(argc, argv, "-i", "--include", false);
-    // fprintf(stderr, "%d \"%s\"\n", optr.option_present, optr.option_value.c_str());
-
-    // optr = getCmdOption(argc, argv, "-r", "--remove", true);
-    // fprintf(stderr, "%d \"%p\"\n", optr.option_present, optr.option_value.c_str());
-
-    return 0;
-
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
     signal(SIGINT, &sighandler);
