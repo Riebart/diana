@@ -88,7 +88,7 @@ class Vector3:
 
         x2 = self.y*((x*y-c*x*y)/l2+(s*z)/l)+(self.x*(pow(x,2)+c*(pow(y,2)+pow(z,2))))/l2+(-((s*y)/l)+(x*z-c*x*z)/l2)*self.z
         y2 = self.x*((x*y-c*x*y)/l2-(s*z)/l)+(self.y*(pow(y,2)+c*(pow(x,2)+pow(z,2))))/l2+((s*x)/l+(y*z-c*y*z)/l2)*self.z
-        z2 = self.x*((s*y)/l+(x*z-c*x*z)/l2)*+self.y*(-((s*x)/l)+(y*z-c*y*z)/l2)+((c*(pow(x,2)+pow(y,2))+pow(z,2))*self.z)/l2
+        z2 = self.x*((s*y)/l+(x*z-c*x*z)/l2)+self.y*(-((s*x)/l)+(y*z-c*y*z)/l2)+((c*(pow(x,2)+pow(y,2))+pow(z,2))*self.z)/l2
 
         self.x = x2
         self.y = y2
