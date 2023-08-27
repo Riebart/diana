@@ -126,8 +126,7 @@ namespace Diana
                 spectrum_slush_range(0.01),
                 health_damage_threshold(0.1),
                 health_mass_scale(1e6),
-                visual_acuity(4e-7) // This assumes an acuity of approximately 60cm at 
-                                    // 1km, which roughly corresponds to a typical human
+                visual_acuity(4e-7)
             {}
 
             // Print verbose information, such as collision rounds per tick, and when a
@@ -257,6 +256,9 @@ namespace Diana
             // The cutoff (in (radius/distance)^2) used to determine whether a given object is sent
             // as a piece of visual data. The square is to prevent unnecessary square roots being
             // performed frequently. The physical units of this tan(radians).
+            //
+            // This assumes an acuity of approximately 60cm at 1km, which roughly corresponds to a
+            // typical human
             double visual_acuity;
         };
 
