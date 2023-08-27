@@ -42,8 +42,8 @@ template <typename T> struct option_result<T> get_option_value(int argc, char** 
         std::string arg = argv[i];
         std::string option;
 
-        bool found_long_option = (arg.find(option_def->long_option) == 0);
-        bool found_short_option = (arg.find(option_def->short_option) == 0);
+        bool found_long_option = ((option_def->long_option != "") && (arg.find(option_def->long_option) == 0));
+        bool found_short_option = ((option_def->short_option != "") && (arg.find(option_def->short_option) == 0));
 
         if (found_long_option){
             option = option_def->long_option;
