@@ -14,14 +14,23 @@ do
         sed 's|^ *//||;s/^ *//;s/ *$//' |
         grep -v "^$" | tr '\n' ' ')
     
+    echo "$description" | xxd >&2
+    
     cli_arg_str=$(echo "$var" | tr '_' '-')
     default_value=$(cat lib/include/universe.hpp | sed -n "s/^ *${var}(\([^)]*\)),*$/\1/p")
 
     if [ "$type" == "bool" ]
     then
-        echo "${type} opt_${var} = get_flag_option(argc, argv, \"\", \"--${cli_arg_str}\").result.option_value;"
+        echo "${type} opt_${var} = parser.get_flag_option(
+            \"\",
+            \"--${cli_arg_str}\",
+            \"${description}\", false).result.option_value;"
     else
-        echo "${type} opt_${var} = get_basic_option(argc, argv, \"\", \"--${cli_arg_str}\", ${default_value}).result.option_value;"
+        echo "${type} opt_${var} = parser.get_basic_option(
+            \"\",
+            \"--${cli_arg_str}\",
+            ${default_value},
+            \"${description}\", false).result.option_value;"
     fi
     echo "params.${var} = opt_${var};"
 done > src/__universe_args.hpp

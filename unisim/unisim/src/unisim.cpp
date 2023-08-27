@@ -16,13 +16,15 @@ void sighandler(int32_t sig)
     running = false;
 }
 
-#define s(str) (std::string)(str)
-
 int main(int32_t argc, char** argv)
 {
     struct Diana::Universe::Parameters params;
 
+    ArgumentParser parser(argc, argv, "unisim", "Simulates universes!");
     #include "__universe_args.hpp"
+    bool parse_complete = parser.finished_parsing();
+    fprintf(stderr, "Parse success %d\n", parse_complete);
+    return 0;
 
     signal(SIGABRT, &sighandler);
     signal(SIGTERM, &sighandler);
