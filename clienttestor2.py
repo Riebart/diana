@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-from __future__ import print_function
 import ship
 import message
 import socket
@@ -113,6 +112,7 @@ def pool_rack(C = 1.0, num_rows = 5):
             sm.object_type = "Target Ball %d" % (i * (i + 1) / 2 + j + 1)
             sm.mass = ball_mass
             sm.position = [  C * (i - 2 * j) * ball_radius + random.random() * (C - 1.0), y_offset - C * y_scale * (1 + 2 * i) * ball_radius + random.random() * (C - 1.0), random.random() * (C - 1.0) ]
+            print(sm.position)
             SpawnMsg.send(sock, None, -1, sm.build())
             nobjects += 1
 
@@ -380,16 +380,17 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    performance_test(0, 1000, 0)
-    performance_test(1, 300, 0)
-    performance_test(2, 300, 0)
-    performance_test(0, 0, 250)
+    #performance_test(0, 1000, 0)
+    #performance_test(1, 300, 0)
+    #performance_test(2, 300, 0)
+    #performance_test(0, 0, 250)
+
     #basic()
     #pool_rack(C = 1.01, num_rows = 25)
     #spawn_sol()
     #signature_test()
 
-    #for i in range(-20, 21, 1):
-    #    flight_school(1.0, 30, i + 150000000000, 3.0, 0.3)
+    for i in range(-20, 21, 2):
+        flight_school(1.0, 10, i, 3.0, 0.3)
 
     #test_sensors()

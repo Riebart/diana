@@ -136,10 +136,11 @@ class SmartObject(SpaceObject, threading.Thread):
     def init_beam(self, BeamClass, energy, speed, direction, up, h_focus, v_focus):
         direction = direction.unit()
 
-        velocity = direction.clone()
+        #velocity = direction.clone()
+        velocity = Vector3(direction)
         velocity.scale(speed)
 
-        origin = direction.clone()
+        origin = Vector3(direction)
         origin.scale(self.radius + 0.0001)
 
         beam = BeamClass(self.osim, self.phys_id, self.osim_id, energy, velocity, origin, up, h_focus, v_focus)

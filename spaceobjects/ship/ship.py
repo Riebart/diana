@@ -40,16 +40,16 @@ class Ship(SmartObject):
         self.name = None
         self.object_type = None
 
-        self.sensors = Sensors()
-        self.comms = Comms()
-        self.helm = Helm()
-        self.weapons = Weapons()
-        self.engineering = Engineering()
-        self.spawned = 0
-        
+        self.sensors = Sensors(self)
+        self.comms = Comms(self)
+        self.helm = Helm(self)
+        self.weapons = Weapons(self)
+        self.engineering = Engineering(self)
+        self.spawned = False
+
         #Currently a static dict mapping
         self.systems = { 0:self.sensors, 1:self.comms, 2:self.helm, 3:self.weapons, 4:self.engineering}
-        
+
         self.init_weapons()
         self.init_helm()
         self.init_engineering()
@@ -73,14 +73,13 @@ class Ship(SmartObject):
 
 
     def init_weapons(self):
-        
         #Items not common to all ships. See shiptypes.py
         self.weapons.max_missiles = 10
         self.weapons.cur_missiles = self.weapons.max_missiles
-        
+
         self.weapons.launchers = dict()
         self.weapons.launchers[0] = Launcher()
-        
+
         #TODO: Fix Laser() constructor and decide on methof for defining firing arcs
         self.weapons.laser_list = dict()
         self.weapons.laser_list[0] = Laser(0, 50000.0, pi/6, pi/6, Vector3(1,0,0), 10.0)
@@ -92,7 +91,7 @@ class Ship(SmartObject):
     # ++++++++++++++++++++++++++++++++
     # These are the functions that are required by the object sim of any ships
     # that are going to be player-controlled
-    
+
     #TODO: Inform client about available systems
     #NOTTODO - this is now done via directory messages
     def new_client(self, client, client_id):
@@ -107,9 +106,9 @@ class Ship(SmartObject):
                 self.name = msg.name
 
         elif isinstance(msg, message.ReadyMsg):
-            if msg.ready == 1 and self.spawned == 0:
+            if msg.ready == 1 and not self.spawned:
                 self.osim.spawn_object(self)
-                self.spawned = 1
+                self.spawned = True
 
         elif isinstance(msg, message.GoodbyeMsg):
             self.osim.destroy_object(self.osim_id)
@@ -118,7 +117,16 @@ class Ship(SmartObject):
         elif isinstance(msg, message.PhysicalPropertiesMsg):
             msg.srv_id = self.phys_id
             msg.cli_id = self.osim_id
-            msg.sendto(self.sock)
+            message.PhysicalPropertiesMsg.send(self.phys_id, self.osim_id, msg.build())
+
+        elif isinstance(msg, message.CommandMsg):
+            self.handle_command(msg)
+
+        #Largely deprecated - use COMMAND messages
+        elif isinstance(msg, message.ThrustMsg):
+            if msg.thrust != None:
+                print "Setting thrust: " + str(msg.thrust)
+                self.set_thrust(msg.thrust)
 
         elif isinstance(msg, message.VisualDataEnableMsg):
             if msg.enabled:
@@ -148,15 +156,21 @@ class Ship(SmartObject):
 
 
 
+    def handle_command(self, msg):
+        if (msg.system_id in self.systems):
+            self.systems[msg.system_id].handle_command(msg.system_command)
+        else:
+            print "ERROR: System id not found: ", msg.system_id
+        pass
 
     # ++++++++++++++++++++++++++++++++
     # Now the rest of the handler functions
     # ++++++++++++++++++++++++++++++++
-    
+
     #these are defined by the handler function in SmartObject (spaceobj.py)
     def handle_scanresult(self, mess):
         pass
-        #self.Sensors.handle_scanresult(mess)
+        self.sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
         mess.srv_id = self.osim_id
