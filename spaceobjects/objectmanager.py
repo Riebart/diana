@@ -46,6 +46,9 @@ class SmartObjectManager(threading.Thread):
                 self.do_industries()
                 self.do_populations()
                 self.ticks_done = self.ticks_done +1
+                
+                for obj, values in self.objects.items():
+                    print(f"Warehouse of {obj}: {values.warehouse}")
             else:
                 self.handle_message(msg)
 

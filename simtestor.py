@@ -9,6 +9,7 @@ from spaceobjects.planet.planet import Planet
 from vector import Vector3
 import random
 import yaml
+import time
 from pathlib import Path
 
 
@@ -70,6 +71,15 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
 print("Done\n")
 
 
+
 st.start()
-st.join()
+
+while True:
+    time.sleep(1)
+    user_input = input('Press enter to end simulation...: ')
+    if user_input == '':
+        break
+
+
+st.done = True        
 osim.stop_net()

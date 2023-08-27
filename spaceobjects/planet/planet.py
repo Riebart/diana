@@ -26,9 +26,9 @@ class Planet(SmartObject):
             for pop_class, pop_count in values.items():
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
                     if resource in self.warehouse:
-                        self.warehouse[resource] = self.warehouse[resource] + 10
+                        self.warehouse[resource] = self.warehouse[resource] + 1000
                     else:
-                        self.warehouse[resource] = 10
+                        self.warehouse[resource] = 1000
         
         #may as well initialize prices as well        
         for resource in self.osim.data["resources"]:
