@@ -1,5 +1,7 @@
 #include "MIMOServer.hpp"
 
+#include "utility.hpp"
+
 #include <stdio.h>
 
 #define LOCK(l) l.lock()
@@ -138,6 +140,7 @@ namespace Diana
 
     void* serve_SocketThread(void* sockV)
     {
+        fprintf(stderr, "Socket serving thread PID: %ld\n", get_this_thread_pid());
         SocketThread* sock = (SocketThread*)sockV;
 
         while (sock->running)
@@ -247,6 +250,8 @@ namespace Diana
     // More on non-blocking IO: https://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzab6%2Frzab6xnonblock.htm
     void* serve_MIMOServer(void* serverV)
     {
+        fprintf(stderr, "MIMOServer main thread PID: %ld\n", get_this_thread_pid());
+
         MIMOServer* server = (MIMOServer*)serverV;
 
         fd_set fds;
@@ -254,7 +259,11 @@ namespace Diana
 #ifdef _WIN32
         const timeval timeout = { 0, 10000 };
 #else
-        timeval timeout = { 0, 10000 };
+        // The select() syscall uses { seconds, microseconds } as the timeout
+        // The pselect() syscall, which modern gcc and kernels map select() to,
+        //    uses { seconds, nanoseconds }
+        // timeval timeout = { 0, 10000 }; // Use this for select()
+        timespec timeout = { 0, 10000000 }; // Use this for pselect()
         int32_t maxfd = (server->server6 > server->server4 ? server->server6 : server->server4) + 1;
         int32_t fd_array[] = { server->server4, server->server6 };
 #endif
@@ -272,7 +281,7 @@ namespace Diana
             FD_ZERO(&fds);
             FD_SET(server->server4, &fds);
             FD_SET(server->server6, &fds);
-            nready = select(maxfd, (fd_set*)&fds, NULL, NULL, &timeout);
+            nready = pselect(maxfd, (fd_set*)&fds, NULL, NULL, &timeout, NULL);
 #endif
 
             if (nready == SOCKET_ERROR)

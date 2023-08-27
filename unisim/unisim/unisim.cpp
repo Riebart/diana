@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <chrono>
 
+#include "utility.hpp"
 #include "universe.hpp"
 #include "MIMOServer.hpp"
 
@@ -136,6 +137,7 @@ int main(int32_t argc, char** argv)
 
     std::chrono::seconds dura(1);
 
+	fprintf(stderr, "Unisim main thread PID: %ld\n", get_this_thread_pid());
     fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
     while (running)
     {

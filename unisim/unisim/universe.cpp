@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <algorithm>
 
+#include "utility.hpp"
+
 // Memory allocation practices in the universe simulation
 //
 // An instance of the Universe class takes almost responsibility for the compelte
@@ -110,6 +112,7 @@ namespace Diana
 
     void* sim(void* uV)
     {
+        fprintf(stderr, "Universe (%p) physics sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
         Universe* u = (Universe*)uV;
 
         // dt is the amount of time that will pass in the game world during the next tick.
@@ -128,7 +131,7 @@ namespace Diana
             // waking up too often.
             if (u->paused)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * u->max_frametime)));
                 continue;
             }
 
@@ -151,7 +154,7 @@ namespace Diana
                 // In practice, a 1ms min frame time actually causes the average
                 // frame tiem to be about 2ms (Tested on Windows 8 and Ubuntu in
                 // a VBox VM).
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * (u->min_frametime - e))));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * (u->min_frametime - e))));
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
@@ -179,9 +182,10 @@ namespace Diana
         return NULL;
     }
 
-    void* vis_data_thread(void* argV)
+    void* vis_data_thread(void* uV)
     {
-        Universe* u = (Universe*)argV;
+        fprintf(stderr, "Universe (%p) visdata sim thread PID: %ld %lu\n", uV, get_this_thread_pid(), std::this_thread::get_id());
+        Universe* u = (Universe*)uV;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
@@ -193,7 +197,7 @@ namespace Diana
             // waking up too often.
             if (u->visdata_paused)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds((int32_t)(1000 * u->max_frametime)));
+                std::this_thread::sleep_for(std::chrono::microseconds((int32_t)(1000000 * u->max_frametime)));
                 continue;
             }
 
