@@ -20,6 +20,7 @@ def random_vector(rng):
 
 def load_data(osim, key):
 
+    #can probably do away with the list/dict distinction now
     print(f"\nLoading {key}...")
     dictdata = dict()
     listdata = []

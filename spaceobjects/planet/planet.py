@@ -30,17 +30,23 @@ class Planet(SmartObject):
                     else:
                         self.warehouse[resource] = 1000
         
-        #may as well initialize prices as well        
-        for resource in self.osim.data["resources"]:
-            if isinstance(resource, dict):
-                self.local_price_list[next(iter(resource))] = 1.0
-            elif isinstance(resource, str):
-                self.local_price_list[resource] = 1.0
+        #may as well initialize prices as well    
+        # not unnecessary as un-initialized prices set on demand
+        #for resource in self.osim.data["resources"]:
+        #    if isinstance(resource, dict):
+        #        self.local_price_list(next(iter(resource))] = 1.0
+        #    elif isinstance(resource, str):
+        #        self.local_price_list(resource) = 1.0
         
         print(f"Industries: {self.industries}")
         print(f"Warehouse: {self.warehouse}")
         print(f"Local prices: {self.local_price_list}")
-        
+    
+
+    #####
+    # Loop-code (code related to running the loops)
+    #####
+    
     #reset the economy for the next tick    
     def reset_econ(self):
         self.supplied_resources = dict()
@@ -49,14 +55,19 @@ class Planet(SmartObject):
         for industry, values in self.industries.items():
             values["done"] = False
 
+        #reset the quantity of non-stock-pilable resources to zero
+        for industry, values in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
+            self.warehouse[industry] = 0
+
         pass
 
     def do_industries(self):
         print(f"Doing industries for {self.object_name}")
 
         #1. determine which industry would generate the most wealth per
-        for industry in self.industries:
+        for industry, values in self.industries.items():
             print(industry)
+            print(f" Can produce {self.calc_value(industry,values)} in value")
             pass
         #2. consume the resource(s) for that industry and produce the results
         #3. mark that industry as 'done'
@@ -85,6 +96,33 @@ class Planet(SmartObject):
     def adjust_prices(self):
         #compare the supplied_resources with the consumed resources and adjust
         pass
+
+
+    #calculate the value the industry would generate, based on current prices
+    def calc_value(self, industry, values):
+        #first, what is the maximum we can produce?
+        max_ticks = values["quantity"]
+        
+        
+        costs = 0
+        for input, quantity in self.osim.data["industries"][industry]["input"].items():
+            costs = costs + quantity * self.get_price(input) * max_ticks
+        
+        revenue = 0
+        for output, quantity in self.osim.data["industries"][industry]["output"].items():
+            revenue = revenue + quantity * self.get_price(output) * max_ticks
+        
+        return revenue - costs
+
+    def get_price(self, key):
+        if key not in self.local_price_list:
+            self.local_price_list[key] = 1.0
+        return self.local_price_list[key]
+            
+
+    ####
+    # Handler code
+    ####
         
     def handle_comm(self, msg):
         pass
