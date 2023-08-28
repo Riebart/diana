@@ -31,12 +31,8 @@ class Planet(SmartObject):
                         self.warehouse[resource] = 1000
         
         #may as well initialize prices as well    
-        # not unnecessary as un-initialized prices set on demand
-        #for resource in self.osim.data["resources"]:
-        #    if isinstance(resource, dict):
-        #        self.local_price_list(next(iter(resource))] = 1.0
-        #    elif isinstance(resource, str):
-        #        self.local_price_list(resource) = 1.0
+        for resource in self.osim.data["resources"].keys():
+            self.local_price_list[resource] = 1.0
         
         print(f"Industries: {self.industries}")
         print(f"Warehouse: {self.warehouse}")
@@ -47,7 +43,20 @@ class Planet(SmartObject):
     # Loop-code (code related to running the loops)
     #####
     
-    #reset the economy for the next tick    
+    #reset the economy for the next tick
+        
+    def do_tick(self):
+        print(f"Doing econ for {self.name}")
+        self.reset_econ()
+        self.do_industries()
+        self.do_populations()
+        self.adjust_prices()
+        print(f" Supplied resources of {self.object_name}: {self.supplied_resources}")
+        print(f" Demanded resources of {self.object_name}: {self.demanded_resources}")
+
+        print(f" Warehouse of {self.object_name}: {self.warehouse}")
+        print(f" Price list of {self.object_name}: {self.local_price_list}")
+        
     def reset_econ(self):
         self.supplied_resources = dict()
         self.demanded_resources = dict()
@@ -62,12 +71,12 @@ class Planet(SmartObject):
         pass
 
     def do_industries(self):
-        print(f"Doing industries for {self.object_name}")
+        print(f" Doing industries for {self.object_name}")
 
         #1. determine which industry would generate the most wealth per
         for industry, values in self.industries.items():
             print(industry)
-            print(f" Can produce {self.calc_value(industry,values)} in value")
+            print(f"  Can produce {self.calc_value(industry,values)} in value")
             pass
         #2. consume the resource(s) for that industry and produce the results
         #3. mark that industry as 'done'
@@ -78,31 +87,46 @@ class Planet(SmartObject):
     def do_populations(self):
         #for each pop, consume goods as they exist
         for pop, values in self.population.items():
-            print(f"Doing pop for {pop}")
+            print(f" Doing pop for {pop}")
             for pop_class, pop_count in values.items():
-                print(f"Doing class {pop_class}")
+                print(f"  Doing class {pop_class}")
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
                     if isinstance(count, (int, float)):
                         demand = count * pop_count
-                        self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
-                        if resource in self.demanded_resources:
-                            self.demanded_resources[resource] = self.demanded_resources[resource] + demand
-                        else:
-                            self.demanded_resources[resource] = demand
+                        self.warehouse[resource] = max(self.warehouse.get(resource, 0) - demand, 0)
+                        self.demanded_resources[resource] = self.demanded_resources.get(resource, 0) + demand
+
                     else:
                         pass #how to deal with subtypes?
-        
+                        
+                #do class-specific needs
+                if self.osim.data["races"][pop]["classes"][pop_class]["resource_demands"] is not None:
+                    for resource, count in self.osim.data["races"][pop]["classes"][pop_class]["resource_demands"].items():
+                        if isinstance(count, (int, float)):
+                            demand = count * pop_count
+                            self.warehouse[resource] = max(self.warehouse.get(resource, 0) - demand, 0)
+                            self.demanded_resources[resource] = self.demanded_resources.get(resource, 0) + demand
+                        else:
+                            pass #how to deal with subtypes?
+            
         
     def adjust_prices(self):
-        #compare the supplied_resources with the consumed resources and adjust
-        pass
+    
+        for resource, value in self.osim.data["resources"].items():
+            supplied = self.supplied_resources.get(resource, 0)
+            supplied = supplied + self.warehouse.get(resource, 0) *0.25 #warehouse supplies count as 1/4, because why not
+            demanded = self.demanded_resources.get(resource, 0)
+            
+            #TODO: some sort of more sophisticated algorithm
+            self.local_price_list[resource] = max(self.local_price_list[resource] - ((supplied - demanded) * 0.001), 0.1)
 
 
     #calculate the value the industry would generate, based on current prices
     def calc_value(self, industry, values):
         #first, what is the maximum we can produce?
         max_ticks = values["quantity"]
-        
+        for input, quantity in self.osim.data["industries"][industry]["input"].items():
+            max_ticks = min(max_ticks, int(self.warehouse.get(input, 0)/quantity))      
         
         costs = 0
         for input, quantity in self.osim.data["industries"][industry]["input"].items():
@@ -114,6 +138,8 @@ class Planet(SmartObject):
         
         return revenue - costs
 
+
+    #safe way of getting the cost of resources that may not be initialized yet
     def get_price(self, key):
         if key not in self.local_price_list:
             self.local_price_list[key] = 1.0

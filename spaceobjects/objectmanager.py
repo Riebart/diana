@@ -42,13 +42,9 @@ class SmartObjectManager(threading.Thread):
             #the socket timedout, do a tick
             if msg == 0:
                 print(f"\nSOM tick: {self.ticks_done}")
-                self.reset_econs()
-                self.do_industries()
-                self.do_populations()
+                self.do_ticks()
                 self.ticks_done = self.ticks_done +1
                 
-                for obj, values in self.objects.items():
-                    print(f"Warehouse of {obj}: {values.warehouse}")
             else:
                 self.handle_message(msg)
 
@@ -65,22 +61,10 @@ class SmartObjectManager(threading.Thread):
         self.objects[msg.cli_id].handle_message(msg)
 
 
-    def reset_econs(self):
+    def do_ticks(self):
         for name, obj in self.objects.items():
             #if callable(getattr(obj, "do_industries", None)):
-            if hasattr(obj, "do_industries"):
-                obj.reset_econ()
+            if hasattr(obj, "do_tick"):
+                obj.do_tick()
 
-    def do_industries(self):
-        for name, obj in self.objects.items():
-            #if callable(getattr(obj, "do_industries", None)):
-            if hasattr(obj, "do_industries"):
-                print(f"SOM doing inudstrues for {name}")
-                obj.do_industries()
 
-    def do_populations(self):
-        for name, obj in self.objects.items():
-            #if callable(getattr(obj, "do_industries", None)):
-            if hasattr(obj, "do_populations"):
-                print(f"SOM doing populations for {name}")
-                obj.do_populations()
