@@ -4,7 +4,10 @@ resources:
   iron_ore:
   copper_ore:
   lead_ore:
+  meat:
   unobtainium_ore:
+  water:
+  wheat:
 
   #not sure this is a raw resource, but it can't be transported
   energy:
