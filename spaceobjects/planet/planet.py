@@ -1,12 +1,13 @@
 from .. spaceobj import SmartObject
+from collections import defaultdict
 
 class Planet(SmartObject):
     def __init__(self, osim):
         SmartObject.__init__(self, osim, independent = False)
         self.industries = dict()
         self.population = dict()
-        self.warehouse = dict()
-        self.local_price_list = dict()
+        self.warehouse = defaultdict(lambda: 0)
+        self.local_price_list = defaultdict(lambda: 1.0)
         self.known_price_list = dict()
 
     def init_econ(self):
@@ -16,24 +17,15 @@ class Planet(SmartObject):
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
             if "input" in self.osim.data["industries"][industry]:
                 for input, value in self.osim.data["industries"][industry]["input"].items():
-                    if input in self.warehouse:
-                        self.warehouse[input] = self.warehouse[input] + (float(value) * 10)
-                    else:
-                        self.warehouse[input] = (float(value) * 10)
+                    self.warehouse[input] = self.warehouse[input] + (float(value) * 10)
         
         #give some resources to the pops, too
         for pop, values in self.population.items():
             for pop_class, pop_count in values.items():
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
-                    if resource in self.warehouse:
-                        self.warehouse[resource] = self.warehouse[resource] + 1000
-                    else:
-                        self.warehouse[resource] = 1000
-        
-        #may as well initialize prices as well    
-        for resource in self.osim.data["resources"].keys():
-            self.local_price_list[resource] = 1.0
-        
+                    self.warehouse[resource] = self.warehouse[resource] + 1000
+
+             
         print(f"Industries: {self.industries}")
         print(f"Warehouse: {self.warehouse}")
         print(f"Local prices: {self.local_price_list}")
@@ -58,8 +50,8 @@ class Planet(SmartObject):
         print(f" Price list of {self.object_name}: {self.local_price_list}")
         
     def reset_econ(self):
-        self.supplied_resources = dict()
-        self.demanded_resources = dict()
+        self.supplied_resources = defaultdict(lambda:0)
+        self.demanded_resources = defaultdict(lambda:0)
         
         for industry, values in self.industries.items():
             values["done"] = False
@@ -93,8 +85,8 @@ class Planet(SmartObject):
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
                     if isinstance(count, (int, float)):
                         demand = count * pop_count
-                        self.warehouse[resource] = max(self.warehouse.get(resource, 0) - demand, 0)
-                        self.demanded_resources[resource] = self.demanded_resources.get(resource, 0) + demand
+                        self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
+                        self.demanded_resources[resource] = self.demanded_resources[resource] + demand
 
                     else:
                         pass #how to deal with subtypes?
@@ -104,8 +96,8 @@ class Planet(SmartObject):
                     for resource, count in self.osim.data["races"][pop]["classes"][pop_class]["resource_demands"].items():
                         if isinstance(count, (int, float)):
                             demand = count * pop_count
-                            self.warehouse[resource] = max(self.warehouse.get(resource, 0) - demand, 0)
-                            self.demanded_resources[resource] = self.demanded_resources.get(resource, 0) + demand
+                            self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
+                            self.demanded_resources[resource] = self.demanded_resources[resource] + demand
                         else:
                             pass #how to deal with subtypes?
             
@@ -113,9 +105,9 @@ class Planet(SmartObject):
     def adjust_prices(self):
     
         for resource, value in self.osim.data["resources"].items():
-            supplied = self.supplied_resources.get(resource, 0)
-            supplied = supplied + self.warehouse.get(resource, 0) *0.25 #warehouse supplies count as 1/4, because why not
-            demanded = self.demanded_resources.get(resource, 0)
+            supplied = self.supplied_resources[resource]
+            supplied = supplied + self.warehouse[resource] *0.25 #warehouse supplies count as 1/4, because why not
+            demanded = self.demanded_resources[resource]
             
             #TODO: some sort of more sophisticated algorithm
             self.local_price_list[resource] = max(self.local_price_list[resource] - ((supplied - demanded) * 0.001), 0.1)
@@ -126,7 +118,7 @@ class Planet(SmartObject):
         #first, what is the maximum we can produce?
         max_ticks = values["quantity"]
         for input, quantity in self.osim.data["industries"][industry]["input"].items():
-            max_ticks = min(max_ticks, int(self.warehouse.get(input, 0)/quantity))      
+            max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))      
         
         costs = 0
         for input, quantity in self.osim.data["industries"][industry]["input"].items():
