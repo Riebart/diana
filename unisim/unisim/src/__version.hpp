@@ -1,0 +1,6 @@
+#ifndef __VERSION_HPP
+#define __VERSION_HPP
+#define GIT_VERSION "285a7d55-dirty"
+#define GIT_COMMIT_DATE "2023-08-27T20:42:51+00:00"
+#define BUILD_DATE "2023-08-29T16:12:36+00:00"
+#endif

@@ -8,6 +8,8 @@
 
 #include "argparse.hpp"
 
+#include "__version.hpp"
+
 volatile bool running = true;
 
 void sighandler(int32_t sig)
@@ -16,7 +18,14 @@ void sighandler(int32_t sig)
     running = false;
 }
 
-int main(int32_t argc, char** argv)
+void print_version()
+{
+    printf("git version:     %s\n", GIT_VERSION);
+    printf("git commit date: %s\n", GIT_COMMIT_DATE);
+    printf("build date:      %s\n", BUILD_DATE);
+}
+
+int main(int32_t argc, char **argv)
 {
     struct Diana::Universe::Parameters params;
 
@@ -25,14 +34,23 @@ int main(int32_t argc, char** argv)
         "unisim", "Simulates universes!",
         80, true);
 
-    #include "__universe_args.hpp"
+#include "__universe_args.hpp"
+
+    bool opt_version = parser.get_flag_option("-v", "--version", "Print version of the binary and source code used to generate it. Includes date of last commit, state of working tree when built, and date and time of build", false).result.option_value;
+
     bool parse_success = parser.finished_parsing();
-    
+
     if (!parse_success)
     {
         fprintf(stderr, "Error parsing arguments\n");
         parser.print_help();
         return 1;
+    }
+
+    if (opt_version)
+    {
+        print_version();
+        return 0;
     }
 
     signal(SIGABRT, &sighandler);
@@ -42,8 +60,8 @@ int main(int32_t argc, char** argv)
     // params.verbose_logging = false;
     // params.realtime_physics = true;
     // params.min_physics_frametime = 0.001;
-    
-    Diana::Universe* u = new Diana::Universe(params);
+
+    Diana::Universe *u = new Diana::Universe(params);
 
     u->start_net();
     u->start_sim();
@@ -54,7 +72,7 @@ int main(int32_t argc, char** argv)
 
     std::chrono::seconds dura(1);
 
-	fprintf(stderr, "Unisim main thread PID: %u\n", get_this_thread_pid());
+    fprintf(stderr, "Unisim main thread PID: %u\n", get_this_thread_pid());
     fprintf(stderr, "Physics Framtime, Wall Framtime, Game Frametime, Vis Frametime, Total Sim Time, NTicks\n");
     while (running)
     {
