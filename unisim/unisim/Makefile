@@ -39,9 +39,12 @@ unisim-version-header:
 	echo "#define BUILD_DATE $(BUILD_DATE)" >> src/__version.hpp
 	echo "#endif" >> src/__version.hpp
 
-unisim-bin-all:
-	make universe-cli-args-header
+unisim-headers:
 	make unisim-version-header
+	make universe-cli-args-header
+
+unisim-bin-all:
+	make unisim-headers
 	make unisim-bin-static
 
 unisim-bin:
