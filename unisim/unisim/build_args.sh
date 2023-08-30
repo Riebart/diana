@@ -6,14 +6,14 @@ parameters=$(cat lib/include/universe.hpp |
     sed -n '/^ *struct Parameters$/{:a;/\n *\};/!{N;ba};p}' |
     sed -n 's/^ *\([a-z]*\) \([a-z_]*\);/\1 \2/p')
 
-echo "$parameters" | while read type var
+echo "$parameters" | sort -t' ' -k2 | while read type var
 do
-    description=$(tac lib/include/universe.hpp | 
+    description=$(tac lib/include/universe.hpp |
         sed -n "/$type $var/{:a;/\n$/!{N;ba};p}" |
         tail -n+2 | tac |
         sed 's|^ *//||;s/^ *//;s/ *$//' |
         grep -v "^$" | tr '\n' ' ')
-        
+
     cli_arg_str=$(echo "$var" | tr '_' '-')
     default_value=$(cat lib/include/universe.hpp | sed -n "s/^ *${var}(\([^)]*\)),*$/\1/p")
 
