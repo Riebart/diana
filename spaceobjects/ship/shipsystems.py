@@ -20,7 +20,7 @@ class System(Observable):
         Observable.add_observer(self, observer)
 
     def handle_command(self, msg):
-        print "Error: Undefined ", msg
+        print("Error: Undefined ", msg)
 
 
 class Contact:
@@ -99,10 +99,10 @@ class Sensors(System):
 
     #for now, send a general 360 scan ("One. Ping. Only.")
     def handle_command(self, msg):
-        print "Command received: ", msg
+        print("Command received: ", msg)
         sb = self._ship.init_beam(ScanBeam, 10000, Beam.speed_of_light, self._ship.forward, self._ship.up, h_focus=2*math.pi, v_focus=math.pi)
         sb.send_it(self._ship.sock)
-        print "Scan ping sent..."
+        print("Scan ping sent...")
 
 class Comms(System):
     def __init__(self, ship, power=10000.0, recharge_time=2.0):

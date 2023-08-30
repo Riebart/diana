@@ -47,7 +47,7 @@ class SmartObject(SpaceObject, threading.Thread):
         self.done = False
         self.tout_val = 0
         self.phys_id = None
-        
+
         #Empty vis_clients list - should maybe be done in ship.py
         self.vis_clients = dict()
 
@@ -197,7 +197,7 @@ class SmartObject(SpaceObject, threading.Thread):
                 self.handle_query(mess)
 
             #else:
-                #print str(mess)
+                #print(str(mess))
 
 # ==============================================================================
 # Beams
@@ -317,7 +317,7 @@ class HomingMissile1(Missile):
         #else:
             #new_dir = enemy_pos.unit()
             #new_dir.scale(self.thrust.length())
-            #print ("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius))
+            #print(("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + (". Distance to target: %2f" % (distance-mess.radius)))
             #self.set_thrust(new_dir)
 
 
@@ -332,7 +332,7 @@ class HomingMissile1(Missile):
                 time_to_target = sqrt(2*distance/(self.thrust.length()/self.mass))
                 enemy_vel.scale(time_to_target/2) #dampen new position by 2, to prevent overshoots
                 tar_new_pos = enemy_vel+enemy_pos
-                #print ("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos))
+                #print(("Cur enemy pos: " + str(enemy_pos) + " Cur enemy velocity " + str(mess.velocity) + " new enemy pos " + str(tar_new_pos)))
                 new_dir = tar_new_pos.unit()
                 new_dir.scale(self.thrust.length())
                 print(("Homing missile %d setting new thrust vector " % self.osim_id) + str(new_dir) + \

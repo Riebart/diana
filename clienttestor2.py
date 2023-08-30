@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import ship
+from spaceobjects import ship
 import message
 import socket
 import objectsim
@@ -380,17 +380,5 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    #performance_test(0, 1000, 0)
-    #performance_test(1, 300, 0)
-    #performance_test(2, 300, 0)
-    #performance_test(0, 0, 250)
-
-    #basic()
-    #pool_rack(C = 1.01, num_rows = 25)
-    #spawn_sol()
-    #signature_test()
-
     for i in range(-20, 21, 2):
         flight_school(1.0, 10, i, 3.0, 0.3)
-
-    #test_sensors()

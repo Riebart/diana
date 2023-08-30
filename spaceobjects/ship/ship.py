@@ -125,7 +125,7 @@ class Ship(SmartObject):
         #Largely deprecated - use COMMAND messages
         elif isinstance(msg, message.ThrustMsg):
             if msg.thrust != None:
-                print "Setting thrust: " + str(msg.thrust)
+                print("Setting thrust: " + str(msg.thrust))
                 self.set_thrust(msg.thrust)
 
         elif isinstance(msg, message.VisualDataEnableMsg):
@@ -160,7 +160,7 @@ class Ship(SmartObject):
         if (msg.system_id in self.systems):
             self.systems[msg.system_id].handle_command(msg.system_command)
         else:
-            print "ERROR: System id not found: ", msg.system_id
+            print("ERROR: System id not found: ", msg.system_id)
         pass
 
     # ++++++++++++++++++++++++++++++++
@@ -286,4 +286,3 @@ class Ship(SmartObject):
         self.osim.spawn_object(missile)
 
         return missile
-

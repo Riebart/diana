@@ -78,7 +78,7 @@ class ObjectSim:
                     dm.items = self.get_systems(self.ship_list[osim_id])
                     DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                 else:
-                    print "Unrecognized Dir message: " + str(msg) + " <=> " + str(msg.__dict__)
+                    print("Unrecognized Dir message: " + str(msg) + " <=> " + str(msg.__dict__))
 
             # If they send back one item, then they have made a choice.
             elif len(msg.items) == 1:
@@ -104,7 +104,7 @@ class ObjectSim:
                     for i in msg.items:
                         self.ship_list[osim_id].systems[i[0]].add_observer((msg.socket, client_id))
             else:
-                print "Unexpected Dir messsage size: " + msg.items
+                print("Unexpected Dir messsage size: " + msg.items)
 
 
         #Pass all other messages up to the ship logic

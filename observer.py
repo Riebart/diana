@@ -16,8 +16,8 @@ def nest_dict(obj, classkey=None):
     elif hasattr(obj, "__iter__"):
         return [nest_dict(v, classkey) for v in obj]
     elif hasattr(obj, "__dict__"):
-        data = dict([(key, nest_dict(value, classkey)) 
-            for key, value in obj.__dict__.iteritems() 
+        data = dict([(key, nest_dict(value, classkey))
+            for key, value in obj.__dict__.iteritems()
             if not callable(value) and not key.startswith('_')])
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
@@ -50,7 +50,7 @@ class Observable:
         cur_time = time.gmtime()
         self._cur_batch = self._cur_batch + 1
         if (not self._delayed_updates or cur_time > self._time_updated or self._cur_batch >= self._max_batch ):
-            #print nest_dict(self.__dict__)
+            #print(nest_dict(self.__dict__))
             d = dict(self.__dict__)
             #remove undesirable values
             d.pop("_Observable__observers", None)
@@ -65,7 +65,7 @@ class Observable:
             message.SystemUpdateMsg.send(observer[0], self.__osim_id, observer[1], msg.build())
             self._time_updated = cur_time
             self._cur_batch = 0
-        
+
 
     def add_observer(self, observer):
         self.__observers.append(observer)
