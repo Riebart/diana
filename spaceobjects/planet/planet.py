@@ -109,6 +109,7 @@ class Planet(SmartObject):
         for pop, values in self.population.items():
             print(f" Doing pop for {pop}")
             for pop_class, pop_count in values.items():
+                #TODO: Clean this up by putting it in a function, so code is not duplicated
                 #print(f"  Doing class {pop_class}")
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
                     if isinstance(count, (int, float)):
@@ -116,8 +117,23 @@ class Planet(SmartObject):
                         self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
                         self.demanded_resources[resource] = self.demanded_resources[resource] + demand
 
-                    else:
-                        pass #how to deal with subtypes?
+                    #do subtypes
+                    elif isinstance(count, dict):
+                        remaining_demand = count["demand"] * pop_count
+                        while remaining_demand > 0:
+                            #which ones are the cheapest_resource? Consume those
+                            subtype_prices = {i: self.local_price_list[i] for i in count["subtypes"] if self.warehouse[i] > 0}
+                            if len(subtype_prices) < 1:
+                                break
+                            cheapest_resource = min(subtype_prices)
+                            print(f"   Cheapest is {cheapest_resource}")
+                            consumed = min(self.warehouse[cheapest_resource], remaining_demand)
+                            self.warehouse[cheapest_resource] = self.warehouse[cheapest_resource] - consumed
+                            remaining_demand = remaining_demand - consumed
+
+                        for subtype in count["subtypes"]:
+                            self.demanded_resources[subtype] = self.demanded_resources[subtype] + count["demand"] * pop_count / len(count["subtypes"])
+
                         
                 #do class-specific needs
                 if self.osim.data["races"][pop]["classes"][pop_class]["resource_demands"] is not None:
@@ -126,8 +142,22 @@ class Planet(SmartObject):
                             demand = count * pop_count
                             self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
                             self.demanded_resources[resource] = self.demanded_resources[resource] + demand
-                        else:
-                            pass #how to deal with subtypes?
+
+                        elif isinstance(count, dict):
+                            remaining_demand = count["demand"] * pop_count
+                            while remaining_demand > 0:
+                                #which ones are the cheapest_resource? Consume those
+                                subtype_prices = {i: self.local_price_list[i] for i in count["subtypes"] if self.warehouse[i] > 0}
+                                if len(subtype_prices) < 1:
+                                    break
+                                cheapest_resource = min(subtype_prices)
+                                print(f"   Cheapest is {cheapest_resource}")
+                                consumed = min(self.warehouse[cheapest_resource], remaining_demand)
+                                self.warehouse[cheapest_resource] = self.warehouse[cheapest_resource] - consumed
+                                remaining_demand = remaining_demand - consumed
+
+                            for subtype in count["subtypes"]:
+                                self.demanded_resources[subtype] = self.demanded_resources[subtype] + count["demand"] * pop_count / len(count["subtypes"])
             
         
     def adjust_prices(self):
