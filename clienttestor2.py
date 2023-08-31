@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from spaceobjects import ship
+from spaceobjects.ship.shiptypes import Firefly
 import message
 import socket
 import objectsim
@@ -10,7 +10,6 @@ import time
 import math
 import pprint
 from vector import Vector3, Vector4
-from shiptypes import Firefly
 
 random.seed(0)
 
@@ -237,6 +236,7 @@ def signature_test():
         print(msg.__dict__)
 
 def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale = 0.0):
+    num_spawned = 0
     sock = socket.socket()
     sock.connect( ("localhost", 5505) )
     from message import Spectrum
@@ -257,20 +257,22 @@ def flight_school(ball_radius = 1.0, num_balls = 10, z = 0.0, k = 2.0, vel_scale
     #
     # 2 * pi * R_c >= num_balls * ball_radius  * k
     circle_radius = k * num_balls * ball_radius
-    print(circle_radius)
 
-    theta = z
+    theta = z + random.random()
     for i in range(num_balls):
         sm.object_type = "Ball " + str(z) + " " + str(i)
-        sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z ]
+        sm.position = [ circle_radius * math.cos(theta), circle_radius * math.sin(theta), z + random.random() / 10.0 ]
         sm.velocity = [ vel_scale * random.random() * math.cos(theta), vel_scale * random.random() * math.sin(theta), vel_scale * (2 * random.random() - 1) * ball_radius ]
         sm.spectrum = Spectrum([i], [i])
 
         message.SpawnMsg.send(sock, None, -1, sm.build())
+        num_spawned += 1
         theta += 2 * math.pi / num_balls
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
+
+    return num_spawned
 
 
 def dirmsg(sock, msg):
@@ -380,5 +382,8 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    for i in range(-20, 21, 2):
-        flight_school(1.0, 10, i, 3.0, 0.3)
+    num_objects = 0
+    for i in range(-200, 200, 1):
+        num_objects += flight_school(1.0, 200, i, 3.0, 0.3)
+
+    print("Spawened %d objects" % num_objects)

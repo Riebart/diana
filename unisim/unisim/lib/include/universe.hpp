@@ -17,6 +17,7 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 typedef std::mutex LOCK_T;
 typedef std::thread THREAD_T;
@@ -28,7 +29,7 @@ typedef std::atomic<int64_t> ATOMIC_T;
 #include "messaging.hpp"
 #include "bson.hpp"
 
-//#include "scheduler.hpp"
+// #include "scheduler.hpp"
 
 namespace Diana
 {
@@ -48,15 +49,15 @@ namespace Diana
     //!
     //! SmartPhysicsObjects are a PhysicsObject with additional information included
     //! such as a socket FD and OSim ID that allow it to be tied to an object there.
-    //! SmartPhysicsObjects can interact with the universe in special ways, such as 
+    //! SmartPhysicsObjects can interact with the universe in special ways, such as
     //! spawning new objects (beams most commonly, but other objects as well), and
-    //! receiving special communications upon collision events. 
+    //! receiving special communications upon collision events.
     //!
     //! Beams are dumb (in that they do not correspond to an OSim object) like
-    //! PhysicsObjects, but have fundamentally different physical behaviour. 
+    //! PhysicsObjects, but have fundamentally different physical behaviour.
     //!
     //! The physics simulation is computationally intensive, and as such there are
-    //! ways of measuring whether it is fast enough to be 'real time' or not. The 
+    //! ways of measuring whether it is fast enough to be 'real time' or not. The
     //! simulation takes a min_frametime and max_frametime as well as a rate parameter.
     //! The minimum frametime prevents the simulation from consuming all of the host
     //! unnecessarily. The maximum frametime prevents the simulation from growing too
@@ -67,7 +68,7 @@ namespace Diana
     //! the perceived elapsed time is capped to the maximum frametime, and there will
     //! appear to be slowing down of the progression of time within the game universe.
     //! This is done to ensure that physics simulations are still accurate even under
-    //! heavy load. The rate parameter allows for arbitrary speedup or slowdown of 
+    //! heavy load. The rate parameter allows for arbitrary speedup or slowdown of
     //! game time to be applied.
     //!
     //! Not all objects in the universe emit gravity. The cutoff is defined in physics.cpp
@@ -85,54 +86,100 @@ namespace Diana
     //! constraints and are, perhaps, not interactive.
     class Universe
     {
+    public:
+#ifdef INSTRUMENT_PHYSICS
+#define HRN std::chrono::high_resolution_clock::now()
+#define HRN_T std::chrono::time_point<std::chrono::high_resolution_clock>
+#define HRN_DT std::chrono::nanoseconds
+#define HRN_COUNT(t) t.count()
+#else
+#define HRN 0
+#define HRN_T uint64_t
+#define HRN_DT uint64_t
+#define HRN_COUNT(t) t
+#endif
+
+        struct CollisionMetrics
+        {
+            uint32_t
+                primary_aabb_tests,
+                secondary_aabb_tests,
+                sphere_tests,
+                simultaneous_collisions,
+                collision_rounds,
+                collisions;
+            HRN_DT aabb_test_ns,
+                sphere_test_ns,
+                total_ns;
+
+            CollisionMetrics();
+            void add(struct CollisionMetrics other);
+            void _fprintf(FILE *fd);
+        };
+
+        struct TickMetrics
+        {
+            struct CollisionMetrics collision_metrics, multicollision_metrics;
+            uint64_t num_objects;
+            HRN_DT sort_aabb_ns,
+                object_tick_ns,
+                beam_tick_ns,
+                thread_join_wait_ns,
+                collision_resolution_ns,
+                object_lifecycle_ns,
+                total_ns;
+
+            TickMetrics();
+            void _fprintf(FILE *fd);
+        };
+
+    private:
         struct PhysCollisionEvent;
 
-        friend void* sim(void* u);
+        friend void *sim(void *u);
 
-        friend void Universe_hangup_objects(int32_t c, void* arg);
-        friend void Universe_handle_message(int32_t socket, void* arg);
+        friend void Universe_hangup_objects(int32_t c, void *arg);
+        friend void Universe_handle_message(int32_t socket, void *arg);
 
-        friend void PhysicsObject_init(struct PhysicsObject* obj, Universe* universe, struct Vector3* position, struct Vector3* velocity, struct Vector3* ang_velocity, struct Vector3* thrust, double mass, double radius, char* obj_desc, struct Spectrum* spectrum);
-        friend void Beam_init(struct Beam* beam, Universe* universe, struct Vector3* origin, struct Vector3* direction, struct Vector3* up, struct Vector3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum);
+        friend void PhysicsObject_init(struct PhysicsObject *obj, Universe *universe, struct Vector3 *position, struct Vector3 *velocity, struct Vector3 *ang_velocity, struct Vector3 *thrust, double mass, double radius, char *obj_desc, struct Spectrum *spectrum);
+        friend void Beam_init(struct Beam *beam, Universe *universe, struct Vector3 *origin, struct Vector3 *direction, struct Vector3 *up, struct Vector3 *right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char *comm_msg, char *data, struct Spectrum *spectrum);
 
-        friend void obj_tick(Universe* u, struct PhysicsObject* o, double dt);
-        friend void* thread_check_collisions(void* argsV);
-        friend void check_collision_loop(void* argsV);
-        friend bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev);
+        friend void obj_tick(Universe *u, struct PhysicsObject *o, double dt);
+        friend void *thread_check_collisions(void *argsV);
+        friend struct Universe::CollisionMetrics check_collision_loop(void *argsV);
+        friend bool check_collision_single(Universe *u, struct PhysicsObject *obj1, struct PhysicsObject *obj2, double dt, struct Universe::PhysCollisionEvent &ev);
 
-        friend void* vis_data_thread(void* argv);
+        friend void *vis_data_thread(void *argv);
 
     public:
         struct Parameters
         {
-            Parameters() :
-                verbose_logging(true),
-                min_physics_frametime(0.002),
-                max_physics_frametime(0.002),
-                permit_spin_sleep(false),
-                min_vis_frametime(0.1),
-                network_port(5505),
-                num_worker_threads(1),
-                simulation_rate(1.0),
-                realtime_physics(true),
-                gravitational_constant(6.67384e-11),
-                speed_of_light(299792458l),
-                collision_energy_cutoff(1e-9),
-                id_rand_max(1),
-                max_simultaneous_collision_rounds(100),
-                gravity_magnitude_cutoff(0.01),
-                beam_energy_cutoff(1e-10),
-                radiation_energy_cutoff(1.5e4),
-                spectrum_slush_range(0.01),
-                health_damage_threshold(0.1),
-                health_mass_scale(1e6),
-                visual_acuity(4e-7)
-            {}
+            Parameters() : verbose_logging(true),
+                           min_physics_frametime(0.002),
+                           max_physics_frametime(0.002),
+                           permit_spin_sleep(false),
+                           min_vis_frametime(0.1),
+                           network_port(5505),
+                           num_worker_threads(1),
+                           simulation_rate(1.0),
+                           realtime_physics(true),
+                           gravitational_constant(6.67384e-11),
+                           speed_of_light(299792458l),
+                           collision_energy_cutoff(1e-9),
+                           id_rand_max(1),
+                           max_simultaneous_collision_rounds(100),
+                           gravity_magnitude_cutoff(0.01),
+                           beam_energy_cutoff(1e-10),
+                           radiation_energy_cutoff(1.5e4),
+                           spectrum_slush_range(0.01),
+                           health_damage_threshold(0.1),
+                           health_mass_scale(1e6),
+                           visual_acuity(4e-7) {}
 
             // Print verbose information, such as collision rounds per tick, and when a
             // collision happens, and which objects were involved.
             bool verbose_logging;
-            
+
             // Minimum unscaled simulated time that is allowed to pass in a single tick.
             // If the previous phsyics tick took less wall-clock time than this, the time
             // delta for the next tick is increased up to this amount.
@@ -142,10 +189,10 @@ namespace Diana
             double min_physics_frametime;
 
             // Maximum unscaled simulated time that is allowed to pass in a single tick.
-            // If the previous physics tick took more wall-clock time than this, the time 
+            // If the previous physics tick took more wall-clock time than this, the time
             // delta for the next tick is reduced to this amount.
-            // If physics ticks routinely take more wall clock time than this amount, the 
-            // clamping of simulated time will result in a perceived slowdown of the 
+            // If physics ticks routinely take more wall clock time than this amount, the
+            // clamping of simulated time will result in a perceived slowdown of the
             // simulation to slower than realtime.
             // Setting this value too high may result in a physics simulation that is too
             // coarse. Setting this value too low may result in unnecessary apparent slowdown
@@ -174,7 +221,7 @@ namespace Diana
             // receives it's own thread independent of this setting.
             int32_t num_worker_threads;
 
-            // When paired with realtime_physics, this controls a simulation rate relative to 
+            // When paired with realtime_physics, this controls a simulation rate relative to
             // realtime. Values <1.0 result in simulations that are slower than real time, and
             // values >1.0 result in simulations faster than realtime.
             double simulation_rate;
@@ -277,10 +324,12 @@ namespace Diana
         //! The wall clock time spent on the last tick, including physics and sleeping
         //! The time elapsed in game on the last physics tick.
         //! The wall clock duration of the last visdata blast.
-        void get_frametime(double* out);
+        void get_frametime(double *out);
 
         //! Get the total number of ticks so far.
         uint64_t get_ticks();
+
+        struct TickMetrics get_tick_metrics();
 
         //! Get the total amount of time passed inside the simulation.
         double total_sim_time();
@@ -290,8 +339,8 @@ namespace Diana
         //! Objects have their phys_id property set, and are queued to be added
         //! at the end of the current physics tick.
         //! @param obj PhysicsObject to add to add. Can also be a recast Beam pointer.
-        void add_object(struct PhysicsObject* obj);
-        void add_object(struct Beam* beam);
+        void add_object(struct PhysicsObject *obj);
+        void add_object(struct Beam *beam);
 
         //! Queue an object for expiry in the next physics tick.
         void expire(int64_t phys_id);
@@ -302,7 +351,7 @@ namespace Diana
     private:
         int64_t get_id();
         void broadcast_vis_data();
-        void tick(double dt);
+        struct Universe::TickMetrics tick(double dt);
         void sort_aabb(double dt, bool calc);
         void handle_message(int32_t socket);
 
@@ -315,13 +364,15 @@ namespace Diana
         double gen_rand(std::normal_distribution<double> dist);
 
         //! This is called to update either the attractors or radiators lists, and is supplied
-        //! with the physics object in question, as well as the new and old values for the 
+        //! with the physics object in question, as well as the new and old values for the
         //! conditional boolean as appropriate.
-        void update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval);
+        void update_list(struct PhysicsObject *obj, std::vector<struct PhysicsObject *> *list, bool newval, bool oldval);
 
-        void get_grav_pull(struct Vector3* g, struct PhysicsObject* obj);
+        void get_grav_pull(struct Vector3 *g, struct PhysicsObject *obj);
 
         struct Parameters params;
+
+        struct TickMetrics tick_metrics;
 
         // Random generation engine used for generating random increments for the IDs.
         std::default_random_engine re;
@@ -332,7 +383,7 @@ namespace Diana
             int64_t client_id;
             int64_t phys_id;
 
-            bool operator <(const struct vis_client& rhs) const
+            bool operator<(const struct vis_client &rhs) const
             {
                 // Could also use std::tie
                 if (socket == rhs.socket)
@@ -352,7 +403,7 @@ namespace Diana
                 }
             }
 
-            bool operator ==(const struct vis_client& rhs) const
+            bool operator==(const struct vis_client &rhs) const
             {
                 return ((socket == rhs.socket) && (client_id == rhs.client_id) && (phys_id == rhs.phys_id));
             }
@@ -364,22 +415,22 @@ namespace Diana
         void register_vis_client(struct vis_client vc, bool enabled);
         std::vector<struct vis_client> vis_clients;
 
-        MIMOServer* net;
-        //libodb::Scheduler* sched;
+        MIMOServer *net;
+        // libodb::Scheduler* sched;
 
-        std::map<int64_t, struct SmartPhysicsObject*> smarties;
-        std::vector<struct PhysicsObject*> attractors;
-        std::vector<struct PhysicsObject*> radiators;
-        std::vector<struct PhysicsObject*> phys_objects;
-        std::vector<struct Beam*> beams;
+        std::map<int64_t, struct SmartPhysicsObject *> smarties;
+        std::vector<struct PhysicsObject *> attractors;
+        std::vector<struct PhysicsObject *> radiators;
+        std::vector<struct PhysicsObject *> phys_objects;
+        std::vector<struct Beam *> beams;
         std::set<int64_t> expired;
-        std::vector<struct PhysicsObject*> added;
+        std::vector<struct PhysicsObject *> added;
 
         struct PhysCollisionEvent
         {
-            struct PhysicsObject* obj1;
+            struct PhysicsObject *obj1;
             size_t obj1_index;
-            struct PhysicsObject* obj2;
+            struct PhysicsObject *obj2;
             size_t obj2_index;
             struct PhysCollisionResult pcr;
         };
@@ -393,13 +444,13 @@ namespace Diana
             int64_t beam_id;
             int64_t target_id;
 
-            bool operator <(const struct scan_target& rhs) const
+            bool operator<(const struct scan_target &rhs) const
             {
                 // Could also use std::tie
                 return (beam_id == rhs.beam_id ? target_id < rhs.target_id : beam_id < rhs.beam_id);
             }
 
-            bool operator ==(const struct scan_target& rhs) const
+            bool operator==(const struct scan_target &rhs) const
             {
                 return ((beam_id == rhs.beam_id) && (target_id == rhs.target_id));
             }
@@ -411,7 +462,7 @@ namespace Diana
         struct scan_origin
         {
             //! @todo Why won't this let me use a struct, it complains about undefined type.
-            struct Beam* origin_beam;
+            struct Beam *origin_beam;
             double energy;
             struct Vector3 hit_position;
         };
@@ -429,7 +480,7 @@ namespace Diana
         struct phys_args
         {
             //! Universe to check
-            Universe* u;
+            Universe *u;
             //! Position in the sorted list to start at, 0-based
             size_t offset;
             //! Amount to move along the sorted list after processing.
@@ -442,7 +493,7 @@ namespace Diana
             volatile bool done;
         };
 
-        struct phys_args* phys_worker_args;
+        struct phys_args *phys_worker_args;
 
         //! @todo Move these threaded operations onto the scheduler, let it handle the asynchronous stuff
         THREAD_T sim_thread;

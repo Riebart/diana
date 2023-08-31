@@ -70,6 +70,8 @@ int main(int32_t argc, char **argv)
     uint64_t last_ticks = u->get_ticks();
     uint64_t cur_ticks;
 
+    struct Diana::Universe::TickMetrics tick_metrics;
+
     std::chrono::seconds dura(1);
 
     fprintf(stderr, "Unisim main thread PID: %u\n", get_this_thread_pid());
@@ -78,12 +80,15 @@ int main(int32_t argc, char **argv)
     {
         u->get_frametime(frametimes);
         cur_ticks = u->get_ticks();
+        tick_metrics = u->get_tick_metrics();
 
 #if __x86_64__
         fprintf(stderr, "%g, %g, %g, %g, %g, %lu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #else
         fprintf(stderr, "%g, %g, %g, %g, %g, %llu\n", frametimes[0], frametimes[1], frametimes[2], frametimes[3], u->total_sim_time(), cur_ticks - last_ticks);
 #endif
+
+        tick_metrics._fprintf(stderr);
 
         last_ticks = cur_ticks;
         std::this_thread::sleep_for(dura);

@@ -1,7 +1,6 @@
 from vector import Vector3, Vector4
 from observer import Observable
-from shipparts import *
-from spaceobj import ScanBeam, Beam
+from .. spaceobj import ScanBeam, Beam
 from . shipparts import *
 
 import math

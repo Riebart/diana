@@ -12,9 +12,7 @@ from collections import OrderedDict
 class Spectrum:
     def __init__(self, wavelengths, powers):
         if wavelengths != None and powers != None:
-            print(wavelengths)
-            print(powers)
-            self.spectrum = zip(wavelengths, powers)
+            self.spectrum = dict(zip(wavelengths, powers))
         else:
             self.spectrum = None
 
@@ -22,8 +20,8 @@ class Spectrum:
         if self.spectrum == None:
             return []
 
-        wavelengths = [ c[0] for c in self.spectrum ]
-        powers = [ c[1] for c in self.spectrum ]
+        wavelengths = list(self.spectrum.keys())
+        powers = [self.spectrum[k] for k in wavelengths]
         return [ len(self.spectrum), wavelengths, powers ]
 
     def __repr__(self):
@@ -40,7 +38,7 @@ class Message:
             msg_length = struct.unpack('<l', bytes)[0]
             return (bytes, msg_length)
         except ValueError:
-            print("Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno()))
+            print("Bad message length \"%s\" (not parsable) from %d" % (bytes, client.fileno()))
             return (None, None)
         except socket.timeout as e:
             raise e
@@ -239,7 +237,7 @@ class PhysicalPropertiesMsg(Message):
         vals = [ obj.object_type, obj.mass ] + \
             [a-b for a,b in zip(obj.position,p)] + \
             [a-b for a,b in zip(obj.velocity,v)] + \
-            obj.orientation + obj.thrust + [ obj.radius ] + self.spectrum.get_parts()
+            obj.orientation + obj.thrust + [ obj.radius ] + obj.spectrum.get_parts()
         Message.SendMsgEl([chr(i) for i in range(3,3+len(vals))], vals, msg)
 
         return msg

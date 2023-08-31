@@ -48,7 +48,7 @@
 //
 // - Scan beam colliding with smart physics object.
 //   > Similar to physics.cpp::PhysicsObject_collision(), when a scan beam collides with
-//     an SPO, a shallow clone of the origin beam is made, as well as a clone of the 
+//     an SPO, a shallow clone of the origin beam is made, as well as a clone of the
 //     object it collided with (by physics.cpp::PhysicsObject_clone()), which is set as
 //     the scan_target of the origin beam. The data and comm_msg of the origin beam copy
 //     are set to NULL, since they are not required, only the geometric properties of the
@@ -57,8 +57,8 @@
 //
 // - ScanResponseMsg received on the network.
 //   > A response beam is constructed from the origin beam stored in the queries map(),
-//     the scan_target is set to that of the origin beam, the comm_msg is set to NULL, 
-//     the data field of the network message is set to a newly allocated string and the 
+//     the scan_target is set to that of the origin beam, the comm_msg is set to NULL,
+//     the data field of the network message is set to a newly allocated string and the
 //     contents of the message's data field copied in. The origin beam is freed, and the
 //     query erased from the map.
 //
@@ -89,7 +89,9 @@
 #define LOCK(l) l.lock()
 #define UNLOCK(l) l.unlock()
 #define THREAD_CREATE(t, f, a) t = std::thread(f, a)
-#define THREAD_JOIN(t) if (t.joinable()) t.join()
+#define THREAD_JOIN(t) \
+    if (t.joinable())  \
+    t.join()
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -107,17 +109,68 @@ namespace Diana
     typedef struct SmartPhysicsObject SPO;
     typedef struct Vector3 V3;
 
-    void gravity(double G, V3* out, PO* big, PO* small)
+    Universe::CollisionMetrics::CollisionMetrics() : primary_aabb_tests(0),
+                                                     secondary_aabb_tests(0),
+                                                     sphere_tests(0),
+                                                     simultaneous_collisions(0),
+                                                     collision_rounds(0),
+                                                     collisions(0),
+                                                     aabb_test_ns(0),
+                                                     sphere_test_ns(0),
+                                                     total_ns(0) {}
+
+    void Universe::CollisionMetrics::add(struct Universe::CollisionMetrics other)
+    {
+        this->primary_aabb_tests += other.primary_aabb_tests;
+        this->secondary_aabb_tests += other.secondary_aabb_tests;
+        this->sphere_tests += other.sphere_tests;
+        this->simultaneous_collisions += other.simultaneous_collisions;
+        this->collision_rounds += other.collision_rounds;
+        this->collisions += other.collisions;
+        this->total_ns += other.total_ns;
+        this->aabb_test_ns += other.aabb_test_ns;
+        this->sphere_test_ns += other.sphere_test_ns;
+    }
+
+    void Universe::CollisionMetrics::_fprintf(FILE *fd)
+    {
+        fprintf(fd, "CollisionMetrics %u %u %u %u %u %u %lu %lu %lu\n",
+                primary_aabb_tests, secondary_aabb_tests, sphere_tests,
+                simultaneous_collisions, collision_rounds, collisions,
+                HRN_COUNT(aabb_test_ns), HRN_COUNT(sphere_test_ns), HRN_COUNT(total_ns));
+    }
+
+    Universe::TickMetrics::TickMetrics() : collision_metrics(),
+                                           multicollision_metrics(),
+                                           num_objects(0),
+                                           sort_aabb_ns(0),
+                                           object_tick_ns(0),
+                                           beam_tick_ns(0),
+                                           thread_join_wait_ns(0),
+                                           collision_resolution_ns(0),
+                                           object_lifecycle_ns(0) {}
+
+    void Universe::TickMetrics::_fprintf(FILE *fd)
+    {
+        collision_metrics._fprintf(fd);
+        multicollision_metrics._fprintf(fd);
+        fprintf(fd, "TickMetrics %lu %lu %lu %lu %lu %lu %lu %lu\n",
+                num_objects,
+                HRN_COUNT(sort_aabb_ns), HRN_COUNT(object_tick_ns), HRN_COUNT(beam_tick_ns), HRN_COUNT(thread_join_wait_ns),
+                HRN_COUNT(collision_resolution_ns), HRN_COUNT(object_lifecycle_ns), HRN_COUNT(total_ns));
+    }
+
+    void gravity(double G, V3 *out, PO *big, PO *small)
     {
         double m = G * big->mass * small->mass / Vector3_distance2(&big->position, &small->position);
         Vector3_ray(out, &small->position, &big->position);
         Vector3_scale(out, m);
     }
 
-    void* sim(void* uV)
+    void *sim(void *uV)
     {
         fprintf(stderr, "Universe (%p) physics sim thread PID: %u\n", uV, get_this_thread_pid());
-        Universe* u = (Universe*)uV;
+        Universe *u = (Universe *)uV;
 
         // dt is the amount of time that will pass in the game world during the next tick.
         double dt = u->min_frametime;
@@ -140,7 +193,7 @@ namespace Diana
             }
 
             start = std::chrono::high_resolution_clock::now();
-            u->tick(u->rate * dt);
+            u->tick_metrics = u->tick(u->rate * dt);
             end = std::chrono::high_resolution_clock::now();
 
             elapsed = end - start;
@@ -160,7 +213,7 @@ namespace Diana
                 // a VBox VM).
                 int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_frametime - e));
                 std::chrono::microseconds sleep_duration = std::chrono::microseconds(sleep_duration_us);
-                
+
                 if (u->params.permit_spin_sleep && (sleep_duration_us < SPIN_SLEEP_MAX_US))
                 {
                     spin_sleep_for(sleep_duration);
@@ -197,10 +250,10 @@ namespace Diana
         return NULL;
     }
 
-    void* vis_data_thread(void* uV)
+    void *vis_data_thread(void *uV)
     {
         fprintf(stderr, "Universe (%p) visdata sim thread PID: %u\n", uV, get_this_thread_pid());
-        Universe* u = (Universe*)uV;
+        Universe *u = (Universe *)uV;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
         std::chrono::duration<double> elapsed;
@@ -228,7 +281,7 @@ namespace Diana
             {
                 int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_frametime - e));
                 std::chrono::microseconds sleep_duration = std::chrono::microseconds(sleep_duration_us);
-                
+
                 if (u->params.permit_spin_sleep && (sleep_duration_us < SPIN_SLEEP_MAX_US))
                 {
                     spin_sleep_for(sleep_duration);
@@ -237,7 +290,7 @@ namespace Diana
                 {
                     std::this_thread::sleep_for(sleep_duration);
                 }
-                
+
                 end = std::chrono::high_resolution_clock::now();
                 elapsed = end - start;
                 e = elapsed.count();
@@ -247,15 +300,15 @@ namespace Diana
         return NULL;
     }
 
-    void Universe_hangup_objects(int32_t c, void* arg)
+    void Universe_hangup_objects(int32_t c, void *arg)
     {
-        Universe* u = (Universe*)arg;
+        Universe *u = (Universe *)arg;
         u->hangup_objects(c);
     }
 
-    void Universe_handle_message(int32_t c, void* arg)
+    void Universe_handle_message(int32_t c, void *arg)
     {
-        Universe* u = (Universe*)arg;
+        Universe *u = (Universe *)arg;
         u->handle_message(c);
     }
 
@@ -276,9 +329,9 @@ namespace Diana
         }
 
         this->num_threads = _params.num_worker_threads;
-        //sched = new libodb::Scheduler(this->num_threads - 1);
+        // sched = new libodb::Scheduler(this->num_threads - 1);
 
-        phys_worker_args = (struct phys_args*)malloc(this->num_threads * sizeof(struct phys_args));
+        phys_worker_args = (struct phys_args *)malloc(this->num_threads * sizeof(struct phys_args));
         for (int i = 0; i < this->num_threads; i++)
         {
             phys_worker_args[i].u = this;
@@ -313,12 +366,12 @@ namespace Diana
             phys_worker_args[i].done = false;
         }
 
-        //sched->block_until_done();
+        // sched->block_until_done();
         free(phys_worker_args);
 
         stop_net();
         stop_sim();
-        //delete sched;
+        // delete sched;
     }
 
     void Universe::start_net()
@@ -338,8 +391,8 @@ namespace Diana
             running = true;
             paused = false;
             visdata_paused = false;
-            THREAD_CREATE(sim_thread, sim, (void*)this);
-            THREAD_CREATE(vis_thread, vis_data_thread, (void*)this);
+            THREAD_CREATE(sim_thread, sim, (void *)this);
+            THREAD_CREATE(vis_thread, vis_data_thread, (void *)this);
         }
     }
 
@@ -360,7 +413,7 @@ namespace Diana
         THREAD_JOIN(vis_thread);
     }
 
-    void Universe::get_frametime(double* out)
+    void Universe::get_frametime(double *out)
     {
         out[0] = phys_frametime;
         out[1] = wall_frametime;
@@ -371,6 +424,11 @@ namespace Diana
     uint64_t Universe::get_ticks()
     {
         return num_ticks;
+    }
+
+    struct Universe::TickMetrics Universe::get_tick_metrics()
+    {
+        return tick_metrics;
     }
 
     double Universe::total_sim_time()
@@ -396,7 +454,7 @@ namespace Diana
         return r;
     }
 
-    void Universe::add_object(PO* obj)
+    void Universe::add_object(PO *obj)
     {
         obj->phys_id = get_id();
 
@@ -405,11 +463,11 @@ namespace Diana
         UNLOCK(add_lock);
     }
 
-    void Universe::add_object(B* beam)
+    void Universe::add_object(B *beam)
     {
         //! @todo Are there issues with casting between Beams and POs?
         // Before #pragma pack()-ing the beam struct, the phys_id was being rearranged into a padding portion.
-        add_object((PO*)beam);
+        add_object((PO *)beam);
     }
 
     void Universe::expire(int64_t phys_id)
@@ -425,7 +483,7 @@ namespace Diana
         LOCK(expire_lock);
         LOCK(add_lock);
         //! @todo Add a second std::map to change out this linear search.
-        std::map<int64_t, struct SmartPhysicsObject*>::iterator it;
+        std::map<int64_t, struct SmartPhysicsObject *>::iterator it;
 
         for (it = smarties.begin(); it != smarties.end(); ++it)
         {
@@ -469,8 +527,8 @@ namespace Diana
         }
 
         struct vis_client vc;
-        PO* o;
-        PO* ro;
+        PO *o;
+        PO *ro;
 
         LOCK(vis_lock);
         for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
@@ -482,7 +540,7 @@ namespace Diana
             visdata_msg.client_id = vc.client_id;
 
             //! @todo Unlocked access to the smarties map.
-            ro = (vc.phys_id == -1 ? NULL : (PO*)smarties[vc.phys_id]);
+            ro = (vc.phys_id == -1 ? NULL : (PO *)smarties[vc.phys_id]);
             bool disconnect = false;
 
             //! @todo unlocked access to phsy_objects array.
@@ -566,19 +624,19 @@ namespace Diana
     void Universe::handle_message(int32_t socket)
     {
         //! @todo Support optional arguments with sensible defaults.
-        BSONMessage* msg_base = BSONMessage::ReadMessage(socket);
+        BSONMessage *msg_base = BSONMessage::ReadMessage(socket);
 
         // For objects spawned as 'children' from a parent, they should have the parent's phys_id in the server_id
         // field. That is used to find the parent, and adjust the position/velocity/whatever accordingly.
         // This only applies, right now, to smart parents.
         LOCK(add_lock);
         LOCK(expire_lock);
-        std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+        std::map<int64_t, struct SmartPhysicsObject *>::iterator it = smarties.find(msg_base->server_id);
         UNLOCK(add_lock);
         UNLOCK(expire_lock);
 
         // If this smarty is non-NULL, then this points to the PARENT
-        SPO* smarty = (it != smarties.end() ? it->second : NULL);
+        SPO *smarty = (it != smarties.end() ? it->second : NULL);
 
         if (params.verbose_logging)
         {
@@ -589,7 +647,7 @@ namespace Diana
         {
         case BSONMessage::MessageType::VisualDataEnable:
         {
-            VisualDataEnableMsg* msg = (VisualDataEnableMsg*)msg_base;
+            VisualDataEnableMsg *msg = (VisualDataEnableMsg *)msg_base;
             if (msg->specced[2])
             {
                 printf("Client %d %s for VisData\n", socket, (msg->enabled ? "REGISTERED" : "UNREGISTERED"));
@@ -604,7 +662,7 @@ namespace Diana
         }
         case BSONMessage::PhysicalProperties:
         {
-            PhysicalPropertiesMsg* msg = (PhysicalPropertiesMsg*)msg_base;
+            PhysicalPropertiesMsg *msg = (PhysicalPropertiesMsg *)msg_base;
             // We currently only support PhysProps messages for smarties. Why would you be able to adjust
             // the properties of another object?
             if (smarty != NULL)
@@ -613,7 +671,7 @@ namespace Diana
                 if (msg->specced[2])
                 {
                     size_t new_type_len = strlen(msg->obj_type) + 1;
-                    char* new_type = (char*)malloc(sizeof(char) * new_type_len);
+                    char *new_type = (char *)malloc(sizeof(char) * new_type_len);
                     if (new_type != NULL)
                     {
                         free(smarty->pobj.obj_type);
@@ -646,7 +704,11 @@ namespace Diana
                     }
                 }
 
-#define ASSIGN_VAL(i, var, absolute) if (msg->specced[i]) { smarty->pobj.var = (absolute ? 0.0 : smarty->pobj.var) + msg->var; };
+#define ASSIGN_VAL(i, var, absolute)                                       \
+    if (msg->specced[i])                                                   \
+    {                                                                      \
+        smarty->pobj.var = (absolute ? 0.0 : smarty->pobj.var) + msg->var; \
+    };
 #define ASSIGN_V3(i, var, absolute) ASSIGN_VAL(i, var.x, absolute) ASSIGN_VAL(i + 1, var.y, absolute) ASSIGN_VAL(i + 2, var.z, absolute);
                 ASSIGN_VAL(3, mass, true);
                 ASSIGN_V3(4, position, false);
@@ -663,9 +725,10 @@ namespace Diana
                 // Ensure that the spectrum was specified in the message
                 if (msg->all_specced(msg->num_el - 3))
                 {
-                    struct Spectrum* spectrum = Spectrum_clone(msg->spectrum);
+                    struct Spectrum *spectrum = Spectrum_clone(msg->spectrum);
                     spectrum = Spectrum_perturb(spectrum, params.spectrum_slush_range,
-                        [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
+                                                [this]()
+                                                { return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
                     spectrum = Spectrum_combine(smarty->pobj.spectrum, spectrum);
                     smarty->pobj.spectrum = spectrum;
 
@@ -687,7 +750,7 @@ namespace Diana
         }
         case BSONMessage::Beam:
         {
-            BeamMsg* msg = (BeamMsg*)msg_base;
+            BeamMsg *msg = (BeamMsg *)msg_base;
             // We need all of the properties, except message, if it's not a COMM beam,
             // If it's a COMM beam, we need them all.
             if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
@@ -696,19 +759,19 @@ namespace Diana
                 break;
             }
 
-            B* b = (B*)malloc(sizeof(B));
+            B *b = (B *)malloc(sizeof(B));
             if (b == NULL)
             {
                 throw std::runtime_error("OOM");
             }
 
-            char* comm_msg = NULL;
+            char *comm_msg = NULL;
             PhysicsObjectType btype;
             if (strcmp(msg->beam_type, "COMM") == 0)
             {
                 btype = BEAM_COMM;
                 size_t len = strlen(msg->comm_msg) + 1;
-                comm_msg = (char*)malloc(sizeof(char) * len);
+                comm_msg = (char *)malloc(sizeof(char) * len);
                 if (comm_msg != NULL)
                 {
                     memcpy(comm_msg, msg->comm_msg, len);
@@ -745,18 +808,19 @@ namespace Diana
             // Note that the spectrum is a non-optional component, so we can assume it exists
             // as enforcement of that condition occurs earlier with the all_specced() call.
             Beam_init(b, this, &msg->origin, &msg->velocity, &msg->up,
-                msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
+                      msg->spread_h, msg->spread_v, msg->energy, btype, comm_msg, NULL, msg->spectrum);
 
             // Now that the beam has a cloned version of the spectrum, perturb it.
             b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range,
-                [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
+                                           [this]()
+                                           { return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
 
             add_object(b);
             break;
         }
         case BSONMessage::MessageType::Spawn:
         {
-            SpawnMsg* msg = (SpawnMsg*)msg_base;
+            SpawnMsg *msg = (SpawnMsg *)msg_base;
             // We don't need, or rather, shouldn't have, a server ID on a spawn, but we should
             // have everything else. Similarly, spectrum specification is optional.
             if (!msg->all_specced(1, msg->num_el - 4))
@@ -764,11 +828,11 @@ namespace Diana
                 break;
             }
 
-            PO* obj;
+            PO *obj;
             // If this object is smart, add it to the smarties, and such.
             if (msg->is_smart)
             {
-                SPO* sobj = (SPO*)malloc(sizeof(struct SmartPhysicsObject));
+                SPO *sobj = (SPO *)malloc(sizeof(struct SmartPhysicsObject));
                 if (sobj == NULL)
                 {
                     throw std::runtime_error("OOM");
@@ -779,7 +843,7 @@ namespace Diana
             }
             else
             {
-                obj = (PO*)malloc(sizeof(struct PhysicsObject));
+                obj = (PO *)malloc(sizeof(struct PhysicsObject));
                 if (obj == NULL)
                 {
                     throw std::runtime_error("OOM");
@@ -787,14 +851,14 @@ namespace Diana
             }
 
             size_t len = strlen(msg->obj_type) + 1;
-            char* obj_type = (char*)malloc(len);
+            char *obj_type = (char *)malloc(len);
             if (obj_type == NULL)
             {
                 throw std::runtime_error("OOM you twat");
             }
             memcpy(obj_type, msg->obj_type, len);
 
-            struct Spectrum* spectrum = NULL;
+            struct Spectrum *spectrum = NULL;
             // If the message specifies a spectrum, use it
             if (msg->all_specced(msg->num_el - 3))
             {
@@ -802,14 +866,15 @@ namespace Diana
             }
 
             PhysicsObject_init(obj, this, &msg->position, &msg->velocity,
-                const_cast<struct Vector3*>(&vector3d_zero), &msg->thrust,
-                msg->mass, msg->radius, obj_type, spectrum);
+                               const_cast<struct Vector3 *>(&vector3d_zero), &msg->thrust,
+                               msg->mass, msg->radius, obj_type, spectrum);
 
             // Now that the object contains a cloned version of the spectrum, perturb it.
             if (obj->spectrum != NULL)
             {
                 obj->spectrum = Spectrum_perturb(obj->spectrum, params.spectrum_slush_range,
-                    [this]() {return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
+                                                 [this]()
+                                                 { return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
             }
 
             // Note that adding the object to the attractors and radiators lists is handled
@@ -845,13 +910,13 @@ namespace Diana
         }
         case BSONMessage::MessageType::ScanQuery:
         {
-            ScanQueryMsg* msg = (ScanQueryMsg*)msg_base;
+            ScanQueryMsg *msg = (ScanQueryMsg *)msg_base;
             // The only time we should receive this is when a ship is querying for a passive
             // scan. We expect the query to have no parameters, as it simply begins an event.
 
             // A passive scan result contains the signature and direction.
             //
-            // The signature's power levels are scaled based on the distance (the area of the 
+            // The signature's power levels are scaled based on the distance (the area of the
             // wave front, total power amortized across the area, times the area of the object
             // intersection with that).
 
@@ -877,7 +942,7 @@ namespace Diana
                 srm.specced[23] = true;
                 srm.specced[24] = true;
 
-                PO* other;
+                PO *other;
                 V3 dp;
                 double distance_sq;
                 double power_scale;
@@ -886,7 +951,7 @@ namespace Diana
                 //! @todo Use read/write locks, since most of the time, we only want read locks.
                 LOCK(phys_lock);
                 //! @todo Move all objects with spectra to their own vector
-                for (std::vector<PO*>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
+                for (std::vector<PO *>::iterator it = phys_objects.begin(); it != phys_objects.end(); it++)
                 {
                     other = *it;
                     if (other->spectrum == NULL)
@@ -916,7 +981,7 @@ namespace Diana
                     }
 
                     srm.obj_spectrum = Spectrum_clone(other->spectrum);
-                    struct SpectrumComponent* components = &(srm.obj_spectrum->components);
+                    struct SpectrumComponent *components = &(srm.obj_spectrum->components);
                     for (size_t i = 0; i < srm.obj_spectrum->n; i++)
                     {
                         components[i].power *= power_scale;
@@ -940,13 +1005,13 @@ namespace Diana
         }
         case BSONMessage::MessageType::ScanResponse:
         {
-            ScanResponseMsg* msg = (ScanResponseMsg*)msg_base;
+            ScanResponseMsg *msg = (ScanResponseMsg *)msg_base;
             if (!msg->all_specced())
             {
                 break;
             }
 
-            struct Universe::scan_target st = { msg->scan_id, msg->server_id };
+            struct Universe::scan_target st = {msg->scan_id, msg->server_id};
 
             // We SHOULD be able to find the target in the map, and something is very
             // wrong if we can't.
@@ -955,10 +1020,10 @@ namespace Diana
             if ((it != queries.end()) && (it->first == st))
             {
                 struct scan_origin so = it->second;
-                Beam* return_beam = Beam_make_return_beam(so.origin_beam, so.energy, &so.hit_position, PhysicsObjectType::BEAM_SCANRESULT);
+                Beam *return_beam = Beam_make_return_beam(so.origin_beam, so.energy, &so.hit_position, PhysicsObjectType::BEAM_SCANRESULT);
                 return_beam->scan_target = so.origin_beam->scan_target;
                 size_t len = strlen(msg->data) + 1;
-                char* data_copy = (char*)malloc(len);
+                char *data_copy = (char *)malloc(len);
                 if (data_copy == NULL)
                 {
                     throw std::runtime_error("OOM");
@@ -992,7 +1057,7 @@ namespace Diana
         // the Hello came from.
         case BSONMessage::MessageType::Hello:
         {
-            HelloMsg* msg = (HelloMsg*)msg_base;
+            HelloMsg *msg = (HelloMsg *)msg_base;
             if (!msg->specced[0] && msg->specced[1])
             {
                 HelloMsg hm;
@@ -1007,14 +1072,14 @@ namespace Diana
         // socket disconnect.
         case BSONMessage::MessageType::Goodbye:
         {
-            GoodbyeMsg* msg = (GoodbyeMsg*)msg_base;
+            GoodbyeMsg *msg = (GoodbyeMsg *)msg_base;
             // Make sure it is speccing the server ID.
             //! @todo Secure this so only associated clients can Goodbye smarties?
             if (msg->specced[0])
             {
                 LOCK(add_lock);
                 LOCK(expire_lock);
-                std::map<int64_t, struct SmartPhysicsObject*>::iterator it = smarties.find(msg_base->server_id);
+                std::map<int64_t, struct SmartPhysicsObject *>::iterator it = smarties.find(msg_base->server_id);
                 UNLOCK(add_lock);
                 UNLOCK(expire_lock);
                 if ((it != smarties.end()) && (it->first == msg->server_id))
@@ -1031,7 +1096,7 @@ namespace Diana
         delete msg_base;
     }
 
-    void Universe::get_grav_pull(V3* g, PO* obj)
+    void Universe::get_grav_pull(V3 *g, PO *obj)
     {
         V3 cg;
         for (size_t i = 0; i < attractors.size(); i++)
@@ -1047,7 +1112,7 @@ namespace Diana
         }
     }
 
-    bool check_collision_single(Universe* u, struct PhysicsObject* obj1, struct PhysicsObject* obj2, double dt, struct Universe::PhysCollisionEvent& ev)
+    bool check_collision_single(Universe *u, struct PhysicsObject *obj1, struct PhysicsObject *obj2, double dt, struct Universe::PhysCollisionEvent &ev)
     {
         struct PhysCollisionResult phys_result;
 
@@ -1090,13 +1155,17 @@ namespace Diana
         return false;
     }
 
-    void check_collision_loop(void* argsV)
+    struct Universe::CollisionMetrics check_collision_loop(void *argsV)
     {
-        struct Universe::phys_args* args = (struct Universe::phys_args*)argsV;
-        Universe* u = args->u;
+        struct Universe::phys_args *args = (struct Universe::phys_args *)argsV;
+        Universe *u = args->u;
 
-        struct AABB* a;
-        struct AABB* b;
+        struct Universe::CollisionMetrics metrics;
+        HRN_T t0 = HRN;
+        HRN_T aabb0, sphere0;
+
+        struct AABB *a;
+        struct AABB *b;
 
         size_t end = args->offset + args->stride;
         end = MIN(end, u->phys_objects.size() - 1);
@@ -1115,6 +1184,9 @@ namespace Diana
             a = &u->phys_objects[i]->box;
             for (size_t j = (args->test_all ? 0 : i + 1); j < u->phys_objects.size(); j++)
             {
+                aabb0 = HRN;
+
+                // Don't collide objects with themselves.
                 if (i == j)
                 {
                     continue;
@@ -1129,24 +1201,31 @@ namespace Diana
                 // It's simpler here, because we have a guarantee (thanks to sorting)
                 // about the relative positions of the lower endpoints of the intervals so
                 // we don't need to worry about those here.
+                metrics.primary_aabb_tests++;
                 if (Vector3_almost_zeroS(d) || (d > 0))
                 {
                     // Now do a full test on the Y axis.
+                    metrics.secondary_aabb_tests++;
                     if (!Vector3_intersect_interval(a->l.y, a->u.y, b->l.y, b->u.y))
                     {
                         continue;
                     }
 
                     // And then a full test on Z
+                    metrics.secondary_aabb_tests++;
                     if (!Vector3_intersect_interval(a->l.z, a->u.z, b->l.z, b->u.z))
                     {
                         continue;
                     }
 
+                    metrics.aabb_test_ns += HRN - aabb0;
+
                     // If we succeeded on both, count this as a potential collision for
                     // honest-to-goodness testing and hand it off to bounding-ball testing
                     // followed by collision effect calculation.
                     struct Universe::PhysCollisionEvent ev;
+                    metrics.sphere_tests++;
+                    sphere0 = HRN;
                     if (check_collision_single(u, u->phys_objects[i], u->phys_objects[j], args->dt, ev))
                     {
                         ev.obj1_index = i;
@@ -1154,32 +1233,43 @@ namespace Diana
                         LOCK(u->collision_lock);
                         u->collisions.push_back(ev);
                         UNLOCK(u->collision_lock);
+                        metrics.collisions++;
                     }
+                    metrics.sphere_test_ns += HRN - sphere0;
                 }
                 else
                 {
+                    metrics.aabb_test_ns += HRN - aabb0;
+
                     // If we fail that X comparison, we know that we will fail for every object
                     // 'after', so we can bail on the loop.
                     break;
                 }
             }
         }
+
+        metrics.total_ns = HRN - t0;
+        return metrics;
     }
 
-    void* thread_check_collisions(void* argsV)
+    void *thread_check_collisions(void *argsV)
     {
-        struct Universe::phys_args* args = (struct Universe::phys_args*)argsV;
+        struct Universe::phys_args *args = (struct Universe::phys_args *)argsV;
 
         // Spin until we get the signal to start going.
         // The universe will flip this after the next workload is ready to go.
-        while (args->done) {}
+        while (args->done)
+        {
+        }
 
         check_collision_loop(argsV);
 
         // Indicate that we're done, and spin until we get the signal to stop.
         // The universe will flip this after the next workload is ready to go.
         args->done = true;
-        while (args->done) {}
+        while (args->done)
+        {
+        }
 
         return NULL;
     }
@@ -1189,7 +1279,7 @@ namespace Diana
         // Employs gnome sort to sort the lists, computing the bounding boxes along the way
         // http://en.wikipedia.org/wiki/Gnome_sort
 
-        struct PhysicsObject* box_swap;
+        struct PhysicsObject *box_swap;
         size_t max_so_far = 0;
 
         if (calc)
@@ -1233,15 +1323,15 @@ namespace Diana
     }
 
     //! @todo Convert this to a private member function.
-    void obj_tick(Universe* u, struct PhysicsObject* o, double dt)
+    void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
     {
-        V3 g = { 0.0, 0.0, 0.0 };
+        V3 g = {0.0, 0.0, 0.0};
         struct BeamCollisionResult beam_result;
 
         // Needed to resolve the physical effects of the collision.
         struct PhysCollisionResult phys_result;
 
-        struct Beam* b;
+        struct Beam *b;
 
         for (size_t bi = 0; bi < u->beams.size(); bi++)
         {
@@ -1262,13 +1352,13 @@ namespace Diana
 #endif
                 }
 
-                PhysicsObject_collision(o, (PO*)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
+                PhysicsObject_collision(o, (PO *)b, beam_result.e, beam_result.t * dt, &phys_result.pce1, u->params.health_damage_threshold);
 
                 //! @todo Smarty beam collision messages
                 //! @todo Beam collision messages
                 if (o->type == PHYSOBJECT_SMART)
                 {
-                    struct SmartPhysicsObject* s = (SPO*)o;
+                    struct SmartPhysicsObject *s = (SPO *)o;
                     CollisionMsg cm;
                     cm.client_id = s->client_id;
                     cm.server_id = o->phys_id;
@@ -1278,7 +1368,7 @@ namespace Diana
                     cm.energy = beam_result.e;
                     cm.comm_msg = NULL;
                     // It makes sense that we know about the power levels of the beam here,
-                    // since in theory the ship would know about the duration of the beam, 
+                    // since in theory the ship would know about the duration of the beam,
                     // even if we're not simulating that.
                     cm.spectrum = Spectrum_clone(b->spectrum);
                     cm.spec_all();
@@ -1290,13 +1380,13 @@ namespace Diana
                     {
                     case BEAM_COMM:
                         cm.specced[cm.num_el - 4] = true;
-                        cm.set_colltype((char*)"COMM");
+                        cm.set_colltype((char *)"COMM");
                         cm.comm_msg = b->comm_msg;
                         cm.send(s->socket);
                         break;
                     case BEAM_SCAN:
                     {
-                        cm.set_colltype((char*)"SCAN");
+                        cm.set_colltype((char *)"SCAN");
                         cm.send(s->socket);
 
                         ScanQueryMsg sqm;
@@ -1313,7 +1403,7 @@ namespace Diana
 
                         // Ignore multiple hits of the same beam/object pair.
                         // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
-                        struct Universe::scan_target st = { b->phys_id, o->phys_id };
+                        struct Universe::scan_target st = {b->phys_id, o->phys_id};
                         LOCK(u->query_lock);
                         const std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
                         if ((it == u->queries.end()) || !(st == (it->first)))
@@ -1322,8 +1412,8 @@ namespace Diana
                             // when the osim responds.
                             // Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
                             // Clone the beam so that if the beam expires before the return beam is sent, we don't access the freed space.
-                            B* b_copy = (B*)malloc(sizeof(B));
-                            PO* o_copy = PhysicsObject_clone(o);
+                            B *b_copy = (B *)malloc(sizeof(B));
+                            PO *o_copy = PhysicsObject_clone(o);
                             if ((b_copy == NULL) || (o_copy == NULL))
                             {
                                 throw std::runtime_error("OOM::Universe::BeamHitObjClone");
@@ -1334,7 +1424,7 @@ namespace Diana
                             b_copy->comm_msg = NULL;
                             b_copy->scan_target = o_copy;
                             b_copy->spectrum = Spectrum_clone(b->spectrum);
-                            u->queries[st] = { b_copy, cm.energy, beam_result.p };
+                            u->queries[st] = {b_copy, cm.energy, beam_result.p};
                         }
                         UNLOCK(u->query_lock);
 
@@ -1344,7 +1434,7 @@ namespace Diana
                     case BEAM_SCANRESULT:
                     {
                         //! @todo This feels forced, ugh... Enum?
-                        cm.set_colltype((char*)"SCRE");
+                        cm.set_colltype((char *)"SCRE");
                         cm.send(s->socket);
 
                         //! @todo Should we consider only sending this message if the phys_id of the object matches that of the originator?
@@ -1359,7 +1449,7 @@ namespace Diana
                         srm.thrust = b->scan_target->thrust;
                         srm.mass = b->scan_target->mass;
                         srm.radius = b->scan_target->radius;
-                        srm.orientation = { b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y };
+                        srm.orientation = {b->scan_target->forward.x, b->scan_target->forward.y, b->scan_target->up.x, b->scan_target->up.y};
                         srm.obj_type = b->scan_target->obj_type;
                         srm.beam_spectrum = Spectrum_clone(b->spectrum);
                         srm.data = b->data;
@@ -1395,7 +1485,7 @@ namespace Diana
                         break;
                     }
                     case BEAM_WEAP:
-                        cm.set_colltype((char*)"WEAP");
+                        cm.set_colltype((char *)"WEAP");
                         cm.send(s->socket);
                         break;
                     default:
@@ -1407,7 +1497,7 @@ namespace Diana
 
         //! @todo Multithread this.
         V3 pd;
-        PO* other;
+        PO *other;
         double distance_sq;
 
         if ((u->total_time - u->last_effect_time) >= 1.0)
@@ -1429,7 +1519,7 @@ namespace Diana
 
                     if (o->type == PHYSOBJECT_SMART)
                     {
-                        struct SmartPhysicsObject* s = (SPO*)o;
+                        struct SmartPhysicsObject *s = (SPO *)o;
                         CollisionMsg cm;
                         cm.client_id = s->client_id;
                         cm.server_id = o->phys_id;
@@ -1441,7 +1531,7 @@ namespace Diana
                         cm.comm_msg = NULL;
                         cm.spectrum = Spectrum_clone(other->spectrum);
                         //! @todo Ok, this four-character string is starting to feel forced.
-                        cm.set_colltype((char*)"RADN");
+                        cm.set_colltype((char *)"RADN");
                         cm.spec_all();
 
                         // Note that there is no comm message, so that's unspecced.
@@ -1463,7 +1553,7 @@ namespace Diana
     // Append a value to the end of a list, assuming there's enough room, if it's not already in the list
     // Return whether or not the value was added to the list (true if it was added, false if it was already
     // there.)
-    bool unique_append(size_t* list, size_t max_index, size_t val)
+    bool unique_append(size_t *list, size_t max_index, size_t val)
     {
         for (size_t i = 0; i < max_index; i++)
         {
@@ -1490,8 +1580,8 @@ namespace Diana
             // Then we can binary search our way as we iterate over the list of phys IDs.
             // That might have a big constant though
             //! @todo Examine the runtime behaviour here, and maybe optimize out some of the linear searches.
-            struct PhysicsObject* po;
-            struct Beam* b;
+            struct PhysicsObject *po;
+            struct Beam *b;
 
             // See if any are a beam.
             for (size_t i = 0; i < beams.size(); i++)
@@ -1614,7 +1704,7 @@ namespace Diana
                 }
                 case PHYSOBJECT_SMART:
                 {
-                    SPO* obj = (SPO*)added[i];
+                    SPO *obj = (SPO *)added[i];
                     //! @todo Check to make sure this smarty adding is right.
                     smarties[obj->pobj.phys_id] = obj;
                     phys_objects.push_back(added[i]);
@@ -1633,7 +1723,7 @@ namespace Diana
                 case BEAM_SCANRESULT:
                 case BEAM_WEAP:
                 {
-                    beams.push_back((B*)added[i]);
+                    beams.push_back((B *)added[i]);
                     break;
                 }
                 default:
@@ -1645,15 +1735,19 @@ namespace Diana
         }
     }
 
-    void Universe::tick(double dt)
+    struct Universe::TickMetrics Universe::tick(double dt)
     {
+        struct Universe::TickMetrics metrics;
+        HRN_T t00 = HRN;
+
         LOCK(phys_lock);
+        HRN_T t0;
 
         // Only the visdata thread conflicts with this...
         // Are we OK with it getting data that is in the middle of being updated to?
         // This can be done single-threaded for now, and we'll thread it later.
 
-        //! @todo Think about something proper. Temporally ordered collisions, for one, 
+        //! @todo Think about something proper. Temporally ordered collisions, for one,
         //! and something smarter than an N choose 2 approach, such as Axis Aligned Bounding Boxes,
         //! or Oriented Bounding Boxes. The former with gnome-sort turns it into O(NlogN+N) complexity
         //! per pass, roughly, but for an almost sorted list, the sort is O(N) basically.
@@ -1662,21 +1756,26 @@ namespace Diana
 
         //! @todo Multi-level collisoin detecitons in the tick.
         //! @todo Have some concept of collision destruction criteria here.
-        //! @todoTemporally ordered collision resolution. (See multi-level collision detection)
+        //! @todo Temporally ordered collision resolution. (See multi-level collision detection)
 
+        metrics.num_objects = phys_objects.size();
         if (phys_objects.size() > 1)
         {
+            t0 = HRN;
             sort_aabb(dt, true);
+            metrics.sort_aabb_ns = HRN - t0;
 
+            // How many worker threads, in addition to this main thread.
+            // In single-threaded operation, this will result in `n == 0`
             int32_t n = (int32_t)(phys_objects.size() / MIN_OBJECTS_PER_THREAD);
             n = CLAMP(0, n, num_threads - 1);
-            //n = MAX(0, MIN(num_threads - 1, n));
 
             // If we're using more than 1 thread, try to split them evenly.
             // Note that this clamps (rounds) down in absolute value, so we'll have extra slack
             // that we'll need to pick up at the end.
             int32_t d = (int32_t)(phys_objects.size() / (n + 1));
 
+            // Reserve one spot for this main thread, all others get primed for work.
             for (int i = 0; i < n; i++)
             {
                 phys_worker_args[i].offset = i * d;
@@ -1684,8 +1783,8 @@ namespace Diana
                 phys_worker_args[i].dt = dt;
                 phys_worker_args[i].done = false;
                 phys_worker_args[i].test_all = false;
-                //sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
-                check_collision_loop(&phys_worker_args[n]);
+                // sched->add_work(thread_check_collisions, &phys_worker_args[i], NULL, libodb::Scheduler::NONE);
+                metrics.collision_metrics.add(check_collision_loop(&phys_worker_args[i]));
             }
 
             // Save one work unit for this thread, so it isn't just sitting doing nothing useful.
@@ -1696,15 +1795,19 @@ namespace Diana
             phys_worker_args[n].dt = dt;
             phys_worker_args[n].done = false;
             phys_worker_args[n].test_all = false;
-            check_collision_loop(&phys_worker_args[n]);
+            metrics.collision_metrics.add(check_collision_loop(&phys_worker_args[n]));
 
             // Wait for the workers to report that they are done.
             // This depends on the volatility of their 'done' variable. We don't need
             // atomicity, but we need it to break cache.
+            t0 = HRN;
             for (int i = 0; i < n; i++)
             {
-                while (!phys_worker_args[i].done) {}
+                while (!phys_worker_args[i].done)
+                {
+                }
             }
+            metrics.thread_join_wait_ns = HRN - t0;
 
             // Set this once, we'll use it in all loops in the following.
             phys_worker_args[0].dt = dt;
@@ -1728,7 +1831,7 @@ namespace Diana
 
             // For any smart objects, we'll need this, so pre-set some values.
             CollisionMsg cm;
-            cm.set_colltype((char*)"PHYS");
+            cm.set_colltype((char *)"PHYS");
             cm.comm_msg = NULL;
             cm.spec_all();
 
@@ -1738,7 +1841,7 @@ namespace Diana
             cm.specced[cm.num_el - 2] = false;
             cm.specced[cm.num_el - 3] = false;
 
-            // The value in params.max_simultaneous_collision_rounds defines the number of rounds that we'll consider 
+            // The value in params.max_simultaneous_collision_rounds defines the number of rounds that we'll consider
             // multiple collision at the same instant.
             // After this cutoff, only one collision per instant is considered, and the rest discarded for the sake
             // of interactivity. After enough rounds, the eventual effects of the extra energy distribution will be
@@ -1747,6 +1850,7 @@ namespace Diana
             // Number of rounds of collisions we've gone through, for fun.
             uint32_t n_rounds = 0;
 
+            t0 = HRN;
             while (collisions.size() != 0)
             {
                 n_rounds++;
@@ -1754,7 +1858,8 @@ namespace Diana
                 if (re_sort && (collisions.size() > 1))
                 {
                     std::sort(collisions.begin(), collisions.end(),
-                        [](struct PhysCollisionEvent& a, struct PhysCollisionEvent& b) { return a.pcr.t < b.pcr.t; });
+                              [](struct PhysCollisionEvent &a, struct PhysCollisionEvent &b)
+                              { return a.pcr.t < b.pcr.t; });
                 }
 
                 // Simultaneous collision handling is not obvious, but ends up working out to be not too complex.
@@ -1769,15 +1874,15 @@ namespace Diana
                 // are easy to solve, and the solution conserves momentum and energy in that two-object system.
                 // This can be extended to address N-body collisions, but considering all necessary two-body
                 // collisions, each of which conserves energy/momentum, and applying all of their effects in
-                // summation only gets us part way. That is, each collisions results in a delta-v for each object, 
-                // and so applying the sum of all delta-v (to both objects) in all collisions involving an object 
+                // summation only gets us part way. That is, each collisions results in a delta-v for each object,
+                // and so applying the sum of all delta-v (to both objects) in all collisions involving an object
                 // will result in a conserved system still MOMENTUM conserved system, but not energy.
                 //
                 // To regain energy conservation, it is important to realize that, in a collision, an object
                 // exchanges more energy with it's neighbours than it possessed in the original system. This results
                 // in a final system that contains more energy than the original system possessed. To reconcile this
                 // it is possible to calculate the energy in the final system, and original system, which will be
-                // related by E'=kE, with k>=1. Conservation can be regained by scaling all resulting velocities 
+                // related by E'=kE, with k>=1. Conservation can be regained by scaling all resulting velocities
                 // by 1/sqrt(k).
                 //
                 // IMPORTANT NOTE: This approximation is physically incorrect, since it will return conservation of
@@ -1803,7 +1908,7 @@ namespace Diana
                 size_t n_simultaneous = 0;
 
                 // A list of all objects involved in the collisions
-                size_t* objs = (size_t*)malloc(sizeof(size_t) * 2 * collisions.size());
+                size_t *objs = (size_t *)malloc(sizeof(size_t) * 2 * collisions.size());
                 if (objs == NULL)
                 {
                     throw std::runtime_error("Universe::Tick::UnableToAllocateObjectList");
@@ -1814,13 +1919,13 @@ namespace Diana
                 double energy0 = 0.0;
 
                 while ((n_simultaneous < collisions.size()) &&
-                    (Vector3_almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
+                       (Vector3_almost_zeroS(collisions[0].pcr.t - collisions[n_simultaneous].pcr.t)))
                 {
                     // For each collision that happens at the same time as the first, apply it to the objects involved
                     // Retrieve the earliest collision details.
                     struct PhysCollisionEvent collision_event = collisions[n_simultaneous];
-                    struct PhysicsObject* obj1 = collision_event.obj1;
-                    struct PhysicsObject* obj2 = collision_event.obj2;
+                    struct PhysicsObject *obj1 = collision_event.obj1;
+                    struct PhysicsObject *obj2 = collision_event.obj2;
                     struct PhysCollisionResult phys_result = collision_event.pcr;
 
                     if ((n_rounds == 1) && params.verbose_logging)
@@ -1844,7 +1949,8 @@ namespace Diana
 
                     // While we're at it, keep track of all distinct objects that we've collided by adding/counting them
                     // in the array, in case we haven't seen them already. Additionally, take this time to calculate the
-                    // kinetic energy of all objects before any collisions are taken into consideration, store it in enegy0.
+                    // kinetic energy of all objects before any collisions are taken into consideration, store it in
+                    // energy0.
                     never_seen = unique_append(objs, n_objs, collision_event.obj1_index);
                     n_objs += never_seen;
                     energy0 += (never_seen ? obj1->mass * Vector3_length2(&obj1->velocity) : 0.0);
@@ -1864,7 +1970,7 @@ namespace Diana
 
                     if (obj1->type == PHYSOBJECT_SMART)
                     {
-                        SPO* s = (SPO*)obj1;
+                        SPO *s = (SPO *)obj1;
                         cm.client_id = s->socket;
                         cm.server_id = obj1->phys_id;
                         cm.direction = phys_result.pce1.d;
@@ -1874,7 +1980,7 @@ namespace Diana
 
                     if (obj2->type == PHYSOBJECT_SMART)
                     {
-                        SPO* s = (SPO*)obj2;
+                        SPO *s = (SPO *)obj2;
                         cm.client_id = s->socket;
                         cm.server_id = obj2->phys_id;
                         cm.direction = phys_result.pce2.d;
@@ -1950,10 +2056,10 @@ namespace Diana
                 size_t pre_size = collisions.size();
                 for (size_t i = 0; i < n_objs; i++)
                 {
-                    struct PhysicsObject* o = phys_objects[objs[i]];
+                    struct PhysicsObject *o = phys_objects[objs[i]];
                     PhysicsObject_estimate_aabb(o, &o->box, phys_worker_args[0].dt);
                     phys_worker_args[0].offset = objs[i];
-                    check_collision_loop(&phys_worker_args[0]);
+                    metrics.multicollision_metrics.add(check_collision_loop(&phys_worker_args[0]));
                 }
                 // If our vector isn't the same size as before we re-collided, then we'll have to re-sort.
                 re_sort = (collisions.size() != pre_size);
@@ -1961,29 +2067,39 @@ namespace Diana
                 //! @todo This is inefficient, realloc()?
                 free(objs);
                 objs = NULL;
+                metrics.collision_metrics.simultaneous_collisions += n_simultaneous;
             }
 
             if ((n_rounds > 1) && params.verbose_logging)
             {
                 printf("Collision set required %u rounds\n", n_rounds);
             }
-        }
 
+            metrics.collision_metrics.collision_rounds += n_rounds;
+        }
+        metrics.collision_resolution_ns = HRN - t0;
+
+        t0 = HRN;
         // Now tick along each object, handling any gravity and radiation while we're at it
         for (size_t i = 0; i < phys_objects.size(); i++)
         {
             obj_tick(this, phys_objects[i], dt);
         }
+        metrics.object_tick_ns = HRN - t0;
 
         // Now tick along each beam while we're here because we won't be
         // needing to reference them afer this.
+        t0 = HRN;
         for (size_t bi = 0; bi < beams.size(); bi++)
         {
             Beam_tick(beams[bi], dt);
         }
+        metrics.beam_tick_ns = HRN - t0;
 
+        t0 = HRN;
         handle_expired();
         handle_added();
+        metrics.object_lifecycle_ns = HRN - t0;
 
         // Now update the periodic timer that tells us when to do periodic effects.
         if ((total_time - last_effect_time) >= 1.0)
@@ -1991,11 +2107,14 @@ namespace Diana
             last_effect_time = total_time;
         }
 
+        metrics.total_ns = HRN - t00;
         // Unlock everything
         UNLOCK(phys_lock);
+
+        return metrics;
     }
 
-    void Universe::update_list(struct PhysicsObject* obj, std::vector<struct PhysicsObject*>* list, bool newval, bool oldval)
+    void Universe::update_list(struct PhysicsObject *obj, std::vector<struct PhysicsObject *> *list, bool newval, bool oldval)
     {
         // If it's a current candidate, and the old value indicates it wasn't before, then
         // we can safely just add it.
@@ -2007,7 +2126,7 @@ namespace Diana
         // then find it and remove it.
         else if (!newval && oldval)
         {
-            // Then linear searches here shouldn't be problematic, because 
+            // Then linear searches here shouldn't be problematic, because
             for (size_t i = 0; i < list->size(); i++)
             {
                 if (list->at(i)->phys_id == obj->phys_id)
@@ -2024,7 +2143,7 @@ namespace Diana
 // occasionally up and and including an extra order of magnitude.
 //
 // This needs to be more precise to be able to work with write time divs
-// smaller than 1ms. 
+// smaller than 1ms.
 //
 // This can, in theory, be used to provide the ability to spin_sleep for
 // frametimes smaller than about 2ms, and maintain realtime processing.
