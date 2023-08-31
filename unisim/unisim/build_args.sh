@@ -15,7 +15,7 @@ do
         grep -v "^$" | tr '\n' ' ')
 
     cli_arg_str=$(echo "$var" | tr '_' '-')
-    default_value=$(cat lib/include/universe.hpp | sed -n "s/^ *${var}(\([^)]*\)),*$/\1/p")
+    default_value=$(cat lib/include/universe.hpp | sed -n "s/^ *${var}(\([^)]*\)).*$/\1/p")
 
     if [ "$type" == "bool" ]
     then

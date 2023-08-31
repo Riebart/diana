@@ -50,7 +50,7 @@ double opt_min_physics_frametime = parser.get_basic_option(
             "",
             "--min-physics-frametime",
             0.002,
-            "Print verbose information, such as collision rounds per tick, and when a collision happens, and which objects were involved. bool verbose_logging; Minimum unscaled simulated time that is allowed to pass in a single tick. If the previous phsyics tick took less wall-clock time than this, the time delta for the next tick is increased up to this amount. Setting this value too low will result in increased CPU use on the physics server to simulate at a time step that is finer than necessary. Setting this value too high may result in too coarse of a physics time step. ", false).result.option_value;
+            "Minimum unscaled simulated time that is allowed to pass in a single tick. If the previous phsyics tick took less wall-clock time than this, the time delta for the next tick is increased up to this amount. Setting this value too low will result in increased CPU use on the physics server to simulate at a time step that is finer than necessary. Setting this value too high may result in too coarse of a physics time step. ", false).result.option_value;
 params.min_physics_frametime = opt_min_physics_frametime;
 double opt_min_vis_frametime = parser.get_basic_option(
             "",

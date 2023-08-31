@@ -303,7 +303,6 @@ namespace Diana
             // The cutoff (in (radius/distance)^2) used to determine whether a given object is sent
             // as a piece of visual data. The square is to prevent unnecessary square roots being
             // performed frequently. The physical units of this tan(radians).
-            //
             // This assumes an acuity of approximately 60cm at 1km, which roughly corresponds to a
             // typical human
             double visual_acuity;
