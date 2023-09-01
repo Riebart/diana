@@ -48,7 +48,7 @@ industries:
     build_cost:
       credits: 1000000
     build_restrictions:
-      has_hydrocarbons: true
+      has_hydrocarbon: true
     size: 10
 
   uranium_mine:
