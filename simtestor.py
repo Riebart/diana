@@ -10,6 +10,8 @@ from vector import Vector3
 import random
 import yaml
 import time
+import math
+import string
 from pathlib import Path
 
 
@@ -18,7 +20,7 @@ random.seed(5)
 def random_vector(rng):
     return Vector3(random.random()*rng, random.random()*rng, random.random()*rng)
 
-def load_data(osim, key):
+def load_data(dest, key):
 
     #can probably do away with the list/dict distinction now
     print(f"\nLoading {key}...")
@@ -33,11 +35,11 @@ def load_data(osim, key):
             listdata = listdata + tmp
 
     if len(dictdata) > 0:
-        osim.data[key] = dictdata
+        dest[key] = dictdata
     else:
-        osim.data[key] = listdata
+        dest[key] = listdata
 
-    print(osim.data[key])
+    print(dest[key])
     print("Done!\n")
 
 #check to make sure that resources are defined for each industry's inputs and outputs
@@ -56,6 +58,53 @@ def validate_industries(osim):
     if not good:
         raise Exception("One or more industries have invalid inputs")
 
+def random_planet(template_data):
+    planet = Planet(osim)
+    for item, value in {i: v for i, v in template_data.items() if 'min' in v}.items():
+        setattr(planet, item, round(random.uniform(value['min'], value['max']), 2))
+
+    #maybe should set some of these defaults in the constructor
+    #this needs to be smarter, as it can currently not add up to 100, or exceed it
+    setattr(planet, "atmosphere", dict())
+    for item, value in {i: v for i, v in template_data['atmosphere'].items() if 'min' in v}.items():
+        planet.atmosphere[item] = round(random.uniform(value['min'], value['max']), 2)
+
+    setattr(planet, "mass", round((planet.radius ** 3) * math.pi * 4/3 * planet.density, 2) )
+    setattr(planet, "gravity", 6.67430e-11 * planet.mass / (planet.radius**2))
+
+    #Give it a name
+    setattr(planet, "object_name", random.choice(string.ascii_uppercase) + ''.join(random.choices(string.ascii_lowercase, k=random.randrange(2, 7)) ))
+
+    planet.position = random_vector(1000000000)
+
+    return planet
+
+def random_habitable(template_data, osim):
+    planet = random_planet(template_data)
+
+    total_pop = random.randrange(template_data['population']['min'], template_data['population']['max'])
+    planet.population = {"human" : {
+                         "lower_class" : total_pop/2,
+                         "middle_class" : total_pop/3,
+                         "upper_class" : total_pop/6} } #an arbitrary formula
+    
+    planet.trade_style = {"sharing" : random.choice(["free", "reciprocal", "closed"]),
+                          "all_data" : random.choice([True, False])}
+    
+    #choose 5 random industries that aren't maintenance or power
+    for i in random.sample([i for i in osim.data["industries"] if not set(osim.data["industries"][i]["output"]) & {"energy", "maintenance"}], 5):
+        planet.industries[i] = {"quantity": random.randrange(1, 20)}
+
+    #Add some power
+    power_type = random.choice([i for i in osim.data["industries"] if set(osim.data["industries"][i]["output"]) & {"energy"}])
+    planet.industries[power_type] = {"quantity" : random.randrange(1,5)}
+
+    planet.industries["maintenance_depot"] = {"quantity" : random.randrange(1,5)}
+
+    planet.init_econ()
+
+    return planet
+
 print("Spawning OSIM ...")
 osim = objectsim.ObjectSim()
 print("Spawning OSIM ... Done")
@@ -66,11 +115,14 @@ osim.connect_manager(st)
 
 osim.data = dict()
 
-load_data(osim, 'resources')
-load_data(osim, 'industries')
-load_data(osim, 'races')
+load_data(osim.data, 'resources')
+load_data(osim.data, 'industries')
+load_data(osim.data, 'races')
 
 validate_industries(osim)
+
+template_data = dict()
+load_data(template_data, 'templates')
 
 print("\nLoading planets...")
 for res_file in Path('gamefiles/planets/').glob('*.yml'):
@@ -83,6 +135,20 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         planet.init_econ()
         print(planet)
         st.add_object(planet)
+
+
+for i in range(0, 100):
+    planet = random_planet(template_data['templates']['planet'])
+    print(planet)
+    st.add_object(planet)
+    planet = random_habitable(template_data['templates']['habitable_planet'], osim)
+    print(planet)
+    st.add_object(planet)
+    planet = random_habitable(template_data['templates']['station'], osim)
+    planet.object_name = planet.object_name + "-station"
+    print(planet)
+    st.add_object(planet)
+    pass
 
 print("Done\n")
 

@@ -44,16 +44,19 @@ class Planet(SmartObject):
     #reset the economy for the next tick
         
     def do_tick(self):
-        print(f"Doing econ for {self.name}")
+        if not hasattr(self, "population"):
+            return
+        
+        print(f"Doing econ for {self.object_name}")
         self.reset_econ()
         self.do_industries()
         self.do_populations()
         self.adjust_prices()
-        print(f" Supplied resources of {self.object_name}: {self.supplied_resources}")
-        print(f" Demanded resources of {self.object_name}: {self.demanded_resources}")
+        print(f" Supplied resources of {self.object_name}: { {i: v for i, v in self.supplied_resources.items() if v > 0.0} }")
+        print(f" Demanded resources of {self.object_name}: { {i: v for i, v in self.demanded_resources.items() if v > 0.0} }")
 
-        print(f" Warehouse of {self.object_name}: {self.warehouse}")
-        print(f" Price list of {self.object_name}: {self.local_price_list}")
+        print(f" Warehouse of {self.object_name}: { {i: v for i, v in self.warehouse.items() if v > 0.0} }")
+        print(f" Price list of {self.object_name}: { {i: v for i, v in self.local_price_list.items() if v != 1.0} }")
         
         if self.ticks_done % NOTIFICATION_FREQUENCY == 0:
             self.alert_neighbors()
