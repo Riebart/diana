@@ -3,7 +3,7 @@ planets:
     gravity: 1.0
     size: 1.0
     radius: 6371000 #in meters
-    mass: 597220000000000000000.0 #in tons, I think
+    mass: 597220000000000000000000.0 #in kg, I think
     temperature: 293.15 #long-term make this a calculated value based on insolance, atmosphere, etc
     pressure: 1.0
     atmosphere:
@@ -26,6 +26,8 @@ planets:
       sharing: free #free = freely shares resource data, reciprocal = only shares if first shared with, closed = never shares
       all_data: true #shares everything it knows, false = only shares its own data
     industries:
+      natural_water_source:
+        quantity: 10
       solar_plant:
         quantity: 10
       quartzite_mine:
@@ -42,3 +44,4 @@ planets:
       rich:
       rare:
       none:
+       - unobtainium_ore

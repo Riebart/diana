@@ -5,7 +5,7 @@ industries:
       energy: 0.1
       maintenance: 0.1
     output:
-      wheat: 1.0
+      grain: 1.0
       meat: 0.5
       pollution: -0.1
     build_cost:
@@ -20,7 +20,7 @@ industries:
       energy: 0.6
       maintenance: 0.5
     output:
-      wheat: 1.0
+      grain: 1.0
       pollution: 0.1
     build_cost:
       credits: 1000000

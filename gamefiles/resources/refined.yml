@@ -10,3 +10,11 @@ resources:
   iron:
     produced_from:
       iron_ore: 1.0
+  fuel:
+  carbon:
+  plastic:
+  uranium:
+  steel:
+  unobtainium:
+  nuclear_waste:
+  graphene:
