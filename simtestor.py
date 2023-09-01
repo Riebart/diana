@@ -40,7 +40,21 @@ def load_data(osim, key):
     print(osim.data[key])
     print("Done!\n")
 
-
+#check to make sure that resources are defined for each industry's inputs and outputs
+def validate_industries(osim):
+    good = True
+    for industry, values in osim.data["industries"].items():
+        if values["input"] is not None:
+            for input in values["input"]:
+                if input not in osim.data["resources"]:
+                    print(f"ERROR! Input {input} from {industry} not in resources!")
+                    good = False
+        for output in values["output"]:
+            if output not in osim.data["resources"]:
+                print(f"ERROR! Output {output} from {industry} not in resources!")
+                good = False
+    if not good:
+        raise Exception("One or more industries have invalid inputs")
 
 print("Spawning OSIM ...")
 osim = objectsim.ObjectSim()
@@ -56,6 +70,7 @@ load_data(osim, 'resources')
 load_data(osim, 'industries')
 load_data(osim, 'races')
 
+validate_industries(osim)
 
 print("\nLoading planets...")
 for res_file in Path('gamefiles/planets/').glob('*.yml'):
