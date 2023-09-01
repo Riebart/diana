@@ -8,7 +8,7 @@ resources:
   unobtainium_ore:
   water:
   grain:
-  hydrocarbons:
+  hydrocarbon:
 
   #not sure this is a raw resource, but it can't be transported
   energy:

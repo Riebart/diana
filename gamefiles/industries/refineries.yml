@@ -94,7 +94,7 @@ industries:
 
   fuel_refinery:
     input:
-      hydrocarbons: 1.0
+      hydrocarbon: 1.0
       energy: 1.0
     output:
       fuel: 1.0

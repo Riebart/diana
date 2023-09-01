@@ -23,3 +23,16 @@ industries:
       credits: 1000000
       some_resource: 10.0
     size: 3
+
+  plastics_factory:
+    input:
+      hydrocarbon: 1.0
+      water: 0.1
+      energy: 1.0
+    output:
+      plastic: 1.0
+      pollution: 0.2
+    build_cost:
+      credits: 1000000
+      some_resource: 10.0
+    size: 3
