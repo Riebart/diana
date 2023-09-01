@@ -21,7 +21,7 @@ class Planet(SmartObject):
             values["done"] = False
 
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
-            if "input" in self.osim.data["industries"][industry]:
+            if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
                 for input, value in self.osim.data["industries"][industry]["input"].items():
                     self.warehouse[input] = self.warehouse[input] + (float(value) * 10)
         
@@ -69,7 +69,7 @@ class Planet(SmartObject):
             values["done"] = False
 
         #reset the quantity of non-stock-pilable resources to zero
-        for industry, values in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
+        for industry in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
             self.warehouse[industry] = 0
             
 
@@ -86,18 +86,20 @@ class Planet(SmartObject):
             #2. consume the resource(s) for that industry and produce the results
             #first, what is the maximum we can produce?
             max_ticks = self.industries[max_industry]["quantity"]
-            for input, quantity in self.osim.data["industries"][max_industry]["input"].items():
-                max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))
-            
-            for resource, count in self.osim.data["industries"][max_industry]["input"].items():
-                demand = count * max_ticks
-                self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
-                self.demanded_resources[resource] = self.demanded_resources[resource] + demand
+            if self.osim.data["industries"][max_industry]["input"] is not None:
+                for input, quantity in self.osim.data["industries"][max_industry]["input"].items():
+                    max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))
+
+                for resource, count in self.osim.data["industries"][max_industry]["input"].items():
+                    demand = count * max_ticks
+                    self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
+                    self.demanded_resources[resource] = self.demanded_resources[resource] + demand
+
             for resource, count in self.osim.data["industries"][max_industry]["output"].items():
                 supply = count * max_ticks
                 self.warehouse[resource] = self.warehouse[resource] + supply
-                self.supplied_resources[resource] = self.supplied_resources[resource] + supply                
-            
+                self.supplied_resources[resource] = self.supplied_resources[resource] + supply
+
             #3. mark that industry as 'done'
             self.industries[max_industry]["done"] = True
             #4. repeat until industry done
@@ -174,16 +176,17 @@ class Planet(SmartObject):
     def calc_value(self, industry):
         #first, what is the maximum we can produce?
         max_ticks = self.industries[industry]["quantity"]
-        for input, quantity in self.osim.data["industries"][industry]["input"].items():
-            max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))      
-        
         costs = 0
-        for input, quantity in self.osim.data["industries"][industry]["input"].items():
-            costs = costs + quantity * self.local_price_list[input] * max_ticks
-        
+        if self.osim.data["industries"][industry]["input"] is not None:
+            for input, quantity in self.osim.data["industries"][industry]["input"].items():
+                max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))
+
+            for input, quantity in self.osim.data["industries"][industry]["input"].items():
+                costs = costs + quantity * self.local_price_list[input] * max_ticks
+            
         revenue = 0
         for output, quantity in self.osim.data["industries"][industry]["output"].items():
-            revenue = revenue + quantity * self.local_price_list[input] * max_ticks
+            revenue = revenue + quantity * self.local_price_list[output] * max_ticks
         
         return revenue - costs
 
