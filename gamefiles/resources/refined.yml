@@ -1,6 +1,6 @@
 #first-stage intermediate resources refined from raw resources
 resources:
-  silion:
+  silicon:
     produced_from:
       #so one unit of silicon_ore yields one unit of silicon at base rates (this may move to the industry definitions)
       quartzite: 1.0
