@@ -29,7 +29,7 @@ races:
 
     #per unit of pop.
     resource_demands:
-      #the resource category 'food' has a deman of 1.0 per unit of pop, and can be satisfied by eg wheat or meat
+      #the resource category 'food' has a deman of 1.0 per unit of pop, and can be satisfied by eg grain or meat
       food:
         demand: 1.0
         subtypes:

@@ -5,7 +5,7 @@ planets:
     gravity: 0.4
     size: 0.2
     radius: 300 #in meters
-    mass: 5972200 #in tons, I think
+    mass: 5972200000 #in tons, I think
     temperature: 293.15
     pressure: 1.0
     atmosphere:
