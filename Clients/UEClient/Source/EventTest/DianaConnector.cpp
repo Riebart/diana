@@ -16,6 +16,7 @@
 #include <thread>
 #include <list>
 #include <chrono>
+#include <charconv>
 
 #ifdef UE_BUILD_SHIPPING
 // // Ref: https://docs.microsoft.com/en-us/cpp/cpp/try-except-statement?view=msvc-160
@@ -397,7 +398,7 @@ ADianaConnector::ADianaConnector()
 
 ADianaConnector::~ADianaConnector()
 {
-    RegisterForVisData(false);
+    RegisterForVisData(false, (FString)(""), (FString)(""));
     if (sensor_thread != NULL)
     {
         sensor_thread->Stop();
@@ -478,8 +479,34 @@ void ADianaConnector::Tick(float DeltaTime)
     }
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable, float vis_world_coordinate_scale, float vis_world_object_scale)
+bool ADianaConnector::RegisterForVisData(bool enable, FString vis_world_coordinate_scale_str, FString vis_world_object_scale_str)
 {
+    float vis_world_coordinate_scale = 0;
+    float vis_world_object_scale = 0;
+
+    UE_LOG(LogTemp, Warning,
+        TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString \"%s\" %.16f"),
+        *vis_world_coordinate_scale_str, vis_world_coordinate_scale);
+    UE_LOG(LogTemp, Warning,
+        TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString \"%s\" %.16f"),
+        *vis_world_object_scale_str, vis_world_object_scale);
+
+    const std::string vis_world_coordinate_scale_stdstr = TCHAR_TO_UTF8(*vis_world_coordinate_scale_str);
+    const std::string vis_world_object_scale_stdstr = TCHAR_TO_UTF8(*vis_world_object_scale_str);
+
+    sscanf(vis_world_coordinate_scale_stdstr.c_str(), "%f", &vis_world_coordinate_scale);
+    sscanf(vis_world_object_scale_stdstr.c_str(), "%f", &vis_world_object_scale);
+
+    //vis_world_coordinate_scale = std::stof(vis_world_coordinate_scale_stdstr);
+    //vis_world_object_scale = std::stof(vis_world_object_scale_stdstr);
+
+    UE_LOG(LogTemp, Warning,
+        TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingStringPost \"%s\" %.16f"),
+        *vis_world_coordinate_scale_str, vis_world_coordinate_scale);
+    UE_LOG(LogTemp, Warning,
+        TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingStringPost \"%s\" %.16f"),
+        *vis_world_object_scale_str, vis_world_object_scale);
+
     return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_coordinate_scale, vis_world_object_scale);
 }
 
