@@ -39,6 +39,8 @@ planets:
         #can have multiple instances of same type
       silicon_refinery:
         quantity: 5
+      maintenance_depot:
+        quantity: 2
     resource_availability: #anything not listed is assumed to be 'default'
       default: normal
       rich:

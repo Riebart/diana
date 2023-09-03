@@ -30,6 +30,10 @@ planets:
     industries:
       solar_plant:
         quantity: 10
+      maintenance_depot:
+        quantity: 2
+      hydroponics:
+        quantity: 5
     resource_availability:
       default: none
       rich:
