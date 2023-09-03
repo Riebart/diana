@@ -14,11 +14,13 @@ resources:
   energy:
     exportable: false
     storable: false
+    delayed: true
   pollution:
     exportable: false
   maintenance:
     exportable: false
     storable: false
+    delayed: true
   heat:
     exportable: false
 
