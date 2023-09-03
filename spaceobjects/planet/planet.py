@@ -12,9 +12,13 @@ class Planet(SmartObject):
         self.industries = dict()
         self.population = dict()
         self.warehouse = defaultdict(lambda: 0)
+        self.delayed_resources = defaultdict(lambda: 0)
+        self.supplied_resources = defaultdict(lambda: 0)
+        self.demanded_resources = defaultdict(lambda: 0)
         self.local_price_list = defaultdict(lambda: 1.0)
         self.known_price_list = dict()
         self.known_planets = dict()
+
 
     def init_econ(self):
         for industry, values in self.industries.items():
@@ -23,7 +27,7 @@ class Planet(SmartObject):
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
             if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
                 for input, value in self.osim.data["industries"][industry]["input"].items():
-                    self.warehouse[input] = self.warehouse[input] + (float(value) * 10)
+                    self.delayed_resources[input] = self.delayed_resources[input] + (float(value) * 10)
         
         #give some resources to the pops, too
         for pop, values in self.population.items():
@@ -63,18 +67,29 @@ class Planet(SmartObject):
         
         self.ticks_done = self.ticks_done + 1
         
-        
+
     def reset_econ(self):
-        self.supplied_resources = defaultdict(lambda:0)
-        self.demanded_resources = defaultdict(lambda:0)
-        
+        self.supplied_resources.clear()
+        self.demanded_resources.clear()
+
         for industry, values in self.industries.items():
             values["done"] = False
 
         #reset the quantity of non-stock-pilable resources to zero
         for industry in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
             self.warehouse[industry] = 0
-            
+
+        #need to produce a base amount of these
+        self.warehouse["energy"] = 20
+        self.warehouse["maintenance"] = 1
+        self.supplied_resources["energy"] = 20
+        self.supplied_resources["maintenance"] = 1
+
+        #move delayed resources into the warehouse, so industries can access them
+        for resource, count in self.delayed_resources.items():
+            self.warehouse[resource] = self.warehouse[resource] + count
+
+        self.delayed_resources.clear()
 
     def do_industries(self):
         print(f" Doing industries for {self.object_name}")
@@ -85,7 +100,10 @@ class Planet(SmartObject):
             #1. determine which industry would generate the most wealth per
             max_industry = max({i: v for i, v in self.industries.items() if v["done"] == False}, key=self.calc_value)
             print(f" Max industry {max_industry} can produce {self.calc_value(max_industry)}")
-                
+            if self.calc_value(max_industry) <= 0:
+                #no industry can produce positive value, so we're done here
+                break
+
             #2. consume the resource(s) for that industry and produce the results
             #first, what is the maximum we can produce?
             max_ticks = self.industries[max_industry]["quantity"]
@@ -93,15 +111,21 @@ class Planet(SmartObject):
                 for input, quantity in self.osim.data["industries"][max_industry]["input"].items():
                     max_ticks = min(max_ticks, int(self.warehouse[input]/quantity))
 
+                #second, consume the resources
                 for resource, count in self.osim.data["industries"][max_industry]["input"].items():
                     demand = count * max_ticks
                     self.warehouse[resource] = max(self.warehouse[resource] - demand, 0)
-                    self.demanded_resources[resource] = self.demanded_resources[resource] + demand
+                    self.demanded_resources[resource] = count * self.industries[max_industry]["quantity"]
 
+            #produce the outputs
             for resource, count in self.osim.data["industries"][max_industry]["output"].items():
                 supply = count * max_ticks
-                self.warehouse[resource] = self.warehouse[resource] + supply
                 self.supplied_resources[resource] = self.supplied_resources[resource] + supply
+                if isinstance(self.osim.data["resources"][resource], dict) and self.osim.data["resources"][resource].get("delayed", False):
+                    self.delayed_resources[resource] = self.delayed_resources[resource] + supply
+                else:
+                    self.warehouse[resource] = self.warehouse[resource] + supply
+
 
             #3. mark that industry as 'done'
             self.industries[max_industry]["done"] = True

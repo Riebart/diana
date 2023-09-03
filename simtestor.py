@@ -137,7 +137,7 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         st.add_object(planet)
 
 
-for i in range(0, 100):
+for i in range(0, 0):
     planet = random_planet(template_data['templates']['planet'])
     print(planet)
     st.add_object(planet)
