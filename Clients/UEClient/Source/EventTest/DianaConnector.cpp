@@ -156,6 +156,9 @@ uint32 FVisDataReceiver::Run()
     // Divide by 2.... because. Not sure why, but we need to.
     float world_to_metres = this->parent->vis_world_scale * world->GetWorldSettings()->WorldToMeters / 2.0;
 
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::WorldToMetres %f"), world_to_metres);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisWorldToMetres %f"), this->parent->vis_world_scale);
+
     while (running)
     {
         read_available = sock->Wait(ESocketWaitConditions::Type::WaitForRead, sock_wait_time);
