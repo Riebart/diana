@@ -15,10 +15,6 @@
 #include "SocketSubsystem.h"
 #include "SocketTypes.h"
 
-// Ref: https://docs.microsoft.com/en-us/cpp/cpp/try-except-statement?view=msvc-160
-#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION, and __try/__except
-#include <excpt.h>
-
 #define SOCKET_WRITE socket_write
 #define SOCKET_READ socket_read
 #define MAX_SOCKET_RETRIES 256
@@ -26,7 +22,7 @@
 
 namespace Diana
 {
-    int32 socket_write(FSocket* s, char* srcC, int32_t countS)
+    int32 socket_write(FSocket *s, char *srcC, int32_t countS)
     {
         if (s == NULL)
         {
@@ -34,7 +30,7 @@ namespace Diana
         }
 
         int32 count = (uint32)countS;
-        uint8* src = (uint8*)srcC;
+        uint8 *src = (uint8 *)srcC;
         int32 nbytes = 0;
         int32 curbytes;
         bool write_success;
@@ -43,7 +39,7 @@ namespace Diana
             //! @todo Maybe use recvmsg()?
             // Try to wait for all of the data, if possible.
             write_success = s->Send(src + nbytes, count - nbytes, curbytes);
-            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketSend::Post::(%d,%d,%d)"), count, curbytes, (int32)read_success);
+            // UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketSend::Post::(%d,%d,%d)"), count, curbytes, (int32)read_success);
             if (!write_success)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
@@ -60,7 +56,7 @@ namespace Diana
         return nbytes;
     }
 
-    int32 socket_read(FSocket* s, char* dstC, int32_t countS)
+    int32 socket_read(FSocket *s, char *dstC, int32_t countS)
     {
         if (s == NULL)
         {
@@ -69,7 +65,7 @@ namespace Diana
 
         std::chrono::milliseconds dura(SOCKET_RETRY_DELAY);
         uint32 count = (uint32)countS;
-        uint8* dst = (uint8*)dstC;
+        uint8 *dst = (uint8 *)dstC;
         uint32 nbytes = 0;
         int32 nretries = MAX_SOCKET_RETRIES;
         bool read_success;
@@ -80,11 +76,11 @@ namespace Diana
 
         // Note that the number of pending bytes may not be the whole message, due to TCP window length
         // reasons, and buffer reasons, so we can't trust it.
-        if (!read_success)// || (pending_bytes < count))
+        if (!read_success) // || (pending_bytes < count))
         {
             return 0;
         }
-        //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::PostPendingCheck::(%d,%u,%d)"), count, pending_bytes, (int32)read_success);
+        // UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::PostPendingCheck::(%d,%u,%d)"), count, pending_bytes, (int32)read_success);
 
         int32 curbytes = 0;
         while (nbytes < count)
@@ -92,7 +88,7 @@ namespace Diana
             //! @todo Maybe use recvmsg()?
             // Try to wait for all of the data, if possible.
             read_success = s->Recv(dst + nbytes, count - nbytes, curbytes, ESocketReceiveFlags::Type::None);
-            //UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::Post::(%d,%d,%d,%d)"), count, nbytes, curbytes, (int32)read_success);
+            // UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::SocketRead::Post::(%d,%d,%d,%d)"), count, nbytes, curbytes, (int32)read_success);
             if (!read_success)
             {
                 nretries--;
@@ -102,7 +98,7 @@ namespace Diana
             {
                 nretries = MAX_SOCKET_RETRIES;
             }
-            
+
             if (nretries == 0)
             {
                 // Flip the sign of the bytes returnd, as a reminder to check up on errno and errmsg
@@ -119,12 +115,12 @@ namespace Diana
         return nbytes;
     }
 
-    double total_spectrum_power(struct Spectrum* spectrum)
+    double total_spectrum_power(struct Spectrum *spectrum)
     {
         spectrum->total_power = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
-        struct SpectrumComponent* components = &spectrum->components;
+        struct SpectrumComponent *components = &spectrum->components;
         for (uint32_t i = 0; i < spectrum->n; i++)
         {
             spectrum->total_power += components[i].power;
@@ -132,12 +128,12 @@ namespace Diana
         return spectrum->total_power;
     }
 
-    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size)
+    struct Spectrum *Spectrum_allocate(uint32_t n, size_t *total_size)
     {
         if (n > 0)
         {
             size_t spectrum_size = sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent);
-            struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
+            struct Spectrum *ret = (struct Spectrum *)malloc(spectrum_size);
             if (ret == NULL)
             {
                 throw std::runtime_error("Spectrum_allocate::UnableToAllocate");
@@ -159,36 +155,71 @@ namespace Diana
 }
 #else
 #include "MIMOServer.hpp"
-#include <windows.h> // for EXCEPTION_ACCESS_VIOLATION
-#include <excpt.h>
-
 #define SOCKET_WRITE MIMOServer::socket_write
 #define SOCKET_READ MIMOServer::socket_read
 #endif
 
+#ifdef UE_BUILD_SHIPPING
+// // Ref: https://docs.microsoft.com/en-us/cpp/cpp/try-except-statement?view=msvc-160
+// #include <windows.h> // for EXCEPTION_ACCESS_VIOLATION, and __try/__except
+// #include <excpt.h>
+// #define _TRY __try
+// #define _CATCH(t, v) __except (EXCEPTION_EXECUTE_HANDLER)
+#define _TRY
+#define _CATCH(t, v) if (false)
+#else
+#define _TRY try
+#define _CATCH(t, v) catch (t v)
+#endif
 
 namespace Diana
 {
     // Send a single element named by variable name to the BSONWriter. If the specced value is false, push a NOP.
-#define SEND_ELEMENT(var) if (specced[spec_check++]) { bw.push(var); } else { bw.push(); }
+#define SEND_ELEMENT(var)      \
+    if (specced[spec_check++]) \
+    {                          \
+        bw.push(var);          \
+    }                          \
+    else                       \
+    {                          \
+        bw.push();             \
+    }
     // Send a 3D vector to the writer.
 #define SEND_VECTOR3(var) SEND_ELEMENT(var.x) SEND_ELEMENT(var.y) SEND_ELEMENT(var.z)
     // Send a 4D vector to the writer.
 #define SEND_VECTOR4(var) SEND_ELEMENT(var.w) SEND_ELEMENT(var.x) SEND_ELEMENT(var.y) SEND_ELEMENT(var.z)
     // Send an array using the templated SendArray
-#define SEND_ARRAY(type, src, n, stride) if (specced[spec_check++]) { SendArray<type>(&bw, src, n, stride); } else { bw.push(); }
+#define SEND_ARRAY(type, src, n, stride)      \
+    if (specced[spec_check++])                \
+    {                                         \
+        SendArray<type>(&bw, src, n, stride); \
+    }                                         \
+    else                                      \
+    {                                         \
+        bw.push();                            \
+    }
     // Helper function to send a full spectrum, calling the three necessary SEND_* macros to send the full object.
-#define SEND_SPECTRUM(spec) SEND_ELEMENT((int32_t)spec->n); SEND_ARRAY(double, &(spec->components.wavelength), spec->n, 2); SEND_ARRAY(double, &(spec->components.power), spec->n, 2)
+#define SEND_SPECTRUM(spec)                                         \
+    SEND_ELEMENT((int32_t)spec->n);                                 \
+    SEND_ARRAY(double, &(spec->components.wavelength), spec->n, 2); \
+    SEND_ARRAY(double, &(spec->components.power), spec->n, 2)
     // Prepare the necessary writers and index variables for writing elements.
-#define SEND_PROLOGUE() BSONWriter bw; bw.push((char*)"", (int32_t)msg_type); int spec_check = 0; SEND_ELEMENT(server_id); SEND_ELEMENT(client_id);
+#define SEND_PROLOGUE()                     \
+    BSONWriter bw;                          \
+    bw.push((char *)"", (int32_t)msg_type); \
+    int spec_check = 0;                     \
+    SEND_ELEMENT(server_id);                \
+    SEND_ELEMENT(client_id);
     // Finish off by pushing an end, and writing the bytes to the socket.
-#define SEND_EPILOGUE() uint8_t* bytes = bw.push_end(); return SOCKET_WRITE(sock, (char*)bytes, *(int32_t*)bytes);
+#define SEND_EPILOGUE()             \
+    uint8_t *bytes = bw.push_end(); \
+    return SOCKET_WRITE(sock, (char *)bytes, *(int32_t *)bytes);
 
     // Read a single element from the reader, into the specified member variable of a message
     // that is of the specified message type.
-#define READER_LAMBDA(var, val, type) [](uint32_t i, const BSONMessage* msg, struct BSONReader::Element* el) {((type*)msg)->var = val; msg->specced[i] = true; }
+#define READER_LAMBDA(var, val, type) [](uint32_t i, const BSONMessage *msg, struct BSONReader::Element *el) {((type*)msg)->var = val; msg->specced[i] = true; }
     // Run a particular piece of code on the element and message object.
-#define READER_LAMBDA_IP(call) [](uint32_t i, const BSONMessage* msg, struct BSONReader::Element* el) { call; msg->specced[i] = true; }
+#define READER_LAMBDA_IP(call) [](uint32_t i, const BSONMessage *msg, struct BSONReader::Element *el) { call; msg->specced[i] = true; }
     // Read a 3D vector from the reader, into the specified member variable of a message
     // that is of the specified message type.
 #define READER_LAMBDA3(var, val, type) READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
@@ -197,32 +228,35 @@ namespace Diana
 #define READER_LAMBDA4(var, val, type) READER_LAMBDA(var.w, val, type), READER_LAMBDA(var.x, val, type), READER_LAMBDA(var.y, val, type), READER_LAMBDA(var.z, val, type)
     // Read a spectrum from the BSONReader into a message object, this just knits together the
     // actual reading of the size, allocating the structure, and reading arrays into the components
-#define READER_LAMBDA_SPECTRUM(var, type) \
-    READER_LAMBDA_IP(((type*)msg)->var = Spectrum_allocate(el->i32_val)), \
-    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->var; \
-                     ReadArray<double>(&(s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element* el) { return el->dbl_val; }, 2, true)), \
-    READER_LAMBDA_IP(struct Spectrum* s = ((type*)msg)->var; \
-                     ReadArray<double>(&(s->components.power), s->n, msg->br, [](struct BSONReader::Element* el) { return el->dbl_val; }, 2, true); \
-                     total_spectrum_power(s))
+#define READER_LAMBDA_SPECTRUM(var, type)                                                                                                       \
+    READER_LAMBDA_IP(((type *)msg)->var = Spectrum_allocate(el->i32_val)),                                                                      \
+        READER_LAMBDA_IP(struct Spectrum *s = ((type *)msg)->var;                                                                               \
+                         ReadArray<double>(                                                                                                     \
+                             &(s->components.wavelength), s->n, msg->br, [](struct BSONReader::Element *el) { return el->dbl_val; }, 2, true)), \
+        READER_LAMBDA_IP(struct Spectrum *s = ((type *)msg)->var;                                                                               \
+                         ReadArray<double>(                                                                                                     \
+                             &(s->components.power), s->n, msg->br, [](struct BSONReader::Element *el) { return el->dbl_val; }, 2, true);       \
+                         total_spectrum_power(s))
 
     //! @todo Should we set doubles to a NaN value as a sentinel for those unset from the message?
     const double dbl_nan = std::numeric_limits<double>::quiet_NaN();
-    const struct Vector3 v3_nan = { dbl_nan, dbl_nan, dbl_nan };
-    const struct Vector4 v4_nan = { dbl_nan, dbl_nan, dbl_nan, dbl_nan };
+    const struct Vector3 v3_nan = {dbl_nan, dbl_nan, dbl_nan};
+    const struct Vector4 v4_nan = {dbl_nan, dbl_nan, dbl_nan, dbl_nan};
 
-    // Static lambdas for reading IDs from the message, to supplement the 
+    // Static lambdas for reading IDs from the message, to supplement the
     static read_lambda id_readers[2] = {
         READER_LAMBDA(server_id, el->i64_val, BSONMessage),
-        READER_LAMBDA(client_id, el->i64_val, BSONMessage) };
+        READER_LAMBDA(client_id, el->i64_val, BSONMessage)};
 
     // Attempt to read exactly n elements of type T into the destination array, which may be
     // interleaved (stride > 1), applying the given function to each BSON element to retrieve
     // the desired value.
-    template<typename T> int32_t ReadArray(T* dst, uint32_t n, BSONReader* br,
-        std::function<T(struct BSONReader::Element*)> get_val,
-        uint32_t stride = 1, bool consume_extra = true)
+    template <typename T>
+    int32_t ReadArray(T *dst, uint32_t n, BSONReader *br,
+                      std::function<T(struct BSONReader::Element *)> get_val,
+                      uint32_t stride = 1, bool consume_extra = true)
     {
-        struct BSONReader::Element* el = br->get_next_element();
+        struct BSONReader::Element *el = br->get_next_element();
         uint32_t nread;
 
         // Consider, and gracefully handle, the case where there aren't enough elements in
@@ -248,7 +282,8 @@ namespace Diana
         return (int32_t)(n - nread);
     }
 
-    template<typename T> void SendArray(BSONWriter* bw, T* src, uint32_t n, uint32_t stride = 1)
+    template <typename T>
+    void SendArray(BSONWriter *bw, T *src, uint32_t n, uint32_t stride = 1)
     {
         bw->push_array();
         for (uint32_t i = 0; i < n; i++)
@@ -259,7 +294,7 @@ namespace Diana
     }
 
     //! @todo Support things other than C strings
-    void ReadString(struct BSONReader::Element* el, char* dst, int32_t dstlen)
+    void ReadString(struct BSONReader::Element *el, char *dst, int32_t dstlen)
     {
         int32_t copy_len = (el->str_len <= dstlen ? el->str_len : dstlen);
         memcpy(dst, el->str_val, copy_len);
@@ -267,13 +302,13 @@ namespace Diana
     }
 
     //! @todo Support things other than C strings
-    char* ReadString(struct BSONReader::Element* el)
+    char *ReadString(struct BSONReader::Element *el)
     {
         // Because we might actually be copying from the binary array segment, recall that Python's
         // bson is poorly behaved for strings, so check for, and if necessary, add a 0x00
         // Note that the str_len (if legit), includes the length of the string including the terminating 0x00
         bool null_missing = (el->str_val[el->str_len - 1] != 0);
-        char* ret = (char*)malloc(el->str_len + (null_missing ? 1 : 0));
+        char *ret = (char *)malloc(el->str_len + (null_missing ? 1 : 0));
         if (ret == NULL)
         {
             throw "OOM you twat";
@@ -286,7 +321,7 @@ namespace Diana
         return ret;
     }
 
-    BSONMessage::BSONMessage(BSONReader* _br, uint32_t _num_el, const read_lambda* handlers, BSONMessage::MessageType _msg_type)
+    BSONMessage::BSONMessage(BSONReader *_br, uint32_t _num_el, const read_lambda *handlers, BSONMessage::MessageType _msg_type)
     {
         // Note that we don't have to delete the BSONReader, since it's
         // being allocated (probably on the stack) outside of this class.
@@ -301,7 +336,7 @@ namespace Diana
         if (br != NULL)
         {
             int8_t i;
-            struct BSONReader::Element* el = br->get_next_element();
+            struct BSONReader::Element *el = br->get_next_element();
             while (el->type != BSONReader::ElementType::NoMoreData)
             {
                 i = el->name[0] - 1;
@@ -346,11 +381,11 @@ namespace Diana
         return ret;
     }
 
-    BSONMessage* BSONMessage::ReadMessage(sock_t sock)
+    BSONMessage *BSONMessage::ReadMessage(sock_t sock)
     {
         // First start by reading the whole BSON message
         int32_t message_len = 0;
-        int64_t nbytes = SOCKET_READ(sock, (char*)(&message_len), 4);
+        int64_t nbytes = SOCKET_READ(sock, (char *)(&message_len), 4);
 
         // There's no good reason why this would return anything other than 4 bytes.
         if (nbytes != 4)
@@ -358,12 +393,12 @@ namespace Diana
             return NULL;
         }
 
-        char* buf = (char*)malloc(message_len);
+        char *buf = (char *)malloc(message_len);
         if (buf == NULL)
         {
             throw std::runtime_error("BSONMessage::ReadMessage::BufferAllocateOOM");
         }
-        *(int32_t*)buf = message_len;
+        *(int32_t *)buf = message_len;
         nbytes = SOCKET_READ(sock, buf + 4, message_len - 4);
 
         if (nbytes != (message_len - 4))
@@ -373,12 +408,12 @@ namespace Diana
         }
 
         BSONReader br(buf);
-        struct BSONReader::Element* el = NULL;
-        __try
+        struct BSONReader::Element *el = NULL;
+        _TRY
         {
             el = br.get_next_element();
         }
-        __except (EXCEPTION_EXECUTE_HANDLER)
+        _CATCH(std::runtime_error, e)
         {
             fprintf(stderr, "Caught error in ReadMessage()\n");
             free(buf);
@@ -394,9 +429,9 @@ namespace Diana
         }
         else
         {
-            BSONMessage* ret = NULL;
+            BSONMessage *ret = NULL;
             MessageType mt = (MessageType)el->i32_val;
-            __try
+            _TRY
             {
                 switch (mt)
                 {
@@ -476,7 +511,7 @@ namespace Diana
                     ret = NULL;
                 }
             }
-            __except (EXCEPTION_EXECUTE_HANDLER)
+            _CATCH(std::runtime_error, e)
             {
                 fprintf(stderr, "Caught error in ReadMessage() at message object creation swithc()\n");
                 free(buf);
@@ -487,7 +522,7 @@ namespace Diana
         }
     }
 
-    const read_lambda* handlers()
+    const read_lambda *handlers()
     {
         return NULL;
     }
@@ -495,9 +530,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static const read_lambda* HelloMsg_handlers = NULL;
+    static const read_lambda *HelloMsg_handlers = NULL;
 
-    const read_lambda* HelloMsg::handlers()
+    const read_lambda *HelloMsg::handlers()
     {
         return HelloMsg_handlers;
     }
@@ -519,10 +554,9 @@ namespace Diana
         READER_LAMBDA4(orientation, el->dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA3(thrust, el->dbl_val, PhysicalPropertiesMsg),
         READER_LAMBDA(radius, el->dbl_val, PhysicalPropertiesMsg),
-        READER_LAMBDA_SPECTRUM(spectrum, PhysicalPropertiesMsg)
-    };
+        READER_LAMBDA_SPECTRUM(spectrum, PhysicalPropertiesMsg)};
 
-    const read_lambda* PhysicalPropertiesMsg::handlers()
+    const read_lambda *PhysicalPropertiesMsg::handlers()
     {
         obj_type = NULL;
         spectrum = NULL;
@@ -552,9 +586,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static const read_lambda* VisualPropertiesMsg_handlers = NULL;
+    static const read_lambda *VisualPropertiesMsg_handlers = NULL;
 
-    const read_lambda* VisualPropertiesMsg::handlers()
+    const read_lambda *VisualPropertiesMsg::handlers()
     {
         throw std::runtime_error("VisualPropertiesMsg::NotImplemented");
         return VisualPropertiesMsg_handlers;
@@ -569,10 +603,9 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda VisualDataEnableMsg_handlers[] = {
-        READER_LAMBDA(enabled, el->bln_val, VisualDataEnableMsg)
-    };
+        READER_LAMBDA(enabled, el->bln_val, VisualDataEnableMsg)};
 
-    const read_lambda* VisualDataEnableMsg::handlers()
+    const read_lambda *VisualDataEnableMsg::handlers()
     {
         return VisualDataEnableMsg_handlers;
     }
@@ -588,10 +621,9 @@ namespace Diana
     // ================================================================================
 
     static const read_lambda VisualMetaDataEnableMsg_handlers[] = {
-        READER_LAMBDA(enabled, el->bln_val, VisualMetaDataEnableMsg)
-    };
+        READER_LAMBDA(enabled, el->bln_val, VisualMetaDataEnableMsg)};
 
-    const read_lambda* VisualMetaDataEnableMsg::handlers()
+    const read_lambda *VisualMetaDataEnableMsg::handlers()
     {
         return VisualMetaDataEnableMsg_handlers;
     }
@@ -606,9 +638,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* VisualMetaDataMsg_handlers = NULL;
+    static read_lambda *VisualMetaDataMsg_handlers = NULL;
 
-    const read_lambda* VisualMetaDataMsg::handlers()
+    const read_lambda *VisualMetaDataMsg::handlers()
     {
         throw std::runtime_error("VisualMetaDataMsg::NotImplemented");
         return VisualMetaDataMsg_handlers;
@@ -626,10 +658,9 @@ namespace Diana
         READER_LAMBDA(phys_id, el->i64_val, VisualDataMsg),
         READER_LAMBDA(radius, el->dbl_val, VisualDataMsg),
         READER_LAMBDA3(position, el->dbl_val, VisualDataMsg),
-        READER_LAMBDA4(orientation, el->dbl_val, VisualDataMsg)
-    };
+        READER_LAMBDA4(orientation, el->dbl_val, VisualDataMsg)};
 
-    const read_lambda* VisualDataMsg::handlers()
+    const read_lambda *VisualDataMsg::handlers()
     {
         return VisualDataMsg_handlers;
     }
@@ -654,12 +685,11 @@ namespace Diana
         READER_LAMBDA(spread_h, el->dbl_val, BeamMsg),
         READER_LAMBDA(spread_v, el->dbl_val, BeamMsg),
         READER_LAMBDA(energy, el->dbl_val, BeamMsg),
-        READER_LAMBDA_IP(ReadString(el, ((BeamMsg*)msg)->beam_type, 5)),
+        READER_LAMBDA_IP(ReadString(el, ((BeamMsg *)msg)->beam_type, 5)),
         READER_LAMBDA(comm_msg, ReadString(el), BeamMsg),
-        READER_LAMBDA_SPECTRUM(spectrum, BeamMsg)
-    };
+        READER_LAMBDA_SPECTRUM(spectrum, BeamMsg)};
 
-    const read_lambda* BeamMsg::handlers()
+    const read_lambda *BeamMsg::handlers()
     {
         comm_msg = NULL;
         spectrum = NULL;
@@ -694,12 +724,11 @@ namespace Diana
         READER_LAMBDA3(position, el->dbl_val, CollisionMsg),
         READER_LAMBDA3(direction, el->dbl_val, CollisionMsg),
         READER_LAMBDA(energy, el->dbl_val, CollisionMsg),
-        READER_LAMBDA_IP(ReadString(el, ((CollisionMsg*)msg)->coll_type, 5)),
+        READER_LAMBDA_IP(ReadString(el, ((CollisionMsg *)msg)->coll_type, 5)),
         READER_LAMBDA(comm_msg, ReadString(el), CollisionMsg),
-        READER_LAMBDA_SPECTRUM(spectrum, CollisionMsg)
-    };
+        READER_LAMBDA_SPECTRUM(spectrum, CollisionMsg)};
 
-    const read_lambda* CollisionMsg::handlers()
+    const read_lambda *CollisionMsg::handlers()
     {
         comm_msg = NULL;
         spectrum = NULL;
@@ -712,7 +741,7 @@ namespace Diana
         free(spectrum);
     }
 
-    void CollisionMsg::set_colltype(char* type)
+    void CollisionMsg::set_colltype(char *type)
     {
         coll_type[0] = type[0];
         coll_type[1] = type[1];
@@ -745,10 +774,9 @@ namespace Diana
         READER_LAMBDA4(orientation, el->dbl_val, SpawnMsg),
         READER_LAMBDA3(thrust, el->dbl_val, SpawnMsg),
         READER_LAMBDA(radius, el->dbl_val, SpawnMsg),
-        READER_LAMBDA_SPECTRUM(spectrum, SpawnMsg)
-    };
+        READER_LAMBDA_SPECTRUM(spectrum, SpawnMsg)};
 
-    const read_lambda* SpawnMsg::handlers()
+    const read_lambda *SpawnMsg::handlers()
     {
         obj_type = NULL;
         spectrum = NULL;
@@ -789,10 +817,9 @@ namespace Diana
         READER_LAMBDA(radius, el->dbl_val, ScanResultMsg),
         READER_LAMBDA(data, ReadString(el), ScanResultMsg),
         READER_LAMBDA_SPECTRUM(beam_spectrum, ScanResultMsg),
-        READER_LAMBDA_SPECTRUM(obj_spectrum, ScanResultMsg)
-    };
+        READER_LAMBDA_SPECTRUM(obj_spectrum, ScanResultMsg)};
 
-    const read_lambda* ScanResultMsg::handlers()
+    const read_lambda *ScanResultMsg::handlers()
     {
         beam_spectrum = NULL;
         obj_spectrum = NULL;
@@ -812,16 +839,16 @@ namespace Diana
     int64_t ScanResultMsg::send(sock_t sock)
     {
         SEND_PROLOGUE();
-        SEND_ELEMENT(obj_type); // 2
-        SEND_ELEMENT(mass); // 3
-        SEND_VECTOR3(position); // 4,5,6
-        SEND_VECTOR3(velocity); // 7,8,9
-        SEND_VECTOR4(orientation); // 10,11,12,13
-        SEND_VECTOR3(thrust); // 14,15,16
-        SEND_ELEMENT(radius); // 17
-        SEND_ELEMENT(data); // 18
+        SEND_ELEMENT(obj_type);       // 2
+        SEND_ELEMENT(mass);           // 3
+        SEND_VECTOR3(position);       // 4,5,6
+        SEND_VECTOR3(velocity);       // 7,8,9
+        SEND_VECTOR4(orientation);    // 10,11,12,13
+        SEND_VECTOR3(thrust);         // 14,15,16
+        SEND_ELEMENT(radius);         // 17
+        SEND_ELEMENT(data);           // 18
         SEND_SPECTRUM(beam_spectrum); // 19,20,21
-        SEND_SPECTRUM(obj_spectrum); // 22,23,24
+        SEND_SPECTRUM(obj_spectrum);  // 22,23,24
         SEND_EPILOGUE();
     }
 
@@ -832,10 +859,9 @@ namespace Diana
         READER_LAMBDA(scan_id, el->i64_val, ScanQueryMsg),
         READER_LAMBDA(energy, el->dbl_val, ScanQueryMsg),
         READER_LAMBDA3(direction, el->dbl_val, ScanQueryMsg),
-        READER_LAMBDA_SPECTRUM(spectrum, ScanQueryMsg)
-    };
+        READER_LAMBDA_SPECTRUM(spectrum, ScanQueryMsg)};
 
-    const read_lambda* ScanQueryMsg::handlers()
+    const read_lambda *ScanQueryMsg::handlers()
     {
         spectrum = NULL;
         return ScanQueryMsg_handlers;
@@ -861,10 +887,9 @@ namespace Diana
 
     static read_lambda ScanResponseMsg_handlers[] = {
         READER_LAMBDA(scan_id, el->i64_val, ScanResponseMsg),
-        READER_LAMBDA(data, ReadString(el), ScanResponseMsg)
-    };
+        READER_LAMBDA(data, ReadString(el), ScanResponseMsg)};
 
-    const read_lambda* ScanResponseMsg::handlers()
+    const read_lambda *ScanResponseMsg::handlers()
     {
         data = NULL;
         return ScanResponseMsg_handlers;
@@ -885,9 +910,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* GoodbyeMsg_handlers = NULL;
+    static read_lambda *GoodbyeMsg_handlers = NULL;
 
-    const read_lambda* GoodbyeMsg::handlers()
+    const read_lambda *GoodbyeMsg::handlers()
     {
         return GoodbyeMsg_handlers;
     }
@@ -904,25 +929,26 @@ namespace Diana
     static read_lambda DirectoryMsg_handlers[] = {
         READER_LAMBDA(item_type, ReadString(el), DirectoryMsg),
         //! @todo Remove the item_count, since the array readers will use vectors to handle the unknown case?
-        READER_LAMBDA_IP(((DirectoryMsg*)msg)->item_count = el->i64_val; ((DirectoryMsg*)msg)->items = new struct DirectoryMsg::DirectoryItem[(size_t)el->i64_val]),
-        READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element* el) { it.id = el->i64_val; })),
-        READER_LAMBDA_IP(((DirectoryMsg*)msg)->read_parts([](struct DirectoryMsg::DirectoryItem& it, struct BSONReader::Element* el) { it.name = ReadString(el); }))
-    };
+        READER_LAMBDA_IP(((DirectoryMsg *)msg)->item_count = el->i64_val; ((DirectoryMsg *)msg)->items = new struct DirectoryMsg::DirectoryItem[(size_t)el->i64_val]),
+        READER_LAMBDA_IP(((DirectoryMsg *)msg)->read_parts([](struct DirectoryMsg::DirectoryItem &it, struct BSONReader::Element *el)
+                                                           { it.id = el->i64_val; })),
+        READER_LAMBDA_IP(((DirectoryMsg *)msg)->read_parts([](struct DirectoryMsg::DirectoryItem &it, struct BSONReader::Element *el)
+                                                           { it.name = ReadString(el); }))};
 
-    const read_lambda* DirectoryMsg::handlers()
+    const read_lambda *DirectoryMsg::handlers()
     {
         items = NULL;
         item_type = NULL;
         return DirectoryMsg_handlers;
     }
 
-    void DirectoryMsg::read_parts(std::function<void(struct DirectoryItem&, struct BSONReader::Element*)> set)
+    void DirectoryMsg::read_parts(std::function<void(struct DirectoryItem &, struct BSONReader::Element *)> set)
     {
         if (br != NULL)
         {
             // The BSONReader should have last returned an array element, eat it
             // and carry on.
-            struct BSONReader::Element* el = br->get_next_element();
+            struct BSONReader::Element *el = br->get_next_element();
 
             // If we haven't encountered the item_count yet, then that's awkward.
             if (items == NULL)
@@ -1000,10 +1026,9 @@ namespace Diana
     // ================================================================================
 
     static read_lambda NameMsg_handlers[] = {
-        READER_LAMBDA(name, ReadString(el), NameMsg)
-    };
+        READER_LAMBDA(name, ReadString(el), NameMsg)};
 
-    const read_lambda* NameMsg::handlers()
+    const read_lambda *NameMsg::handlers()
     {
         name = NULL;
         return NameMsg_handlers;
@@ -1025,10 +1050,9 @@ namespace Diana
     // ================================================================================
 
     static read_lambda ReadyMsg_handlers[] = {
-        READER_LAMBDA(ready, el->bln_val, ReadyMsg)
-    };
+        READER_LAMBDA(ready, el->bln_val, ReadyMsg)};
 
-    const read_lambda* ReadyMsg::handlers()
+    const read_lambda *ReadyMsg::handlers()
     {
         return ReadyMsg_handlers;
     }
@@ -1044,10 +1068,9 @@ namespace Diana
     // ================================================================================
 
     static read_lambda ThrustMsg_handlers[] = {
-        READER_LAMBDA3(thrust, el->dbl_val, ThrustMsg)
-    };
+        READER_LAMBDA3(thrust, el->dbl_val, ThrustMsg)};
 
-    const read_lambda* ThrustMsg::handlers()
+    const read_lambda *ThrustMsg::handlers()
     {
         return ThrustMsg_handlers;
     }
@@ -1063,10 +1086,9 @@ namespace Diana
     // ================================================================================
 
     static read_lambda VelocityMsg_handlers[] = {
-        READER_LAMBDA3(velocity, el->dbl_val, VelocityMsg)
-    };
+        READER_LAMBDA3(velocity, el->dbl_val, VelocityMsg)};
 
-    const read_lambda* VelocityMsg::handlers()
+    const read_lambda *VelocityMsg::handlers()
     {
         return VelocityMsg_handlers;
     }
@@ -1082,10 +1104,9 @@ namespace Diana
     // ================================================================================
 
     static read_lambda JumpMsg_handlers[] = {
-        READER_LAMBDA3(destination, el->dbl_val, JumpMsg)
-    };
+        READER_LAMBDA3(destination, el->dbl_val, JumpMsg)};
 
-    const read_lambda* JumpMsg::handlers()
+    const read_lambda *JumpMsg::handlers()
     {
         return JumpMsg_handlers;
     }
@@ -1100,9 +1121,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* InfoUpdateMsg_handlers = NULL;
+    static read_lambda *InfoUpdateMsg_handlers = NULL;
 
-    const read_lambda* InfoUpdateMsg::handlers()
+    const read_lambda *InfoUpdateMsg::handlers()
     {
         throw std::runtime_error("InfoUpdateMsg::NotImplemented");
         return InfoUpdateMsg_handlers;
@@ -1118,9 +1139,9 @@ namespace Diana
     // ================================================================================
     // ================================================================================
 
-    static read_lambda* RequestUpdateMsg_handlers = NULL;
+    static read_lambda *RequestUpdateMsg_handlers = NULL;
 
-    const read_lambda* RequestUpdateMsg::handlers()
+    const read_lambda *RequestUpdateMsg::handlers()
     {
         throw std::runtime_error("RequestUpdateMsg::NotImplemented");
         return RequestUpdateMsg_handlers;
@@ -1137,12 +1158,11 @@ namespace Diana
     // ================================================================================
 
     static read_lambda SystemUpdateMsg_handlers[] = {
-        READER_LAMBDA_IP(((SystemUpdateMsg*)msg)->properties = new BSONReader::Element(); \
-            ((SystemUpdateMsg*)msg)->properties->copy(msg->br->get_next_element(true, true)); \
-            el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
-    };
+        READER_LAMBDA_IP(((SystemUpdateMsg *)msg)->properties = new BSONReader::Element();
+                         ((SystemUpdateMsg *)msg)->properties->copy(msg->br->get_next_element(true, true));
+                         el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)};
 
-    const read_lambda* SystemUpdateMsg::handlers()
+    const read_lambda *SystemUpdateMsg::handlers()
     {
         properties = NULL;
         return SystemUpdateMsg_handlers;
@@ -1166,12 +1186,11 @@ namespace Diana
 
     static read_lambda CommandMsg_handlers[] = {
         READER_LAMBDA(system_id, el->i64_val, CommandMsg),
-        READER_LAMBDA_IP(((CommandMsg*)msg)->command = new BSONReader::Element(); \
-            ((CommandMsg*)msg)->command->copy(msg->br->get_next_element(true, true)); \
-            el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)
-    };
+        READER_LAMBDA_IP(((CommandMsg *)msg)->command = new BSONReader::Element();
+                         ((CommandMsg *)msg)->command->copy(msg->br->get_next_element(true, true));
+                         el->name = NULL; el->str_val = NULL; el->bin_val = NULL; el->map_val = NULL;)};
 
-    const read_lambda* CommandMsg::handlers()
+    const read_lambda *CommandMsg::handlers()
     {
         command = NULL;
         return CommandMsg_handlers;
