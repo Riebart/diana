@@ -38,7 +38,7 @@ FVector FVzero = FVector(0.0, 0.0, 0.0);
 class FVisDataReceiver : public FRunnable
 {
 public:
-    FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map);
+    FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f);
     ~FVisDataReceiver();
 
     virtual bool Init();
@@ -51,6 +51,7 @@ private:
     FSocket *sock = NULL;
     ADianaConnector *parent = NULL;
     std::map<int32, struct ADianaConnector::DianaActor *> *oa_map = NULL;
+    float vis_world_coordinate_scale, vis_world_object_scale;
 };
 
 class FSensorManager : public FRunnable
@@ -72,12 +73,14 @@ private:
     std::map<FString, struct FSensorContact> *sc_map = NULL;
 };
 
-FVisDataReceiver::FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map)
+FVisDataReceiver::FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, float vis_world_coordinate_scale, float vis_world_object_scale)
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor"));
     this->sock = sock;
     this->parent = parent;
     this->oa_map = oa_map;
+    this->vis_world_coordinate_scale = vis_world_coordinate_scale;
+    this->vis_world_object_scale = vis_world_object_scale;
     rt = FRunnableThread::Create(this, TEXT("VisDataReceiver"), 0, EThreadPriority::TPri_Normal); // Don't set an affinity mask
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
@@ -154,10 +157,11 @@ uint32 FVisDataReceiver::Run()
     // exist in the same map, or at least have the same scale, as the DianaConnector.
     //
     // Divide by 2.... because. Not sure why, but we need to.
-    float world_to_metres = this->parent->vis_world_scale * world->GetWorldSettings()->WorldToMeters / 2.0;
+    float world_to_metres = this->vis_world_coordinate_scale * world->GetWorldSettings()->WorldToMeters / 2.0;
 
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::WorldToMetres %f"), world_to_metres);
-    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisWorldToMetres %f"), this->parent->vis_world_scale);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisWorldToMetres %f"), this->vis_world_coordinate_scale);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisRadiusToUnits %f"), this->vis_world_object_scale);
 
     while (running)
     {
@@ -181,7 +185,7 @@ uint32 FVisDataReceiver::Run()
                     dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
                     dm.world_time = world->RealTimeSeconds;
                     // Why am I not scaling the radius?
-                    dm.radius = this->parent->vis_world_scale * vdm->radius;
+                    dm.radius = this->vis_world_object_scale * vdm->radius;
                     dm.pos = world_to_metres * FVector(vdm->position.x, vdm->position.y, vdm->position.z);
 
                     {
@@ -474,12 +478,12 @@ void ADianaConnector::Tick(float DeltaTime)
     }
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable)
+bool ADianaConnector::RegisterForVisData(bool enable, float vis_world_coordinate_scale, float vis_world_object_scale)
 {
-    return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_scale);
+    return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_coordinate_scale, vis_world_object_scale);
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p, float vis_world_scale_p)
+bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p, float vis_world_coordinate_scale, float vis_world_object_scale)
 {
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
@@ -505,7 +509,10 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 s
     if (enable)
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Enable"));
-        vdr_thread = new FVisDataReceiver(sock, this, &oa_map);
+        vdr_thread = new FVisDataReceiver(
+            sock, this, &oa_map,
+            vis_world_coordinate_scale,
+            vis_world_object_scale);
         vdm.send(sock);
     }
     else

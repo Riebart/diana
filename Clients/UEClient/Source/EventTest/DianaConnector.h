@@ -134,8 +134,11 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Server ID"))
     int32 server_id = -1;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Visualization World Scale"))
-    float vis_world_scale = 1.0f;
+    // UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Visualization World Coordinate Scale"))
+    // float vis_world_coordinate_scale = 1.0f;
+
+    // UPROPERTY(BlueprintReadWrite, Category = "Server information", meta = (DisplayName = "Visualization World Object Scale"))
+    // float vis_world_object_scale = 1.0f;
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
     bool ConnectToServer(FString _host, int32 _port);
@@ -144,7 +147,7 @@ public:
     void UseProxyConnection(ADianaConnector *_proxy);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-    bool RegisterForVisData(bool enable);
+    bool RegisterForVisData(bool enable, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f);
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
@@ -191,7 +194,7 @@ public:
     void OffsetThrust(FVector _thrust);
 
 protected:
-    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, float vis_world_scale);
+    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
     void CreateShip(int32 client_id, int32 server_id, int32 class_id);
     int32 JoinShip(int32 client_id, int32 server_id, int32 ship_id);
