@@ -154,7 +154,7 @@ uint32 FVisDataReceiver::Run()
     // exist in the same map, or at least have the same scale, as the DianaConnector.
     //
     // Divide by 2.... because. Not sure why, but we need to.
-    float world_to_metres = world->GetWorldSettings()->WorldToMeters / 2.0;
+    float world_to_metres = this->parent->vis_world_scale * world->GetWorldSettings()->WorldToMeters / 2.0;
 
     while (running)
     {
@@ -178,7 +178,7 @@ uint32 FVisDataReceiver::Run()
                     dm.server_id = (int32)vdm->phys_id & 0x7FFFFFFF; // Unsign the ID, because that's natural.
                     dm.world_time = world->RealTimeSeconds;
                     // Why am I not scaling the radius?
-                    dm.radius = vdm->radius;
+                    dm.radius = this->parent->vis_world_scale * vdm->radius;
                     dm.pos = world_to_metres * FVector(vdm->position.x, vdm->position.y, vdm->position.z);
 
                     {
@@ -473,10 +473,10 @@ void ADianaConnector::Tick(float DeltaTime)
 
 bool ADianaConnector::RegisterForVisData(bool enable)
 {
-    return proxy->RegisterForVisData(enable, client_id, server_id);
+    return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_scale);
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p)
+bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p, float vis_world_scale_p)
 {
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
