@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from spaceobjects.ship.shiptypes import Firefly
 import message
@@ -383,7 +383,7 @@ def test_sensors():
 
 if __name__ == "__main__":
     num_objects = 0
-    for i in range(-200, 200, 1):
-        num_objects += flight_school(1.0, 200, i, 3.0, 0.3)
+    for i in range(-10, 10, 1):
+        num_objects += flight_school(1.0, 20, i, 3.0, 0.3)
 
     print("Spawened %d objects" % num_objects)

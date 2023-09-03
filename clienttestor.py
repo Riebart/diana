@@ -1,7 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-from __future__ import print_function
-import ship
+from spaceobjects.ship.shiptypes import Firefly
 import message
 import socket
 import objectsim
@@ -11,7 +10,6 @@ import time
 import math
 import pprint
 from vector import Vector3, Vector4
-from shiptypes import Firefly
 
 random.seed(0)
 
@@ -380,12 +378,12 @@ def test_sensors():
 #osim.spawn_object(ship2)
 
 if __name__ == "__main__":
-    performance_test(0, 1000, 0)
-    performance_test(1, 300, 0)
-    performance_test(2, 300, 0)
-    performance_test(0, 0, 250)
+    # performance_test(0, 1000, 0)
+    # performance_test(1, 300, 0)
+    # performance_test(2, 300, 0)
+    # performance_test(0, 0, 250)
     #basic()
-    #pool_rack(C = 1.01, num_rows = 25)
+    pool_rack(C = 1.01, num_rows = 25)
     #spawn_sol()
     #signature_test()
 

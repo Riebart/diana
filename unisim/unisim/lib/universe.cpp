@@ -279,7 +279,7 @@ namespace Diana
             // Make sure to pace ourselves, and not broadcast faster than the minimum interval.
             if (e < u->min_vis_frametime)
             {
-                int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_frametime - e));
+                int32_t sleep_duration_us = (int32_t)(1000000 * (u->min_vis_frametime - e));
                 std::chrono::microseconds sleep_duration = std::chrono::microseconds(sleep_duration_us);
 
                 if (u->params.permit_spin_sleep && (sleep_duration_us < SPIN_SLEEP_MAX_US))
@@ -529,6 +529,9 @@ namespace Diana
         struct vis_client vc;
         PO *o;
         PO *ro;
+        std::chrono::time_point<std::chrono::high_resolution_clock> t0;
+        std::chrono::duration<double> dt;
+        int64_t client_nbytes = 0;
 
         LOCK(vis_lock);
         for (std::vector<struct vis_client>::iterator it = vis_clients.begin(); it != vis_clients.end();)
@@ -542,6 +545,11 @@ namespace Diana
             //! @todo Unlocked access to the smarties map.
             ro = (vc.phys_id == -1 ? NULL : (PO *)smarties[vc.phys_id]);
             bool disconnect = false;
+
+            if (this->params.verbose_logging)
+            {
+                t0 = std::chrono::high_resolution_clock::now();
+            }
 
             //! @todo unlocked access to phsy_objects array.
             for (size_t i = 0; i < phys_objects.size(); i++)
@@ -578,6 +586,7 @@ namespace Diana
                 visdata_msg.orientation.y = o->up.x;
                 visdata_msg.orientation.z = o->up.y;
                 int64_t nbytes = visdata_msg.send(vc.socket);
+                client_nbytes += nbytes;
 
                 if (nbytes < 0)
                 {
@@ -586,6 +595,14 @@ namespace Diana
                     disconnect = true;
                     break;
                 }
+            }
+
+            if (this->params.verbose_logging && (client_nbytes > 0))
+            {
+                dt = std::chrono::high_resolution_clock::now() - t0;
+                fprintf(stderr,
+                        "%g seconds to send %lu bytes of visdata to client %d\n",
+                        dt.count(), client_nbytes, vc.socket);
             }
 
             if (!disconnect)
