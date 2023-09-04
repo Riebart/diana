@@ -1,6 +1,7 @@
 CXX=g++
 INCLUDE_DIR=-I. -I./include -I./lib/include
 _CFLAGS=${CFLAGS} -O2 -Wall -g -std=c++17
+# _CFLAGS=${CFLAGS} -O2 -Wall -g -std=c++17 -march=native -mavx -mavx2 -ftree-vectorize
 FILES=lib/utility.cpp lib/vector.cpp lib/physics.cpp lib/universe.cpp lib/MIMOServer.cpp lib/messaging.cpp
 EXT_LIBS=
 EXT_ST_LIBS=
