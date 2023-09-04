@@ -11,6 +11,30 @@
 
 class FSocket;
 
+UENUM(BlueprintType)
+enum class FCoordinateTransformFunction : uint8
+{
+    Linear,
+    Sqrt,
+    Log2,
+    Log10
+};
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FVisScalingBehaviour
+{
+    GENERATED_USTRUCT_BODY();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualization Scaling")
+    FCoordinateTransformFunction coordinate_scaling_func;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualization Scaling")
+    FCoordinateTransformFunction object_scaling_func;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualization Scaling")
+    float coordinate_scale_factor;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualization Scaling")
+    float object_scale_factor;
+};
+
 USTRUCT(BlueprintType, Blueprintable)
 struct FDirectoryItem
 {
@@ -147,8 +171,7 @@ public:
     void UseProxyConnection(ADianaConnector *_proxy);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-    // bool RegisterForVisData(bool enable, FString vis_world_coordinate_scale = "", FString vis_world_object_scale = "");
-    bool RegisterForVisData(bool enable, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f, bool log10_coords = false, bool log10_size = false);
+    bool RegisterForVisData(bool enable, struct FVisScalingBehaviour vsb);
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
@@ -195,7 +218,7 @@ public:
     void OffsetThrust(FVector _thrust);
 
 protected:
-    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, float vis_world_coordinate_scale, float vis_world_object_scale, bool log10_coords, bool log10_size);
+    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, struct FVisScalingBehaviour vsb);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
     void CreateShip(int32 client_id, int32 server_id, int32 class_id);
     int32 JoinShip(int32 client_id, int32 server_id, int32 ship_id);

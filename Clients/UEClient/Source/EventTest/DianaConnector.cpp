@@ -39,7 +39,7 @@ FVector FVzero = FVector(0.0, 0.0, 0.0);
 class FVisDataReceiver : public FRunnable
 {
 public:
-    FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f, bool log10_coords = false, bool log10_size = false);
+    FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, struct FVisScalingBehaviour);
     ~FVisDataReceiver();
 
     virtual bool Init();
@@ -52,8 +52,7 @@ private:
     FSocket *sock = NULL;
     ADianaConnector *parent = NULL;
     std::map<int32, struct ADianaConnector::DianaActor *> *oa_map = NULL;
-    float vis_world_coordinate_scale, vis_world_object_scale;
-    bool log10_coords, log10_size;
+    struct FVisScalingBehaviour vsb;
 };
 
 class FSensorManager : public FRunnable
@@ -75,16 +74,13 @@ private:
     std::map<FString, struct FSensorContact> *sc_map = NULL;
 };
 
-FVisDataReceiver::FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, float vis_world_coordinate_scale, float vis_world_object_scale, bool log10_coords, bool log10_size)
+FVisDataReceiver::FVisDataReceiver(FSocket *sock, ADianaConnector *parent, std::map<int32, struct ADianaConnector::DianaActor *> *oa_map, struct FVisScalingBehaviour vsb)
 {
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor"));
     this->sock = sock;
     this->parent = parent;
     this->oa_map = oa_map;
-    this->vis_world_coordinate_scale = vis_world_coordinate_scale;
-    this->vis_world_object_scale = vis_world_object_scale;
-    this->log10_coords = log10_coords;
-    this->log10_size = log10_size;
+    this->vsb = vsb;
     rt = FRunnableThread::Create(this, TEXT("VisDataReceiver"), 0, EThreadPriority::TPri_Normal); // Don't set an affinity mask
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::Constructor::PostThreadCreate"));
 }
@@ -161,11 +157,11 @@ uint32 FVisDataReceiver::Run()
     // exist in the same map, or at least have the same scale, as the DianaConnector.
     //
     // Divide by 2.... because. Not sure why, but we need to.
-    float world_to_metres = this->vis_world_coordinate_scale * world->GetWorldSettings()->WorldToMeters / 2.0;
+    float world_to_metres = this->vsb.coordinate_scale_factor * world->GetWorldSettings()->WorldToMeters / 2.0;
 
     UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::WorldToMetres %f"), world_to_metres);
-    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisWorldToMetres %f"), this->vis_world_coordinate_scale);
-    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisRadiusToUnits %f"), this->vis_world_object_scale);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisWorldToMetres %f"), this->vsb.coordinate_scale_factor);
+    UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataRecvThread::VisRadiusToUnits %f"), this->vsb.object_scale_factor);
 
     while (running)
     {
@@ -190,10 +186,24 @@ uint32 FVisDataReceiver::Run()
                     dm.world_time = world->RealTimeSeconds;
 
                     // Why am I not scaling the radius? (by the actual UE-provided world scale...?)
-                    dm.radius = this->vis_world_object_scale * vdm->radius;
-                    if (this->log10_size)
+                    dm.radius = this->vsb.object_scale_factor * vdm->radius;
+
+                    switch (this->vsb.object_scaling_func)
                     {
-                        dm.radius = log10(dm.radius);
+                        case FCoordinateTransformFunction::Linear:
+                            dm.radius = dm.radius;
+                            break;
+                        case FCoordinateTransformFunction::Sqrt:
+                            dm.radius = sqrt(dm.radius);
+                            break;
+                        case FCoordinateTransformFunction::Log2:
+                            dm.radius = log2(dm.radius);
+                            break;
+                        case FCoordinateTransformFunction::Log10:
+                            dm.radius = log10(dm.radius);
+                            break;
+                        default:
+                            dm.radius = dm.radius;
                     }
 
                     dm.pos = world_to_metres * FVector(vdm->position.x, vdm->position.y, vdm->position.z);
@@ -407,7 +417,13 @@ ADianaConnector::ADianaConnector()
 
 ADianaConnector::~ADianaConnector()
 {
-    RegisterForVisData(false);
+    struct FVisScalingBehaviour vsb;
+    vsb.coordinate_scaling_func = FCoordinateTransformFunction::Linear;
+    vsb.object_scaling_func = FCoordinateTransformFunction::Linear;
+    vsb.coordinate_scale_factor = 1.0f;
+    vsb.object_scale_factor = 1.0f;
+
+    RegisterForVisData(false, vsb);
     if (sensor_thread != NULL)
     {
         sensor_thread->Stop();
@@ -519,20 +535,22 @@ void ADianaConnector::Tick(float DeltaTime)
 //     return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_coordinate_scale, vis_world_object_scale);
 // }
 
-bool ADianaConnector::RegisterForVisData(bool enable, float vis_world_coordinate_scale, float vis_world_object_scale, bool log10_coords, bool log10_size)
+bool ADianaConnector::RegisterForVisData(bool enable, struct FVisScalingBehaviour vsb)
 {
     if (enable)
     {
         UE_LOG(LogTemp, Warning,
-               TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString %.16f"), vis_world_coordinate_scale);
+               TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString %.16f"),
+               vsb.coordinate_scale_factor);
         UE_LOG(LogTemp, Warning,
-               TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString %.16f"), vis_world_object_scale);
+               TEXT("DianaMessaging::RegisterForVisDataInterface::ConvertingString %.16f"),
+               vsb.object_scale_factor);
     }
 
-    return proxy->RegisterForVisData(enable, client_id, server_id, vis_world_coordinate_scale, vis_world_object_scale, log10_coords, log10_size);
+    return proxy->RegisterForVisData(enable, client_id, server_id, vsb);
 }
 
-bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p, float vis_world_coordinate_scale, float vis_world_object_scale, bool log10_coords, bool log10_size)
+bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 server_id_p, struct FVisScalingBehaviour vsb)
 {
     // If we're disconnected (NULL worker thread), and trying to disconnect again, just do nothing.
     if ((vdr_thread == NULL) && !enable)
@@ -559,10 +577,7 @@ bool ADianaConnector::RegisterForVisData(bool enable, int32 client_id_p, int32 s
     {
         UE_LOG(LogTemp, Warning, TEXT("DianaMessaging::VisDataToggle::Enable"));
         vdr_thread = new FVisDataReceiver(
-            sock, this, &oa_map,
-            vis_world_coordinate_scale,
-            vis_world_object_scale,
-            log10_coords, log10_size);
+            sock, this, &oa_map, vsb);
         vdm.send(sock);
     }
     else
