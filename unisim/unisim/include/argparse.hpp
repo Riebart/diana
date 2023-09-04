@@ -310,10 +310,13 @@ public:
                         // Uhh.... I don't know how we got here?
                     }
                 }
-
-                // Validate/parse the option value.
-                option_def->result.option_value = option_def->validator(option_def->result);
             }
+        }
+
+        if (option_def->result.option_present)
+        {
+            // Validate/parse the option value.
+            option_def->result.option_value = option_def->validator(option_def->result);
         }
 
         if (!option_def->result.option_present && option_def->is_required)
