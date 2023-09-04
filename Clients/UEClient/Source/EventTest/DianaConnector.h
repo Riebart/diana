@@ -147,7 +147,8 @@ public:
     void UseProxyConnection(ADianaConnector *_proxy);
 
     UFUNCTION(BlueprintCallable, Category = "Diana Messaging")
-    bool RegisterForVisData(bool enable, FString vis_world_coordinate_scale = "", FString vis_world_object_scale = "");
+    // bool RegisterForVisData(bool enable, FString vis_world_coordinate_scale = "", FString vis_world_object_scale = "");
+    bool RegisterForVisData(bool enable, float vis_world_coordinate_scale = 1.0f, float vis_world_object_scale = 1.0f, bool log10_coords = false, bool log10_size = false);
 
     // Don't have access to doubles, or 64-bit ints in Blueprints.
     // See: https://answers.unrealengine.com/questions/98206/missing-support-for-uint32-int64-uint64.html
@@ -194,7 +195,7 @@ public:
     void OffsetThrust(FVector _thrust);
 
 protected:
-    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, float vis_world_coordinate_scale, float vis_world_object_scale);
+    bool RegisterForVisData(bool enable, int32 client_id, int32 server_id, float vis_world_coordinate_scale, float vis_world_object_scale, bool log10_coords, bool log10_size);
     TArray<struct FDirectoryItem> DirectoryListing(int32 client_id, int32 server_id, FString type, TArray<struct FDirectoryItem> items);
     void CreateShip(int32 client_id, int32 server_id, int32 class_id);
     int32 JoinShip(int32 client_id, int32 server_id, int32 ship_id);
