@@ -88,7 +88,7 @@ class Vector3:
 
         x2 = self.y*((x*y-c*x*y)/l2+(s*z)/l)+(self.x*(pow(x,2)+c*(pow(y,2)+pow(z,2))))/l2+(-((s*y)/l)+(x*z-c*x*z)/l2)*self.z
         y2 = self.x*((x*y-c*x*y)/l2-(s*z)/l)+(self.y*(pow(y,2)+c*(pow(x,2)+pow(z,2))))/l2+((s*x)/l+(y*z-c*y*z)/l2)*self.z
-        z2 = self.x*((s*y)/l+(x*z-c*x*z)/l2)*+self.y*(-((s*x)/l)+(y*z-c*y*z)/l2)+((c*(pow(x,2)+pow(y,2))+pow(z,2))*self.z)/l2
+        z2 = self.x*((s*y)/l+(x*z-c*x*z)/l2)+self.y*(-((s*x)/l)+(y*z-c*y*z)/l2)+((c*(pow(x,2)+pow(y,2))+pow(z,2))*self.z)/l2
 
         self.x = x2
         self.y = y2
@@ -117,8 +117,6 @@ class Vector3:
             self.y = y
             self.z = z
 
-    def clone(self):
-        return Vector3(self.x, self.y, self.z)
 
     #def __init__(self, x, y, z):
         #self.x = x
@@ -263,3 +261,62 @@ class Vector3:
         return "<%f, %f, %f>" % (self.x, self.y, self.z)
 
 zero3d = Vector3(0, 0, 0)
+
+
+#for now, just inherit Vector3's methods to fill it out
+class Vector4(Vector3):
+    
+    def __init__(self, v, x = None, y = None, z = None):
+        if x == None:
+            self.w = v[0]
+            self.x = v[1]
+            self.y = v[2]
+            self.z = v[3]
+        else:
+            self.w = v
+            self.x = x
+            self.y = y
+            self.z = z
+            
+            
+    def clone(self):
+        return Vector4(self.w, self.x, self.y, self.z)
+    
+    # Adds v to self.
+    def add(self, v, s = 1):
+        self.w += s * v.w
+        self.x += s * v.x
+        self.y += s * v.y
+        self.z += s * v.z            
+        
+    #override -
+    def __sub__(self, other):
+        return Vector4([self.w-other.w,  self.x-other.x, self.y-other.y, self.z-other.z])        
+    
+    #overrid []
+    def __getitem__(self, index):
+        if index == 0:
+            return self.w
+        if index == 1:
+            return self.x
+        if index == 2:
+            return self.y
+        if index == 3:
+            return self.z
+
+        raise IndexError('Vector4 has only 4 dimensions')
+    
+    def __setitem__(self, index, value):
+        if index == 0:
+            self.w = value
+        elif index == 1:
+            self.x = value
+        elif index == 2:
+            self.y = value
+        elif index == 3:
+            self.z = value
+        else:
+            raise IndexError('Vector3 has only 3 dimensions')
+        
+    def __repr__(self):
+        return "<%f, %f, %f, %f>" % (self.w, self.x, self.y, self.z)    

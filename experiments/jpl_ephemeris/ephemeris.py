@@ -16,7 +16,7 @@ def parse_object_data(raw):
             break
     lines = lines[:end_line]
 
-    # 
+    #
 
 def get_object(id, start, end, centre='500@0', make_ephem='YES', table_type='VECTORS', step='1 d', units='KM-S', vect_table='2', ref_plane='ECLIPTIC', ref_system='J2000', vect_corr='NONE', vec_labels='YES', csv_format='YES', obj_data='YES'):
     url = "http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&" + \
@@ -39,6 +39,6 @@ def get_object(id, start, end, centre='500@0', make_ephem='YES', table_type='VEC
     raw = urllib2.urlopen(url).read()
     if csv_format == "YES":
         parse_object_data(raw)
-#    print raw
+#    print(raw)
 
 get_object(10, "2015-12-31 00:00", "2016-01-01 00:00")

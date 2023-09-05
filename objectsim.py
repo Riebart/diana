@@ -65,13 +65,20 @@ class ObjectSim:
                 if msg.item_type == "SHIP":
                     dm.item_type = msg.item_type
                     dm.items = self.get_joinable_ships()
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
                 elif msg.item_type == "CLASS":
                     dm.item_type = msg.item_type
                     dm.items = self.get_player_ship_classes()
-                elif osm_id != None and msg.item_type == "SYSTEMS":
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                elif osim_id in self.ship_list.keys() and msg.item_type == "SYSTEMS":
+                    dm = DirectoryMsg()
                     dm.item_type = msg.item_type
-                    dm.items = self.ship_list[osim_id].get_systems()
-                DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                    #do we want them to see the systems available for any ship (as below)
+                    #or just the one they've already joined?
+                    dm.items = self.get_systems(self.ship_list[osim_id])
+                    DirectoryMsg.send(msg.socket, osim_id, client_id, dm.build())
+                else:
+                    print("Unrecognized Dir message: " + str(msg) + " <=> " + str(msg.__dict__))
 
             # If they send back one item, then they have made a choice.
             elif len(msg.items) == 1:
@@ -88,19 +95,16 @@ class ObjectSim:
                     class_id = msg.items[0][0]
                     # They chose a class, so take the class ID and hand off.
                     newship = self.christen_ship(class_id)
-                    HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
-                    self.client_list[newship.osim_id] = [[msg.socket, client_id]]
-                    newship.new_client(msg.socket, client_id)
-
-
-                elif osim_id != None and msg.item_type == "SYSTEMS":
+                    if newship is not None:
+                        HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
+                        self.client_list[newship.osim_id] = [[msg.socket, client_id]]
+                        newship.new_client(msg.socket, client_id)
+                elif osim_id in self.ship_list.keys() and msg.item_type == "SYSTEMS":
                     # They chose a system to observe, so register the client with that system.
-                    self.ship_list[msg.items[0][0]].systems[msg.items[0][1]].add_observer(msg.socket)
-                        
-                    #HelloMsg.send(msg.socket, newship.osim_id, client_id, {})
-                    #self.client_list[newship.osim_id] = [[msg.socket, client_id]]
-                    #newship.new_client(msg.socket, client_id)
-
+                    for i in msg.items:
+                        self.ship_list[osim_id].systems[i[0]].add_observer((msg.socket, client_id))
+            else:
+                print("Unexpected Dir messsage size: " + msg.items)
 
 
         #Pass all other messages up to the ship logic
@@ -128,6 +132,13 @@ class ObjectSim:
 
         return joinables
 
+    def get_systems(self, ship):
+        systems = []
+        for (k,v) in ship.systems.iteritems():
+            systems.append((k, v.name))
+
+        return systems
+
     def register_ship_class(self, ship_class):
         self.id_lock.acquire()
         class_id = self.get_id()
@@ -143,9 +154,11 @@ class ObjectSim:
         return classes
 
     def christen_ship(self, class_id):
-        newship = self.ship_classes[class_id](self)
-        self.ship_list[newship.osim_id] = newship
-        self.object_list[newship.osim_id] = newship
+        newship = None
+        if class_id in self.ship_classes:
+            newship = self.ship_classes[class_id](self)
+            self.ship_list[newship.osim_id] = newship
+            self.object_list[newship.osim_id] = newship
 
         return newship
 
@@ -237,10 +250,11 @@ class ObjectSim:
         del self.client_list[osim_id]
 
 if __name__ == "__main__":
-    from shiptypes import Firefly
+    from shiptypes import Firefly, CueBall
 
     osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
+    osim.register_ship_class(CueBall)
 
     print("Press Enter to close the server...")
     raw_input()

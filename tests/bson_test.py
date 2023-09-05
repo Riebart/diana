@@ -3,4 +3,4 @@
 import bson
 import sys
 
-print bson.loads(sys.stdin.read())
+print(bson.loads(sys.stdin.read()))
