@@ -1,4 +1,4 @@
-from .. spaceobj import SmartObject
+from .. spaceobj import SmartObject, CommBeam
 from collections import defaultdict
 import math
 from vector import Vector3
@@ -224,11 +224,11 @@ class Planet(SmartObject):
     def alert_neighbors(self):
         for planet, values in self.known_planets.items():
             comm_beam = self.init_beam(CommBeam, energy = 10, speed = 5, direction = Vector3(1,1,1), up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
-            if self.trade_style["all_data"]:
+            if True or self.trade_style["all_data"]:
                 comm_beam.message = f"Take your price data and go {self.known_price_list}"
             else:
                 comm_beam.message = f"Just the facts {self.local_price_list}"
-            comm_beam.send_it()
+            comm_beam.send_it(self.sock)
 
     ####
     # Handler code

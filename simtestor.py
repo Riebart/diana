@@ -137,7 +137,8 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         st.add_object(planet)
 
 
-for i in range(0, 100):
+
+for i in range(0, 10):
     planet = random_planet(template_data['templates']['planet'])
     #print(planet)
     st.add_object(planet)
@@ -149,6 +150,13 @@ for i in range(0, 100):
     #print(planet)
     st.add_object(planet)
     pass
+
+#give each planet a set of known neighbors, and see how it goes
+for planet_id, values in st.objects.items():
+    candidates = random.sample(st.objects.keys(), math.ceil(len(st.objects)/10))
+    for candidate in candidates:
+        if planet_id != candidate:
+            values.known_planets[candidate] = st.objects[candidate].position
 
 print("Done\n")
 

@@ -8,7 +8,7 @@ import socket
 import time
 
 class SmartObjectManager(threading.Thread):
-    def __init__(self, osim, tick_rate = 1.0):
+    def __init__(self, osim, tick_rate = 5.0):
         self.sock = socket.socket()
         self.objects = dict()
         self.done = False
@@ -35,7 +35,8 @@ class SmartObjectManager(threading.Thread):
 
     def run(self):
         print("SOM running!")
-        self.sock.settimeout(self.tick_rate/10)
+        #self.sock.settimeout(self.tick_rate/10)
+        self.sock.settimeout(0.1)
         t_start = time.perf_counter()
         while not self.done:
             msg = self.messageHandler()
@@ -65,7 +66,6 @@ class SmartObjectManager(threading.Thread):
 
     def do_ticks(self):
         for name, obj in self.objects.items():
-            #if callable(getattr(obj, "do_industries", None)):
             if hasattr(obj, "do_tick"):
                 obj.do_tick()
 
