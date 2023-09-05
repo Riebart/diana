@@ -5,3 +5,4 @@ __pycache__*
 bson
 pytz
 six.py
+*.kdev4
