@@ -1,5 +1,7 @@
 from .. spaceobj import SmartObject
 from collections import defaultdict
+import math
+from vector import Vector3
 
 #Pulling out some constants
 WAREHOUSE_DISCOUNT = 0.25
@@ -131,8 +133,8 @@ class Planet(SmartObject):
             self.industries[max_industry]["done"] = True
             #4. repeat until industry done
         pass
-        
-                    
+
+
     def do_populations(self):
         #for each pop, consume goods as they exist
         for pop, values in self.population.items():
@@ -221,12 +223,18 @@ class Planet(SmartObject):
     #periodically update other planets in range of our current price situation
     def alert_neighbors(self):
         for planet, values in self.known_planets.items():
-            pass
+            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 5, direction = Vector3(1,1,1), up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
+            if self.trade_style["all_data"]:
+                comm_beam.message = f"Take your price data and go {self.known_price_list}"
+            else:
+                comm_beam.message = f"Just the facts {self.local_price_list}"
+            comm_beam.send_it()
 
     ####
     # Handler code
     ####
         
     def handle_comm(self, msg):
-        pass
+        if msg[:len("PRICE UPDATE")] == "PRICE UPDATE":
+            pass
 

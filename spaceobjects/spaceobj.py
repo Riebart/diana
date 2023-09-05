@@ -269,7 +269,7 @@ class Beam(SpaceObject):
         message.BeamMsg.send(sock, self.phys_id, self.osim_id, bm.build())
 
 class CommBeam(Beam):
-    def __init__(self, osim, phys_id, osim_id, energy, velocity, origin, up, h_focus, v_focus, message):
+    def __init__(self, osim, phys_id, osim_id, energy, velocity, origin, up, h_focus, v_focus, message = None):
         Beam.__init__(self, osim, phys_id, osim_id, "COMM", energy, velocity, origin, up, h_focus, v_focus)
         self.message = message
 

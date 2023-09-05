@@ -79,7 +79,7 @@ def random_planet(template_data):
 
     return planet
 
-def random_habitable(template_data, osim):
+def random_habitable(template_data, osim, num_industries = 5):
     planet = random_planet(template_data)
 
     total_pop = random.randrange(template_data['population']['min'], template_data['population']['max'])
@@ -91,8 +91,8 @@ def random_habitable(template_data, osim):
     planet.trade_style = {"sharing" : random.choice(["free", "reciprocal", "closed"]),
                           "all_data" : random.choice([True, False])}
     
-    #choose 5 random industries that aren't maintenance or power
-    for i in random.sample([i for i in osim.data["industries"] if not set(osim.data["industries"][i]["output"]) & {"energy", "maintenance"}], 5):
+    #choose {num_industies} random industries that aren't maintenance or power
+    for i in random.sample([i for i in osim.data["industries"] if not set(osim.data["industries"][i]["output"]) & {"energy", "maintenance"}], num_industries):
         planet.industries[i] = {"quantity": random.randrange(1, 20)}
 
     #Add some power
@@ -137,16 +137,16 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         st.add_object(planet)
 
 
-for i in range(0, 0):
+for i in range(0, 100):
     planet = random_planet(template_data['templates']['planet'])
-    print(planet)
+    #print(planet)
     st.add_object(planet)
-    planet = random_habitable(template_data['templates']['habitable_planet'], osim)
-    print(planet)
+    planet = random_habitable(template_data['templates']['habitable_planet'], osim, 5)
+    #print(planet)
     st.add_object(planet)
-    planet = random_habitable(template_data['templates']['station'], osim)
+    planet = random_habitable(template_data['templates']['station'], osim, 3)
     planet.object_name = planet.object_name + "-station"
-    print(planet)
+    #print(planet)
     st.add_object(planet)
     pass
 
