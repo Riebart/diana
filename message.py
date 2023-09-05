@@ -35,7 +35,7 @@ class Message:
     def get_message_size(client):
         try:
             bytes = Message.big_read(client, 4)
-            msg_length = struct.unpack('<l', bytes)[0]
+            msg_length = None if not bytes else struct.unpack('<l', bytes)[0]
             return (bytes, msg_length)
         except ValueError:
             print("Bad message length \"%s\" (not parsable) from %d" % (raw, client.fileno()))
