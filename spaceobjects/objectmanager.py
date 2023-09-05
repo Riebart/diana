@@ -35,16 +35,18 @@ class SmartObjectManager(threading.Thread):
 
     def run(self):
         print("SOM running!")
-        self.sock.settimeout(self.tick_rate)
+        self.sock.settimeout(self.tick_rate/10)
+        t_start = time.perf_counter()
         while not self.done:
             msg = self.messageHandler()
 
-            #the socket timedout, do a tick
+            #the socket timedout, either do a tick if it's time
             if msg == 0:
-                print(f"\nSOM tick: {self.ticks_done}")
-                self.do_ticks()
-                self.ticks_done = self.ticks_done +1
-                
+                if time.perf_counter() - t_start > self.tick_rate:
+                    print(f"\nSOM tick: {self.ticks_done}")
+                    self.do_ticks()
+                    self.ticks_done = self.ticks_done +1
+                    t_start = time.perf_counter()
             else:
                 self.handle_message(msg)
 
