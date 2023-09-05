@@ -49,6 +49,11 @@ class SmartObjectManager(threading.Thread):
                     t_start = time.perf_counter()
             else:
                 self.handle_message(msg)
+                if time.perf_counter() - t_start > self.tick_rate:
+                    print(f"\nSOM tick: {self.ticks_done}")
+                    self.do_ticks()
+                    self.ticks_done = self.ticks_done +1
+                    t_start = time.perf_counter()
 
     def messageHandler(self):
         try:
