@@ -794,6 +794,7 @@ namespace Diana
             if (strcmp(msg->beam_type, "COMM") == 0)
             {
                 btype = BEAM_COMM;
+                // @todo any use of strlen() should be strnlen(), so this is a bad idea.
                 size_t len = strlen(msg->comm_msg) + 1;
                 comm_msg = (char *)malloc(sizeof(char) * len);
                 if (comm_msg != NULL)
@@ -1185,7 +1186,8 @@ namespace Diana
         Universe *u = args->u;
 
         struct Universe::CollisionMetrics metrics;
-        HRN_T(t0); t0 = HRN;
+        HRN_T(t0);
+        t0 = HRN;
         HRN_T(aabb0);
         HRN_T(sphere0);
 
@@ -1408,6 +1410,7 @@ namespace Diana
                         cm.set_colltype((char *)"COMM");
                         cm.comm_msg = b->comm_msg;
                         cm.send(s->socket);
+                        cm.comm_msg = NULL;
                         break;
                     case BEAM_SCAN:
                     {
@@ -1763,7 +1766,8 @@ namespace Diana
     struct Universe::TickMetrics Universe::tick(double dt)
     {
         struct Universe::TickMetrics metrics;
-        HRN_T(t00); t00 = HRN;
+        HRN_T(t00);
+        t00 = HRN;
 
         LOCK(phys_lock);
         HRN_T(t0);

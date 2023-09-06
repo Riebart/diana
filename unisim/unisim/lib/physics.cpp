@@ -37,12 +37,12 @@ namespace Diana
         return ((6.67384e-11 * m / (r * r)) >= cutoff);
     }
 
-    double total_spectrum_power(struct Spectrum* spectrum)
+    double total_spectrum_power(struct Spectrum *spectrum)
     {
         spectrum->total_power = 0.0;
         // The energy of a photon is proportional to it's frequency, or inversely to it's
         // wavelength. The energy components of the spectrum, though, can just be summed up.
-        struct SpectrumComponent* components = &spectrum->components;
+        struct SpectrumComponent *components = &spectrum->components;
         for (uint32_t i = 0; i < spectrum->n; i++)
         {
             spectrum->total_power += components[i].power;
@@ -50,16 +50,16 @@ namespace Diana
         return spectrum->total_power;
     }
 
-    double radiates_strong_enough(struct Spectrum* spectrum, double cutoff)
+    double radiates_strong_enough(struct Spectrum *spectrum, double cutoff)
     {
         total_spectrum_power(spectrum);
-        
+
         // Calculate the minimum safe distance from teh radiation source.
         spectrum->safe_distance_sq = spectrum->total_power / (4 * M_PI * cutoff);
         return spectrum->safe_distance_sq;
     }
 
-    void PhysicsObject_init(PO* obj, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
+    void PhysicsObject_init(PO *obj, Universe *universe, V3 *position, V3 *velocity, V3 *ang_velocity, V3 *thrust, double mass, double radius, char *obj_type, struct Spectrum *spectrum)
     {
         obj->type = PHYSOBJECT;
         obj->phys_id = 0;
@@ -74,7 +74,7 @@ namespace Diana
 
         //! @todo Ensure radius >= 0. Maybe Almost-Zero radius is uncollidable because it would break the math?
         obj->radius = radius;
-        obj->obj_type = const_cast<char*>(obj_type);
+        obj->obj_type = const_cast<char *>(obj_type);
         obj->t = 0.0;
 
         Vector3_init(&obj->forward, 1, 0, 0);
@@ -98,7 +98,7 @@ namespace Diana
         }
     }
 
-    void PhysicsObject_tick(PO* obj, V3* g, double dt)
+    void PhysicsObject_tick(PO *obj, V3 *g, double dt)
     {
         //! @todo Relativistic mass
         // Verlet integration: http://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -128,29 +128,29 @@ namespace Diana
 
         if (!Vector3_almost_zero(&obj->ang_velocity))
         {
-            V3 a = { dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z };
+            V3 a = {dt * obj->ang_velocity.x, dt * obj->ang_velocity.y, dt * obj->ang_velocity.z};
             Vector3_apply_ypr(&obj->forward, &obj->up, &obj->right, &a);
         }
     }
 
-    void PhysicsObject_from_orientation(struct PhysicsObject* obj, struct Vector4* orientation)
+    void PhysicsObject_from_orientation(struct PhysicsObject *obj, struct Vector4 *orientation)
     {
         obj->forward.x = orientation->w;
         obj->forward.y = orientation->x;
-        obj->forward.z = 1 - sqrt(obj->forward.x*obj->forward.x + obj->forward.x*obj->forward.y);
+        obj->forward.z = 1 - sqrt(obj->forward.x * obj->forward.x + obj->forward.x * obj->forward.y);
 
         obj->up.x = orientation->y;
         obj->up.y = orientation->z;
-        obj->up.z = 1 - sqrt(obj->up.x*obj->up.x + obj->up.x*obj->up.y);
+        obj->up.z = 1 - sqrt(obj->up.x * obj->up.x + obj->up.x * obj->up.y);
     }
 
-    struct Spectrum* Spectrum_clone(struct Spectrum* src)
+    struct Spectrum *Spectrum_clone(struct Spectrum *src)
     {
         if ((src != NULL) && (src->n > 0))
         {
             size_t spectrum_size;
-            struct Spectrum* ret = Spectrum_allocate(src->n, &spectrum_size);
-            //size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
+            struct Spectrum *ret = Spectrum_allocate(src->n, &spectrum_size);
+            // size_t spectrum_size = sizeof(struct Spectrum) + (src->n - 1) * sizeof(struct SpectrumComponent);
             memcpy(ret, src, spectrum_size);
             return ret;
         }
@@ -160,12 +160,12 @@ namespace Diana
         }
     }
 
-    struct Spectrum* Spectrum_allocate(uint32_t n, size_t* total_size)
+    struct Spectrum *Spectrum_allocate(uint32_t n, size_t *total_size)
     {
         if (n > 0)
         {
             size_t spectrum_size = sizeof(struct Spectrum) + (n - 1) * sizeof(struct SpectrumComponent);
-            struct Spectrum* ret = (struct Spectrum*)malloc(spectrum_size);
+            struct Spectrum *ret = (struct Spectrum *)malloc(spectrum_size);
             if (ret == NULL)
             {
                 throw std::runtime_error("Spectrum_allocate::UnableToAllocate");
@@ -185,11 +185,11 @@ namespace Diana
         }
     }
 
-    struct Spectrum* Spectrum_perturb(struct Spectrum* src, double limit, std::function<double(void)> get_rand)
+    struct Spectrum *Spectrum_perturb(struct Spectrum *src, double limit, std::function<double(void)> get_rand)
     {
         if (src != NULL)
         {
-            struct SpectrumComponent* components = &src->components;
+            struct SpectrumComponent *components = &src->components;
             for (uint32_t i = 0; i < src->n; i++)
             {
                 if (ABS(components[i].power) < limit)
@@ -207,16 +207,16 @@ namespace Diana
         return src;
     }
 
-    struct Spectrum* Spectrum_combine(struct Spectrum* dst, struct Spectrum* increment)
+    struct Spectrum *Spectrum_combine(struct Spectrum *dst, struct Spectrum *increment)
     {
         size_t spectrum_size;
         // Allocate a new spectrum that's the size of both, we'll realloc() later to shrink it.
-        struct Spectrum* ret = Spectrum_allocate(dst->n + increment->n, &spectrum_size);
+        struct Spectrum *ret = Spectrum_allocate(dst->n + increment->n, &spectrum_size);
         // Copy the source to the destination
         memcpy(ret, dst, spectrum_size - sizeof(struct SpectrumComponent) * increment->n);
 
-        struct SpectrumComponent* d_components = &ret->components;
-        struct SpectrumComponent* i_components = &increment->components;
+        struct SpectrumComponent *d_components = &ret->components;
+        struct SpectrumComponent *i_components = &increment->components;
         uint32_t n_unique_wavelengths = dst->n;
         bool found;
 
@@ -247,7 +247,7 @@ namespace Diana
 
         // Now realloc the return spectrum block because we probably didn't use all the
         // space we allocated.
-        ret = (struct Spectrum*)realloc(ret, spectrum_size - sizeof(struct SpectrumComponent) * (dst->n + increment->n - n_unique_wavelengths));
+        ret = (struct Spectrum *)realloc(ret, spectrum_size - sizeof(struct SpectrumComponent) * (dst->n + increment->n - n_unique_wavelengths));
         if (ret == NULL)
         {
             throw std::runtime_error("Spectrum_combine:ReallocShrinkFailed");
@@ -256,7 +256,7 @@ namespace Diana
     }
 
     //! @todo Break this into phase 1 (where we find the time), and phase 2 (where the physical effects are calculated)
-    void PhysicsObject_collide(struct PhysCollisionResult* cr, PO* obj1, PO* obj2, double dt)
+    void PhysicsObject_collide(struct PhysCollisionResult *cr, PO *obj1, PO *obj2, double dt)
     {
         // Currently we treat dt and forces as small enough that they can be neglected,
         // and assume that they won't change teh trajectory appreciably over the course
@@ -310,7 +310,7 @@ namespace Diana
         //
         // Expand that and collect to get:
         //
-        // r^2 = o.o + 2t(o.d) + t^2(d.d) <=> t =  -(o.d) ± sqrt((o.d)^2 + r (d.d) - (d.d) (o.o))
+        // r^2 = o.o + 2t(o.d) + t^2(d.d) <=> t =  -(o.d) ï¿½ sqrt((o.d)^2 + r (d.d) - (d.d) (o.o))
         //                                        ------------------------------------------------
         //                                                                d.d
         //
@@ -486,7 +486,7 @@ namespace Diana
         // Now do the elastic velocity composition a-la http://en.wikipedia.org/wiki/Elastic_collision
         // This is eventually where we'd implement relativistic velocity composition.
         //
-        // To summarize the above article, the following calculations are derived by solving a system of 
+        // To summarize the above article, the following calculations are derived by solving a system of
         // two equations. Since we've converted this from three dimensions, and reduced it to a 1D
         // system along the normal vector, and so velocities in this transformed system are scalars, not
         // vectors, this gets a lot easier. To derive the following equations, solve the conservation of
@@ -534,7 +534,7 @@ namespace Diana
         Vector3_scale(&cr->pce2.d, -1);
     }
 
-    void PhysicsObject_resolve_damage(PO* obj, double energy, double cutoff)
+    void PhysicsObject_resolve_damage(PO *obj, double energy, double cutoff)
     {
         // We'll take damage if we absorb an impact whose energy is above ten percent
         // of our current health, and only by the energy that is above that threshold
@@ -563,7 +563,7 @@ namespace Diana
         }
     }
 
-    void PhysicsObject_resolve_phys_collision(PO* obj, double energy, double dt, struct PhysCollisionEffect* pce)
+    void PhysicsObject_resolve_phys_collision(PO *obj, double energy, double dt, struct PhysCollisionEffect *pce)
     {
         // Increment the real-time seconds that this object has been ticked through.
         obj->t += dt;
@@ -582,11 +582,11 @@ namespace Diana
         // Adjust the velocity accordingly to be the sum of the new tangential and normal
         // components, which is equivalent to adding the delta in velocity along the normal
         // to the current velocity.
-        //Vector3_add(&obj->velocity, &pce->t, &pce->n);
+        // Vector3_add(&obj->velocity, &pce->t, &pce->n);
         Vector3_add(&obj->velocity, &pce->dn);
     }
 
-    void PhysicsObject_estimate_aabb(PO* obj, struct AABB* b, double dt)
+    void PhysicsObject_estimate_aabb(PO *obj, struct AABB *b, double dt)
     {
         if (obj->velocity.x < 0)
         {
@@ -622,22 +622,22 @@ namespace Diana
         }
     }
 
-    PO* PhysicsObject_clone(PO* obj)
+    PO *PhysicsObject_clone(PO *obj)
     {
         //! @todo There's a bunch of code reuse here that should be taken care of.
-        PO* ret = NULL;
+        PO *ret = NULL;
         switch (obj->type)
         {
         case PHYSOBJECT:
         {
-            ret = (PO*)malloc(sizeof(PO));
+            ret = (PO *)malloc(sizeof(PO));
             if (ret != NULL)
             {
                 *ret = *obj;
                 if (ret->obj_type != NULL)
                 {
                     size_t len = strlen(ret->obj_type) + 1;
-                    char* obj_type = (char*)malloc(sizeof(char) * len);
+                    char *obj_type = (char *)malloc(sizeof(char) * len);
                     if (obj_type == NULL)
                     {
                         free(ret);
@@ -654,14 +654,14 @@ namespace Diana
         }
         case PHYSOBJECT_SMART:
         {
-            ret = (PO*)malloc(sizeof(SPO));
+            ret = (PO *)malloc(sizeof(SPO));
             if (ret != NULL)
             {
-                *(SPO*)ret = *(SPO*)obj;
+                *(SPO *)ret = *(SPO *)obj;
                 if (ret->obj_type != NULL)
                 {
                     size_t len = strlen(ret->obj_type) + 1;
-                    char* obj_type = (char*)malloc(sizeof(char) * len);
+                    char *obj_type = (char *)malloc(sizeof(char) * len);
                     if (obj_type == NULL)
                     {
                         free(ret);
@@ -681,18 +681,19 @@ namespace Diana
         case BEAM_WEAP:
         case BEAM_SCAN:
         {
-            Beam* rb = (B*)malloc(sizeof(B));
+            Beam *rb = (B *)malloc(sizeof(B));
             if (rb != NULL)
             {
-                *(B*)rb = *(B*)obj;
+                *(B *)rb = *(B *)obj;
                 if (rb->comm_msg != NULL)
                 {
                     size_t len = strlen(rb->comm_msg) + 1;
-                    char* comm_msg = (char*)malloc(sizeof(char) * len);
+                    char *comm_msg = (char *)malloc(sizeof(char) * len);
                     if (comm_msg == NULL)
                     {
                         free(rb);
                         rb = NULL;
+                        throw "OOM you twat";
                     }
                     else
                     {
@@ -704,7 +705,7 @@ namespace Diana
                 if (rb->data != NULL)
                 {
                     size_t len = strlen(rb->data) + 1;
-                    char* data = (char*)malloc(sizeof(char) * len);
+                    char *data = (char *)malloc(sizeof(char) * len);
                     if (data == NULL)
                     {
                         free(rb);
@@ -723,7 +724,7 @@ namespace Diana
                 }
                 rb->spectrum = Spectrum_clone(rb->spectrum);
             }
-            ret = (PO*)rb;
+            ret = (PO *)rb;
         }
         default:
         {
@@ -734,7 +735,7 @@ namespace Diana
     }
 
     //! @param args This describes the information about the thing that hit obj, that is other.
-    void PhysicsObject_collision(PO* obj, PO* other, double energy, double dt, struct PhysCollisionEffect* effect, double health_cutoff)
+    void PhysicsObject_collision(PO *obj, PO *other, double energy, double dt, struct PhysCollisionEffect *effect, double health_cutoff)
     {
         switch (other->type)
         {
@@ -761,10 +762,10 @@ namespace Diana
 
             if (obj->type == PHYSOBJECT)
             {
-                Beam* b = (Beam*)other;
+                Beam *b = (Beam *)other;
                 // Note that the effect->p position marks the position in 3-space, relative to the beam
                 // origin, of the impact. To obtain the direction, this should negate that direction
-                Beam* res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
+                Beam *res = Beam_make_return_beam(b, energy, &effect->p, BEAM_SCANRESULT);
 
                 res->scan_target = PhysicsObject_clone(obj);
                 if (res->scan_target == NULL)
@@ -793,19 +794,19 @@ namespace Diana
         }
     }
 
-    //void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
+    // void SmartPhysicsObject_init(SPO* obj, int32_t socket, uint64_t client_id, Universe* universe, V3* position, V3* velocity, V3* ang_velocity, V3* thrust, double mass, double radius, char* obj_type, struct Spectrum* spectrum)
     //{
-    //    PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type, spectrum);
-    //    obj->pobj.type = PHYSOBJECT_SMART;
-    //    
-    //    // The universe doesn't track the health of smarties.
-    //    obj->pobj.health = -1;
+    //     PhysicsObject_init(&obj->pobj, universe, position, velocity, ang_velocity, thrust, mass, radius, obj_type, spectrum);
+    //     obj->pobj.type = PHYSOBJECT_SMART;
+    //
+    //     // The universe doesn't track the health of smarties.
+    //     obj->pobj.health = -1;
 
     //    obj->socket = socket;
     //    obj->client_id = client_id;
     //}
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* direction, V3* up, V3* right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char* comm_msg, char* data, struct Spectrum* spectrum)
+    void Beam_init(B *beam, Universe *universe, V3 *origin, V3 *direction, V3 *up, V3 *right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char *comm_msg, char *data, struct Spectrum *spectrum)
     {
         beam->phys_id = 0;
         beam->universe = universe;
@@ -821,7 +822,7 @@ namespace Diana
         beam->energy = energy;
         beam->type = type;
         beam->scan_target = NULL;
-        beam->comm_msg = const_cast<char*>(comm_msg);
+        beam->comm_msg = const_cast<char *>(comm_msg);
         beam->data = data;
 
         beam->distance_travelled = 0;
@@ -830,14 +831,14 @@ namespace Diana
         beam->spectrum = Spectrum_clone(spectrum);
     }
 
-    void Beam_init(B* beam, Universe* universe, V3* origin, V3* velocity, V3* up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char* comm_msg, char *data, struct Spectrum* spectrum)
+    void Beam_init(B *beam, Universe *universe, V3 *origin, V3 *velocity, V3 *up, double angle_h, double angle_v, double energy, PhysicsObjectType beam_type, char *comm_msg, char *data, struct Spectrum *spectrum)
     {
         V3 direction = *velocity;
         Vector3_normalize(&direction);
         V3 up2 = *up;
         Vector3_normalize(&up2);
 
-        V3 right = { 0, 0, 0 };
+        V3 right = {0, 0, 0};
         Vector3_cross(&right, &direction, &up2);
 
         double speed = Vector3_length(velocity);
@@ -856,7 +857,7 @@ namespace Diana
         Beam_init(beam, universe, origin, &direction, &up2, &right, cosh, cosv, area_factor, speed, energy, beam_type, comm_msg, data, spectrum);
     }
 
-    void Beam_collide(struct BeamCollisionResult* bcr, B* b, PO* obj, double dt)
+    void Beam_collide(struct BeamCollisionResult *bcr, B *b, PO *obj, double dt)
     {
         //! @todo Take radius into account, which will also require triage for multiple ticks
         //! that intersect the same object.
@@ -907,7 +908,7 @@ namespace Diana
         //
         // - proj_*[0] is the projection DOWN the up vector into the RIGHT/FORWARD plane
         // - proj_*[1] is the projection DOWN the right vector into the UP/FORWARD plane
-        
+
         V3 proj_s[2];
         Vector3_project_down(&proj_s[0], &p, &b->up);
         Vector3_project_down(&proj_s[1], &p, &b->right);
@@ -930,16 +931,16 @@ namespace Diana
         // is symmetric about 0, the beam's cosines are actually from the direction to the
         // edge of the volume, and we can just test this half-angle.
 
-        double current[2] = { Vector3_dot(&proj_s[0], &b->direction), Vector3_dot(&proj_s[1], &b->direction) };
-        double future[2] = { Vector3_dot(&proj_e[0], &b->direction), Vector3_dot(&proj_e[1], &b->direction) };
-        double delta[2] = { future[0] - current[0], future[1] - current[1] };
+        double current[2] = {Vector3_dot(&proj_s[0], &b->direction), Vector3_dot(&proj_s[1], &b->direction)};
+        double future[2] = {Vector3_dot(&proj_e[0], &b->direction), Vector3_dot(&proj_e[1], &b->direction)};
+        double delta[2] = {future[0] - current[0], future[1] - current[1]};
 
-        bool current_b[2] = { (current[0] >= b->cosines[0]), (current[1] >= b->cosines[1]) };
-        bool future_b[2] = { (future[0] >= b->cosines[0]), (future[1] >= b->cosines[1]) };
+        bool current_b[2] = {(current[0] >= b->cosines[0]), (current[1] >= b->cosines[1])};
+        bool future_b[2] = {(future[0] >= b->cosines[0]), (future[1] >= b->cosines[1])};
 
         double entering = -0.1;
         double leaving = 1.1;
-        
+
         //! @todo This should be looked at for efficiency.
 
         // However, if the direction vector under consideration is in the up/right plane,
@@ -956,7 +957,7 @@ namespace Diana
         // For the current/future/proj_s/proj_e pairs:
         //  - [0] = projection into the UP/forward plane
         //  - [1] = projection into the RIGHT/forward plane
-        
+
         // If the relative position vector lies in the up/right plane...
 
         // Current
@@ -1015,7 +1016,7 @@ namespace Diana
             {
                 future_b[i] = ((-future[i]) >= b->cosines[i]);
             }
-            
+
             if (!current_b[i])
             {
                 // If we're out, and coming in
@@ -1051,7 +1052,7 @@ namespace Diana
         // Bail if we are somehow leaving before we are entering.
         // This can happen if we are entering some planes and leaving others,
         // and are leaving the plane before we enter the other plane, since
-        // we need to be inside both planes before 
+        // we need to be inside both planes before
         if (entering > leaving)
         {
             bcr->t = -1.0;
@@ -1112,7 +1113,7 @@ namespace Diana
         }
     }
 
-    void Beam_tick(B* beam, double dt)
+    void Beam_tick(B *beam, double dt)
     {
         beam->distance_travelled += beam->speed * dt;
         Vector3_fmad(&beam->front_position, dt * beam->speed, &beam->direction);
@@ -1123,7 +1124,7 @@ namespace Diana
         }
     }
 
-    B* Beam_make_return_beam(B* beam, double energy, V3* origin, PhysicsObjectType type)
+    B *Beam_make_return_beam(B *beam, double energy, V3 *origin, PhysicsObjectType type)
     {
         V3 d = *origin;
         Vector3_normalize(&d);
@@ -1132,12 +1133,12 @@ namespace Diana
         V3 absolute_origin;
         Vector3_add(&absolute_origin, origin, &beam->origin);
 
-        V3 up = { -1 * d.y, d.x, 0.0 };
+        V3 up = {-1 * d.y, d.x, 0.0};
         Vector3_normalize(&up);
         V3 right;
         Vector3_cross(&right, &d, &up);
 
-        B* ret = (B*)malloc(sizeof(B));
+        B *ret = (B *)malloc(sizeof(B));
         Beam_init(ret, beam->universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
         return ret;
     }
