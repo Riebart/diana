@@ -6,7 +6,10 @@ FILES=lib/utility.cpp lib/vector.cpp lib/physics.cpp lib/universe.cpp lib/MIMOSe
 EXT_LIBS=
 EXT_ST_LIBS=
 SHELL=/bin/bash
-GIT_VERSION := "\"$(shell git describe --abbrev=8 --dirty --always --tags)\""
+# Because we're using unannotated lightweight tags to refer to some useful historical commits,
+# and those have been merged in with merge commits, not squash-and-merges, we don't want to use
+# `--tags` here, or it'll pick those up. Without `--tags`, it only picks up annotated tags.
+GIT_VERSION := "\"$(shell git describe --abbrev=8 --dirty --always)\""
 GIT_COMMIT_DATE := "\"$(shell TZ=UTC0 git log --date=iso8601-strict-local --pretty=%ad -n1)\""
 BUILD_DATE := "\"$(shell date -u +"%FT%T%:z")\""
 
