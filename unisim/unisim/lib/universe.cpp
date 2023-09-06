@@ -84,7 +84,12 @@
 #include <chrono>
 
 #define ABSOLUTE_MIN_FRAMETIME 1e-7
+
+#ifdef __linux__
 #define SPIN_SLEEP_MAX_US 2000
+#elif _WIN32
+#define SPIN_SLEEP_MAX_US 20000
+#endif
 
 #define LOCK(l) l.lock()
 #define UNLOCK(l) l.unlock()
