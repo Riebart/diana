@@ -235,6 +235,6 @@ class Planet(SmartObject):
     ####
         
     def handle_comm(self, msg):
-        if msg[:len("PRICE UPDATE")] == "PRICE UPDATE":
+        if msg.comm_msg[:len("PRICE UPDATE")] == "PRICE UPDATE":
             pass
 
