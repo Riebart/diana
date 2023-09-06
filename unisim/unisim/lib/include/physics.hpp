@@ -24,7 +24,7 @@ namespace Diana
     // - http://www.myphysicslab.com/collision.html
 
     //! Enumeration of the types of physics objects to allow for branching and basic polymorphics with structs.
-    enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP };
+    enum PhysicsObjectType { PHYSOBJECT, PHYSOBJECT_SMART, BEAM_COMM, BEAM_SCAN, BEAM_SCANRESULT, BEAM_WEAP, UNITIALIZED };
 
     struct SpectrumComponent
     {

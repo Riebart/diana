@@ -89,19 +89,19 @@ namespace Diana
     public:
 #ifdef INSTRUMENT_PHYSICS
 #define HRN std::chrono::high_resolution_clock::now()
-#define HRN_T std::chrono::time_point<std::chrono::high_resolution_clock>
+#define HRN_T(v) std::chrono::time_point<std::chrono::high_resolution_clock> v();
 #define HRN_DT std::chrono::nanoseconds
 #define HRN_COUNT(t) t.count()
 #else
 #define HRN 0
-#define HRN_T uint64_t
+#define HRN_T(v) uint64_t v = 0;
 #define HRN_DT uint64_t
 #define HRN_COUNT(t) t
 #endif
 
         struct CollisionMetrics
         {
-            uint32_t
+            size_t
                 primary_aabb_tests,
                 secondary_aabb_tests,
                 sphere_tests,
@@ -540,4 +540,5 @@ namespace Diana
         ATOMIC_T total_objs;
     };
 }
+
 #endif

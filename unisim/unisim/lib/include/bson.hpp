@@ -33,7 +33,7 @@ public:
         Binary = 5, Deprecatedx06 = 6, ObjectId = 7, Boolean = 8, UTCDateTime = 9,
         Null = 10, Regex = 11, DBPointer = 12, JavaScript = 13, Deprecatedx0E = 14,
         JavaScriptWScope = 15, Int32 = 16, MongoTimeStamp = 17, Int64 = 18,
-        MinKey = -1, MaxKey = 0x7F, NoMoreData = -32768
+        MinKey = -1, MaxKey = 0x7F, Unitialized = -32767, NoMoreData = -32768
     };
 
     // Every element is returned in this structure, with the type field and the relevant
@@ -46,8 +46,8 @@ public:
         int32_t  bin_len;
         uint8_t* bin_val;
 
-        char*    str_val;
         int32_t  str_len;
+        char*    str_val;
 
         bool managed_pointers;
 
@@ -62,8 +62,12 @@ public:
         double   dbl_val;
 
         Element() :
-            map_val(NULL), bin_val(NULL), str_val(NULL),
-            managed_pointers(false) {}
+            map_val(NULL),
+            bin_len(-1), bin_val(NULL),
+            str_len(-1), str_val(NULL),
+            managed_pointers(false),
+            type(ElementType::Unitialized), subtype(-1), name(NULL),
+            bln_val(false), i32_val(0), i64_val(0), dbl_val(0.0) {}
 
         Element(struct Element* src) : Element()
         {
@@ -102,7 +106,7 @@ public:
 
             if (src->str_val != NULL)
             {
-                str_val = new char[str_len + 1];
+                str_val = new char[str_len + 1l];
                 memcpy(str_val, src->str_val, str_len);
                 // It's possible that the bin and str values are the same pointer,
                 // so since we have the luxury, make the string value properly ended.
@@ -281,9 +285,8 @@ private:
     uint64_t pos;
     char* msg;
 
-    BSONReader()
-    {
-    }
+    BSONReader() :
+        len(0), pos(0), msg(NULL) {}
 };
 
 class BSONWriter

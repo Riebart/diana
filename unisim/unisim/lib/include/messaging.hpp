@@ -40,7 +40,7 @@ namespace Diana
             VisualMetaDataEnable = 5, VisualMetaData = 6, VisualData = 7, Beam = 8, Collision = 9,
             Spawn = 10, ScanResult = 11, ScanQuery = 12, ScanResponse = 13, Goodbye = 14,
             Directory = 15, Name = 16, Ready = 17, Thrust = 18, Velocity = 19, Jump = 20,
-            InfoUpdate = 21, RequestUpdate = 22, SystemUpdate = 23, Command = 24
+            InfoUpdate = 21, RequestUpdate = 22, SystemUpdate = 23, Command = 24, Uninitialized = 32767
         };
 
         // Type of message, stored in the first field, an Int32 field with the name "" (empty string)
@@ -70,7 +70,10 @@ namespace Diana
 
         // Read a BSON message form a socket and return a pointer to a newly allocated object.
         static BSONMessage* ReadMessage(sock_t sock);
-        BSONMessage() { }
+        BSONMessage() :
+            msg_type(MessageType::Uninitialized),
+            server_id(-1), client_id(-1), specced(NULL),
+            num_el(0), br(NULL) {}
         virtual ~BSONMessage();
         virtual int spec_all(bool spec = true);
         virtual bool all_specced(int start_index = 0, int stop_index = -1, int except = -1);

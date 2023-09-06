@@ -18,10 +18,10 @@
 template <typename T>
 struct option_result
 {
-    bool option_present;
-    bool option_valid;
-    std::string option_string;
-    T option_value;
+    bool option_present = false;
+    bool option_valid = false;
+    std::string option_string{};
+    T option_value{};
 };
 
 template <typename T>
@@ -29,10 +29,12 @@ struct option
 {
     option() : short_option(""),
                long_option(""),
+               default_value(T{}),
                option_description(""),
                is_flag(false),
                is_required(false),
-               validator(NULL) {}
+               validator(NULL),
+               result() {}
 
     std::string short_option;
     std::string long_option;
@@ -40,8 +42,7 @@ struct option
     std::string option_description;
     bool is_flag;
     bool is_required;
-    T(*validator)
-    (struct option_result<T> value);
+    T(*validator) (struct option_result<T> value);
     struct option_result<T> result;
 };
 
@@ -64,8 +65,8 @@ class ArgumentParser
     {
         std::string name;
         std::string description;
-        bool is_flag;
-        bool is_required;
+        bool is_flag = false;
+        bool is_required = false;
     };
 
     std::vector<struct arg_help> arg_help_strings;
@@ -126,7 +127,7 @@ public:
         this->descrption_wrap_width = wrap_width;
 
         this->enforce_all_args_consumed = enforce_all_args_consumed;
-        this->arg_consumed = new bool[argc - 1];
+        this->arg_consumed = new bool[argc - 1l];
 
         this->error_while_parsing = false;
     }

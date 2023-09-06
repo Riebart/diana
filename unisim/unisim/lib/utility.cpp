@@ -6,16 +6,17 @@
 #include <fstream>
 #include <thread>
 
+#ifdef _WIN32
+uint32_t get_this_thread_pid()
+{
+    return 0;
+}
+#elif __linux__
 #include <unistd.h>
 #include <sys/types.h>
 
 uint32_t get_this_thread_pid()
 {
-    // std::thread::id thread_id = std::this_thread::get_id();
-
-#ifdef _WIN32
-    return 0;
-#else
     // // The only real way to get the thread PID is to use `/proc/self`
     // std::ifstream infile ("/proc/self/status", std::ios::in | std::ios::binary);
     // char status[4096];
@@ -37,5 +38,5 @@ uint32_t get_this_thread_pid()
     // return pid;
 
     return gettid();
-#endif
 }
+#endif

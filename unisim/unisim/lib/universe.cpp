@@ -134,7 +134,7 @@ namespace Diana
 
     void Universe::CollisionMetrics::_fprintf(FILE *fd)
     {
-        fprintf(fd, "CollisionMetrics %u %u %u %u %u %u %lu %lu %lu\n",
+        fprintf(fd, "CollisionMetrics %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
                 primary_aabb_tests, secondary_aabb_tests, sphere_tests,
                 simultaneous_collisions, collision_rounds, collisions,
                 HRN_COUNT(aabb_test_ns), HRN_COUNT(sphere_test_ns), HRN_COUNT(total_ns));
@@ -148,7 +148,8 @@ namespace Diana
                                            beam_tick_ns(0),
                                            thread_join_wait_ns(0),
                                            collision_resolution_ns(0),
-                                           object_lifecycle_ns(0) {}
+                                           object_lifecycle_ns(0),
+                                           total_ns(0) {}
 
     void Universe::TickMetrics::_fprintf(FILE *fd)
     {
@@ -331,7 +332,8 @@ namespace Diana
         this->num_threads = _params.num_worker_threads;
         // sched = new libodb::Scheduler(this->num_threads - 1);
 
-        phys_worker_args = (struct phys_args *)malloc(this->num_threads * sizeof(struct phys_args));
+        this->phys_worker_args = new struct phys_args[this->num_threads]; //(struct phys_args *)malloc(this->num_threads * sizeof(struct phys_args));
+
         for (int i = 0; i < this->num_threads; i++)
         {
             phys_worker_args[i].u = this;
@@ -601,7 +603,7 @@ namespace Diana
             {
                 dt = std::chrono::high_resolution_clock::now() - t0;
                 fprintf(stderr,
-                        "%g seconds to send %lu bytes of visdata to client %d\n",
+                        "%g seconds to send %ld bytes of visdata to client %d\n",
                         dt.count(), client_nbytes, vc.socket);
             }
 
@@ -783,7 +785,7 @@ namespace Diana
             }
 
             char *comm_msg = NULL;
-            PhysicsObjectType btype;
+            PhysicsObjectType btype = PhysicsObjectType::UNITIALIZED;
             if (strcmp(msg->beam_type, "COMM") == 0)
             {
                 btype = BEAM_COMM;
@@ -1178,8 +1180,9 @@ namespace Diana
         Universe *u = args->u;
 
         struct Universe::CollisionMetrics metrics;
-        HRN_T t0 = HRN;
-        HRN_T aabb0, sphere0;
+        HRN_T(t0); t0 = HRN;
+        HRN_T(aabb0);
+        HRN_T(sphere0);
 
         struct AABB *a;
         struct AABB *b;
@@ -1755,10 +1758,10 @@ namespace Diana
     struct Universe::TickMetrics Universe::tick(double dt)
     {
         struct Universe::TickMetrics metrics;
-        HRN_T t00 = HRN;
+        HRN_T(t00); t00 = HRN;
 
         LOCK(phys_lock);
-        HRN_T t0;
+        HRN_T(t0);
 
         // Only the visdata thread conflicts with this...
         // Are we OK with it getting data that is in the middle of being updated to?
@@ -2044,7 +2047,7 @@ namespace Diana
                     {
                         for (std::vector<struct PhysCollisionEvent>::iterator it = collisions.begin() + n_simultaneous; it != collisions.end();)
                         {
-                            if ((objs[i] == (*it).obj1_index) || (objs[i] == (*it).obj1_index))
+                            if ((objs[i] == (*it).obj1_index) || (objs[i] == (*it).obj2_index))
                             {
                                 it = collisions.erase(it);
                             }

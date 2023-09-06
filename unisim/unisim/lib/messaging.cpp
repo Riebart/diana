@@ -243,8 +243,8 @@ namespace Diana
         // Because we might actually be copying from the binary array segment, recall that Python's
         // bson is poorly behaved for strings, so check for, and if necessary, add a 0x00
         // Note that the str_len (if legit), includes the length of the string including the terminating 0x00
-        bool null_missing = (el->str_val[el->str_len - 1] != 0);
-        char* ret = (char*)malloc(el->str_len + (null_missing ? 1 : 0));
+        bool null_missing = (el->str_val[el->str_len - 1l] != 0);
+        char* ret = (char*)malloc(el->str_len + (null_missing ? 1l : 0l));
         if (ret == NULL)
         {
             throw "OOM you twat";
