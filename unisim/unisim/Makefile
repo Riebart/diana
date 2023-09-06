@@ -10,6 +10,7 @@ SHELL=/bin/bash
 # and those have been merged in with merge commits, not squash-and-merges, we don't want to use
 # `--tags` here, or it'll pick those up. Without `--tags`, it only picks up annotated tags.
 GIT_VERSION := "\"$(shell git describe --abbrev=8 --dirty --always)\""
+GIT_BRANCH := "\"$(shell git rev-parse --abbrev-ref HEAD)\""
 GIT_COMMIT_DATE := "\"$(shell TZ=UTC0 git log --date=iso8601-strict-local --pretty=%ad -n1)\""
 BUILD_DATE := "\"$(shell date -u +"%FT%T%:z")\""
 
@@ -39,6 +40,7 @@ unisim-version-header:
 	echo "#ifndef __VERSION_HPP" > src/__version.hpp
 	echo "#define __VERSION_HPP" >> src/__version.hpp
 	echo "#define GIT_VERSION $(GIT_VERSION)" >> src/__version.hpp
+	echo "#define GIT_BRANCH $(GIT_BRANCH)" >> src/__version.hpp
 	echo "#define GIT_COMMIT_DATE $(GIT_COMMIT_DATE)" >> src/__version.hpp
 	echo "#define BUILD_DATE $(BUILD_DATE)" >> src/__version.hpp
 	echo "#endif" >> src/__version.hpp

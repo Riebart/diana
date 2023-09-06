@@ -20,7 +20,7 @@ void sighandler(int32_t sig)
 
 void print_version()
 {
-    printf("git version:     %s\n", GIT_VERSION);
+    printf("git version:     %s-%s\n", GIT_BRANCH, GIT_VERSION);
     printf("git commit date: %s\n", GIT_COMMIT_DATE);
     printf("build date:      %s\n", BUILD_DATE);
 }
