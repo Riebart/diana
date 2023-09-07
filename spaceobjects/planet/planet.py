@@ -5,7 +5,7 @@ from vector import Vector3
 
 #Pulling out some constants
 WAREHOUSE_DISCOUNT = 0.25
-NOTIFICATION_FREQUENCY = 5
+NOTIFICATION_FREQUENCY = 1
 
 class Planet(SmartObject):
     def __init__(self, osim):
@@ -222,10 +222,11 @@ class Planet(SmartObject):
         
     #periodically update other planets in range of our current price situation
     def alert_neighbors(self):
-        for planet, values in self.known_planets.items():
-            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 5, direction = Vector3(1,1,1), up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
+        for planet, coordinates in self.known_planets.items():
+            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 300000000000, direction = coordinates, up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
+            print(f"{self.object_name} Sending message to {planet} at {coordinates}")
             if True or self.trade_style["all_data"]:
-                comm_beam.message = f"Take your price data and go {self.known_price_list}"
+                comm_beam.message = f"This is {self.object_name}. Take your price data and go {self.known_price_list}"
             else:
                 comm_beam.message = f"Just the facts {self.local_price_list}"
             comm_beam.send_it(self.sock)
@@ -237,4 +238,6 @@ class Planet(SmartObject):
     def handle_comm(self, msg):
         if msg.comm_msg[:len("PRICE UPDATE")] == "PRICE UPDATE":
             pass
+        else:
+            print(f"{self.object_name} Recieved message: {msg.comm_msg}")
 
