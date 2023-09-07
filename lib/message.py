@@ -5,7 +5,7 @@ import bson
 import struct # Needed to unpack the first four bytes of the BSON message for read-length.
 import sys
 import socket
-from vector import Vector3, zero3d
+from . vector import Vector3, zero3d
 from io import StringIO, BytesIO
 from collections import OrderedDict
 

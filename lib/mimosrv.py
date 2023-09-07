@@ -10,7 +10,7 @@ import signal
 import threading
 import traceback
 import struct
-from message import Message
+from . message import Message
 
 # ==============================================================================
 # This implements sending serializable objects back and forth. We won't use it

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from vector import Vector3
+from ... lib.vector import Vector3
 from . ship import Ship
 
 class Firefly(Ship):

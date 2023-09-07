@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-from vector import Vector3
+from ... lib.vector import Vector3
 from .. spaceobj import *
 import math
-from mimosrv import MIMOServer
-import message
+from ... lib.mimosrv import MIMOServer
+from ... lib import message
 import time
 from . shipparts import *
 from . shipsystems import *

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import bson
-import message
+from . import message
 import time
 
 #ripped this off from somwhere on StackOverflow

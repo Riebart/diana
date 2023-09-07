@@ -1,5 +1,5 @@
-from vector import Vector3, Vector4
-from observer import Observable
+from ... lib.vector import Vector3, Vector4
+from ... lib.observer import Observable
 from .. spaceobj import ScanBeam, Beam
 from . shipparts import *
 

@@ -1,19 +1,18 @@
 #!/usr/bin/python
 
 from __future__ import print_function
-import message
-import objectsim
+import lib.message
+import lib.objectsim
+from lib.vector import Vector3
 #import unisim
-import threading
 from spaceobjects.ship import ship
 from spaceobjects.ship.shiptypes import Firefly
-from vector import Vector3
-import random
-import time
 from spaceobjects import spaceobj
 import sys
 import math
-
+import random
+import time
+import threading
 
 def testSimple():
     print("\n***Begin simple test, spawning a missile directly into osim")

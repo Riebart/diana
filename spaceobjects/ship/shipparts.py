@@ -1,7 +1,7 @@
 from __future__ import print_function
 import math
 import time
-from vector import Vector3
+from ... lib.vector import Vector3
 
 ##The objects in this file are used for keeping track of the state of parts of the ship,
 ##in a way that facilitates BSON messaging. Very little logic is performed here.

@@ -1,8 +1,8 @@
 from __future__ import print_function
 import threading
 #import multiprocessing
-import message
-from vector import Vector3
+from .. lib import message
+from .. lib.vector import Vector3
 import socket
 from math import pi, sqrt
 

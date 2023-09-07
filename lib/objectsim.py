@@ -2,14 +2,14 @@
 
 from __future__ import print_function
 import socket
-import message
 import threading
 
-from mimosrv import MIMOServer
-from vector import Vector3
-from spaceobjects.spaceobj import SmartObject
+from . import message
+from . mimosrv import MIMOServer
+from . vector import Vector3
+from .. spaceobjects.spaceobj import SmartObject
 
-from message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
+from . message import Message, HelloMsg, DirectoryMsg, GoodbyeMsg
 
 class ObjectSim:
     def __init__(self, listen_port=5506, unisim_addr="localhost", unisim_port=5505):
