@@ -1,6 +1,8 @@
 from .. spaceobj import SmartObject, CommBeam
 from collections import defaultdict
 import math
+import time
+import json
 from vector import Vector3
 
 #Pulling out some constants
@@ -222,13 +224,14 @@ class Planet(SmartObject):
         
     #periodically update other planets in range of our current price situation
     def alert_neighbors(self):
-        for planet, coordinates in self.known_planets.items():
-            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 300000000000, direction = coordinates, up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
-            print(f"{self.object_name} Sending message to {planet} at {coordinates}")
+        for planet, values in self.known_planets.items():
+            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 300000000, direction = values["bearing"], up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
+            print(f"{self.object_name} Sending message to {planet} at {values['bearing']}")
+            msg_contents = {"name": self.object_name, "time": time.time(), "my_prices": self.local_price_list}
             if True or self.trade_style["all_data"]:
-                comm_beam.message = f"This is {self.object_name}. Take your price data and go {self.known_price_list}"
-            else:
-                comm_beam.message = f"Just the facts {self.local_price_list}"
+                msg_contents["known_planets"] = self.known_price_list
+
+            comm_beam.message = f"PRICE UPDATE {json.dumps(msg_contents)}"
             comm_beam.send_it(self.sock)
 
     ####
@@ -236,8 +239,32 @@ class Planet(SmartObject):
     ####
         
     def handle_comm(self, msg):
-        if msg.comm_msg[:len("PRICE UPDATE")] == "PRICE UPDATE":
-            pass
+        if msg.comm_msg[:len("PRICE UPDATE ")] == "PRICE UPDATE ":
+            planet_update = json.loads(msg.comm_msg[len("PRICE UPDATE "):])
+            planet_name = planet_update["name"]
+            print(f"* Price update received at {self.object_name}: {planet_update}")
+
+            if planet_name != self.object_name:
+
+                #update existing info
+                if planet_name in self.known_planets and self.known_planets[planet_name]["last_communication"]["time"] < time.time():
+                    self.known_planets[planet_name]["last_communication"] = { "time": time.time(), "energy": msg.energy }
+                    self.known_planets[planet_name]["bearing"] = Vector3(msg.direction[0], msg.direction[1], msg.direction[2])
+                    for resource in planet_update["my_prices"]:
+                        pass
+
+                #a new planet!
+                elif planet_name not in self.known_planets:
+                    self.known_planets[planet_name] = { "bearing": Vector3(msg.direction[0], msg.direction[1], msg.direction[2]), "last_communication": { "time": time.time(), "energy": msg.energy }, "resources" : planet_update["my_prices"] }
+
+
+                for planet, values in planet_update["known_planets"].items():
+                    if planet != self.object_name and (planet not in self.known_planets or self.known_planets.time_updated < time.time()):
+                        self.known_planets[planet] = values
+                        self.known_planets[planet][time_updated] = time.time()
+
         else:
             print(f"{self.object_name} Recieved message: {msg.comm_msg}")
 
+    def handle_collision(self, msg):
+        print(f"*** {self.object_name} Collided with something!")

@@ -63,6 +63,8 @@ def random_planet(template_data):
     for item, value in {i: v for i, v in template_data.items() if 'min' in v}.items():
         setattr(planet, item, round(random.uniform(value['min'], value['max']), 2))
 
+    planet.radius = planet.radius/1000 #for testing, we make everything small so it fits in small area
+
     #maybe should set some of these defaults in the constructor
     #this needs to be smarter, as it can currently not add up to 100, or exceed it
     setattr(planet, "atmosphere", dict())
@@ -75,7 +77,7 @@ def random_planet(template_data):
     #Give it a name
     setattr(planet, "object_name", random.choice(string.ascii_uppercase) + ''.join(random.choices(string.ascii_lowercase, k=random.randrange(2, 7)) ))
 
-    planet.position = random_vector(1000000000)
+    planet.position = random_vector(10000000)
 
     return planet
 
@@ -156,7 +158,7 @@ for planet_id, values in st.objects.items():
     candidates = random.sample(st.objects.keys(), math.ceil(len(st.objects)/5))
     for candidate in candidates:
         if planet_id != candidate:
-            values.known_planets[st.objects[candidate].object_name] = st.objects[candidate].position - values.position
+            values.known_planets[st.objects[candidate].object_name] = {"bearing" : st.objects[candidate].position - values.position, "last_communication": { "time": 0, "energy" : 0} }
 
     print(f"{values.known_planets}")
 
