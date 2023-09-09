@@ -57,7 +57,7 @@ class Sensors(System):
         self.fade_time = 15.0
         self.num_contacts = 0 #for the messaging
 
-    def perform_scan():
+    def perform_scan(self):
         pass
 
     def send_state(self, client):
@@ -69,7 +69,7 @@ class Sensors(System):
 
         new_contacts = dict(self.contacts)
         #remove any expired contacts before sending the current list
-        for contact in self.contacts.iterkeys():
+        for contact in self.contacts.keys():
             if cur_time - self.contacts[contact].time_seen > self.fade_time:
                 del new_contacts[contact]
 

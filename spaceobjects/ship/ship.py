@@ -169,7 +169,6 @@ class Ship(SmartObject):
 
     #these are defined by the handler function in SmartObject (spaceobj.py)
     def handle_scanresult(self, mess):
-        pass
         self.sensors.handle_scanresult(mess)
 
     def handle_visdata(self, mess):
@@ -192,7 +191,7 @@ class Ship(SmartObject):
 
     def hangup(self, client):
         if client in self.vis_clients:
-            self.vis_clients.remove(client)
+            self.vis_clients.pop(client, None)
 
             if len(self.vis_clients) == 0:
                 self.disable_visdata()

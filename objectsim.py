@@ -134,7 +134,7 @@ class ObjectSim:
 
     def get_systems(self, ship):
         systems = []
-        for (k,v) in ship.systems.iteritems():
+        for (k,v) in ship.systems.items():
             systems.append((k, v.name))
 
         return systems
@@ -250,14 +250,14 @@ class ObjectSim:
         del self.client_list[osim_id]
 
 if __name__ == "__main__":
-    from shiptypes import Firefly, CueBall
+    from spaceobjects.ship.shiptypes import Firefly, CueBall
 
     osim = ObjectSim(unisim_addr = "localhost")
     osim.register_ship_class(Firefly)
     osim.register_ship_class(CueBall)
 
     print("Press Enter to close the server...")
-    raw_input()
+    input()
     print("Stopping network")
     osim.stop_net()
     print("Stopped")

@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 
-import bson
+import copy
 import message
 import time
 
 #ripped this off from somwhere on StackOverflow
 def nest_dict(obj, classkey=None):
-    if isinstance(obj, dict):
+    if isinstance(obj, str):
+        return obj
+    elif isinstance(obj, dict):
         data = {}
         for (k, v) in obj.items():
-            data[k] = nest_dict(v, classkey)
+            try:
+                data[k] = nest_dict(v, classkey)
+            except Exception as e:
+                # print("EXCEPTION RECURSIVE NETST_DICT", e)
+                pass
         return data
     elif hasattr(obj, "_ast"):
         return nest_dict(obj._ast())
@@ -17,7 +23,7 @@ def nest_dict(obj, classkey=None):
         return [nest_dict(v, classkey) for v in obj]
     elif hasattr(obj, "__dict__"):
         data = dict([(key, nest_dict(value, classkey))
-            for key, value in obj.__dict__.iteritems()
+            for key, value in obj.__dict__.items()
             if not callable(value) and not key.startswith('_')])
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
@@ -47,7 +53,7 @@ class Observable:
         self.send_state(observer)
 
     def send_state(self, observer):
-        cur_time = time.gmtime()
+        cur_time = time.time()
         self._cur_batch = self._cur_batch + 1
         if (not self._delayed_updates or cur_time > self._time_updated or self._cur_batch >= self._max_batch ):
             #print(nest_dict(self.__dict__))

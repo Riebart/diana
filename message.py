@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 import bson
 import struct # Needed to unpack the first four bytes of the BSON message for read-length.
 import sys
 import socket
-from vector import Vector3, zero3d
-from io import StringIO, BytesIO
+from vector import zero3d
+from io import BytesIO
 from collections import OrderedDict
 
 class Spectrum:
@@ -512,15 +511,17 @@ class DirectoryMsg(Message):
         self.srv_id = srv_id
         self.cli_id = cli_id
         self.item_type = Message.ReadMsgEl('\x03', msg)
-        item_count = Message.ReadMsgEl('\x04', msg)
+        self.item_count = Message.ReadMsgEl('\x04', msg)
 
         # Item 5 is an array of IDs, and item 6 is an array of names
         ids = Message.ReadMsgEl('\x05', msg)
         names = Message.ReadMsgEl('\x06', msg)
         if ids != None and names != None and len(ids) == len(names):
-            self.items = zip(ids, names)
+            self.items = list(zip(ids, names))
+            self.item_count = len(ids)
         else:
             self.items = []
+            self.item_count = 0
 
     def build(self):
         msg = {}

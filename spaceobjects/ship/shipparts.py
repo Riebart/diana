@@ -11,19 +11,18 @@ class ShipPart():
     def __init__(self):
         self.damage_level = 0.0
 
-    
 class PowerPlant(ShipPart):
     def __init__(self, max_power = 1000000):
         ShipPart.__init__(self)
         self.max_power = max_power
-    
+
 class SubLightEngine(ShipPart):
     #TODO: Add thrust direction restrictions?
     def __init__(self, max_thrust = 1000.0):
         self.max_thrust = max_thrust
         self.cur_thrust = Vector3(0,0,0)
 
-#currently no different than SublightEngine    
+#currently no different than SublightEngine
 class WarpEngine(ShipPart):
     def __init__(self, max_thrust = 1000.0):
         self.max_thrust = max_thrust
@@ -33,7 +32,7 @@ class JumpEngine(ShipPart):
         self.jump_range = jump_range
         self.recharge_time = recharge_time
         self.time_fired = time.time()-recharge_time
-        
+
     def jump(self):
         cur_time = time.time()
         if self.time_fired+self.recharge_time < cur_time:
@@ -47,14 +46,14 @@ class ShieldEmitter(ShipPart):
     def __init__(self, max_power = 10000.0):
         ShipPart.__init__(self)
         self.is_up = False
-        
+
 class Weapon(ShipPart):
     def __init__(self, recharge_time):
         ShipPart.__init__(self)
         self.recharge_time = recharge_time
         self.time_fired = time.time()-recharge_time
 
-        
+
     #check if beam is ready to fire, and update the time_fired to current time
     def fire(self):
         cur_time = time.time()
@@ -64,7 +63,7 @@ class Weapon(ShipPart):
         else:
             return False
 
-        
+
 class Launcher(Weapon):
     def __init__(self, recharge_time = 10):
         Weapon.__init__(self, recharge_time)
@@ -83,7 +82,7 @@ class BeamDevice(Weapon):
         self.h_max = h_max
         self.v_max = v_max
 
-        
+
 class Laser(BeamDevice):
     def __init__(self, bank_id = 0, max_power = 5000, h_min = 0.0, v_min = 0.0, h_max = 2*math.pi, v_max = 2*math.pi, recharge_time=10):
         BeamDevice.__init__(self, bank_id, max_power, h_min, v_min, h_max, v_max, recharge_time)
@@ -100,12 +99,13 @@ class TractorEmitter(BeamDevice):
     def __init__(self, bank_id = 0, max_power = 5000, h_min = 0.0, v_min = 0.0, h_max = 2*math.pi, v_max = 2*math.pi, recharge_time=10):
         BeamDevice.__init__(self, bank_id, max_power, h_min, v_min, h_max, v_max, recharge_time)
         self.type = "Tractor Emitter"
-        
+
 class ScanEmitter(BeamDevice):
     def __init__(self, bank_id = 0, max_power = 5000, h_min = 0.0, v_min = 0.0, h_max = 2*math.pi, v_max = 2*math.pi, recharge_time=10):
         BeamDevice.__init__(self, bank_id, max_power, h_min, v_min, h_max, v_max, recharge_time)
-        self.type = "Scan Emitter"        
-        
+        self.type = "Scan Emitter"
+
+
 if __name__ == "__main__":
     print(Laser().__dict__)
     print(Launcher().__dict__)
