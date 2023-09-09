@@ -14,7 +14,9 @@ GIT_BRANCH := "\"$(shell git rev-parse --abbrev-ref HEAD)\""
 GIT_COMMIT_DATE := "\"$(shell TZ=UTC0 git log --date=iso8601-strict-local --pretty=%ad -n1)\""
 BUILD_DATE := "\"$(shell date -u +"%FT%T%:z")\""
 
-all: unisim-bin
+all:
+	make unisim-bin-all
+	make tests
 
 clean:
 	rm bin/unisim
