@@ -33,7 +33,7 @@ test-argparse:
 	$(CXX) $(_CFLAGS) $(INCLUDE_DIR) $(EXT_LIBS) $(EXT_ST_LIBS) test/test-argparse.cpp -o bin/test-argparse
 
 test-packing:
-	$(CXX) $(_CFLAGS) $(INCLUDE_DIR) $(FILES) $(EXT_LIBS) $(EXT_ST_LIBS) test/test-oacking.cpp -o bin/test-packing
+	$(CXX) $(_CFLAGS) $(INCLUDE_DIR) $(FILES) $(EXT_LIBS) $(EXT_ST_LIBS) test/test-packing.cpp -o bin/test-packing
 
 universe-cli-args-header:
 	bash build_args.sh
