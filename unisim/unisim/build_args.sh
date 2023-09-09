@@ -4,7 +4,7 @@
 
 parameters=$(cat lib/include/universe.hpp |
     sed -n '/^ *struct Parameters$/{:a;/\n *\};/!{N;ba};p}' |
-    sed -n 's/^ *\([a-z]*\) \([a-z_]*\);/\1 \2/p')
+    sed -n 's/^ *\([A-Za-z0-9_]*\) \([A-Za-z0-9_]*\);/\1 \2/p')
 
 echo "$parameters" | sort -t' ' -k2 | while read type var
 do
