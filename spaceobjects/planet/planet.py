@@ -221,6 +221,19 @@ class Planet(SmartObject):
         
         return revenue - costs
 
+"""For reference, the format of the known_planets list, in yaml:
+known_planets:
+    planetX:
+        bearing: Vector3
+        last_communication:
+            time: date
+            power: power
+        resources:
+            res1:
+                price:
+                quantity:
+                demand:
+"""
         
     #periodically update other planets in range of our current price situation
     def alert_neighbors(self):

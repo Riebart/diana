@@ -133,6 +133,7 @@ class SmartObject(SpaceObject, threading.Thread):
         pass
 
     def handle_scan(self, msg):
+        print(f"{self.osim_id} was scanned!")
         ## From Mike: This would be where you
         ## alert to the fact that "I just got my skirt looked up!"
         pass
@@ -176,7 +177,7 @@ class SmartObject(SpaceObject, threading.Thread):
         velocity.scale(speed)
 
         origin = Vector3(direction)
-        origin.scale(self.radius + 0.0001)
+        origin.scale(self.radius + 0.1)
 
         beam = BeamClass(self.osim, self.phys_id, self.osim_id, energy, velocity, origin, up, h_focus, v_focus)
         return beam
@@ -338,6 +339,7 @@ class HomingMissile1(Missile):
         self.mass = 100.0
         self.tout_val = 1
         #self.sock.settimeout(self.tout_val)
+        #self.sock.settimeout(0.1)
         self.fuse = 100.0    #distance in meters to explode from target
 
     #so this is not great. Only works if there is a single target 'in front of' the missile
@@ -377,7 +379,8 @@ class HomingMissile1(Missile):
                 [ self.forward, self.up, self.right ] = Vector3.easy_look_at(epos)
 
     def do_scan(self):
-        scan = self.init_beam(ScanBeam, 10000.0, Beam.speed_of_light, self.forward, self.up, h_focus=pi/4, v_focus=pi/4)
+        scan = self.init_beam(ScanBeam, 10000.0, Beam.speed_of_light, self.forward, self.up, h_focus=pi/2, v_focus=pi/4)
+        print(f"Home missile {self.osim_id} doing scan")
         scan.send_it(self.sock)
 
     def run(self):
@@ -392,5 +395,8 @@ class HomingMissile1(Missile):
                 self.handle_collision(val)
             elif isinstance(val, message.ScanResultMsg):
                 self.handle_scanresult(val)
+            else:
+                #print(f"Unknown message received: {val}")
+                pass
 
 # ==============================================================================

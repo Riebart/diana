@@ -7,6 +7,7 @@ import objectsim
 import threading
 from spaceobjects.ship import ship
 from spaceobjects.ship.shiptypes import Firefly
+from spaceobjects.spaceobj import SpaceObject
 from vector import Vector3
 import random
 import time
@@ -75,6 +76,7 @@ def testShip():
     sys.stdout.flush()
 
     ship2 = Firefly(osim, name="Ship 2")
+    #ship2 = SpaceObject(osim)
     ship2.position = Vector3( (1000.0,10.0,0.0) )
     osim.spawn_object(ship2)
 
@@ -151,6 +153,7 @@ def testHoming():
     sys.stdout.flush()
 
     ship2 = Firefly(osim)
+    #ship2 = SpaceObject(osim)
     ship2.position = Vector3( (50000.0,0.0,0.0) )
     ship2.velocity = Vector3( (0.0, 1000.0, 0.0) )
     osim.spawn_object(ship2)
@@ -209,8 +212,8 @@ rand = random.Random()
 rand.seed(0)
 
 #testVisData()
-# testShip()
-# testSimpleShip()
+#testShip()
+#testSimpleShip()
 #stressTest()
 #test_threads()
 # testBeam()
