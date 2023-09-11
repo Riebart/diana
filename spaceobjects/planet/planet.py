@@ -225,7 +225,7 @@ class Planet(SmartObject):
     #periodically update other planets in range of our current price situation
     def alert_neighbors(self):
         for planet, values in self.known_planets.items():
-            comm_beam = self.init_beam(CommBeam, energy = 10, speed = 300000000, direction = values["bearing"], up = self.up, h_focus = math.pi *2*0.05, v_focus = math.pi *2*0.05)
+            comm_beam = self.init_beam(CommBeam, energy = 10000000, speed = 300000000, direction = values["bearing"], up = self.up, h_focus = math.pi *2*0.25, v_focus = math.pi *2*0.05)
             print(f"{self.object_name} Sending message to {planet} at {values['bearing']}")
             msg_contents = {"name": self.object_name, "time": time.time(), "my_prices": self.local_price_list}
             if True or self.trade_style["all_data"]:
@@ -259,12 +259,12 @@ class Planet(SmartObject):
 
 
                 for planet, values in planet_update["known_planets"].items():
-                    if planet != self.object_name and (planet not in self.known_planets or self.known_planets.time_updated < time.time()):
+                    if planet != self.object_name and (planet not in self.known_planets or self.known_planets[planet]["time_updated"] < time.time()):
                         self.known_planets[planet] = values
-                        self.known_planets[planet][time_updated] = time.time()
+                        self.known_planets[planet]["time_updated"] = time.time()
 
         else:
             print(f"{self.object_name} Recieved message: {msg.comm_msg}")
 
-    def handle_collision(self, msg):
-        print(f"*** {self.object_name} Collided with something!")
+    def handle_phys(self, msg):
+        print(f"*** {self.object_name} Collided with something! {msg}")

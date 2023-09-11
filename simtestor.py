@@ -132,15 +132,17 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
     for name, planet_data in planets.items():
         print(planet_data)
         planet = Planet(osim)
-        planet.position = random_vector(1000000)
+        planet.position = random_vector(100000)
+        if name == "Earth":
+            planet.position = Vector3(0,0,0)
         planet.parse_in(planet_data, name)
         planet.init_econ()
-        print(planet)
+        print(f"{planet.object_name} at {planet.position}")
         st.add_object(planet)
 
 
 
-for i in range(0, 2):
+for i in range(0, 0):
     planet = random_planet(template_data['templates']['planet'])
     #print(planet)
     st.add_object(planet)
@@ -155,7 +157,8 @@ for i in range(0, 2):
 
 #give each planet a set of known neighbors, and see how it goes
 for planet_id, values in st.objects.items():
-    candidates = random.sample(st.objects.keys(), math.ceil(len(st.objects)/5))
+    candidates = random.sample(st.objects.keys(), len(st.objects))
+    #candidates = random.sample(st.objects.keys(), math.ceil(len(st.objects)/5))
     for candidate in candidates:
         if planet_id != candidate:
             values.known_planets[st.objects[candidate].object_name] = {"bearing" : st.objects[candidate].position - values.position, "last_communication": { "time": 0, "energy" : 0} }
