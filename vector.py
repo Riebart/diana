@@ -28,7 +28,7 @@ class Vector3:
         # to get the up.
         diff = look - forward
 
-        if diff.almost_zero:
+        if diff.almost_zero():
             return None
 
         # Now get the new right vector by crossing the old look with the diff
@@ -37,7 +37,7 @@ class Vector3:
         # Up comes from crossing the new right and the look vectors
         up = Vector3.cross(look, right)
 
-        return Vector3([ look, up, right ])
+        return [ look, up, right ]
 
     @staticmethod
     def look_at(forward: Vector3, up: Vector3, right: Vector3, look: Vector3) -> None|Vector3:
@@ -47,7 +47,7 @@ class Vector3:
         # around that axis, by the same amount.
         diff = look - forward
 
-        if diff.almost_zero:
+        if diff.almost_zero():
             return None
 
         # Now get the axis of rotation by crossing the diff and look vectors.
@@ -55,7 +55,7 @@ class Vector3:
 
         # Now rotate the up and right vectors
         ### TODO ### FINISH THIS
-        pass
+        return None
 
     @staticmethod
     def get_orientation(forward: Vector3, up: Vector3, right: Vector3) -> Vector4:
@@ -113,7 +113,7 @@ class Vector3:
         up.rotate_aroundV(forward, angles[2])
 
     def __init__(self, v:list[num]|num, y:num|None = None, z:num|None = None) -> None:
-        if y == None:
+        if isinstance(v, list):
             self.x = v[0]
             self.y = v[1]
             self.z = v[2]
@@ -276,7 +276,7 @@ class Vector4(Vector3):
     z:num
 
     def __init__(self, v:num|list[num], x:num|None = None, y:num|None = None, z:num|None = None) -> None:
-        if x == None:
+        if isinstance(v, list):
             self.w = v[0]
             self.x = v[1]
             self.y = v[2]
