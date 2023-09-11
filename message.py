@@ -37,7 +37,7 @@ class Message:
             msg_length = None if not bytes else struct.unpack('<l', bytes)[0]
             return (bytes, msg_length)
         except ValueError:
-            print("Bad message length \"%s\" (not parsable) from %d" % (bytes, client.fileno()))
+            print(f"Bad message length \"{bytes}\" (not parsable) from {client.fileno()}")
             return (None, None)
         except socket.timeout as e:
             raise e
@@ -46,7 +46,7 @@ class Message:
             if client.fileno() == -1 or errno == 10054 or errno == 10053:
                 return (None, None)
 
-            print("There was an error getting message size header from client %d" % client.fileno())
+            print(f"There was an error getting message size header from client {client.fileno()}" )
             print("Error:", sys.exc_info())
             return (None, None)
 
@@ -69,7 +69,7 @@ class Message:
                 if client.fileno() == -1:
                     return None
 
-                print("There was an error getting message from client %d" % client.fileno())
+                print(f"There was an error getting message from client {client.fileno()}")
                 print("Error:", sys.exc_info())
                 return None
             num_got += len(cur_msg)
@@ -97,7 +97,7 @@ class Message:
                     if client.fileno() == -1 or errno == 10504:
                         return num_sent
                     else:
-                        print("There was an error sendall-ing message to client %d" % client.fileno())
+                        print(f"There was an error sendall-ing message to client {client.fileno()}")
                         print("Error:", sys.exc_info())
                         return num_sent
 
@@ -110,7 +110,7 @@ class Message:
             except socket.error as xxx_todo_changeme1:
                 (errno, errmsg) = xxx_todo_changeme1.args
                 if errno != 10054 and errno != 10053:
-                    print("There was an error sendall-ing message to client %d" % client.fileno())
+                    print(f"There was an error sendall-ing message to client {client.fileno()}")
                     print("Error:", sys.exc_info())
 
                 return 0
@@ -140,7 +140,7 @@ class Message:
                 m.socket = client
                 return m
             else:
-                print("Unknown message type: \"%s\"" % msgtype)
+                print(f"Unknown message type: \"{msgtype}\"" )
                 sys.stdout.flush()
                 return None
         else:
