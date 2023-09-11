@@ -30,8 +30,9 @@ class Message:
     def __init__(self, client):
         pass
 
+    #should really be get_message_AND_size
     @staticmethod
-    def get_message_size(client):
+    def get_message_size(client) -> tuple[bytes|str|None, int|None]:
         try:
             msg = Message.big_read(client, 4)
             msg_length = None if not msg else struct.unpack('<l', msg)[0]
@@ -51,7 +52,7 @@ class Message:
             return (None, None)
 
     @staticmethod
-    def big_read(client, num_bytes):
+    def big_read(client, num_bytes: int) -> None|bytes:
         num_got = 0
         file_str = BytesIO()
 

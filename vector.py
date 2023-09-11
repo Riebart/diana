@@ -29,7 +29,7 @@ class Vector3:
         diff = look - forward
 
         if diff.almost_zero:
-            return
+            return None
 
         # Now get the new right vector by crossing the old look with the diff
         right = Vector3.cross(diff, look)
@@ -48,7 +48,7 @@ class Vector3:
         diff = look - forward
 
         if diff.almost_zero:
-            return
+            return None
 
         # Now get the axis of rotation by crossing the diff and look vectors.
         axis = Vector3.cross(diff, forward)
@@ -174,11 +174,11 @@ class Vector3:
     # Drag self down v until they dot to zero. Assumes v is normalized.
     def project_down_n(self, v:Vector3) -> Vector3:
         s = self.dot(v)
-        return Vector3.combine([[1, self], [-s, v]])
+        return Vector3.combine([(1, self), (-s, v)])
 
     @staticmethod
     # Combines a linear combination of a bunch of vectors
-    def combine(vecs:list[Vector3]) -> Vector3:
+    def combine(vecs:list[tuple[num, Vector3]]) -> Vector3:
         rx = 0.0
         ry = 0.0
         rz = 0.0
@@ -227,7 +227,7 @@ class Vector3:
         return self.x * v.x + self.y * v.y + self.z * v.z
 
     @staticmethod
-    def almost_zeroS(v:Vector3) -> bool:
+    def almost_zeroS(v:num) -> bool:
         # Python doesn't seem to be able to distinguish exponents below -300,
         # So we'll cut off at -150
         if -1e-150 < v and v < 1e-150:
@@ -275,7 +275,7 @@ class Vector4(Vector3):
     y:num
     z:num
 
-    def __init__(self, v:Vector3|list[num], x:num|None = None, y:num|None = None, z:num|None = None) -> None:
+    def __init__(self, v:num|list[num], x:num|None = None, y:num|None = None, z:num|None = None) -> None:
         if x == None:
             self.w = v[0]
             self.x = v[1]
@@ -292,14 +292,14 @@ class Vector4(Vector3):
         return Vector4(self.w, self.x, self.y, self.z)
     
     # Adds v to self.
-    def add(self, v:Vector4, s:num = 1) -> None:
+    def add(self, v:Vector4, s:num = 1) -> None: # type: ignore[override]
         self.w += s * v.w
         self.x += s * v.x
         self.y += s * v.y
         self.z += s * v.z            
         
     #override -
-    def __sub__(self, other:Vector4) -> Vector4:
+    def __sub__(self, other:Vector4) -> Vector4: # type: ignore[override]
         return Vector4([self.w-other.w,  self.x-other.x, self.y-other.y, self.z-other.z])        
     
     #override []
