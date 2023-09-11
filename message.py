@@ -33,11 +33,11 @@ class Message:
     @staticmethod
     def get_message_size(client):
         try:
-            bytes = Message.big_read(client, 4)
-            msg_length = None if not bytes else struct.unpack('<l', bytes)[0]
-            return (bytes, msg_length)
+            msg = Message.big_read(client, 4)
+            msg_length = None if not msg else struct.unpack('<l', msg)[0]
+            return (msg, msg_length)
         except ValueError:
-            print(f"Bad message length \"{bytes}\" (not parsable) from {client.fileno()}")
+            print(f"Bad message length \"{msg}\" (not parsable) from {client.fileno()}")
             return (None, None)
         except socket.timeout as e:
             raise e
@@ -120,11 +120,11 @@ class Message:
     # Reads a single message from the socket and returns that object.
     def get_message(client):
         # First grab the message size
-        bytes, msg_size = Message.get_message_size(client)
+        msg, msg_size = Message.get_message_size(client)
         if msg_size == None:
             return None
 
-        msg_bytes = bytes + Message.big_read(client, msg_size - 4)
+        msg_bytes = msg + Message.big_read(client, msg_size - 4)
         msg = bson.loads(msg_bytes)
         #print("RECV", msg)
 
