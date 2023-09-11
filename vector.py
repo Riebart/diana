@@ -1,11 +1,16 @@
+from __future__ import annotations
 #!/usr/bin/env python
-
 from math import sin, cos, pi, sqrt, pow, atan2
 
+num = int|float
 
 class Vector3:
+    x: num
+    y: num
+    z: num
+
     @staticmethod
-    def easy_look_at(look):
+    def easy_look_at(look: Vector3) -> list[Vector3]:
         # produce some arbitrary up and right vectors for a given look-at vector.
         # Do this by finding a vector that dots to zero with the look vector,
         # then just cross for the right vector.
@@ -16,7 +21,7 @@ class Vector3:
         return [ look, up, right ]
 
     @staticmethod
-    def easy_look_at2(forward, up, right, look):
+    def easy_look_at2(forward: Vector3, up: Vector3, right: Vector3, look: Vector3) -> None|list[Vector3]:
         # Produce a new set of forward, up, right vectors build from an existing
         # set, and a new look direction. Do this by taking the cross-product of
         # of the difference between forward, and the new look, then crossing again
@@ -32,10 +37,10 @@ class Vector3:
         # Up comes from crossing the new right and the look vectors
         up = Vector3.cross(look, right)
 
-        return [ look, up, right ]
+        return Vector3([ look, up, right ])
 
     @staticmethod
-    def look_at(forward, up, right, look):
+    def look_at(forward: Vector3, up: Vector3, right: Vector3, look: Vector3) -> None|Vector3:
         # Rotate an existing frame of reference to point along a new direction.
         # Do this by finding the axis of most efficient rotation that would
         # produce the new look vector, then rotate the up and right vectors
@@ -53,13 +58,13 @@ class Vector3:
         pass
 
     @staticmethod
-    def get_orientation(forward, up, right):
+    def get_orientation(forward: Vector3, up: Vector3, right: Vector3) -> Vector4:
         # Turn the three vectors in a four-tuple that uniquely defines then
         # orientation basis vectors, assuming they are unit vectors.
-        return [ forward.x, forward.y, up.x, up.y ]
+        return Vector4([ forward.x, forward.y, up.x, up.y ])
 
     @staticmethod
-    def from_orientation(o):
+    def from_orientation(o:list[int]) -> list[Vector3]:
         # Build the three orientation basis vectors from the orientation
         # 4-tuple
         forward = Vector3([o[0], o[1], sqrt(1 - o[0] * o[0] - o[1] * o[1])])
@@ -68,13 +73,13 @@ class Vector3:
 
         return [ forward, up, right ]
 
-    def rotate_aroundV(self, axis, angle):
+    def rotate_aroundV(self, axis: Vector3, angle: num ) -> None:
         # Rotate a vector around an axis, by an angle in radians.
         self.rotate_around(axis.x, axis.y, axis.z, angle)
 
     # ### TODO ### Apply the Euler-Rodrigues forumla here instead.
     # http://stackoverflow.com/questions/6802577/python-rotation-of-3d-vector
-    def rotate_around(self, x, y, z , angle):
+    def rotate_around(self, x:num, y:num, z:num , angle:num) -> None:
         if Vector3.almost_zeroS(angle):
             return
 
@@ -95,7 +100,7 @@ class Vector3:
         self.z = z2
 
     @staticmethod
-    def apply_ypr(forward, up, right, angles):
+    def apply_ypr(forward:Vector3, up:Vector3, right:Vector3, angles:list[num]) -> None:
         # Apply yaw, pitch, and roll.
         # Order matters here, and changing the order changes the result.
         forward.rotate_aroundV(up, angles[0])
@@ -107,7 +112,7 @@ class Vector3:
         right.rotate_aroundV(forward, angles[2])
         up.rotate_aroundV(forward, angles[2])
 
-    def __init__(self, v, y = None, z = None):
+    def __init__(self, v:list[num]|num, y:num|None = None, z:num|None = None) -> None:
         if y == None:
             self.x = v[0]
             self.y = v[1]
@@ -123,35 +128,35 @@ class Vector3:
         #self.y = y
         #self.z = z
 
-    def length(self):
+    def length(self) -> float:
         r = self.x * self.x + self.y * self.y + self.z * self.z
         return sqrt(r)
 
-    def length2(self):
+    def length2(self) -> float:
         r = self.x * self.x + self.y * self.y + self.z * self.z
         return r
 
-    def dist(self, v):
+    def dist(self, v:Vector3) -> float:
         x = v.x - self.x
         y = v.y - self.y
         z = v.z - self.z
         return sqrt(x * x + y * y + z * z)
 
-    def dist2(self, v):
+    def dist2(self, v:Vector3) -> float:
         x = v.x - self.x
         y = v.y - self.y
         z = v.z - self.z
         return x * x + y * y + z * z
 
     # Returns a unit vector that originates at v and goes to this vector.
-    def ray(self, v):
+    def ray(self, v:Vector3) -> Vector3:
         x = v.x - self.x
         y = v.y - self.y
         z = v.z - self.z
         m = sqrt(x * x + y * y + z * z)
         return Vector3([x / m, y / m, z / m])
 
-    def unit(self):
+    def unit(self) -> Vector3:
         l = self.length()
         if Vector3.almost_zeroS(l):
             return Vector3([0,0,0])
@@ -160,20 +165,20 @@ class Vector3:
 
     # In this case, self is the first vector in the cross product, because order
     # matters here
-    def cross(self, v):
+    def cross(self, v:Vector3) -> Vector3:
         rx = self.y * v.z - self.z * v.y
         ry = self.z * v.x - self.x * v.z
         rz = self.x * v.y - self.y * v.x
         return Vector3([rx, ry, rz])
 
     # Drag self down v until they dot to zero. Assumes v is normalized.
-    def project_down_n(self, v):
+    def project_down_n(self, v:Vector3) -> Vector3:
         s = self.dot(v)
         return Vector3.combine([[1, self], [-s, v]])
 
     @staticmethod
     # Combines a linear combination of a bunch of vectors
-    def combine(vecs):
+    def combine(vecs:list[Vector3]) -> Vector3:
         rx = 0.0
         ry = 0.0
         rz = 0.0
@@ -185,7 +190,7 @@ class Vector3:
 
         return Vector3([rx, ry, rz])
 
-    def normalize(self):
+    def normalize(self) -> None:
         if self.almost_zero():
             return
 
@@ -194,50 +199,50 @@ class Vector3:
         self.y /= l
         self.z /= l
 
-    def scale(self, c):
+    def scale(self, c:num) -> None:
         self.x *= c
         self.y *= c
         self.z *= c
 
     # Adds v to self.
-    def add(self, v, s = 1):
+    def add(self, v:Vector3, s:num = 1) -> None:
         self.x += s * v.x
         self.y += s * v.y
         self.z += s * v.z
 
     #override +
-    def __add__(self, other):
+    def __add__(self, other:Vector3) -> Vector3:
         return Vector3([self.x+other.x, self.y+other.y, self.z+other.z])
 
-    def sub(self, v):
+    def sub(self, v:Vector3) -> None:
         self.x -= v.x
         self.y -= v.y
         self.z -= v.z
 
     #override -
-    def __sub__(self, other):
+    def __sub__(self, other: Vector3) -> Vector3:
         return Vector3([self.x-other.x, self.y-other.y, self.z-other.z])
 
-    def dot(self, v):
+    def dot(self, v:Vector3) -> float:
         return self.x * v.x + self.y * v.y + self.z * v.z
 
     @staticmethod
-    def almost_zeroS(v):
+    def almost_zeroS(v:Vector3) -> bool:
         # Python doesn't seem to be able to distinguish exponents below -300,
         # So we'll cut off at -150
         if -1e-150 < v and v < 1e-150:
-            return 1
+            return True
         else:
-            return 0
+            return False
 
-    def almost_zero(self):
+    def almost_zero(self) -> bool:
         if Vector3.almost_zeroS(self.x) and Vector3.almost_zeroS(self.y) and Vector3.almost_zeroS(self.z):
-            return 1
+            return True
         else:
-            return 0
+            return False
 
     #overrid []
-    def __getitem__(self, index):
+    def __getitem__(self, index:int) -> num:
         if index == 0:
             return self.x
         if index == 1:
@@ -247,7 +252,7 @@ class Vector3:
 
         raise IndexError('Vector3 has only 3 dimensions')
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index:int, value:num) -> None:
         if index == 0:
             self.x = value
         elif index == 1:
@@ -257,7 +262,7 @@ class Vector3:
         else:
             raise IndexError('Vector3 has only 3 dimensions')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<%f, %f, %f>" % (self.x, self.y, self.z)
 
 zero3d = Vector3(0, 0, 0)
@@ -265,8 +270,12 @@ zero3d = Vector3(0, 0, 0)
 
 #for now, just inherit Vector3's methods to fill it out
 class Vector4(Vector3):
-    
-    def __init__(self, v, x = None, y = None, z = None):
+    w:num
+    x:num
+    y:num
+    z:num
+
+    def __init__(self, v:Vector3|list[num], x:num|None = None, y:num|None = None, z:num|None = None) -> None:
         if x == None:
             self.w = v[0]
             self.x = v[1]
@@ -279,22 +288,22 @@ class Vector4(Vector3):
             self.z = z
             
             
-    def clone(self):
+    def clone(self) -> Vector4:
         return Vector4(self.w, self.x, self.y, self.z)
     
     # Adds v to self.
-    def add(self, v, s = 1):
+    def add(self, v:Vector4, s:num = 1) -> None:
         self.w += s * v.w
         self.x += s * v.x
         self.y += s * v.y
         self.z += s * v.z            
         
     #override -
-    def __sub__(self, other):
+    def __sub__(self, other:Vector4) -> Vector4:
         return Vector4([self.w-other.w,  self.x-other.x, self.y-other.y, self.z-other.z])        
     
-    #overrid []
-    def __getitem__(self, index):
+    #override []
+    def __getitem__(self, index:int) -> num:
         if index == 0:
             return self.w
         if index == 1:
@@ -306,7 +315,7 @@ class Vector4(Vector3):
 
         raise IndexError('Vector4 has only 4 dimensions')
     
-    def __setitem__(self, index, value):
+    def __setitem__(self, index:int, value:num) -> None:
         if index == 0:
             self.w = value
         elif index == 1:
@@ -318,5 +327,5 @@ class Vector4(Vector3):
         else:
             raise IndexError('Vector3 has only 3 dimensions')
         
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<%f, %f, %f, %f>" % (self.w, self.x, self.y, self.z)    

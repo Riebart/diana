@@ -9,7 +9,7 @@ from math import pi, sqrt
 import time
 
 class SpaceObject:
-    def __init__(self, osim, osim_id):
+    def __init__(self, osim, osim_id = None):
         self.object_type = None
         self.osim = osim
         if osim_id == None:
