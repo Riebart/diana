@@ -112,8 +112,8 @@ class Vector3:
         right.rotate_aroundV(forward, angles[2])
         up.rotate_aroundV(forward, angles[2])
 
-    def __init__(self, v:list[num]|num, y:num|None = None, z:num|None = None) -> None:
-        if isinstance(v, list):
+    def __init__(self, v:list[num]|tuple(num,num,num)|num|Vector3, y:num|None = None, z:num|None = None) -> None:
+        if isinstance(v, tuple) or isinstance(v, list) or isinstance(v, Vector3):
             self.x = v[0]
             self.y = v[1]
             self.z = v[2]
