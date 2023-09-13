@@ -58,6 +58,18 @@ double opt_min_vis_frametime = parser.get_basic_option(
             0.1,
             "The minimum wall-clock time that will pass between subsequent rounds of vis-data transmission. Setting this value too low will result in vis data transmission beginning to interfere with the simulation's ability to effectively compute physics ticks at a sufficient rate. It is recommended that clients perform local interpolation to provide smooth apparent motion in between the vis data update frames. First-order interpolation should be considered minimal, with second-order interpolation preferable. double min_vis_frametime; ! Rate (1.0 = real time) at which to simulate the world. Useful for speeding up orbital mechanics. double rate; ! Total time elapsed in the game world double total_time; ! Last persitent environmental effect time. Total simulation time that the last event was ! triggered for the last environment effect (radiation, etc...) double last_effect_time; ! The minimum time to spend on a physics frame, this can be used to keep CPU usage down or to smooth out ticks. double min_frametime; ! The maximum allowed time to elapse in game per tick. This prevents physics ticks from getting too coarse. double max_frametime; ! The time spent calculating the physics on the last physics tick. double phys_frametime; ! The time elapsed calcualting physics and sleeping (if that happened) on the last physics tick. double wall_frametime; ! The time elapsed in the game world on the last physics tick. double game_frametime; ! The minimum time to spend between VISDATA blasts. ", false).result.option_value;
 params.min_vis_frametime = opt_min_vis_frametime;
+int32_t opt_network_port = parser.get_basic_option(
+            "",
+            "--network-port",
+            5505,
+            "TCP port to listen for connections on. ", false).result.option_value;
+params.network_port = opt_network_port;
+int32_t opt_num_worker_threads = parser.get_basic_option(
+            "",
+            "--num-worker-threads",
+            1,
+            "Number of threads to use for service work tasks (physics, vis-data transmission, etc...). Note that this does not control the threads used for TCP clients, as every client receives it's own thread independent of this setting. ", false).result.option_value;
+params.num_worker_threads = opt_num_worker_threads;
 bool opt_permit_spin_sleep = parser.get_flag_option(
             "",
             "--permit-spin-sleep",

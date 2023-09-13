@@ -1,6 +1,7 @@
 __pycache__*
 **/.**
 .**
+!.github
 *.pyc
 bson
 pytz
