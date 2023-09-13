@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: show version ehader
-        run: cat src/__version.hpp
+        run: cat unisim/unisim/src/__version.hpp
 
       - name: Build headers
         run: |
