@@ -21,9 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: show version ehader
-        run: cat unisim/unisim/src/include/__version.hpp
-
       - name: Build headers
         run: |
           cd unisim/unisim
@@ -34,16 +31,7 @@ jobs:
         with:
           name: headers
           path: unisim/unisim/src/include/*.hpp
-
-      - name: show version ehader
-        run: cat unisim/unisim/src/include/__version.hpp
-
-      # - name: Commit headers
-      #   run: |
-      #     git config --global user.name 'Diana Actions'
-      #     git config --global user.email 'diana-actions@flyingfortressit.ca'
-      #     git commit -am "ACTION: Udating unisim headers"
-      #     git push
+          retention-days: 1
 
   build-linux-binary:
     name: Build unisim linux amd64 binary
@@ -54,23 +42,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: show version ehader
-        run: cat unisim/unisim/src/include/__version.hpp
-
-      - name: show files
-        run: ls -laR
-
-      - name: pwd
-        run: pwd
-
       - name: Download headers artifact
         uses: actions/download-artifact@v3
         with:
           name: headers
-          path: unisim/unisim
-
-      - name: show files
-        run: ls -laR
+          path: unisim/unisim/src/include/
 
       - name: show version ehader
         run: cat unisim/unisim/src/include/__version.hpp
@@ -80,25 +56,22 @@ jobs:
           cd unisim/unisim
           make unisim-bin
 
-      # - name: Commit linux binary
-      #   run: |
-      #     git config --global user.name 'Diana Actions'
-      #     git config --global user.email 'diana-actions@flyingfortressit.ca'
-      #     git commit -am "ACTION: Udating unisim linux amd64 binary"
-      #     git push
+      - name: Uploader unisim linux binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: unisim-linux-amd64
+          path: unisim/unisim/bin/unisim
+          retention-days: 1
 
   # build-windows-binary:
   #   name: Build unisim Windows Release amd64 binary
   #   runs-on: windows-latest
-  #   if: github.ref == 'refs/heads/master'
+  #   # if: github.ref == 'refs/heads/master'
   #   needs:
   #     - build-headers
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v3
-
-  #     - name: Git pull
-  #       run: git pull
 
   #     - name: Setup msbuild
   #       uses: microsoft/setup-msbuild@v1
