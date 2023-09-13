@@ -6,23 +6,29 @@ name: Unisim headers and binaries
 # - https://github.com/Nautilus-Cyberneering/pygithub/blob/main/docs/how_to_sign_automatic_commits_in_github_actions.md
 
 on:
-  # push:
-  #   branches: ["*"]
-  #   paths: ["unisim"]
+  push:
+    branches: ["*"]
+    paths: ["unisim"]
   pull_request:
     branches: ["*"]
-    # paths: ["unisim"]
+    paths: ["unisim"]
 
 jobs:
   build-headers:
     name: Build unisim headers
     runs-on: ubuntu-latest
+    timeout-minutes: 1
 
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
 
       - name: Build headers
         run: |
@@ -39,13 +45,20 @@ jobs:
   build-linux-binary:
     name: Build unisim linux amd64 binary
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+
     needs:
       - build-headers
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
 
       - name: Download headers artifact
         uses: actions/download-artifact@v3
@@ -68,13 +81,21 @@ jobs:
   build-windows-binary:
     name: Build unisim Windows Release amd64 binary
     runs-on: windows-latest
+    timeout-minutes: 5
+
     needs:
       - build-headers
+
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v3
+        if: github.event_name == 'pull_request'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Checkout branch
+        uses: actions/checkout@v3
+        if: github.event_name != 'pull_request'
 
       - name: Download headers artifact
         if: github.ref == 'refs/heads/master'
