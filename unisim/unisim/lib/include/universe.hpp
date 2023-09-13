@@ -369,12 +369,16 @@ namespace Diana
 
         void get_grav_pull(struct Vector3 *g, struct PhysicsObject *obj);
 
+        double time();
+
         struct Parameters params;
 
         struct TickMetrics tick_metrics;
 
         // Random generation engine used for generating random increments for the IDs.
         std::default_random_engine re;
+
+        std::chrono::time_point<std::chrono::high_resolution_clock> start;
 
         struct vis_client
         {

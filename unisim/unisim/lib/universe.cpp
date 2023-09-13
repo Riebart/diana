@@ -318,6 +318,12 @@ namespace Diana
         u->handle_message(c);
     }
 
+    double Universe::time()
+    {
+        std::chrono::duration<double> dt = std::chrono::high_resolution_clock::now() - this->start;
+        return dt.count();
+    }
+
     Universe::Universe(struct Parameters _params)
     {
         this->params = _params;
@@ -326,6 +332,7 @@ namespace Diana
         this->min_frametime = _params.min_physics_frametime;
         this->max_frametime = _params.max_physics_frametime;
         this->min_vis_frametime = _params.min_vis_frametime;
+        this->start = std::chrono::high_resolution_clock::now();
 
         if (realtime && (min_frametime < ABSOLUTE_MIN_FRAMETIME))
         {
@@ -689,11 +696,23 @@ namespace Diana
             PhysicalPropertiesMsg *msg = (PhysicalPropertiesMsg *)msg_base;
             // We currently only support PhysProps messages for smarties. Why would you be able to adjust
             // the properties of another object?
+            if (this->params.verbose_logging)
+            {
+                fprintf(stderr, "%g Physical properties update message for %s %ld\n",
+                this->time(), (smarty == NULL ? "PHYSICS_OBJECT" : "SMART_PHYSICS_OBJECT"),
+                msg->client_id
+                );
+            }
             if (smarty != NULL)
             {
                 // Object type
                 if (msg->specced[2])
                 {
+                    if (this->params.verbose_logging)
+                    {
+                        fprintf(stderr, "    NEW type: %s\n", msg->obj_type);
+                    }
+                    
                     size_t new_type_len = strlen(msg->obj_type) + 1;
                     char *new_type = (char *)malloc(sizeof(char) * new_type_len);
                     if (new_type != NULL)
@@ -746,6 +765,24 @@ namespace Diana
 #undef ASSIGN_V3
 #undef ASSIGN_VAL
 
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr,
+                        "%g Updated physics object:"\
+                        "    type:      %s\n"
+                        "    origin:    %g %g %g\n"
+                        "    velocity:  %g %g %g\n"
+                        "    thrust:    %g %g %g\n"
+                        "    mass:      %g\n"
+                        "    radius:    %g\n",
+                        this->time(),smarty->pobj.obj_type,
+                        smarty->pobj.position.x, smarty->pobj.position.y, smarty->pobj.position.z,
+                        smarty->pobj.velocity.x, smarty->pobj.velocity.y, smarty->pobj.velocity.z,
+                        smarty->pobj.thrust.x, smarty->pobj.thrust.y, smarty->pobj.thrust.z,
+                        smarty->pobj.mass, smarty->pobj.radius
+                    );
+                }
+
                 // Ensure that the spectrum was specified in the message
                 if (msg->all_specced(msg->num_el - 3))
                 {
@@ -780,13 +817,16 @@ namespace Diana
             if (((strcmp(msg->beam_type, "COMM") == 0) && !msg->all_specced()) ||
                 ((strcmp(msg->beam_type, "COMM") != 0) && !msg->all_specced(0, msg->num_el - 1, msg->num_el - 4)))
             {
+                fprintf(stderr,
+                "%g Received BeamMsg(type %s) with insufficient parameters specced\n",
+                this->time(), msg->beam_type);
                 break;
             }
 
             B *b = (B *)malloc(sizeof(B));
             if (b == NULL)
             {
-                throw std::runtime_error("OOM");
+                throw std::runtime_error("OOM allocating beam");
             }
 
             char *comm_msg = NULL;
@@ -839,6 +879,33 @@ namespace Diana
             b->spectrum = Spectrum_perturb(b->spectrum, params.spectrum_slush_range,
                                            [this]()
                                            { return this->gen_rand(std::normal_distribution<double>(1.0, params.spectrum_slush_range)); });
+
+            if (this->params.verbose_logging)
+            {
+                Vector3 direction;
+                Vector3_normalize(&direction, &msg->velocity);
+                fprintf(stderr,
+                    "%g Creating Beam:"\
+                    "    type:      %s\n"
+                    "    origin:    %g %g %g\n"
+                    "    velocity:  %g %g %g\n"
+                    "    direction: %g %g %g\n"
+                    "    speed:     %g\n"
+                    "    up:        %g %g %g\n"
+                    "    spread:    h%g v%g\n"
+                    "    energy:    %g\n"
+                    "    comm_msg:  %s\n",
+                    this->time(),msg->beam_type,
+                    msg->origin.x, msg->origin.y, msg->origin.z,
+                    msg->velocity.x, msg->velocity.y, msg->velocity.z,
+                    direction.x, direction.y, direction.z,
+                    Vector3_length(&msg->velocity),
+                    msg->up.x, msg->up.y, msg->up.z,
+                    msg->spread_h, msg->spread_v,
+                    msg->energy,
+                    (comm_msg == NULL ? "<MISSING>" : comm_msg)
+                );
+            }
 
             add_object(b);
             break;
@@ -921,6 +988,24 @@ namespace Diana
                 obj->health = -1;
             }
 
+            if (this->params.verbose_logging)
+            {
+                fprintf(stderr,
+                    "%g Creating physics object:"\
+                    "    type:      %s\n"
+                    "    origin:    %g %g %g\n"
+                    "    velocity:  %g %g %g\n"
+                    "    thrust:    %g %g %g\n"
+                    "    mass:      %g\n"
+                    "    radius:    %g\n",
+                    this->time(),msg->obj_type,
+                    obj->position.x, obj->position.y, obj->position.z,
+                    obj->velocity.x, obj->velocity.y, obj->velocity.z,
+                    obj->thrust.x, obj->thrust.y, obj->thrust.z,
+                    obj->mass, obj->radius
+                );
+            }
+
             add_object(obj);
 
             if (msg->is_smart)
@@ -930,6 +1015,16 @@ namespace Diana
                 hm.server_id = obj->phys_id;
                 hm.spec_all();
                 hm.send(socket);
+            
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr,
+                        "  Sending HELLO to smarty:"\
+                        "    server_id: %ld\n"
+                        "    client_id: %ld\n",
+                        hm.server_id, hm.client_id
+                    );
+                }
             }
             break;
         }
@@ -947,6 +1042,11 @@ namespace Diana
 
             if (smarty != NULL)
             {
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr, "%g Recived SCANQUERY from %ld for %ld\n", this->time(), smarty->client_id, msg->server_id);
+                }
+
                 // The message to send back.
                 ScanResultMsg srm;
 
@@ -1036,6 +1136,11 @@ namespace Diana
                 break;
             }
 
+            if (this->params.verbose_logging)
+            {
+                fprintf(stderr, "%g Recived SCANRESPONSE from %ld for %ld\n", this->time(), smarty->client_id, msg->server_id);
+            }
+
             struct Universe::scan_target st = {msg->scan_id, msg->server_id};
 
             // We SHOULD be able to find the target in the map, and something is very
@@ -1064,6 +1169,26 @@ namespace Diana
                 so.origin_beam->scan_target = NULL;
                 free(so.origin_beam);
 
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr,
+                        "%g Creating return bean from SCANRESPONSE:\n"\
+                        "    origin:   %g %g %g\n"
+                        "    velocity: %g %g %g\n"
+                        "    up:       %g %g %g\n"
+                        "    speed:    %g\n"
+                        "    cosines:  h%g v%g\n"
+                        "    energy:   %g\n",
+                        this->time(),
+                        return_beam->origin.x, return_beam->origin.y, return_beam->origin.z,
+                        return_beam->direction.x, return_beam->direction.y, return_beam->direction.z,
+                        return_beam->up.x, return_beam->up.y, return_beam->up.z,
+                        return_beam->speed,
+                        return_beam->cosines[0], return_beam->cosines[1],
+                        return_beam->energy
+                    );
+                }
+
                 add_object(return_beam);
                 //! @todo Potentially large leak here, queries that are never responded to won't get freed.
                 queries.erase(it);
@@ -1090,6 +1215,11 @@ namespace Diana
                 hm.client_id = msg->client_id;
                 hm.spec_all();
                 hm.send(socket);
+
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr, "%g Recived HELLO from %ld, sending response HELLO as %ld\n", this->time(), hm.client_id, hm.server_id);
+                }
             }
             break;
         }
@@ -1110,6 +1240,11 @@ namespace Diana
                 if ((it != smarties.end()) && (it->first == msg->server_id))
                 {
                     expire(msg->server_id);
+                }
+
+                if (this->params.verbose_logging)
+                {
+                    fprintf(stderr, "%g Received GOODBYE from %ld, marking object for expiry\n", this->time(), msg->server_id);
                 }
             }
             break;
@@ -1373,9 +1508,9 @@ namespace Diana
                 if (u->params.verbose_logging)
                 {
 #if __x86_64__
-                    fprintf(stderr, "Beam Collision: %lu -> %lu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "%g Beam Collision: (type %d) %lu -> %lu (%.15g J)\n", u->time(), b->type, b->phys_id, o->phys_id, beam_result.e);
 #else
-                    fprintf(stderr, "Beam Collision: %llu -> %llu (%.15g J)\n", b->phys_id, o->phys_id, beam_result.e);
+                    fprintf(stderr, "%g Beam Collision: (type %d) %llu -> %llu (%.15g J)\n", u->time(), b->type, b->phys_id, o->phys_id, beam_result.e);
 #endif
                 }
 
@@ -1456,6 +1591,11 @@ namespace Diana
                         }
                         UNLOCK(u->query_lock);
 
+                        if (u->params.verbose_logging)
+                        {
+                            fprintf(stderr, "%g Sending SCANQUERY to %ld for object %ld\n", u->time(), sqm.client_id, sqm.server_id);
+                        }
+
                         sqm.send(s->socket);
                         break;
                     }
@@ -1500,6 +1640,11 @@ namespace Diana
                         else
                         {
                             srm.obj_spectrum = Spectrum_clone(b->scan_target->spectrum);
+                        }
+                        
+                        if (u->params.verbose_logging)
+                        {
+                            fprintf(stderr, "%g Sending SCANRESULT to %ld for object %ld\n", u->time(), srm.client_id, srm.server_id);
                         }
 
                         srm.send(s->socket);
@@ -1960,9 +2105,9 @@ namespace Diana
                     if ((n_rounds == 1) && params.verbose_logging)
                     {
 #if __x86_64__
-                        fprintf(stderr, "Collision: %lu <-> %lu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "%g Collision: %lu <-> %lu (%.15g J)\n", this->time(), obj1->phys_id, obj2->phys_id, phys_result.e);
 #else
-                        fprintf(stderr, "Collision: %llu <-> %llu (%.15g J)\n", obj1->phys_id, obj2->phys_id, phys_result.e);
+                        fprintf(stderr, "%g Collision: %llu <-> %llu (%.15g J)\n", this->time(), obj1->phys_id, obj2->phys_id, phys_result.e);
 #endif
                     }
 
