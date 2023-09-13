@@ -1,4 +1,6 @@
-name: Unisim Headers
+name: Unisim headers and binaries
+# May want to consider reusable workflows here
+# - https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
 on:
   push:
@@ -33,6 +35,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Git pull
+        run: git pull
+
       - name: Build linux binary
         run: |
           cd unisim/unisim
@@ -49,10 +54,13 @@ jobs:
     runs-on: windows-latest
     # if: github.ref == 'refs/heads/master'
     needs:
-      - build-headers
+      - build-linux-binary
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Git pull
+        run: git pull
 
       - name: Setup msbuild
         uses: microsoft/setup-msbuild@v1
