@@ -36,7 +36,7 @@ jobs:
           path: unisim/unisim/src/*.hpp
 
       - name: show version ehader
-        run: cat src/__version.hpp
+        run: cat unisim/unisim/src/__version.hpp
 
       # - name: Commit headers
       #   run: |
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: show version ehader
-        run: cat src/__version.hpp
+        run: cat unisim/unisim/src/__version.hpp
 
       - name: Download headers artifact
         uses: actions/download-artifact@v3
@@ -63,7 +63,7 @@ jobs:
           name: headers
 
       - name: show version ehader
-        run: cat src/__version.hpp
+        run: cat unisim/unisim/src/__version.hpp
 
       - name: Build linux binary
         run: |
