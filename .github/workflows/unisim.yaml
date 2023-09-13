@@ -1,0 +1,38 @@
+name: Unisim Headers
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build headers
+        run: |
+          cd unisim/unisim
+          make unisim-headers
+
+      - name: Build linux binary
+        run: |
+          cd unisim/unisim
+          make unisim-bin
+
+      - name: Build Windows binary
+        uses: microsoft/setup-msbuild@v1
+        run: |
+          cd unisim
+          msbuild unisim.sln /p:Configuration=Release
+
+      # - name: Commit headers and linux binary
+      #   run: |
+      #     git config --global user.name 'Diana Actions'
+      #     git config --global user.email 'diana-actions@flyingfortressit.ca'
+      #     git commit -am "ACTION: Udating headers and linux binary"
+      #     git push
