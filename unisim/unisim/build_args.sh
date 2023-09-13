@@ -6,7 +6,8 @@ parameters=$(cat lib/include/universe.hpp |
     sed -n '/^ *struct Parameters$/{:a;/\n *\};/!{N;ba};p}' |
     sed -n 's/^ *\([A-Za-z0-9_]*\) \([A-Za-z0-9_]*\);/\1 \2/p')
 
-echo "$parameters" | sort -t' ' -k2 | while read type var
+echo "$parameters" | sort -t' ' -k2 |
+while read type var
 do
     description=$(tac lib/include/universe.hpp |
         sed -n "/$type $var/{:a;/\n$/!{N;ba};p}" |
