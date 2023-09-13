@@ -11,7 +11,7 @@ on:
   #   paths: ["unisim"]
   pull_request:
     branches: ["*"]
-    paths: ["unisim"]
+    # paths: ["unisim"]
 
 jobs:
   build-headers:
