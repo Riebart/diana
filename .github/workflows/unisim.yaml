@@ -8,6 +8,7 @@ name: Unisim headers and binaries
 on:
   push:
     branches: ["*"]
+    paths: ["unisim"]
   pull_request:
     branches: ["*"]
 
@@ -15,6 +16,7 @@ jobs:
   build-headers:
     name: Build unisim headers
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,61 +26,66 @@ jobs:
           cd unisim/unisim
           make unisim-headers
 
-      - name: Commit headers
-        run: |
-          git config --global user.name 'Diana Actions'
-          git config --global user.email 'diana-actions@flyingfortressit.ca'
-          git commit -am "ACTION: Udating unisim headers"
-          git push
+      - uses: actions/upload-artifact@v3
+        with:
+          name: headers
+          path: unisim/unisim/src/*.hpp
 
-  build-linux-binary:
-    name: Build unisim linux amd64 binary
-    runs-on: ubuntu-latest
-    needs:
-      - build-headers
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      # - name: Commit headers
+      #   run: |
+      #     git config --global user.name 'Diana Actions'
+      #     git config --global user.email 'diana-actions@flyingfortressit.ca'
+      #     git commit -am "ACTION: Udating unisim headers"
+      #     git push
 
-      - name: Git pull
-        run: git pull
+  # build-linux-binary:
+  #   name: Build unisim linux amd64 binary
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build-headers
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Build linux binary
-        run: |
-          cd unisim/unisim
-          make unisim-bin
+  #     # - name: Git pull
+  #     #   run: git pull
 
-      - name: Commit linux binary
-        run: |
-          git config --global user.name 'Diana Actions'
-          git config --global user.email 'diana-actions@flyingfortressit.ca'
-          git commit -am "ACTION: Udating unisim linux amd64 binary"
-          git push
+  #     - name: Build linux binary
+  #       run: |
+  #         cd unisim/unisim
+  #         make unisim-bin
 
-  build-windows-binary:
-    name: Build unisim Windows Release amd64 binary
-    runs-on: windows-latest
-    if: github.ref == 'refs/heads/master'
-    needs:
-      - build-linux-binary
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #     - name: Commit linux binary
+  #       run: |
+  #         git config --global user.name 'Diana Actions'
+  #         git config --global user.email 'diana-actions@flyingfortressit.ca'
+  #         git commit -am "ACTION: Udating unisim linux amd64 binary"
+  #         git push
 
-      - name: Git pull
-        run: git pull
+  # build-windows-binary:
+  #   name: Build unisim Windows Release amd64 binary
+  #   runs-on: windows-latest
+  #   if: github.ref == 'refs/heads/master'
+  #   needs:
+  #     - build-headers
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1
+  #     - name: Git pull
+  #       run: git pull
 
-      - name: Build Windows binary
-        run: |
-          cd unisim
-          msbuild unisim.sln /p:Configuration=Release
+  #     - name: Setup msbuild
+  #       uses: microsoft/setup-msbuild@v1
 
-      - name: Commit windows binary
-        run: |
-          git config --global user.name 'Diana Actions'
-          git config --global user.email 'diana-actions@flyingfortressit.ca'
-          git commit -am "ACTION: Udating unisim Windows Release-x64 binary"
-          git push
+  #     - name: Build Windows binary
+  #       run: |
+  #         cd unisim
+  #         msbuild unisim.sln /p:Configuration=Release
+
+  #     - name: Commit windows binary
+  #       run: |
+  #         git config --global user.name 'Diana Actions'
+  #         git config --global user.email 'diana-actions@flyingfortressit.ca'
+  #         git commit -am "ACTION: Udating unisim Windows Release-x64 binary"
+  #         git push
