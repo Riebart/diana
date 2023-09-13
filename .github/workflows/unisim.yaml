@@ -25,7 +25,7 @@ jobs:
         run: |
           git config --global user.name 'Diana Actions'
           git config --global user.email 'diana-actions@flyingfortressit.ca'
-          git commit -am "ACTION: Udating headers unisim headers"
+          git commit -am "ACTION: Udating unisim headers"
           git push
 
   build-linux-binary:
