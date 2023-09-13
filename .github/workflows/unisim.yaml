@@ -1,6 +1,9 @@
 name: Unisim headers and binaries
 # May want to consider reusable workflows here
 # - https://docs.github.com/en/actions/using-workflows/reusing-workflows
+#
+# Also signing bot commits is irritating, but can be done
+# - https://github.com/Nautilus-Cyberneering/pygithub/blob/main/docs/how_to_sign_automatic_commits_in_github_actions.md
 
 on:
   push:
