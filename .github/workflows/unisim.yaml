@@ -7,9 +7,8 @@ on:
     branches: ["*"]
 
 jobs:
-  build:
+  build-headers:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,20 +18,41 @@ jobs:
           cd unisim/unisim
           make unisim-headers
 
+      - name: Commit headers and linux binary
+        run: |
+          git config --global user.name 'Diana Actions'
+          git config --global user.email 'diana-actions@flyingfortressit.ca'
+          git commit -am "ACTION: Udating headers unisim headers"
+          git push
+
+  build-linux-binary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Build linux binary
         run: |
           cd unisim/unisim
           make unisim-bin
 
-      - name: Build Windows binary
+      - name: Commit headers and linux binary
+        run: |
+          git config --global user.name 'Diana Actions'
+          git config --global user.email 'diana-actions@flyingfortressit.ca'
+          git commit -am "ACTION: Udating unisim linux amd64 binary"
+          git push
+
+  build-windows-binary:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup msbuild
         uses: microsoft/setup-msbuild@v1
+
+      - name: Build Windows binary
         run: |
           cd unisim
           msbuild unisim.sln /p:Configuration=Release
-
-      # - name: Commit headers and linux binary
-      #   run: |
-      #     git config --global user.name 'Diana Actions'
-      #     git config --global user.email 'diana-actions@flyingfortressit.ca'
-      #     git commit -am "ACTION: Udating headers and linux binary"
-      #     git push
