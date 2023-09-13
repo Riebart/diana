@@ -6,6 +6,7 @@ FILES=lib/utility.cpp lib/vector.cpp lib/physics.cpp lib/universe.cpp lib/MIMOSe
 EXT_LIBS=
 EXT_ST_LIBS=
 SHELL=/bin/bash
+
 # Because we're using unannotated lightweight tags to refer to some useful historical commits,
 # and those have been merged in with merge commits, not squash-and-merges, we don't want to use
 # `--tags` here, or it'll pick those up. Without `--tags`, it only picks up annotated tags.
