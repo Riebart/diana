@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: show version ehader
-        run: cat unisim/unisim/src/__version.hpp
+        run: cat unisim/unisim/src/include/__version.hpp
 
       - name: Build headers
         run: |
@@ -33,10 +33,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: headers
-          path: unisim/unisim/src/*.hpp
+          path: unisim/unisim/src/include/*.hpp
 
       - name: show version ehader
-        run: cat unisim/unisim/src/__version.hpp
+        run: cat unisim/unisim/src/include/__version.hpp
 
       # - name: Commit headers
       #   run: |
@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: show version ehader
-        run: cat unisim/unisim/src/__version.hpp
+        run: cat unisim/unisim/src/include/__version.hpp
 
       - name: show version ehader
         run: ls -laR
@@ -67,7 +67,7 @@ jobs:
           path: unisim/unisim
 
       - name: show version ehader
-        run: cat unisim/unisim/src/__version.hpp
+        run: cat unisim/unisim/src/include/__version.hpp
 
       - name: Build linux binary
         run: |

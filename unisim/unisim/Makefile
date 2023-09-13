@@ -36,16 +36,16 @@ test-packing:
 	$(CXX) $(_CFLAGS) $(INCLUDE_DIR) $(FILES) $(EXT_LIBS) $(EXT_ST_LIBS) test/test-packing.cpp -o bin/test-packing
 
 universe-cli-args-header:
-	bash build_args.sh
+	bash build_args.sh > src/include/__universe_args.hpp
 
 unisim-version-header:
-	echo "#ifndef __VERSION_HPP" > src/__version.hpp
-	echo "#define __VERSION_HPP" >> src/__version.hpp
-	echo "#define GIT_VERSION $(GIT_VERSION)" >> src/__version.hpp
-	echo "#define GIT_BRANCH $(GIT_BRANCH)" >> src/__version.hpp
-	echo "#define GIT_COMMIT_DATE $(GIT_COMMIT_DATE)" >> src/__version.hpp
-	echo "#define BUILD_DATE $(BUILD_DATE)" >> src/__version.hpp
-	echo "#endif" >> src/__version.hpp
+	echo "#ifndef __VERSION_HPP" > src/include/__version.hpp
+	echo "#define __VERSION_HPP" >> src/include/__version.hpp
+	echo "#define GIT_VERSION $(GIT_VERSION)" >> src/include/__version.hpp
+	echo "#define GIT_BRANCH $(GIT_BRANCH)" >> src/include/__version.hpp
+	echo "#define GIT_COMMIT_DATE $(GIT_COMMIT_DATE)" >> src/include/__version.hpp
+	echo "#define BUILD_DATE $(BUILD_DATE)" >> src/include/__version.hpp
+	echo "#endif" >> src/include/__version.hpp
 
 unisim-headers:
 	make unisim-version-header

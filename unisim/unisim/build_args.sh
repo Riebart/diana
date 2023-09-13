@@ -31,4 +31,4 @@ do
             \"${description}\", false).result.option_value;"
     fi
     echo "params.${var} = opt_${var};"
-done > src/__universe_args.hpp
+done
