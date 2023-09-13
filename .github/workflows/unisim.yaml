@@ -57,8 +57,11 @@ jobs:
       - name: show version ehader
         run: cat unisim/unisim/src/include/__version.hpp
 
-      - name: show version ehader
+      - name: show files
         run: ls -laR
+
+      - name: pwd
+        run: pwd
 
       - name: Download headers artifact
         uses: actions/download-artifact@v3
