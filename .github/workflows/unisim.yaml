@@ -8,10 +8,10 @@ name: Unisim headers and binaries
 on:
   push:
     branches: ["*"]
-    paths: ["unisim"]
+    # paths: ["unisim"]
   pull_request:
     branches: ["*"]
-    paths: ["unisim"]
+    # paths: ["unisim"]
 
 jobs:
   build-headers:
