@@ -69,6 +69,9 @@ jobs:
           name: headers
           path: unisim/unisim
 
+      - name: show files
+        run: ls -laR
+
       - name: show version ehader
         run: cat unisim/unisim/src/include/__version.hpp
 
