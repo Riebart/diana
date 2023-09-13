@@ -78,10 +78,12 @@ jobs:
           path: unisim/unisim/bin/unisim
           retention-days: 1
 
+  # For commits to master, or on a PR, build the windows binary
   build-windows-binary:
     name: Build unisim Windows Release amd64 binary
     runs-on: windows-latest
     timeout-minutes: 5
+    if: ${{ (github.event_name == 'pull_request') || (github.ref == 'refs/heads/master') }}
 
     needs:
       - build-headers
@@ -98,18 +100,15 @@ jobs:
         if: github.event_name != 'pull_request'
 
       - name: Download headers artifact
-        if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v3
         with:
           name: headers
           path: unisim/unisim/src/include/
 
       - name: Setup msbuild
-        if: github.ref == 'refs/heads/master'
         uses: microsoft/setup-msbuild@v1
 
       - name: Build Windows binary
-        if: github.ref == 'refs/heads/master'
         run: |
           cd unisim
           msbuild unisim.sln /p:Configuration=Release
@@ -121,12 +120,37 @@ jobs:
           path: unisim/x64/Release/unisim.exe
           retention-days: 1
 
+  # If the trigger is not a PR, and the branch is not master, skip building a new Windows binary
+  # and just upload the in-tree one as the artifact for use later.
+  skip-build-windows-binary:
+    name: Upload in-tree unisim Windows Release amd64 binary
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    if: ${{ (github.event_name != 'pull_request') && (github.ref != 'refs/heads/master') }}
+
+    needs:
+      - build-headers
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Uploader unisim Windows binary artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: unisim-windows-release-amd64
+          path: unisim/x64/Release/unisim.exe
+          retention-days: 1
+
   commit-assets:
     name: Commit headers and binaries
     runs-on: ubuntu-latest
+    # Always run, just do so after all of the builds.
+    if: ${{ always() }}
     needs:
       - build-linux-binary
       - build-windows-binary
+      - skip-build-windows-binary
     steps:
       - name: Checkout
         uses: actions/checkout@v3
