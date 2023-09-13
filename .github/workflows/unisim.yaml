@@ -6,11 +6,12 @@ name: Unisim headers and binaries
 # - https://github.com/Nautilus-Cyberneering/pygithub/blob/main/docs/how_to_sign_automatic_commits_in_github_actions.md
 
 on:
-  push:
+  # push:
+  #   branches: ["*"]
+  #   paths: ["unisim"]
+  pull_request:
     branches: ["*"]
     paths: ["unisim"]
-  # pull_request:
-  #   branches: ["*"]
 
 jobs:
   build-headers:
@@ -20,6 +21,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: { { github.event.pull_request.head.ref } }
+
+      - name: git-log
+        run: git log
 
       - name: Build headers
         run: |
@@ -33,95 +39,95 @@ jobs:
           path: unisim/unisim/src/include/*.hpp
           retention-days: 1
 
-  build-linux-binary:
-    name: Build unisim linux amd64 binary
-    runs-on: ubuntu-latest
-    needs:
-      - build-headers
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # build-linux-binary:
+  #   name: Build unisim linux amd64 binary
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build-headers
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Download headers artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: headers
-          path: unisim/unisim/src/include/
+  #     - name: Download headers artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: headers
+  #         path: unisim/unisim/src/include/
 
-      - name: Build linux binary
-        run: |
-          cd unisim/unisim
-          make unisim-bin
+  #     - name: Build linux binary
+  #       run: |
+  #         cd unisim/unisim
+  #         make unisim-bin
 
-      - name: Uploader unisim linux binary artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: unisim-linux-amd64
-          path: unisim/unisim/bin/unisim
-          retention-days: 1
+  #     - name: Uploader unisim linux binary artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: unisim-linux-amd64
+  #         path: unisim/unisim/bin/unisim
+  #         retention-days: 1
 
-  build-windows-binary:
-    name: Build unisim Windows Release amd64 binary
-    runs-on: windows-latest
-    # if: github.ref == 'refs/heads/master'
-    needs:
-      - build-headers
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # build-windows-binary:
+  #   name: Build unisim Windows Release amd64 binary
+  #   runs-on: windows-latest
+  #   # if: github.ref == 'refs/heads/master'
+  #   needs:
+  #     - build-headers
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Download headers artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: headers
-          path: unisim/unisim/src/include/
+  #     - name: Download headers artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: headers
+  #         path: unisim/unisim/src/include/
 
-      - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1
+  #     - name: Setup msbuild
+  #       uses: microsoft/setup-msbuild@v1
 
-      - name: Build Windows binary
-        run: |
-          cd unisim
-          msbuild unisim.sln /p:Configuration=Release
+  #     - name: Build Windows binary
+  #       run: |
+  #         cd unisim
+  #         msbuild unisim.sln /p:Configuration=Release
 
-      - name: Uploader unisim linux binary artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: unisim-windows-release-amd64
-          path: unisim/x64/Release/unisim.exe
-          retention-days: 1
+  #     - name: Uploader unisim linux binary artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: unisim-windows-release-amd64
+  #         path: unisim/x64/Release/unisim.exe
+  #         retention-days: 1
 
-  commit-assets:
-    name: Commit headers and binaries
-    runs-on: ubuntu-latest
-    needs:
-      - build-linux-binary
-      - build-windows-binary
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  # commit-assets:
+  #   name: Commit headers and binaries
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build-linux-binary
+  #     - build-windows-binary
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - name: Download headers artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: headers
-          path: unisim/unisim/src/include/
+  #     - name: Download headers artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: headers
+  #         path: unisim/unisim/src/include/
 
-      - name: Download linux binary
-        uses: actions/download-artifact@v3
-        with:
-          name: unisim-linux-amd64
-          path: unisim/unisim/bin/
+  #     - name: Download linux binary
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: unisim-linux-amd64
+  #         path: unisim/unisim/bin/
 
-      - name: Download windows binary
-        uses: actions/download-artifact@v3
-        with:
-          name: unisim-windows-release-amd64
-          path: unisim/x64/Release/
+  #     - name: Download windows binary
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: unisim-windows-release-amd64
+  #         path: unisim/x64/Release/
 
-      - name: Commit windows binary
-        run: |
-          git config --global user.name 'Diana Actions'
-          git config --global user.email 'diana-actions@flyingfortressit.ca'
-          git commit -am "ACTION: Updating unisim headers and binaries"
-          git push
+  #     - name: Commit windows binary
+  #       run: |
+  #         git config --global user.name 'Diana Actions'
+  #         git config --global user.email 'diana-actions@flyingfortressit.ca'
+  #         git commit -am "ACTION: Updating unisim headers and binaries"
+  #         git push
