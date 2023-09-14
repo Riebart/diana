@@ -249,7 +249,7 @@ namespace Diana2DClient
                         focusY = centreY;
                     }
 
-                    lblViewCoords.Text = "(" + (int)(focusX - xExtent) + "," + (int)(focusX + xExtent) + ") , (" + (int)(focusY - yExtent) + "," + (int)(focusY + yExtent) + ")";
+                    lblViewCoords.Text = "(" + (Int64)(focusX - xExtent) + "," + (Int64)(focusX + xExtent) + ") , (" + (Int64)(focusY - yExtent) + "," + (Int64)(focusY + yExtent) + ") @ " + (Int64)xExtent + "x" + (Int64)yExtent;
                     lblNumMessages.BackColor = bgColor;
                     lblNumMessages.ForeColor = fgColor;
 
