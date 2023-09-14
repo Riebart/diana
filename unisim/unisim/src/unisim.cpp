@@ -57,10 +57,6 @@ int main(int32_t argc, char **argv)
     signal(SIGTERM, &sighandler);
     signal(SIGINT, &sighandler);
 
-    // params.verbose_logging = false;
-    // params.realtime_physics = true;
-    // params.min_physics_frametime = 0.001;
-
     Diana::Universe *u = new Diana::Universe(params);
 
     u->start_net();

@@ -64,6 +64,11 @@ int32_t opt_network_port = parser.get_basic_option(
             5505,
             "TCP port to listen for connections on. ", false).result.option_value;
 params.network_port = opt_network_port;
+bool opt_no_realtime_physics = parser.get_flag_option(
+            "",
+            "--no-realtime-physics",
+            "When set, the simulation will sleep as appropriate to try to match the amount of simulated time to the amount of elapsed wall-clock time. When using this option=false, careful and informed selection of minimum and maximum physics tick time limits should be used to ensure a smooth and sufficiently fine simulation without forcing overly fine simulation at the expense of a slowdown. ", false).result.option_value;
+params.no_realtime_physics = opt_no_realtime_physics;
 int32_t opt_num_worker_threads = parser.get_basic_option(
             "",
             "--num-worker-threads",
@@ -81,16 +86,11 @@ double opt_radiation_energy_cutoff = parser.get_basic_option(
             1.5e4,
             "This value is used to calculate the safe distance of a radiation source, that is the distance from the source at which other objects begin to incur radiation collision events (and damage). Raising this value will reduce the damage caused by radiation sources. The unts of this value is Watts per square metre. This value is derived from the black-body radiative power of steel at it's melting point. Steel absorbing this amount of radiative power. See: http://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html See: https://en.wikipedia.org/wiki/Mercury_(planet)#Surface_conditions_and_exosphere To compare, Sol outputs 61.7MW/m^2 at it's surface. ", false).result.option_value;
 params.radiation_energy_cutoff = opt_radiation_energy_cutoff;
-bool opt_realtime_physics = parser.get_flag_option(
-            "",
-            "--realtime-physics",
-            "When set, the simulation will sleep as appropriate to try to match the amount of simulated time to the amount of elapsed wall-clock time. When using this option, careful and informed selection of minimum and maximum physics tick time limits should be used to ensure a smooth and sufficiently fine simulation without forcing overly fine simulation at the expense of a slowdown. ", false).result.option_value;
-params.realtime_physics = opt_realtime_physics;
 double opt_simulation_rate = parser.get_basic_option(
             "",
             "--simulation-rate",
             1.0,
-            "When paired with realtime_physics, this controls a simulation rate relative to realtime. Values <1.0 result in simulations that are slower than real time, and values >1.0 result in simulations faster than realtime. ", false).result.option_value;
+            "When paired with no_realtime_physics=true, this controls a simulation rate relative to realtime. Values <1.0 result in simulations that are slower than real time, and values >1.0 result in simulations faster than realtime. ", false).result.option_value;
 params.simulation_rate = opt_simulation_rate;
 double opt_spectrum_slush_range = parser.get_basic_option(
             "",
