@@ -162,7 +162,7 @@ namespace Diana
                            network_port(5505),
                            num_worker_threads(1),
                            simulation_rate(1.0),
-                           realtime_physics(true),
+                           no_realtime_physics(false),
                            gravitational_constant(6.67384e-11),
                            speed_of_light(299792458l),
                            collision_energy_cutoff(1e-9),
@@ -221,18 +221,18 @@ namespace Diana
             // receives it's own thread independent of this setting.
             int32_t num_worker_threads;
 
-            // When paired with realtime_physics, this controls a simulation rate relative to
+            // When paired with no_realtime_physics=true, this controls a simulation rate relative to
             // realtime. Values <1.0 result in simulations that are slower than real time, and
             // values >1.0 result in simulations faster than realtime.
             double simulation_rate;
 
             // When set, the simulation will sleep as appropriate to try to match the amount of
             // simulated time to the amount of elapsed wall-clock time.
-            // When using this option, careful and informed selection of minimum and maximum
+            // When using this option=false, careful and informed selection of minimum and maximum
             // physics tick time limits should be used to ensure a smooth and sufficiently
             // fine simulation without forcing overly fine simulation at the expense of a
             // slowdown.
-            bool realtime_physics;
+            bool no_realtime_physics;
 
             // Universal gravitational constant.
             double gravitational_constant;
