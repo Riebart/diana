@@ -7,7 +7,7 @@ name: Unisim headers and binaries
 
 on:
   push:
-    branches: ["*"]
+    branches: ["**/build-unisim"]
     paths: ["unisim/**"]
   pull_request:
     branches: ["*"]
