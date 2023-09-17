@@ -163,6 +163,10 @@ jobs:
           name: headers
           path: unisim/unisim/src/include/
 
+      # Should astyle the repo here too.
+      # astyle -j --style=ansi --suffix=none --keep-one-line-blocks \
+      #   --recursive "./*hpp" "./*cpp" "./*c" "./*h"
+
       - name: Download linux binary
         uses: actions/download-artifact@v3
         with:
