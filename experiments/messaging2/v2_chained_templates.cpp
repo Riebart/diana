@@ -22,8 +22,9 @@ struct OptionalElementC
 };
 
 template <typename PhysicsType, typename CoordinateType>
-struct PhysicalPropertiesMsg
+class PhysicalPropertiesMsg
 {
+public:
     std::int64_t& server_id() { return this->msg.element.value; }
     std::int64_t& client_id() { return this->msg.next.element.value; }
     char* object_type() { return this->msg.next.next.element.value; }
