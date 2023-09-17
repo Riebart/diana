@@ -1,0 +1,66 @@
+# Ref: https://stackoverflow.com/questions/48445291/stdtuple-faster-than-stdarray
+# Ref: https://stackoverflow.com/questions/4041447/how-is-stdtuple-implemented
+# Ref: https://stackoverflow.com/questions/38661635/ctypes-struct-returned-from-library
+
+Vector3:
+  x:
+    type: double
+    optional: false
+  y:
+    type: double
+    optional: false
+  z:
+    type: double
+    optional: false
+
+Vector4:
+  w:
+    type: double
+    optional: false
+  x:
+    type: double
+    optional: false
+  y:
+    type: double
+    optional: false
+  z:
+    type: double
+    optional: false
+
+Hello:
+  server_id:
+    type: int64
+    optional: false
+  client_id:
+    type: int64
+    optional: false
+
+PhysicalProperties:
+  header:
+    type: Hello
+    optional: false
+    embedded: true
+  object_type:
+    type: string
+    optional: true
+  mass:
+    type: double
+    optional: true
+  radius:
+    type: double
+    optional: true
+  position:
+    type: Vector3
+    optional: true
+  velocity:
+    type: Vector3
+    optional: true
+  thrust:
+    type: Vector3
+    optional: true
+  orientation:
+    type: Vector4
+    optional: true
+  spectrum:
+    type: list
+    optional: true
