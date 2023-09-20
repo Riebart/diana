@@ -166,6 +166,12 @@ jobs:
       # Should astyle the repo here too.
       # astyle -j --style=ansi --suffix=none --keep-one-line-blocks \
       #   --recursive "./*hpp" "./*cpp" "./*c" "./*h"
+      - name: astyle unisim
+        run: |
+          sudo apt update
+          sudo apt install -y astyle
+          cd unisim/unisim
+          astyle -j --style=ansi --suffix=none --keep-one-line-blocks --recursive "./*hpp" "./*cpp" "./*c" "./*h"
 
       - name: Download linux binary
         uses: actions/download-artifact@v3

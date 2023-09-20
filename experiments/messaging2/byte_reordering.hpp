@@ -59,3 +59,6 @@ void __hton(std::int64_t& value)
 {
     value = htonll<std::int64_t>(value);
 }
+
+template <>
+void __hton(char*& value) {}

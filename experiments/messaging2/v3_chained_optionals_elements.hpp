@@ -5,6 +5,7 @@
 
 #include <string>
 #include <string.h>
+#include <optional>
 
 #include "byte_reordering.hpp"
 
@@ -34,36 +35,32 @@ struct Element
     {
         this->value = newval;
     }
-
-    operator T() const { return value; }
 };
 
 template<>
-struct Element<const char*>
+struct Element<char*>
 {
-    const char* value = NULL;
+    char* value = NULL;
     std::size_t num_chars = 0;
 
     void hton() {}
 
     std::size_t dump_size()
     {
-        return num_chars + 1;
+        return num_chars;
     }
 
-    void operator=(const char* newval)
+    void operator=(char* newval)
     {
         this->value = newval;
         this->num_chars = strnlen(this->value, 4096);
     }
-
-    operator const char*() const { return value; }
 };
 
 template <typename T>
 struct OptionalElement : Element<T>
 {
-    bool present = false;
+    std::optional<T> value;
 
     bool read(std::uint8_t* data)
     {
@@ -72,42 +69,14 @@ struct OptionalElement : Element<T>
 
     std::size_t dump_size()
     {
-        return 1 + (present ? Element<T>::dump_size() : 0);
+        return (value ? 1000 + sizeof(T) : 100);
     }
 
     void operator=(T newval)
     {
-        this->present = true;
-        Element<T>::operator = (newval);
+        value = newval;
     }
-
-    operator bool() const { return present; }
 };
-
-// template <>
-// struct OptionalElement<bool> : Element<bool>
-// {
-//     bool present = false;
-
-//     bool read(std::uint8_t* data)
-//     {
-//         return false;
-//     }
-
-//     std::size_t dump_size()
-//     {
-//         return 1 + (present * (sizeof(bool) - 1));
-//     }
-
-//     void operator=(bool newval)
-//     {
-//         this->present = true;
-//         this->value = newval;
-//     }
-
-//     operator bool() const { return present; }
-//     explicit operator bool() const { return value; }
-// };
 
 template <typename T>
 struct Vector3
