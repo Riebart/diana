@@ -105,10 +105,11 @@ struct PhysicalPropertiesMsgD
     struct OptionalElement<struct Vector4<CoordinateType>> orientation;
 };
 
+template <typename PhysicsType, typename CoordinateType>
 union PhysPropsMsg
 {
-    struct PhysicalPropertiesMsgD<double, double> d;
-    PhysicalPropertiesMsgO<double, double> m;
+    struct PhysicalPropertiesMsgD<PhysicsType, CoordinateType> d;
+    PhysicalPropertiesMsgO<PhysicsType, CoordinateType> m;
 };
 //-----------------------------------------------------------------------------------------------------------
 
