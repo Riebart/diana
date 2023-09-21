@@ -47,9 +47,9 @@ OptionalProperty(D, OPTdouble, C)
 OptionalProperty(E, OPTVector3, D)
 OptionalProperty(F, OPTVector3, E)
 OptionalProperty(G, OPTVector3, F)
-OptionalProperty(PhysPropsMsgR, OPTVector4, G)
+OptionalProperty(PhysPropsMsgM, OPTVector4, G)
 
-struct PhysPropsMsg
+struct PhysPropsMsgD
 {
     OPTVector4 orienatation;
     OPTVector3 thrust, velocity, position;
@@ -57,23 +57,28 @@ struct PhysPropsMsg
     int64_t client_id, server_id;
 };
 
+union PhysPropsMsg
+{
+    struct PhysPropsMsgM o;
+    struct PhysPropsMsgD d;
+};
+
 int main(int argc, char** argv)
 {
     int b[6];
     sscanf(argv[1], "%d %d %d %d %d %d", &b[0], &b[1], &b[2], &b[3], &b[4], &b[5]);
-    PhysPropsMsgR msg;
-    struct PhysPropsMsg* v = (struct PhysPropsMsg*)(&msg);
-    v->orienatation.p = b[0];
-    v->position.p = b[1];
-    v->velocity.p = b[2];
-    v->thrust.p = b[3];
-    v->mass.p = b[4];
-    v->radius.p = b[5];
+    union PhysPropsMsg msg;
+    msg.d.orienatation.p = b[0];
+    msg.d.position.p = b[1];
+    msg.d.velocity.p = b[2];
+    msg.d.thrust.p = b[3];
+    msg.d.mass.p = b[4];
+    msg.d.radius.p = b[5];
 
-    printf("%d\n", v->orienatation.p);
-    printf("%d\n", v->thrust.p);
-    printf("%d\n", v->mass.p);
+    printf("%d\n", msg.d.orienatation.p);
+    printf("%d\n", msg.d.thrust.p);
+    printf("%d\n", msg.d.mass.p);
     printf("%lu\n", sizeof(msg));
-    printf("%lu\n", dump_size_PhysPropsMsgR(&msg));
+    printf("%lu\n", dump_size_PhysPropsMsgM(&msg.o));
     return 0;
 }
