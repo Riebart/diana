@@ -27,7 +27,7 @@ typedef struct SmartPhysicsObject SPO;
 typedef struct Vector3 V3;
 
 //! @todo implement grids, this ties into physics, but the properties need to be added here.
-//! @todo Alternative, 128-bit integers as fixed point flaots as provided by MSCS intrinsics and GCC
+//! @todo Alternative, 128-bit integers as fixed point floats as provided by MSCS intrinsics and GCC
 //! http://msdn.microsoft.com/en-us/library/windows/desktop/aa383711(v=vs.85).aspx
 //! GCC: __uint128_t and __int128_t
 //! Look back at the UniverseGenerator code, and see if we can resurrect some of it.
@@ -61,11 +61,11 @@ double radiates_strong_enough(struct Spectrum *spectrum, double cutoff)
 
 void PhysicsObject_init(PO *obj, Universe *universe, V3 *position, V3 *velocity, V3 *ang_velocity, V3 *thrust, double mass, double radius, char *obj_type, struct Spectrum *spectrum)
 {
-    obj->type = PHYSOBJECT;
-    obj->phys_id = 0;
+    obj->poh.type = PHYSOBJECT;
+    obj->poh.phys_id = 0;
     obj->art_id = -1;
 
-    obj->universe = universe;
+    obj->poh.universe = universe;
     obj->position = *position;
     obj->velocity = *velocity;
     obj->ang_velocity = *ang_velocity;
@@ -555,11 +555,11 @@ void PhysicsObject_resolve_damage(PO *obj, double energy, double cutoff)
     if (obj->health <= 0)
     {
 #if __x86_64__
-        printf("%lu has been destroyed\n", obj->phys_id);
+        printf("%lu has been destroyed\n", obj->poh.phys_id);
 #else
-        printf("%llu has been destroyed\n", obj->phys_id);
+        printf("%llu has been destroyed\n", obj->poh.phys_id);
 #endif
-        obj->universe->expire(obj->phys_id);
+        obj->poh.universe->expire(obj->poh.phys_id);
     }
 }
 
@@ -626,7 +626,7 @@ PO *PhysicsObject_clone(PO *obj)
 {
     //! @todo There's a bunch of code reuse here that should be taken care of.
     PO *ret = NULL;
-    switch (obj->type)
+    switch (obj->poh.type)
     {
     case PHYSOBJECT:
     {
@@ -737,7 +737,7 @@ PO *PhysicsObject_clone(PO *obj)
 //! @param args This describes the information about the thing that hit obj, that is other.
 void PhysicsObject_collision(PO *obj, PO *other, double energy, double dt, struct PhysCollisionEffect *effect, double health_cutoff)
 {
-    switch (other->type)
+    switch (other->poh.type)
     {
     case PHYSOBJECT:
     case PHYSOBJECT_SMART:
@@ -760,7 +760,7 @@ void PhysicsObject_collision(PO *obj, PO *other, double energy, double dt, struc
         // This isn't done to separate beams and phys-objects, since a beam will always be the other
         // object here (beams collide into objects, not the other way around).
 
-        if (obj->type == PHYSOBJECT)
+        if (obj->poh.type == PHYSOBJECT)
         {
             Beam *b = (Beam *)other;
             // Note that the effect->p position marks the position in 3-space, relative to the beam
@@ -772,7 +772,7 @@ void PhysicsObject_collision(PO *obj, PO *other, double energy, double dt, struc
             {
                 throw std::runtime_error("OOMError::ScanTargetAllocFailed");
             }
-            obj->universe->add_object(res);
+            obj->poh.universe->add_object(res);
         }
         break;
     }
@@ -808,8 +808,8 @@ void PhysicsObject_collision(PO *obj, PO *other, double energy, double dt, struc
 
 void Beam_init(B *beam, Universe *universe, V3 *origin, V3 *direction, V3 *up, V3 *right, double cosh, double cosv, double area_factor, double speed, double energy, PhysicsObjectType type, char *comm_msg, char *data, struct Spectrum *spectrum)
 {
-    beam->phys_id = 0;
-    beam->universe = universe;
+    beam->poh.phys_id = 0;
+    beam->poh.universe = universe;
     beam->origin = *origin;
     beam->direction = *direction;
     beam->front_position = *origin;
@@ -820,7 +820,7 @@ void Beam_init(B *beam, Universe *universe, V3 *origin, V3 *direction, V3 *up, V
     beam->cosines[1] = cosv;
     beam->area_factor = area_factor;
     beam->energy = energy;
-    beam->type = type;
+    beam->poh.type = type;
     beam->scan_target = NULL;
     beam->comm_msg = const_cast<char *>(comm_msg);
     beam->data = data;
@@ -1120,7 +1120,7 @@ void Beam_tick(B *beam, double dt)
 
     if (beam->distance_travelled > beam->max_distance)
     {
-        beam->universe->expire(beam->phys_id);
+        beam->poh.universe->expire(beam->poh.phys_id);
     }
 }
 
@@ -1139,7 +1139,7 @@ B *Beam_make_return_beam(B *beam, double energy, V3 *origin, PhysicsObjectType t
     Vector3_cross(&right, &d, &up);
 
     B *ret = (B *)malloc(sizeof(B));
-    Beam_init(ret, beam->universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
+    Beam_init(ret, beam->poh.universe, &absolute_origin, &d, &up, &right, beam->cosines[0], beam->cosines[1], beam->area_factor, beam->speed, energy, type, NULL, NULL, beam->spectrum);
     return ret;
 }
 }

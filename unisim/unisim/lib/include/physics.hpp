@@ -37,7 +37,7 @@ struct SpectrumComponent
 
 //! @todo This doesn't account for high-energy mass particles that are ionizing
 //! @todo Interplanetary/interstellar absorbtion bands? See: https://en.wikipedia.org/wiki/Diffuse_interstellar_bands
-#pragma pack(1)
+// #pragma pack(1)
 struct Spectrum
 {
     // Number of components in the spectrum
@@ -57,18 +57,24 @@ struct Spectrum
     // use &components. There's some allocation magic here.
     struct SpectrumComponent components;
 };
-#pragma pack()
+// #pragma pack()
 
-//! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
-#pragma pack(1)
-struct PhysicsObject
-{
+struct PhysicsObjectHeader {
     //! Type of PhysicsObject
     PhysicsObjectType type;
     //! Unique ID as assigned by the universe
     int64_t phys_id;
     //! Universe this object is assigned to.
     Universe* universe;
+};
+
+//! A physics object in the universe as well as all of its local variables. Let the compiler pack this one.
+// #pragma pack(1)
+struct PhysicsObject
+{
+    //! Type, id, and parent universe
+    struct PhysicsObjectHeader poh;
+
     //! Axis aligned bounding box for this object.
     struct AABB box;
     //! For collisions, this is in [0,1] and is how far into the interval we've already traversed.
@@ -106,12 +112,12 @@ struct PhysicsObject
     //! The radiation spectrum of this object.
     struct Spectrum* spectrum;
 };
-#pragma pack()
+// #pragma pack()
 
 //! @note The pack() pragmas here actually improve performance under Release MSVS2012 x64 by a very consistent 6%
 //! @note But unpacking them is a reliable way to get the fields ordered right?
 
-#pragma pack(1)
+// #pragma pack(1)
 //! A smart physics object which is a physics object that ties back to a ship or other object over a socket.
 struct SmartPhysicsObject
 {
@@ -136,15 +142,15 @@ struct SmartPhysicsObject
     //    //! Does this exist in the world (UNUSED)
     //    exists;
 };
-#pragma pack()
+// #pragma pack()
 
 //! A beam as it exists in the universe
-#pragma pack(1)
+// #pragma pack(1)
 struct Beam
 {
-    PhysicsObjectType type;
-    int64_t phys_id;
-    Universe* universe;
+    // Type, id, parent universe
+    struct PhysicsObjectHeader poh;
+
     PhysicsObject* scan_target;
     //! Tha radiation spectrum of this object.
     struct Spectrum* spectrum;
@@ -162,7 +168,7 @@ struct Beam
     char* comm_msg;
     char* data;
 };
-#pragma pack()
+// #pragma pack()
 
 //! The structure that holds the effects on one object in a two-object physical collision
 struct PhysCollisionEffect

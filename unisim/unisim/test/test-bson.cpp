@@ -23,9 +23,9 @@ void check_packing()
 #else
     printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
 #endif
-           (uint64_t)&p.type - (uint64_t)&p,
-           (uint64_t)&p.phys_id - (uint64_t)&p,
-           (uint64_t)&p.universe - (uint64_t)&p,
+           (uint64_t)&p.poh.type - (uint64_t)&p,
+           (uint64_t)&p.poh.phys_id - (uint64_t)&p,
+           (uint64_t)&p.poh.universe - (uint64_t)&p,
            (uint64_t)&p.box - (uint64_t)&p,
            (uint64_t)&p.t - (uint64_t)&p,
            (uint64_t)&p.position - (uint64_t)&p,
@@ -57,9 +57,9 @@ void check_packing()
 #else
     printf("%llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
 #endif
-           (uint64_t)&b.type - (uint64_t)&b,
-           (uint64_t)&b.phys_id - (uint64_t)&b,
-           (uint64_t)&b.universe - (uint64_t)&b,
+           (uint64_t)&b.poh.type - (uint64_t)&b,
+           (uint64_t)&b.poh.phys_id - (uint64_t)&b,
+           (uint64_t)&b.poh.universe - (uint64_t)&b,
            (uint64_t)&b.scan_target - (uint64_t)&b,
            (uint64_t)&b.origin - (uint64_t)&b,
            (uint64_t)&b.direction - (uint64_t)&b,

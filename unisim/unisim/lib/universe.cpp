@@ -471,7 +471,7 @@ int64_t Universe::get_id()
 
 void Universe::add_object(PO *obj)
 {
-    obj->phys_id = get_id();
+    obj->poh.phys_id = get_id();
 
     LOCK(add_lock);
     added.push_back(obj);
@@ -576,11 +576,11 @@ void Universe::broadcast_vis_data()
             // Don't forget to unset the sign bits, negative IDs would be weird.
             if (params.id_rand_max == 1)
             {
-                visdata_msg.phys_id = o->phys_id;
+                visdata_msg.phys_id = o->poh.phys_id;
             }
             else
             {
-                visdata_msg.phys_id = ((o->phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
+                visdata_msg.phys_id = ((o->poh.phys_id ^ (int64_t)o)) & 0x7FFFFFFFFFFFFFFF;
             }
 
             visdata_msg.position = o->position;
@@ -982,7 +982,7 @@ if (msg->specced[i])                                                   \
         //! @todo Should smartie-adding be synchronous here? Grab the lock, add, release?
         if (msg->is_smart)
         {
-            obj->type = PhysicsObjectType::PHYSOBJECT_SMART;
+            obj->poh.type = PhysicsObjectType::PHYSOBJECT_SMART;
             obj->health = -1;
         }
 
@@ -1009,7 +1009,7 @@ if (msg->specced[i])                                                   \
         {
             HelloMsg hm;
             hm.client_id = msg->client_id;
-            hm.server_id = obj->phys_id;
+            hm.server_id = obj->poh.phys_id;
             hm.spec_all();
             hm.send(socket);
 
@@ -1257,7 +1257,7 @@ void Universe::get_grav_pull(V3 *g, PO *obj)
     for (size_t i = 0; i < attractors.size(); i++)
     {
         // An object can't attract itself.
-        if (attractors[i]->phys_id == obj->phys_id)
+        if (attractors[i]->poh.phys_id == obj->poh.phys_id)
         {
             continue;
         }
@@ -1503,9 +1503,9 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
             if (u->params.verbose_logging)
             {
 #if __x86_64__
-                fprintf(stderr, "%g Beam Collision: (type %d) %lu -> %lu (%.15g J)\n", u->time(), b->type, b->phys_id, o->phys_id, beam_result.e);
+                fprintf(stderr, "%g Beam Collision: (type %d) %lu -> %lu (%.15g J)\n", u->time(), b->poh.type, b->poh.phys_id, o->poh.phys_id, beam_result.e);
 #else
-                fprintf(stderr, "%g Beam Collision: (type %d) %llu -> %llu (%.15g J)\n", u->time(), b->type, b->phys_id, o->phys_id, beam_result.e);
+                fprintf(stderr, "%g Beam Collision: (type %d) %llu -> %llu (%.15g J)\n", u->time(), b->poh.type, b->poh.phys_id, o->poh.phys_id, beam_result.e);
 #endif
             }
 
@@ -1513,12 +1513,12 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
 
             //! @todo Smarty beam collision messages
             //! @todo Beam collision messages
-            if (o->type == PHYSOBJECT_SMART)
+            if (o->poh.type == PHYSOBJECT_SMART)
             {
                 struct SmartPhysicsObject *s = (SPO *)o;
                 CollisionMsg cm;
                 cm.client_id = s->client_id;
-                cm.server_id = o->phys_id;
+                cm.server_id = o->poh.phys_id;
                 cm.direction = beam_result.d;
                 cm.position = beam_result.p;
                 Vector3_subtract(&cm.position, &o->position);
@@ -1533,7 +1533,7 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
                 // Note that there is no comm message (yet, maybe), so that's unspecced.
                 cm.specced[cm.num_el - 4] = false;
 
-                switch (b->type)
+                switch (b->poh.type)
                 {
                 case BEAM_COMM:
                     cm.specced[cm.num_el - 4] = true;
@@ -1549,8 +1549,8 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
 
                     ScanQueryMsg sqm;
                     sqm.client_id = s->client_id;
-                    sqm.server_id = o->phys_id;
-                    sqm.scan_id = b->phys_id;
+                    sqm.server_id = o->poh.phys_id;
+                    sqm.scan_id = b->poh.phys_id;
                     sqm.energy = cm.energy;
                     sqm.direction = cm.direction;
                     sqm.spectrum = Spectrum_clone(b->spectrum);
@@ -1561,7 +1561,7 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
 
                     // Ignore multiple hits of the same beam/object pair.
                     // Could, in theory, use a multimap for queries instead, but really, multiple hits are spurious.
-                    struct Universe::scan_target st = {b->phys_id, o->phys_id};
+                    struct Universe::scan_target st = {b->poh.phys_id, o->poh.phys_id};
                     LOCK(u->query_lock);
                     const std::map<struct Universe::scan_target, struct Universe::scan_origin>::iterator it = u->queries.find(st);
                     if ((it == u->queries.end()) || !(st == (it->first)))
@@ -1604,7 +1604,7 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
                     // We'd need to add that information to the beaming chain.
                     ScanResultMsg srm;
                     srm.client_id = s->client_id;
-                    srm.server_id = s->pobj.phys_id;
+                    srm.server_id = s->pobj.poh.phys_id;
                     srm.position = b->scan_target->position;
                     Vector3_subtract(&srm.position, &o->position);
                     srm.velocity = b->scan_target->velocity;
@@ -1674,7 +1674,7 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
         {
             other = u->radiators[i];
             // Don't collide an object with it's own radiation
-            if (other->phys_id == o->phys_id)
+            if (other->poh.phys_id == o->poh.phys_id)
             {
                 continue;
             }
@@ -1685,12 +1685,12 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
             {
                 double energy = o->radius * o->radius * other->spectrum->total_power / (4 * distance_sq);
 
-                if (o->type == PHYSOBJECT_SMART)
+                if (o->poh.type == PHYSOBJECT_SMART)
                 {
                     struct SmartPhysicsObject *s = (SPO *)o;
                     CollisionMsg cm;
                     cm.client_id = s->client_id;
-                    cm.server_id = o->phys_id;
+                    cm.server_id = o->poh.phys_id;
                     Vector3_scale(&pd, 1.0 / Vector3_length(&pd));
                     cm.direction = pd;
                     Vector3_scale(&pd, o->radius);
@@ -1706,7 +1706,7 @@ void obj_tick(Universe *u, struct PhysicsObject *o, double dt)
                     cm.specced[cm.num_el - 4] = false;
                     cm.send(s->socket);
                 }
-                else if (o->type == PHYSOBJECT)
+                else if (o->poh.type == PHYSOBJECT)
                 {
                     PhysicsObject_resolve_damage(o, energy, u->params.health_damage_threshold);
                 }
@@ -1757,7 +1757,7 @@ void Universe::handle_expired()
             b = beams[i];
             for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
             {
-                if (*it == b->phys_id)
+                if (*it == b->poh.phys_id)
                 {
                     free(b->data);
                     free(b->comm_msg);
@@ -1786,11 +1786,11 @@ void Universe::handle_expired()
             po = phys_objects[i];
             for (std::set<int64_t>::iterator it = expired.begin(); it != expired.end(); it++)
             {
-                if (*it == po->phys_id)
+                if (*it == po->poh.phys_id)
                 {
                     free(po->obj_type);
 
-                    if (po->type == PHYSOBJECT_SMART)
+                    if (po->poh.type == PHYSOBJECT_SMART)
                     {
                         smarties.erase(*it);
                     }
@@ -1800,7 +1800,7 @@ void Universe::handle_expired()
                         // This is nicer to read than the iterator in the for loop method.
                         for (size_t k = 0; k < attractors.size(); k++)
                         {
-                            if (attractors[k]->phys_id == *it)
+                            if (attractors[k]->poh.phys_id == *it)
                             {
                                 attractors.erase(attractors.begin() + k);
                                 break;
@@ -1813,7 +1813,7 @@ void Universe::handle_expired()
                         // This is nicer to read than the iterator in the for loop method.
                         for (size_t k = 0; k < radiators.size(); k++)
                         {
-                            if (radiators[k]->phys_id == *it)
+                            if (radiators[k]->poh.phys_id == *it)
                             {
                                 radiators.erase(radiators.begin() + k);
                                 break;
@@ -1855,7 +1855,7 @@ void Universe::handle_added()
         // Handle added queue
         for (size_t i = 0; i < added.size(); i++)
         {
-            switch (added[i]->type)
+            switch (added[i]->poh.type)
             {
             case PHYSOBJECT:
             {
@@ -1874,7 +1874,7 @@ void Universe::handle_added()
             {
                 SPO *obj = (SPO *)added[i];
                 //! @todo Check to make sure this smarty adding is right.
-                smarties[obj->pobj.phys_id] = obj;
+                smarties[obj->pobj.poh.phys_id] = obj;
                 phys_objects.push_back(added[i]);
                 if (added[i]->emits_gravity)
                 {
@@ -2100,9 +2100,9 @@ struct Universe::TickMetrics Universe::tick(double dt)
                 if ((n_rounds == 1) && params.verbose_logging)
                 {
 #if __x86_64__
-                    fprintf(stderr, "%g Collision: %lu <-> %lu (%.15g J)\n", this->time(), obj1->phys_id, obj2->phys_id, phys_result.e);
+                    fprintf(stderr, "%g Collision: %lu <-> %lu (%.15g J)\n", this->time(), obj1->poh.phys_id, obj2->poh.phys_id, phys_result.e);
 #else
-                    fprintf(stderr, "%g Collision: %llu <-> %llu (%.15g J)\n", this->time(), obj1->phys_id, obj2->phys_id, phys_result.e);
+                    fprintf(stderr, "%g Collision: %llu <-> %llu (%.15g J)\n", this->time(), obj1->poh.phys_id, obj2->poh.phys_id, phys_result.e);
 #endif
                 }
 
@@ -2137,21 +2137,21 @@ struct Universe::TickMetrics Universe::tick(double dt)
                 // Only physical collisions are generated here, beams are elsewhere.
                 cm.energy = phys_result.e;
 
-                if (obj1->type == PHYSOBJECT_SMART)
+                if (obj1->poh.type == PHYSOBJECT_SMART)
                 {
                     SPO *s = (SPO *)obj1;
                     cm.client_id = s->socket;
-                    cm.server_id = obj1->phys_id;
+                    cm.server_id = obj1->poh.phys_id;
                     cm.direction = phys_result.pce1.d;
                     cm.position = phys_result.pce1.p;
                     cm.send(s->socket);
                 }
 
-                if (obj2->type == PHYSOBJECT_SMART)
+                if (obj2->poh.type == PHYSOBJECT_SMART)
                 {
                     SPO *s = (SPO *)obj2;
                     cm.client_id = s->socket;
-                    cm.server_id = obj2->phys_id;
+                    cm.server_id = obj2->poh.phys_id;
                     cm.direction = phys_result.pce2.d;
                     cm.position = phys_result.pce2.p;
                     cm.send(s->socket);
@@ -2298,7 +2298,7 @@ void Universe::update_list(struct PhysicsObject *obj, std::vector<struct Physics
         // Then linear searches here shouldn't be problematic, because
         for (size_t i = 0; i < list->size(); i++)
         {
-            if (list->at(i)->phys_id == obj->phys_id)
+            if (list->at(i)->poh.phys_id == obj->poh.phys_id)
             {
                 list->erase(list->begin() + i);
                 break;
