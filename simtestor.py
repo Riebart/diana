@@ -136,6 +136,7 @@ for res_file in Path('gamefiles/planets/').glob('*.yml'):
         if name == "Earth":
             planet.position = Vector3(0,0,0)
         planet.parse_in(planet_data, name)
+        planet.radius = planet.radius/1000
         planet.init_econ()
         print(f"{planet.object_name} at {planet.position}")
         st.add_object(planet)

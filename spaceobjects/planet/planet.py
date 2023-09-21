@@ -263,6 +263,7 @@ class Planet(SmartObject):
                 if planet_name in self.known_planets and self.known_planets[planet_name]["last_communication"]["time"] < time.time():
                     self.known_planets[planet_name]["last_communication"] = { "time": time.time(), "energy": msg.energy }
                     self.known_planets[planet_name]["bearing"] = Vector3(msg.direction[0], msg.direction[1], msg.direction[2])
+                    self.known_planets[planet_name]["bearing"].scale(-1)
                     for resource in planet_update["my_prices"]:
                         pass
 
