@@ -51,40 +51,40 @@ private:
 
 /// SEPARATE OPERATIONAL AND DATA MODELS SHARING A UNION
 //-----------------------------------------------------------------------------------------------------------
-template <typename PhysicsType, typename CoordinateType>
-class PhysicalPropertiesMsgO : public Message
-{
-public:
-    std::size_t dump_size() { return this->msg.dump_size(); }
+// template <typename PhysicsType, typename CoordinateType>
+// class PhysicalPropertiesMsgO : public Message
+// {
+// public:
+//     std::size_t dump_size() { return this->msg.dump_size(); }
 
-private:
-    struct ElementC<std::int64_t,
-               struct ElementC<std::int64_t,
-                   struct OptionalElementC<const char*,
-                       struct OptionalElementC<PhysicsType,
-                           struct OptionalElementC<PhysicsType,
-                               struct OptionalElementC<struct Vector3<CoordinateType>,
-                                       struct OptionalElementC<struct Vector3<CoordinateType>,
-                                               struct OptionalElementC<struct Vector3<PhysicsType>,
-                                                       struct OptionalElement<struct Vector4<PhysicsType>
-                                                               >>>>>>>>> msg;
-};
+// private:
+//     struct ElementC<std::int64_t,
+//                struct ElementC<std::int64_t,
+//                    struct OptionalElementC<const char*,
+//                        struct OptionalElementC<PhysicsType,
+//                            struct OptionalElementC<PhysicsType,
+//                                struct OptionalElementC<struct Vector3<CoordinateType>,
+//                                        struct OptionalElementC<struct Vector3<CoordinateType>,
+//                                                struct OptionalElementC<struct Vector3<PhysicsType>,
+//                                                        struct OptionalElement<struct Vector4<PhysicsType>
+//                                                                >>>>>>>>> msg;
+// };
 
-template <typename PhysicsType, typename CoordinateType>
-struct PhysicalPropertiesMsgD
-{
-    std::int64_t server_id, client_id;
-    struct OptionalElement<PhysicsType> mass, radius;
-    struct OptionalElement<struct Vector3<PhysicsType>> position, velocity, thrust;
-    struct OptionalElement<struct Vector4<CoordinateType>> orientation;
-};
+// template <typename PhysicsType, typename CoordinateType>
+// struct PhysicalPropertiesMsgD
+// {
+//     std::int64_t server_id, client_id;
+//     struct OptionalElement<PhysicsType> mass, radius;
+//     struct OptionalElement<struct Vector3<PhysicsType>> position, velocity, thrust;
+//     struct OptionalElement<struct Vector4<CoordinateType>> orientation;
+// };
 
-template <typename PhysicsType, typename CoordinateType>
-union PhysPropsMsg
-{
-    struct PhysicalPropertiesMsgD<PhysicsType, CoordinateType> d;
-    PhysicalPropertiesMsgO<PhysicsType, CoordinateType> m;
-};
+// template <typename PhysicsType, typename CoordinateType>
+// union PhysPropsMsg
+// {
+//     struct PhysicalPropertiesMsgD<PhysicsType, CoordinateType> d;
+//     PhysicalPropertiesMsgO<PhysicsType, CoordinateType> m;
+// };
 //-----------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv)
