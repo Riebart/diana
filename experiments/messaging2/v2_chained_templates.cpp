@@ -43,6 +43,8 @@ protected:
     struct Element<char> msg;
 };
 
+/// OPERATIONAL AND DATA MODEL IN SINGLE STRUCTURE
+//-----------------------------------------------------------------------------------------------------------
 template <typename PhysicsType, typename CoordinateType>
 class PhysicalPropertiesMsg : virtual public Message
 {
@@ -71,6 +73,44 @@ private:
                                                        struct OptionalElement<struct Vector4<PhysicsType>
                                                                >>>>>>>>> msg;
 };
+//-----------------------------------------------------------------------------------------------------------
+
+/// SEPARATE OPERATIONAL AND DATA MODELS SHARING A UNION
+//-----------------------------------------------------------------------------------------------------------
+template <typename PhysicsType, typename CoordinateType>
+class PhysicalPropertiesMsgO : virtual public Message
+{
+public:
+    virtual std::size_t dump_size() { return this->msg.dump_size(); }
+
+private:
+    struct ElementC<std::int64_t,
+               struct ElementC<std::int64_t,
+                   struct OptionalElementC<const char*,
+                       struct OptionalElementC<PhysicsType,
+                           struct OptionalElementC<PhysicsType,
+                               struct OptionalElementC<struct Vector3<CoordinateType>,
+                                       struct OptionalElementC<struct Vector3<CoordinateType>,
+                                               struct OptionalElementC<struct Vector3<PhysicsType>,
+                                                       struct OptionalElement<struct Vector4<PhysicsType>
+                                                               >>>>>>>>> msg;
+};
+
+template <typename PhysicsType, typename CoordinateType>
+struct PhysicalPropertiesMsgD
+{
+    std::int64_t server_id, client_id;
+    struct OptionalElement<PhysicsType> mass, radius;
+    struct OptionalElement<struct Vector3<PhysicsType>> position, velocity, thrust;
+    struct OptionalElement<struct Vector4<CoordinateType>> orientation;
+};
+
+union PhysPropsMsg
+{
+    struct PhysicalPropertiesMsgD<double, double> d;
+    PhysicalPropertiesMsgO<double, double> m;
+};
+//-----------------------------------------------------------------------------------------------------------
 
 int main(int argc, char** argv)
 {
