@@ -28,7 +28,7 @@ public:
     struct OptionalElement<PhysicsType>& mass() { return this->msg.next.next.next.element; }
     struct OptionalElement<PhysicsType>& radius() { return this->msg.next.next.next.next.element; }
     struct OptionalElement<struct Vector3<CoordinateType>>& position() { return this->msg.next.next.next.next.next.element; }
-    struct OptionalElement<struct Vector3<CoordinateType>>& velcoity() { return this->msg.next.next.next.next.next.next.element; }
+    struct OptionalElement<struct Vector3<CoordinateType>>& velocity() { return this->msg.next.next.next.next.next.next.element; }
     struct OptionalElement<struct Vector3<PhysicsType>>& thrust() { return this->msg.next.next.next.next.next.next.next.element; }
     struct OptionalElement<struct Vector4<PhysicsType>>& orientation() { return this->msg.next.next.next.next.next.next.next.next.value; }
 
@@ -107,6 +107,7 @@ int main(int argc, char** argv)
     msg.mass() = 1.0;
     msg.radius() = 2.2;
     msg.position() = Vector3(1.1, 2.1, 3.1);
+    // msg.velocity() = Vector3(10.1, 20.1, 30.1);
     msg.object_type() = "This is some stuff!"; // strnlen() = 19 + null
     std::cout << "IDs after: "<< (std::int64_t)msg.server_id() << " " << (std::int64_t)msg.client_id() << std::endl;
     std::cout << (const char*)msg.object_type() << std::endl;
