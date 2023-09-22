@@ -9,7 +9,7 @@ class Message
 {
 public:
     std::size_t dump_size() { return this->msg.dump_size(); }
-    std::string json() { return "{" + msg.json() + "}"; }
+    std::string json() { std::string s("{"); msg.json(&s, 0); s.append("{"); return s; }
     void* dump() { return NULL; }
 
 protected:
@@ -33,7 +33,7 @@ public:
     struct OptionalElement<struct Vector4<PhysicsType>>& orientation() { return this->msg.next.next.next.next.next.next.next.next.value; }
 
     std::size_t dump_size() { return this->msg.dump_size(); }
-    std::string json() { return "{" + msg.json() + "}"; }
+    std::string json() { std::string s("{"); msg.json(&s, 0); s.append("}"); return s; }
 
 private:
     struct NamedElementC<std::int64_t, "server_id",
@@ -107,13 +107,24 @@ int main(int argc, char** argv)
     msg.mass() = 1.0;
     msg.radius() = 2.2;
     msg.position() = Vector3(1.1, 2.1, 3.1);
-    // msg.velocity() = Vector3(10.1, 20.1, 30.1);
+    msg.velocity() = Vector3(10.1, 20.1, 30.1);
+    msg.thrust() = Vector3(11.1, 22.1, 33.1);
     msg.object_type() = "This is some stuff!"; // strnlen() = 19 + null
     std::cout << "IDs after: "<< (std::int64_t)msg.server_id() << " " << (std::int64_t)msg.client_id() << std::endl;
     std::cout << (const char*)msg.object_type() << std::endl;
     msg.dump();
     std::cout << msg.dump_size() << std::endl;
-    std::cout << msg.json() << std::endl;
+
+    for (int i = 0 ; i < 100000 ; i++)
+    {
+        msg.mass().present = i & 1;
+        msg.radius().present = i & 2;
+        msg.position().present = i & 4;
+        msg.velocity().present = i & 8;
+        msg.thrust().present = i & 16;
+        msg.object_type().present = i & 32;
+        std::cout << "loop " << msg.json() << std::endl;
+    }
 
     return 0;
 }

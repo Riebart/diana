@@ -25,47 +25,41 @@ struct Element
     T value;
 
     Element() { value = T(); }
-
-    bool read(std::uint8_t* data)
-    {
-        return false;
-    }
-
-    void hton()
-    {
-        __hton<T>(value);
-    }
-
-    std::size_t dump_size()
-    {
-        return sizeof(T);
-    }
-
-    void operator=(T newval)
-    {
-        this->value = newval;
-    }
-
-    std::string json()
-    {
-        std::ostringstream s;
-        s << value;
-        return s.str();
-    }
-
+    bool read(std::uint8_t* data) { return false; }
+    void hton() { __hton<T>(value); }
+    std::size_t dump_size() { return sizeof(T); }
+    void operator=(T newval) { this->value = newval; }
     operator T() const { return value; }
+
+    bool json(std::string* s, int n)
+    {
+        std::ostringstream os;
+        os << value;
+        s->append(os.str());
+        return true;
+    }
 };
 
 template <typename T, StringLiteral Name>
 struct NamedElement
 {
     struct Element<T> element;
+
     NamedElement() : element() { }
     bool read(std::uint8_t* data) { return element.read(); }
     void hton() { element.hton(); }
     std::size_t dump_size() { return element.dump_size(); }
     void operator=(T newval) { element = newval; }
+    operator T() const { return (T)element; }
 
+    bool json(std::string* s, int n)
+    {
+        s->append("\"");
+        s->append(Name.value);
+        s->append("\":");
+        element.json(s, n);
+        return true;
+    }
 };
 
 template<>
@@ -75,11 +69,7 @@ struct Element<const char*>
     std::size_t num_chars = 0;
 
     void hton() {}
-
-    std::size_t dump_size()
-    {
-        return num_chars + 1;
-    }
+    std::size_t dump_size() { return num_chars + 1; }
 
     void operator=(const char* newval)
     {
@@ -87,9 +77,19 @@ struct Element<const char*>
         this->num_chars = strnlen(this->value, 4096);
     }
 
-    std::string json()
+    bool json(std::string* s, int n)
     {
-        return (value == NULL ? "" : "\"" + std::string(value) + "\"");
+        if (value == NULL)
+        {
+            s->append("\"\"");
+        }
+        else
+        {
+            s->append("\"");
+            s->append(value);
+            s->append("\"");
+        }
+        return true;
     }
 
     operator const char*() const { return value; }
@@ -100,20 +100,22 @@ struct OptionalElement : Element<T>
 {
     bool present = false;
 
-    bool read(std::uint8_t* data)
-    {
-        return false;
-    }
-
-    std::size_t dump_size()
-    {
-        return 1 + (present ? Element<T>::dump_size() : 0);
-    }
+    bool read(std::uint8_t* data) { return false; }
+    std::size_t dump_size() { return 1 + (present ? Element<T>::dump_size() : 0); }
 
     void operator=(T newval)
     {
         this->present = true;
         Element<T>::operator = (newval);
+    }
+
+    bool json(std::string* s, int n)
+    {
+        if (present)
+        {
+            Element<T>::json(s, n);
+        }
+        return present;
     }
 
     operator bool() const { return present; }
@@ -129,11 +131,16 @@ struct NamedOptionalElement
     std::size_t dump_size() { return element.dump_size(); }
     void operator=(T newval) { element = newval; }
 
-    std::string json()
+    bool json(std::string* s, int n)
     {
-        return (element.present ?
-                "\"" + std::string(Name.value) + "\":NOE" + element.json()
-                : "");
+        if (element.present)
+        {
+            s->append("\"");
+            s->append(Name.value);
+            s->append("\":");
+            element.json(s, n);
+        }
+        return element.present;
     }
 };
 
@@ -228,10 +235,15 @@ template <typename T> struct ChainedElement
 {
     T next;
     std::size_t dump_size() { return next.dump_size(); }
-    std::string json()
+
+    bool json(std::string* s, int n)
     {
-        std::string rest = next.json();
-        return (rest != "" ? "," + rest : "");
+        bool result = next.json(s, n);
+        if (result && (n > 0))
+        {
+            s->append(",");
+        }
+        return result;
     }
 };
 
@@ -245,18 +257,28 @@ struct ElementC : ChainedElement<TNext>
         return element.dump_size() + ChainedElement<TNext>::dump_size();
     }
 
-    std::string json()
+    bool json(std::string* s, int n)
     {
-        return element.json() + ChainedElement<TNext>::json();
+        ChainedElement<TNext>::json(s, n);
+        s->append(element.json(n + 1));
     }
 };
 
 template <typename T, StringLiteral Name, typename TNext>
-struct NamedElementC : ElementC<T, TNext>
+struct NamedElementC : ChainedElement<TNext>
 {
-    std::string json()
+    struct Element<T> element;
+
+    std::size_t dump_size() { return element.dump_size(); }
+
+    bool json(std::string* s, int n)
     {
-        return "\"" + std::string(Name.value) + "\":" + ElementC<T, TNext>::json();
+        ChainedElement<TNext>::json(s, n+1);
+        s->append("\"");
+        s->append(Name.value);
+        s->append("\":");
+        element.json(s, n);
+        return true;
     }
 };
 
@@ -270,19 +292,33 @@ struct OptionalElementC : ChainedElement<TNext>
         return element.dump_size() + ChainedElement<TNext>::dump_size();
     }
 
-    std::string json()
+    bool json(std::string* s, int n)
     {
-        return (element.present ? element.json() + ChainedElement<TNext>::json() : "");
+        ChainedElement<TNext>::json(s, n + (this->element.present));
+        if (element.present)
+        {
+            element.json(s, n);
+        }
+        return element.present;
     }
 };
 
 template <typename T, StringLiteral Name, typename TNext>
-struct NamedOptionalElementC : OptionalElementC<T, TNext>
+struct NamedOptionalElementC : ChainedElement<TNext>
 {
-    std::string json()
+    struct OptionalElement<T> element;
+
+    bool json(std::string* s, int n)
     {
-        return (this->element.present ?
-                "\"" + std::string(Name.value) + "\":" + OptionalElementC<T, TNext>::json()
-                : "");
+        ChainedElement<TNext>::json(s, n + (this->element.present));
+
+        if (this->element.present)
+        {
+            s->append("\"");
+            s->append(Name.value);
+            s->append("\":");
+            this->element.json(s, n);
+        }
+        return this->element.present;
     }
 };
