@@ -261,6 +261,7 @@ struct ElementC : ChainedElement<TNext>
     {
         ChainedElement<TNext>::json(s, n);
         s->append(element.json(n + 1));
+        return true;
     }
 };
 
