@@ -102,6 +102,7 @@ struct OptionalElement : Element<T>
 
     bool read(std::uint8_t* data) { return false; }
     std::size_t dump_size() { return 1 + (present ? Element<T>::dump_size() : 0); }
+    std::uint8_t* binary_write(std::uint8_t* buf) { 
 
     void operator=(T newval)
     {
@@ -129,6 +130,7 @@ struct NamedOptionalElement
     bool read(std::uint8_t* data) { return element.read(); }
     void hton() { element.hton(); }
     std::size_t dump_size() { return element.dump_size(); }
+    void binary_write(std::uint8_t* buf) { element.binary_write(buf); }
     void operator=(T newval) { element = newval; }
 
     bool json(std::string* s, int n)
@@ -235,6 +237,7 @@ template <typename T> struct ChainedElement
 {
     T next;
     std::size_t dump_size() { return next.dump_size(); }
+    void binary_write(std::uint8_t* buf) { next.binary_write(buf); }
 
     bool json(std::string* s, int n)
     {
@@ -252,10 +255,8 @@ struct ElementC : ChainedElement<TNext>
 {
     struct Element<T> element;
 
-    std::size_t dump_size()
-    {
-        return element.dump_size() + ChainedElement<TNext>::dump_size();
-    }
+    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
 
     bool json(std::string* s, int n)
     {
@@ -270,7 +271,8 @@ struct NamedElementC : ChainedElement<TNext>
 {
     struct Element<T> element;
 
-    std::size_t dump_size() { return element.dump_size(); }
+    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
 
     bool json(std::string* s, int n)
     {
@@ -288,10 +290,8 @@ struct OptionalElementC : ChainedElement<TNext>
 {
     struct OptionalElement<T> element;
 
-    std::size_t dump_size()
-    {
-        return element.dump_size() + ChainedElement<TNext>::dump_size();
-    }
+    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
 
     bool json(std::string* s, int n)
     {
@@ -308,6 +308,11 @@ template <typename T, StringLiteral Name, typename TNext>
 struct NamedOptionalElementC : ChainedElement<TNext>
 {
     struct OptionalElement<T> element;
+
+    std::size_t dump_size()
+    {
+        return element.dump_size() + ChainedElement<TNext>::dump_size();
+    }
 
     bool json(std::string* s, int n)
     {
