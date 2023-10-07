@@ -150,7 +150,7 @@ NAMEDSTRUCT2(Nester,
              (float) d
             )
 
-#define ___JOIN(X, Y) X##Y // Needed to ensure that strings concatenate without spaces
+#define ___JOIN(X, Y) X Y // Needed to ensure that strings concatenate without spaces
 #define JOIN(X, Y) ___JOIN(X,Y) // Needed to ensure that strings concatenate without spaces
 #define REPEAT_0(X)
 #define REPEAT_1(X) X
@@ -160,7 +160,7 @@ NAMEDSTRUCT2(Nester,
 #define REPEAT_5(X) JOIN(X,REPEAT_4(X))
 
 #define ___NEXT(X) .next
-#define ACCESSOR3(FQTV, N) TYPEOF(FQTV) & NAMEOF(FQTV) () { return JOIN(msg., REPEAT_ ## N ## (next.))value ; };
+#define ACCESSOR3(FQTV, N) TYPEOF(FQTV) & NAMEOF(FQTV) () { return JOIN(msg., REPEAT_ ## N (next.))value ; };
 #define NAMEDSTRUCT3(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH_REV_N(ACCESSOR3, REVERSE(__VA_ARGS__)); \
     FOR_EACH(MEMBER2, __VA_ARGS__) \
@@ -168,21 +168,23 @@ NAMEDSTRUCT2(Nester,
     FOR_EACH(CLOSE_TEMPLATE1, __VA_ARGS__);\
 };
 
-template<typename T>
+#include <type_traits>
+
+struct Empty {};
+
+template <typename T, typename std::enable_if<!std::is_same<T, float>::value, int>::type = struct Empty>
 struct Optional
 {
-  bool p;
-  T v;
+    bool p;
+    T v;
 };
 
 template<typename T, typename TNext>
 struct Link
 {
-  TNext next;
-  T value;
+    TNext next;
+    T value;
 };
-
-struct Empty {};
 
 NAMEDSTRUCT3(MessageName,
              (int) a,

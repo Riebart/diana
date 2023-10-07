@@ -102,49 +102,50 @@ struct OptionalElement : Element<T>
 
     bool read(std::uint8_t* data) { return false; }
     std::size_t dump_size() { return 1 + (present ? Element<T>::dump_size() : 0); }
-    std::uint8_t* binary_write(std::uint8_t* buf) { 
+    std::uint8_t* binary_write(std::uint8_t* buf)
+    { return NULL; }
 
-    void operator=(T newval)
-    {
-        this->present = true;
-        Element<T>::operator = (newval);
-    }
-
-    bool json(std::string* s, int n)
-    {
-        if (present)
+        void operator=(T newval)
         {
-            Element<T>::json(s, n);
+            this->present = true;
+            Element<T>::operator = (newval);
         }
-        return present;
-    }
 
-    operator bool() const { return present; }
-};
-
-template <typename T, StringLiteral Name>
-struct NamedOptionalElement
-{
-    struct OptionalElement<T> element;
-    NamedOptionalElement() : element() { }
-    bool read(std::uint8_t* data) { return element.read(); }
-    void hton() { element.hton(); }
-    std::size_t dump_size() { return element.dump_size(); }
-    void binary_write(std::uint8_t* buf) { element.binary_write(buf); }
-    void operator=(T newval) { element = newval; }
-
-    bool json(std::string* s, int n)
-    {
-        if (element.present)
+        bool json(std::string* s, int n)
         {
-            s->append("\"");
-            s->append(Name.value);
-            s->append("\":");
-            element.json(s, n);
+            if (present)
+            {
+                Element<T>::json(s, n);
+            }
+            return present;
         }
-        return element.present;
-    }
-};
+
+        operator bool() const { return present; }
+    };
+
+    template <typename T, StringLiteral Name>
+    struct NamedOptionalElement
+    {
+        struct OptionalElement<T> element;
+        NamedOptionalElement() : element() { }
+        bool read(std::uint8_t* data) { return element.read(); }
+        void hton() { element.hton(); }
+        std::size_t dump_size() { return element.dump_size(); }
+        void binary_write(std::uint8_t* buf) { element.binary_write(buf); }
+        void operator=(T newval) { element = newval; }
+
+        bool json(std::string* s, int n)
+        {
+            if (element.present)
+            {
+                s->append("\"");
+                s->append(Name.value);
+                s->append("\":");
+                element.json(s, n);
+            }
+            return element.present;
+        }
+    };
 
 // template <>
 // struct OptionalElement<bool> : Element<bool>
@@ -171,160 +172,160 @@ struct NamedOptionalElement
 //     explicit operator bool() const { return value; }
 // };
 
-template <typename T>
-struct Vector3
-{
-    T x, y, z;
-    Vector3(): x(), y(), z() {}
-    Vector3(T x, T y, T z)
+    template <typename T>
+    struct Vector3
     {
-        this->x = x;
-        this->y = y;
-        this->z = z;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const struct Vector3<T>& v)
-    {
-        os << "{\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
-        return os;
-    }
-};
-
-template <typename T>
-struct Vector4
-{
-    T w, x, y, z;
-    Vector4(): w(), x(), y(), z() {}
-    Vector4(T w, T x, T y, T z)
-    {
-        this->w = w;
-        this->x = x;
-        this->y = y;
-        this->z = z;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, const struct Vector4<T>& v)
-    {
-        os << "{\"w\": " << v.w << "\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
-        return os;
-    }
-};
-
-template <>
-void Element<Vector3<double>>::hton()
-{
-    value.x = htonll(value.x);
-    value.y = htonll(value.y);
-    value.z = htonll(value.z);
-}
-
-template <>
-void Element<Vector4<double>>::hton()
-{
-    value.w = htonll(value.w);
-    value.x = htonll(value.x);
-    value.y = htonll(value.y);
-    value.z = htonll(value.z);
-}
-
-template <> void Element<std::string>::hton() {}
-template <> std::size_t Element<std::string>::dump_size()
-{
-    return this->value.size();
-}
-
-template <typename T> struct ChainedElement
-{
-    T next;
-    std::size_t dump_size() { return next.dump_size(); }
-    void binary_write(std::uint8_t* buf) { next.binary_write(buf); }
-
-    bool json(std::string* s, int n)
-    {
-        bool result = next.json(s, n);
-        if (result && (n > 0))
+        T x, y, z;
+        Vector3(): x(), y(), z() {}
+        Vector3(T x, T y, T z)
         {
-            s->append(",");
+            this->x = x;
+            this->y = y;
+            this->z = z;
         }
-        return result;
-    }
-};
 
-template <typename T, typename TNext>
-struct ElementC : ChainedElement<TNext>
-{
-    struct Element<T> element;
-
-    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
-    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
-
-    bool json(std::string* s, int n)
-    {
-        ChainedElement<TNext>::json(s, n);
-        s->append(element.json(n + 1));
-        return true;
-    }
-};
-
-template <typename T, StringLiteral Name, typename TNext>
-struct NamedElementC : ChainedElement<TNext>
-{
-    struct Element<T> element;
-
-    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
-    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
-
-    bool json(std::string* s, int n)
-    {
-        ChainedElement<TNext>::json(s, n+1);
-        s->append("\"");
-        s->append(Name.value);
-        s->append("\":");
-        element.json(s, n);
-        return true;
-    }
-};
-
-template <typename T, typename TNext>
-struct OptionalElementC : ChainedElement<TNext>
-{
-    struct OptionalElement<T> element;
-
-    std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
-    void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
-
-    bool json(std::string* s, int n)
-    {
-        ChainedElement<TNext>::json(s, n + (this->element.present));
-        if (element.present)
+        friend std::ostream& operator<<(std::ostream& os, const struct Vector3<T>& v)
         {
-            element.json(s, n);
+            os << "{\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
+            return os;
         }
-        return element.present;
-    }
-};
+    };
 
-template <typename T, StringLiteral Name, typename TNext>
-struct NamedOptionalElementC : ChainedElement<TNext>
-{
-    struct OptionalElement<T> element;
-
-    std::size_t dump_size()
+    template <typename T>
+    struct Vector4
     {
-        return element.dump_size() + ChainedElement<TNext>::dump_size();
-    }
-
-    bool json(std::string* s, int n)
-    {
-        ChainedElement<TNext>::json(s, n + (this->element.present));
-
-        if (this->element.present)
+        T w, x, y, z;
+        Vector4(): w(), x(), y(), z() {}
+        Vector4(T w, T x, T y, T z)
         {
+            this->w = w;
+            this->x = x;
+            this->y = y;
+            this->z = z;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const struct Vector4<T>& v)
+        {
+            os << "{\"w\": " << v.w << "\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
+            return os;
+        }
+    };
+
+    template <>
+    void Element<Vector3<double>>::hton()
+    {
+        value.x = htonll(value.x);
+        value.y = htonll(value.y);
+        value.z = htonll(value.z);
+    }
+
+    template <>
+    void Element<Vector4<double>>::hton()
+    {
+        value.w = htonll(value.w);
+        value.x = htonll(value.x);
+        value.y = htonll(value.y);
+        value.z = htonll(value.z);
+    }
+
+    template <> void Element<std::string>::hton() {}
+    template <> std::size_t Element<std::string>::dump_size()
+    {
+        return this->value.size();
+    }
+
+    template <typename T> struct ChainedElement
+    {
+        T next;
+        std::size_t dump_size() { return next.dump_size(); }
+        void binary_write(std::uint8_t* buf) { next.binary_write(buf); }
+
+        bool json(std::string* s, int n)
+        {
+            bool result = next.json(s, n);
+            if (result && (n > 0))
+            {
+                s->append(",");
+            }
+            return result;
+        }
+    };
+
+    template <typename T, typename TNext>
+    struct ElementC : ChainedElement<TNext>
+    {
+        struct Element<T> element;
+
+        std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+        void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
+
+        bool json(std::string* s, int n)
+        {
+            ChainedElement<TNext>::json(s, n);
+            s->append(element.json(n + 1));
+            return true;
+        }
+    };
+
+    template <typename T, StringLiteral Name, typename TNext>
+    struct NamedElementC : ChainedElement<TNext>
+    {
+        struct Element<T> element;
+
+        std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+        void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
+
+        bool json(std::string* s, int n)
+        {
+            ChainedElement<TNext>::json(s, n+1);
             s->append("\"");
             s->append(Name.value);
             s->append("\":");
-            this->element.json(s, n);
+            element.json(s, n);
+            return true;
         }
-        return this->element.present;
-    }
-};
+    };
+
+    template <typename T, typename TNext>
+    struct OptionalElementC : ChainedElement<TNext>
+    {
+        struct OptionalElement<T> element;
+
+        std::size_t dump_size() { return element.dump_size() + ChainedElement<TNext>::dump_size(); }
+        void binary_write(std::uint8_t* buf) { element.binary_write(buf); ChainedElement<TNext>::binary_write(buf); }
+
+        bool json(std::string* s, int n)
+        {
+            ChainedElement<TNext>::json(s, n + (this->element.present));
+            if (element.present)
+            {
+                element.json(s, n);
+            }
+            return element.present;
+        }
+    };
+
+    template <typename T, StringLiteral Name, typename TNext>
+    struct NamedOptionalElementC : ChainedElement<TNext>
+    {
+        struct OptionalElement<T> element;
+
+        std::size_t dump_size()
+        {
+            return element.dump_size() + ChainedElement<TNext>::dump_size();
+        }
+
+        bool json(std::string* s, int n)
+        {
+            ChainedElement<TNext>::json(s, n + (this->element.present));
+
+            if (this->element.present)
+            {
+                s->append("\"");
+                s->append(Name.value);
+                s->append("\":");
+                this->element.json(s, n);
+            }
+            return this->element.present;
+        }
+    };
