@@ -69,6 +69,18 @@ template <> void Element<std::string>::hton() {}
 template <> void Element<std::string>::ntoh() {}
 template <> bool Element<std::string>::json(std::string* s) { s->append("\""); s->append(value); s->append("\""); return true; }
 template <> std::size_t Element<std::string>::binary_size() { return this->value.length(); /*This is a synonym for .size()*/ }
+template <> std::size_t Element<std::string>::binary_read(std::uint8_t* data)
+{
+    value = (const char*)data;
+    return value.length() + 1;
+}
+template <> std::size_t Element<std::string>::binary_write(std::uint8_t* buf)
+{
+    std::size_t num_chars = value.length();
+    memcpy(buf, value.c_str(), num_chars);
+    buf[num_chars] = 0;
+    return num_chars + 1;
+}
 
 template<>
 struct Element<const char*>
@@ -93,7 +105,8 @@ struct Element<const char*>
     }
     std::size_t binary_write(std::uint8_t* buf)
     {
-        memcpy(buf, value, num_chars + 1);
+        memcpy(buf, value, num_chars);
+        buf[num_chars] = 0;
         return num_chars + 1;
     }
 
