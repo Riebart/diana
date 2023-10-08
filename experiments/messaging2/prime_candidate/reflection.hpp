@@ -272,4 +272,6 @@ struct Link<T, N, Empty>
 // Because we do tail-up recursion for emitting the JSON, the fields the serialization appear
 // in the wrong (reversed) order that they were specified in. This just reverses the order of
 // the arguments so that things come out in the order specified.
+//
+// This is also important for BSON and other structures where order may matter.
 #define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, REVERSE(__VA_ARGS__))

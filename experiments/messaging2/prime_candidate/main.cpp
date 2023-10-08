@@ -83,7 +83,11 @@ int main(int argc, char** argv)
         msg2.thrust.present = i & 16;
         msg2.object_type.present = i & 32;
         msg2.orientation.present = i & 64;
-        results.bytes_json += msg2.json().length();
+        std::string json = msg2.json();
+        results.bytes_json += json.length();
+        #ifdef EMIT_BENCHMARK_JSON
+        std::cout << json << std::endl;
+        #endif
     }
     t1 = std::chrono::high_resolution_clock::now();
     dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
@@ -100,7 +104,11 @@ int main(int argc, char** argv)
         msg2.thrust.present = i & 16;
         msg2.object_type.present = i & 32;
         msg2.orientation.present = i & 64;
-        results.bytes_json_n += msg2.json_n().length();
+        std::string json = msg2.json_n();
+        results.bytes_json_n += json.length();
+        #ifdef EMIT_BENCHMARK_JSON
+        std::cout << json << std::endl;
+        #endif
     }
     t1 = std::chrono::high_resolution_clock::now();
     dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
