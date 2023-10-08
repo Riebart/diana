@@ -67,10 +67,8 @@ struct Element
 
 template <> void Element<std::string>::hton() {}
 template <> void Element<std::string>::ntoh() {}
-template <> std::size_t Element<std::string>::binary_size()
-{
-    return this->value.length(); // This is a synonym for .size()
-}
+template <> bool Element<std::string>::json(std::string* s) { s->append("\""); s->append(value); s->append("\""); return true; }
+template <> std::size_t Element<std::string>::binary_size() { return this->value.length(); /*This is a synonym for .size()*/ }
 
 template<>
 struct Element<const char*>

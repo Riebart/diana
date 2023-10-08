@@ -21,6 +21,7 @@ REFLECTION_STRUCT(PhysicalPropertiesMsg,
     (std::int64_t) server_id,
     (std::int64_t) client_id,
     (Optional<const char*>) object_type,
+    (Optional<std::string>) std_string,
     (Optional<double>) mass,
     (Optional<double>) radius,
     (Optional<Vector3>) position,
@@ -51,6 +52,7 @@ int main(int argc, char** argv)
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     msg.object_type = "This is some stuff!"; // strnlen() = 19 + null
     msg2.object_type = "This is some stuff!"; // strnlen() = 19 + null
+    msg.std_string = "Standard Library string value";
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     msg.position = Vector3(1.1, 2.2, 3.3);
     msg2.velocity = Vector3(18.1,18.9,1963.02);
@@ -177,7 +179,7 @@ int main(int argc, char** argv)
     results.rate_binary_write = results.loop_count / (0.001 * results.ms_binary_write);
     results.rate_binary_read = results.loop_count / (0.001 * results.ms_binary_read);
     
-    std::cout << results.json() << std::endl;
+    std::cout << results << std::endl;
     #endif
 
     return 0;
