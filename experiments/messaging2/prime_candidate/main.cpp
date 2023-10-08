@@ -67,6 +67,7 @@ int main(int argc, char** argv)
     std::cout << msg2.json() << std::endl;
     std::cout << msg2.json_n() << std::endl;
     
+    #ifndef NDEBUG
     std::chrono::time_point<std::chrono::high_resolution_clock> t0, t1;
     std::chrono::milliseconds dt, bare_loop_dt;
 
@@ -177,6 +178,7 @@ int main(int argc, char** argv)
     results.rate_binary_read = results.loop_count / (0.001 * results.ms_binary_read);
     
     std::cout << results.json() << std::endl;
+    #endif
 
     return 0;
 }
