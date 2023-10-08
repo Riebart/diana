@@ -14,22 +14,22 @@
 
 template <typename T> inline T _htons(T x)
 {
-    return htons((uint16_t)x);
+    return htons((std::uint16_t)x);
 }
 
 template <typename T> inline T _ntohs(T x)
 {
-    return ntohs((uint16_t)x);
+    return ntohs((std::uint16_t)x);
 }
 
 template <typename T> inline T _htonl(T x)
 {
-    return htonl((uint32_t)x);
+    return htonl((std::uint32_t)x);
 }
 
 template <typename T> inline T _ntohl(T x)
 {
-    return ntohl((uint32_t)x);
+    return ntohl((std::uint32_t)x);
 }
 
 template <typename T> inline T _htonll(T x)
