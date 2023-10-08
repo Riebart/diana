@@ -87,47 +87,47 @@ int main(int argc, char** argv)
     t1 = std::chrono::high_resolution_clock::now();
     bare_loop_dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
 
-    // results.bytes_json = 0;
-    // t0 = std::chrono::high_resolution_clock::now();
-    // for (int i = 0 ; i < results.loop_count ; i++)
-    // {
-    //     msg2.mass.present = i & 1;
-    //     msg2.radius.present = i & 2;
-    //     msg2.position.present = i & 4;
-    //     msg2.velocity.present = i & 8;
-    //     msg2.thrust.present = i & 16;
-    //     msg2.object_type.present = i & 32;
-    //     msg2.orientation.present = i & 64;
-    //     std::string json = msg2.json();
-    //     results.bytes_json += json.length();
-    //     #ifdef EMIT_BENCHMARK_JSON
-    //     std::cout << json << std::endl;
-    //     #endif
-    // }
-    // t1 = std::chrono::high_resolution_clock::now();
-    // dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-    // results.ms_json = dt.count() - bare_loop_dt.count();
+    results.bytes_json = 0;
+    t0 = std::chrono::high_resolution_clock::now();
+    for (int i = 0 ; i < results.loop_count ; i++)
+    {
+        msg2.mass.present = i & 1;
+        msg2.radius.present = i & 2;
+        msg2.position.present = i & 4;
+        msg2.velocity.present = i & 8;
+        msg2.thrust.present = i & 16;
+        msg2.object_type.present = i & 32;
+        msg2.orientation.present = i & 64;
+        std::string json = msg2.json();
+        results.bytes_json += json.length();
+        #ifdef EMIT_BENCHMARK_JSON
+        std::cout << json << std::endl;
+        #endif
+    }
+    t1 = std::chrono::high_resolution_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    results.ms_json = dt.count() - bare_loop_dt.count();
 
-    // results.bytes_json_n = 0;
-    // t0 = std::chrono::high_resolution_clock::now();
-    // for (int i = 0 ; i < results.loop_count ; i++)
-    // {
-    //     msg2.mass.present = i & 1;
-    //     msg2.radius.present = i & 2;
-    //     msg2.position.present = i & 4;
-    //     msg2.velocity.present = i & 8;
-    //     msg2.thrust.present = i & 16;
-    //     msg2.object_type.present = i & 32;
-    //     msg2.orientation.present = i & 64;
-    //     std::string json = msg2.json_n();
-    //     results.bytes_json_n += json.length();
-    //     #ifdef EMIT_BENCHMARK_JSON
-    //     std::cout << json << std::endl;
-    //     #endif
-    // }
-    // t1 = std::chrono::high_resolution_clock::now();
-    // dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-    // results.ms_json_n = dt.count() - bare_loop_dt.count();
+    results.bytes_json_n = 0;
+    t0 = std::chrono::high_resolution_clock::now();
+    for (int i = 0 ; i < results.loop_count ; i++)
+    {
+        msg2.mass.present = i & 1;
+        msg2.radius.present = i & 2;
+        msg2.position.present = i & 4;
+        msg2.velocity.present = i & 8;
+        msg2.thrust.present = i & 16;
+        msg2.object_type.present = i & 32;
+        msg2.orientation.present = i & 64;
+        std::string json = msg2.json_n();
+        results.bytes_json_n += json.length();
+        #ifdef EMIT_BENCHMARK_JSON
+        std::cout << json << std::endl;
+        #endif
+    }
+    t1 = std::chrono::high_resolution_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
+    results.ms_json_n = dt.count() - bare_loop_dt.count();
     
     results.bytes_binary_write = 0;
     t0 = std::chrono::high_resolution_clock::now();
