@@ -1,5 +1,8 @@
-#include <iostream>
+#ifndef MESSAGING_HPP
+#define MESSAGING_HPP
+
 #include <cstdint>
+#include <iostream>
 #include <sstream>
 
 #include "byte_reordering.hpp"
@@ -105,9 +108,4 @@ void Element<Vector4<double>>::ntoh()
     value.z = _ntohll(value.z);
 }
 
-template <> void Element<std::string>::hton() {}
-template <> void Element<std::string>::ntoh() {}
-template <> std::size_t Element<std::string>::binary_size()
-{
-    return this->value.size();
-}
+#endif
