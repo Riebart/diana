@@ -35,7 +35,7 @@ struct Vector4
 
     friend std::ostream& operator<<(std::ostream& os, const struct Vector4<T>& v)
     {
-        os << "{\"w\":" << v.w << "\"x\":"<< v.x << ",\"y\":" << v.y << ",\"z\":" << v.z << "}";
+        os << "{\"w\":" << v.w << ",\"x\":"<< v.x << ",\"y\":" << v.y << ",\"z\":" << v.z << "}";
         return os;
     }
 };

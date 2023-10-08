@@ -129,6 +129,18 @@ struct NamedElement : Element<T>
         Element<T>::json(s);
         return true;
     }
+
+    bool json(std::string* s, int N)
+    {
+        s->append("\"");
+        s->append(Name.value);
+        s->append("\":{\"index\":");
+        s->append(std::to_string(N));
+        s->append(",\"value\":");
+        Element<T>::json(s);
+        s->append("}");
+        return true; // Because there's always an element emitted, even if there's no set value.
+    }
 };
 
 template <typename OptionalT, StringLiteral Name>
@@ -147,9 +159,28 @@ struct NamedElement<Optional<OptionalT>, Name> : Optional<OptionalT>
         }
         return this->present;
     }
+
+    bool json(std::string* s, int N)
+    {
+        s->append("\"");
+        s->append(Name.value);
+        s->append("\":{\"index\":");
+        s->append(std::to_string(N));
+        s->append(",\"value\":");
+        if (this->present)
+        {
+            Optional<OptionalT>::json(s);
+        }
+        else
+        {
+            s->append("null");
+        }
+        s->append("}");
+        return true; // Because there's always an element emitted, even if there's no set value.
+    }
 };
 
-//@TODO Technically, this has a size when included, but not when inherited
+//@NOTE Technically, this has a size when included, but not when inherited
 // See: https://stackoverflow.com/questions/4041447/how-is-stdtuple-implemented
 // Since we're not actually _storing_ this, just using it as a structure for casting purposes
 // and as a chained accessor, then we can ignore it, largely.
@@ -161,7 +192,7 @@ struct Empty { };
 
 // This assumes that T is a NamedElement, and TNext is another Link.
 // Otherwise this won't compile.
-template <typename T, typename TNext>
+template <typename T, int N, typename TNext>
 struct Link
 {
     T value;
@@ -185,10 +216,11 @@ struct Link
         return count;
     }
     bool json(std::string* s) { bool result = next.json(s); if (result) { s->append(","); } return value.json(s); }
+    bool json_n(std::string* s) { bool result = next.json_n(s); if (result) { s->append(","); } return value.json(s, N); }
 };
 
-template<typename T>
-struct Link<T, Empty>
+template<typename T, int N>
+struct Link<T, N, Empty>
 {
     T value;
 
@@ -208,24 +240,33 @@ struct Link<T, Empty>
         return count;
     }
     bool json(std::string* s) { return value.json(s); }
+    bool json_n(std::string* s) { return value.json(s, N); }
 };
 
 #define MEMBER(FQTV) TYPEOF(FQTV) NAMEOF(FQTV);
-#define LINKED_MEMBER(FQTV) struct Link<NamedElement<TYPEOF(FQTV), STRINGIZE(NAMEOF(FQTV))>,
+#define LINKED_MEMBER(FQTV, N) struct Link<NamedElement<TYPEOF(FQTV), STRINGIZE(NAMEOF(FQTV))>, N,
 #define CLOSE_TEMPLATE(X) >
 
 #define LINKED_DATA_STRUCTURE(...) \
-    FOR_EACH(LINKED_MEMBER, __VA_ARGS__) \
+    FOR_EACH_N(LINKED_MEMBER, __VA_ARGS__) \
     struct Empty \
     FOR_EACH(CLOSE_TEMPLATE, __VA_ARGS__) 
 
 #define LIST_THIS(...) auto list_this = ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this);
 
-#define REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
+#define __REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH(MEMBER, __VA_ARGS__); \
     std::size_t binary_size() { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
+    std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
     std::uint8_t* binary_write() { std::uint8_t* buf = new std::uint8_t[this->binary_size()]; this->binary_write(buf); return buf; } \
     std::size_t binary_write(std::uint8_t* buf) { LIST_THIS(__VA_ARGS__); return list_this->binary_write(buf); } \
-    std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
-    std::string json() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json(&s); s.append("}"); return s; }\
+    std::size_t bson_read() { return 0; } \
+    std::size_t bson_write() { return 0; } \
+    std::string json() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
+    std::string json_n() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json_n(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
 };
+
+// Because we do tail-up recursion for emitting the JSON, the fields the serialization appear
+// in the wrong (reversed) order that they were specified in. This just reverses the order of
+// the arguments so that things come out in the order specified.
+#define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, REVERSE(__VA_ARGS__))
