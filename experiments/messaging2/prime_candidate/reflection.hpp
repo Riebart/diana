@@ -13,7 +13,11 @@
 template<size_t N>
 struct StringLiteral
 {
-    constexpr StringLiteral(const char (&str) [N]) { std::copy_n(str, N, value); }
+    constexpr StringLiteral(const char (&str) [N])
+    {
+        std::copy_n(str, N, value);
+    }
+
     char value[N];
 };
 
@@ -23,18 +27,34 @@ struct Element
     T value;
 
     Element() : value() { }
-    Element(T value) { this->value = value; }
-    void hton() { __hton<T>(value); }
-    void ntoh() { __ntoh<T>(value); }
+    Element(T value)
+    {
+        this->value = value;
+    }
 
-    std::size_t binary_size() { return sizeof(T); }
+    void hton()
+    {
+        __hton<T>(value);
+    }
+
+    void ntoh()
+    {
+        __ntoh<T>(value);
+    }
+
+    std::size_t binary_size() const
+    {
+        return sizeof(T);
+    }
+
     std::size_t binary_read(std::uint8_t* data)
     {
         this->operator=(*(T*)data);
         this->ntoh();
         return sizeof(T);
     }
-    std::size_t binary_write(std::uint8_t* buf)
+
+    std::size_t binary_write(std::uint8_t* buf) const
     {
         auto dest = (Element<T>*)buf;
         dest->operator=(value);
@@ -42,16 +62,28 @@ struct Element
         return sizeof(T);
     }
 
-    void operator=(T newval) { this->value = newval; }
-    operator T() const { return value; }
+    void operator=(T newval)
+    {
+        this->value = newval;
+    }
+
+    operator T() const
+    {
+        return value;
+    }
+
     bool operator==(const Element<T>& other) const
     {
         // std::cerr << value << " " << other.value << std::endl;
         return value == other.value;
     }
-    bool operator==(const T& other) const { return value == other; }
 
-    bool json(std::string* s)
+    bool operator==(const T& other) const
+    {
+        return value == other;
+    }
+
+    bool json(std::string* s) const
     {
         // // The ostream approach is more flexible, but less efficient.
         // // It is about 30-40% slower for JSON (still like 2M elements/s, or 100MB/s)
@@ -67,14 +99,23 @@ struct Element
 
 template <> void Element<std::string>::hton() {}
 template <> void Element<std::string>::ntoh() {}
-template <> bool Element<std::string>::json(std::string* s) { s->append("\""); s->append(value); s->append("\""); return true; }
-template <> std::size_t Element<std::string>::binary_size() { return this->value.length(); /*This is a synonym for .size()*/ }
+template <> bool Element<std::string>::json(std::string* s) const
+{
+    s->append("\"");
+    s->append(value);
+    s->append("\"");
+    return true;
+}
+template <> std::size_t Element<std::string>::binary_size() const
+{
+    return this->value.length(); /*This is a synonym for .size()*/
+}
 template <> std::size_t Element<std::string>::binary_read(std::uint8_t* data)
 {
     value = (const char*)data;
     return value.length() + 1;
 }
-template <> std::size_t Element<std::string>::binary_write(std::uint8_t* buf)
+template <> std::size_t Element<std::string>::binary_write(std::uint8_t* buf) const
 {
     std::size_t num_chars = value.length();
     memcpy(buf, value.c_str(), num_chars);
@@ -89,12 +130,17 @@ struct Element<const char*>
     std::size_t num_chars = 0;
     bool free_mem = false;
 
-    Element() : value(NULL), num_chars(0) , free_mem(false) {}
+    Element() : value(NULL), num_chars(0), free_mem(false) {}
     // ~Element() { if (free_mem) { delete value; }}
-    void hton() {}; void ntoh() {}
+    inline void hton() {};
+    void ntoh() {}
 
-    std::size_t binary_size() { return num_chars + 1; }
-    std::size_t binary_read(std::uint8_t* data)
+    inline std::size_t binary_size() const
+    {
+        return num_chars + 1;
+    }
+
+    inline std::size_t binary_read(std::uint8_t* data)
     {
         this->operator=((const char*)data);
         char* copy = new char[num_chars + 1];
@@ -103,18 +149,36 @@ struct Element<const char*>
         free_mem = true;
         return num_chars + 1;
     }
-    std::size_t binary_write(std::uint8_t* buf)
+
+    inline std::size_t binary_write(std::uint8_t* buf) const
     {
         memcpy(buf, value, num_chars);
         buf[num_chars] = 0;
         return num_chars + 1;
     }
 
-    void operator=(const char* newval) { if (free_mem) { delete value; free_mem = false; } this->value = newval; this->num_chars = strnlen(this->value, 4096); }
-    bool operator==(const Element<const char*>& other) const { return (num_chars == other.num_chars) && (strncmp(value, other.value, num_chars) == 0); }
-    operator const char*() const { return value; }
+    inline void operator=(const char* newval)
+    {
+        if (free_mem)
+        {
+            delete value;
+            free_mem = false;
+        }
+        this->value = newval;
+        this->num_chars = strnlen(this->value, 4096);
+    }
 
-    bool json(std::string* s)
+    inline bool operator==(const Element<const char*>& other) const
+    {
+        return (num_chars == other.num_chars) && (strncmp(value, other.value, num_chars) == 0);
+    }
+
+    inline operator const char*() const
+    {
+        return value;
+    }
+
+    inline bool json(std::string* s) const
     {
         if (value == NULL)
         {
@@ -136,35 +200,64 @@ struct Optional : Element<T>
     bool present;
 
     Optional() : Element<T>(), present(false) {}
-    bool operator==(const Optional<T>& other) const {
+    inline bool operator==(const Optional<T>& other) const
+    {
         bool result = (present == other.present);
         if (result && present)
         {
             result = Element<T>::operator==(static_cast<Element<T>>(other));
         }
-        return result; }
-    bool operator==(const T& other) const {
+        return result;
+    }
+
+    inline bool operator==(const T& other) const
+    {
         if (present)
         {
             return (this->value == other);
-        } else { return false; }}
-    
-    std::size_t binary_size() { return 1 + (present ? Element<T>::binary_size() : 0); }
-    std::size_t binary_read(std::uint8_t* data)
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    inline std::size_t binary_size() const
+    {
+        return 1 + (present ? Element<T>::binary_size() : 0);
+    }
+
+    inline std::size_t binary_read(std::uint8_t* data)
     {
         present = (bool)data[0];
         return 1 + (present ? Element<T>::binary_read(data + 1) : 0);
     }
-    std::size_t binary_write(std::uint8_t* buf)
+
+    inline std::size_t binary_write(std::uint8_t* buf) const
     {
         buf[0] = present;
         return 1 + (present ? Element<T>::binary_write(buf + 1) : 0);
     }
-    
-    void operator=(T newval) { this->present = true; Element<T>::operator = (newval); }
-    bool json(std::string* s) { if (present) { Element<T>::json(s); } return present; }
-    
-    operator bool() const { return present; }
+
+    inline void operator=(T newval)
+    {
+        this->present = true;
+        Element<T>::operator = (newval);
+    }
+
+    inline bool json(std::string* s) const
+    {
+        if (present)
+        {
+            Element<T>::json(s);
+        }
+        return present;
+    }
+
+    inline operator bool() const
+    {
+        return present;
+    }
 };
 
 template <typename T, StringLiteral Name>
@@ -172,7 +265,7 @@ struct NamedElement : Element<T>
 {
     NamedElement() : Element<T>() {}
 
-    bool json(std::string* s)
+    inline bool json(std::string* s) const
     {
         s->append("\"");
         s->append(Name.value);
@@ -181,7 +274,7 @@ struct NamedElement : Element<T>
         return true;
     }
 
-    bool json(std::string* s, int n)
+    inline bool json(std::string* s, int n) const
     {
         s->append("\"");
         s->append(Name.value);
@@ -199,7 +292,7 @@ struct NamedElement<Optional<OptionalT>, Name> : Optional<OptionalT>
 {
     NamedElement() : Optional<OptionalT>() {}
 
-    bool json(std::string* s)
+    inline bool json(std::string* s) const
     {
         if (this->present)
         {
@@ -211,7 +304,7 @@ struct NamedElement<Optional<OptionalT>, Name> : Optional<OptionalT>
         return this->present;
     }
 
-    bool json(std::string* s, int n)
+    inline bool json(std::string* s, int n) const
     {
         s->append("\"");
         s->append(Name.value);
@@ -235,7 +328,7 @@ struct NamedElement<Optional<OptionalT>, Name> : Optional<OptionalT>
 // See: https://stackoverflow.com/questions/4041447/how-is-stdtuple-implemented
 // Since we're not actually _storing_ this, just using it as a structure for casting purposes
 // and as a chained accessor, then we can ignore it, largely.
-// 
+//
 // Casting a struct of the right shape to the _type_ of a link chain that ends with this
 // will be harmless, and specializing the Link structure with the Empty as the Next type
 // and not having a TNext member also removes this overhead.
@@ -249,10 +342,23 @@ struct Link
     T value;
     TNext next;
 
-    void hton() { value.hton(); next.hton(); }
-    void ntoh() { value.ntoh(); next.ntoh(); }
+    inline void hton()
+    {
+        value.hton();
+        next.hton();
+    }
 
-    std::size_t binary_size() { return value.binary_size() + next.binary_size(); }
+    inline void ntoh()
+    {
+        value.ntoh();
+        next.ntoh();
+    }
+
+    inline std::size_t binary_size() const
+    {
+        return value.binary_size() + next.binary_size();
+    }
+
     std::size_t binary_read(std::uint8_t* data)
     {
         std::size_t count = 0;
@@ -261,7 +367,8 @@ struct Link
         count += next.binary_read(data);
         return count;
     }
-    std::size_t binary_write(std::uint8_t* buf)
+
+    std::size_t binary_write(std::uint8_t* buf) const
     {
         std::size_t count = 0;
         count += value.binary_write(buf);
@@ -269,10 +376,31 @@ struct Link
         count += next.binary_write(buf);
         return count;
     }
-    bool json(std::string* s) { bool result = value.json(s); if (result) { s->append(","); } return next.json(s); }
-    bool json_n(std::string* s, int n) { bool result = value.json(s, n); if (result) { s->append(","); } return next.json_n(s, n + 1); }
 
-    bool operator==(const Link<T, TNext>& other) const { return (value == other.value) && (next == other.next); }
+    inline bool json(std::string* s) const
+    {
+        bool result = value.json(s);
+        if (result)
+        {
+            s->append(",");
+        }
+        return next.json(s);
+    }
+
+    inline bool json_n(std::string* s, int n) const
+    {
+        bool result = value.json(s, n);
+        if (result)
+        {
+            s->append(",");
+        }
+        return next.json_n(s, n + 1);
+    }
+
+    inline bool operator==(const Link<T, TNext>& other) const
+    {
+        return (value == other.value) && (next == other.next);
+    }
 };
 
 template<typename T>
@@ -280,28 +408,51 @@ struct Link<T, Empty>
 {
     T value;
 
-    void hton() { value.hton(); }
-    void ntoh() { value.ntoh(); }
+    inline void hton()
+    {
+        value.hton();
+    }
 
-    std::size_t binary_size() { return value.binary_size(); }
-    std::size_t binary_read(std::uint8_t* data)
+    inline void ntoh()
+    {
+        value.ntoh();
+    }
+
+    inline std::size_t binary_size() const
+    {
+        return value.binary_size();
+    }
+
+    inline std::size_t binary_read(std::uint8_t* data)
     {
         std::size_t count = 0;
         count += value.binary_read(data);
         data += count;
         return count;
     }
-    std::size_t binary_write(std::uint8_t* buf)
+
+    inline std::size_t binary_write(std::uint8_t* buf) const
     {
         std::size_t count = 0;
         count += value.binary_write(buf);
         buf += count;
         return count;
     }
-    bool json(std::string* s) { return value.json(s); }
-    bool json_n(std::string* s, int n) { return value.json(s, n); }
 
-    bool operator==(const Link<T, Empty>& other) const { return value == other.value; }
+    inline bool json(std::string* s) const
+    {
+        return value.json(s);
+    }
+
+    inline bool json_n(std::string* s, int n) const
+    {
+        return value.json(s, n);
+    }
+
+    inline bool operator==(const Link<T, Empty>& other) const
+    {
+        return value == other.value;
+    }
 };
 
 #define _UNDERSCORE(X) _##X
@@ -316,7 +467,7 @@ struct Link<T, Empty>
 #define LINKED_DATA_STRUCTURE(...) \
     FOR_EACH_N(LINKED_MEMBER, __VA_ARGS__) \
     struct Empty \
-    FOR_EACH(CLOSE_TEMPLATE, __VA_ARGS__) 
+    FOR_EACH(CLOSE_TEMPLATE, __VA_ARGS__)
 
 #define LIST_THIS(...) auto list_this = ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this);
 
@@ -324,7 +475,7 @@ struct Link<T, Empty>
     FOR_EACH(MEMBER, __VA_ARGS__); \
     STRUCT_NAME() : REMOVE_TRAILING_COMMA(FOR_EACH(DEFAULT_MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
     STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, __VA_ARGS__))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
-    inline LINKED_DATA_STRUCTURE(__VA_ARGS__)* as_link() { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this); } \
+    inline LINKED_DATA_STRUCTURE(__VA_ARGS__)* as_link() const { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this); } \
     std::size_t binary_size() const { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
     std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
     std::uint8_t* binary_write() const { std::uint8_t* buf = new std::uint8_t[this->binary_size()]; this->binary_write(buf); return buf; } \
@@ -337,15 +488,10 @@ struct Link<T, Empty>
     bool operator==(const STRUCT_NAME& other) const { LIST_THIS(__VA_ARGS__); return list_this->operator==(*((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)(&other))); }; \
     friend std::ostream& operator<<(std::ostream& os, const STRUCT_NAME& v) { os << v.json(); return os; }\
 }; \
-template <> bool Element<STRUCT_NAME>::json(std::string* s) { value.json(s); return true; } \
+template <> bool Element<STRUCT_NAME>::json(std::string* s) const { value.json(s); return true; } \
 template <> void Element<STRUCT_NAME>::hton() { value.as_link()->hton(); } \
 template <> void Element<STRUCT_NAME>::ntoh() { value.as_link()->ntoh(); }
 
-// Because we do tail-up recursion for emitting the JSON, the fields the serialization appear
-// in the wrong (reversed) order that they were specified in. This just reverses the order of
-// the arguments so that things come out in the order specified.
-//
-// This is also important for BSON and other structures where order may matter.
 #define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, __VA_ARGS__)
 
 #endif

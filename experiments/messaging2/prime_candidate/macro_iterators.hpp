@@ -10,7 +10,7 @@
 #define REM(...) __VA_ARGS__
 
 // Just eat an entire set of __VA_ARGS__, useful for taildropping in recursion and for removing a paren-enclosed prefix
-// 
+//
 // Example:
 //  #define A (int) a
 //  #define A_WITHOUT_PAREN_PREFIX EAT x // Resolves to: EAT (int) a == EAT(int) a == a
@@ -167,7 +167,7 @@
 #define REVERSE_20(a,...) EXPAND(REVERSE_19(__VA_ARGS__)),a
 #define REMOVE_TRAILING_COMMA_N(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,N,...) REMOVE_TRAILING_COMMA_##N
 #define REMOVE_TRAILING_COMMA(...) REMOVE_TRAILING_COMMA_N(__VA_ARGS__,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1)(__VA_ARGS__)
-#define REMOVE_TRAILING_COMMA_0(_1) 
+#define REMOVE_TRAILING_COMMA_0(_1)
 #define REMOVE_TRAILING_COMMA_1(_1,_2) _1
 #define REMOVE_TRAILING_COMMA_2(_1,_2,_3) _1,_2
 #define REMOVE_TRAILING_COMMA_3(_1,_2,_3,_4) _1,_2,_3

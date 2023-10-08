@@ -5,45 +5,49 @@
 #include "reflection.hpp"
 
 REFLECTION_STRUCT(Vector3,
-    (double) x,
-    (double) y,
-    (double) z
-);
+                  (double) x,
+                  (double) y,
+                  (double) z
+                 );
 
 REFLECTION_STRUCT(Vector4,
-    (double) w,
-    (double) x,
-    (double) y,
-    (double) z
-);
+                  (double) w,
+                  (double) x,
+                  (double) y,
+                  (double) z
+                 );
 
 REFLECTION_STRUCT(PhysicalPropertiesMsg,
-    (std::int64_t) server_id,
-    (std::int64_t) client_id,
-    (Optional<const char*>) object_type,
-    (Optional<std::string>) std_string,
-    (Optional<double>) mass,
-    (Optional<double>) radius,
-    (Optional<Vector3>) position,
-    (Optional<Vector3>) velocity,
-    (Optional<Vector3>) thrust,
-    (Optional<Vector4>) orientation
-)
+                  (int) type,
+                  (std::int64_t) server_id,
+                  (std::int64_t) client_id,
+                  (Optional<const char*>) object_type,
+                  (Optional<std::string>) std_string,
+                  (Optional<double>) mass,
+                  (Optional<double>) radius,
+                  (Optional<Vector3>) position,
+                  (Optional<Vector3>) velocity,
+                  (Optional<Vector3>) thrust,
+                  (Optional<Vector4>) orientation
+                 )
 
 REFLECTION_STRUCT(BenchmarkResults,
-    (int) loop_count,
-    (int) bytes_json, (int) ms_json, (float) rate_json,
-    (int) bytes_json_n, (int) ms_json_n, (float) rate_json_n,
-    (int) bytes_binary_write, (int) ms_binary_write, (float) rate_binary_write,
-    (int) bytes_binary_read, (int) ms_binary_read, (float) rate_binary_read
-)
+                  (int) loop_count,
+                  (int) bytes_json, (int) ms_json, (float) rate_json,
+                  (int) bytes_json_n, (int) ms_json_n, (float) rate_json_n,
+                  (int) bytes_binary_write, (int) ms_binary_write, (float) rate_binary_write,
+                  (int) bytes_binary_read, (int) ms_binary_read, (float) rate_binary_read
+                 )
 
 std::uint8_t buf[4096];
 
 int main(int argc, char** argv)
 {
     PhysicalPropertiesMsg msg{}, msg2{};
-    
+
+    msg.type = -1;
+    msg2.type = -1;
+
     std::cout << sizeof(msg) << std::endl;
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     msg.radius = 102020.1;
@@ -69,8 +73,8 @@ int main(int argc, char** argv)
     std::cout << binary_read_count << std::endl;
     std::cout << msg2.json() << std::endl;
     std::cout << msg2.json_n() << std::endl;
-    
-    #ifndef NDEBUG
+
+#ifndef NDEBUG
 
     msg2.client_id = 9437856;
     msg2.server_id = 171027;
@@ -117,9 +121,9 @@ int main(int argc, char** argv)
         msg2.std_string.present = i & 128;
         std::string json = msg2.json();
         results.bytes_json += json.length();
-        #ifdef EMIT_BENCHMARK_JSON
+#ifdef EMIT_BENCHMARK_JSON
         std::cout << json << std::endl;
-        #endif
+#endif
     }
     t1 = std::chrono::high_resolution_clock::now();
     dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
@@ -139,14 +143,14 @@ int main(int argc, char** argv)
         msg2.std_string.present = i & 128;
         std::string json = msg2.json_n();
         results.bytes_json_n += json.length();
-        #ifdef EMIT_BENCHMARK_JSON
+#ifdef EMIT_BENCHMARK_JSON
         std::cout << json << std::endl;
-        #endif
+#endif
     }
     t1 = std::chrono::high_resolution_clock::now();
     dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
     results.ms_json_n = dt.count() - bare_loop_dt.count();
-    
+
     results.bytes_binary_write = 0;
     t0 = std::chrono::high_resolution_clock::now();
     for (int i = 0 ; i < results.loop_count ; i++)
@@ -195,9 +199,9 @@ int main(int argc, char** argv)
     results.rate_json_n = results.loop_count / (0.001 * results.ms_json_n);
     results.rate_binary_write = results.loop_count / (0.001 * results.ms_binary_write);
     results.rate_binary_read = results.loop_count / (0.001 * results.ms_binary_read);
-    
+
     std::cout << results << std::endl;
-    #endif
+#endif
 
     return 0;
 }
