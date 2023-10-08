@@ -312,7 +312,7 @@ struct Link<T, N, Empty>
 #define __REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH(MEMBER, __VA_ARGS__); \
     STRUCT_NAME() : REMOVE_TRAILING_COMMA(FOR_EACH(DEFAULT_MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
-    STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, __VA_ARGS__))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
+    STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, REVERSE(__VA_ARGS__)))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
     inline LINKED_DATA_STRUCTURE(__VA_ARGS__)* as_link() { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this); } \
     std::size_t binary_size() const { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
     std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
