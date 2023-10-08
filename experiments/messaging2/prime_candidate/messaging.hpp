@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdint>
+#include <sstream>
 
 #include "byte_reordering.hpp"
 
@@ -42,18 +43,22 @@ struct Vector4
     }
 };
 
-template <>
-void Element<Vector3<double>>::hton()
+template<>
+bool Element<Vector3<double>>::json(std::string* s)
 {
-    value.x = _htonll(value.x);
-    value.y = _htonll(value.y);
-    value.z = _htonll(value.z);
+    s->append("{\"x\":");
+    s->append(std::to_string(value.x));
+    s->append(",\"y\":");
+    s->append(std::to_string(value.y));
+    s->append(",\"z\":");
+    s->append(std::to_string(value.z));
+    s->append("}");
+    return true;
 }
 
 template <>
-void Element<Vector4<double>>::hton()
+void Element<Vector3<double>>::hton()
 {
-    value.w = _htonll(value.w);
     value.x = _htonll(value.x);
     value.y = _htonll(value.y);
     value.z = _htonll(value.z);
@@ -65,6 +70,30 @@ void Element<Vector3<double>>::ntoh()
     value.x = _ntohll(value.x);
     value.y = _ntohll(value.y);
     value.z = _ntohll(value.z);
+}
+
+template<>
+bool Element<Vector4<double>>::json(std::string* s)
+{
+    s->append("{\"w\":");
+    s->append(std::to_string(value.w));
+    s->append(",\"x\":");
+    s->append(std::to_string(value.x));
+    s->append(",\"y\":");
+    s->append(std::to_string(value.y));
+    s->append(",\"z\":");
+    s->append(std::to_string(value.z));
+    s->append("}");
+    return true;
+}
+
+template <>
+void Element<Vector4<double>>::hton()
+{
+    value.w = _htonll(value.w);
+    value.x = _htonll(value.x);
+    value.y = _htonll(value.y);
+    value.z = _htonll(value.z);
 }
 
 template <>

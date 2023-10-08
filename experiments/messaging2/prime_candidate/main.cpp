@@ -38,6 +38,8 @@ int main(int argc, char** argv)
     msg.object_type = "This is some stuff!"; // strnlen() = 19 + null
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     msg.position = Vector3<double>(1.1, 2.2, 3.3);
+    msg2.velocity = Vector3<double>(18.1,18.9,1963.02);
+    msg2.thrust = Vector3<double>(144.1,1333.9,1653.008);
     msg.orientation = Vector4<double>(-100.1,-200.2,-300.3,-400.4);
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     std::cout << msg.json() << std::endl;
@@ -49,8 +51,6 @@ int main(int argc, char** argv)
     std::cout << binary_read_count << std::endl;
     std::cout << msg2.json() << std::endl;
     std::cout << msg2.json_n() << std::endl;
-    msg2.velocity = Vector3<double>(18.1,18.9,1963.02);
-    msg2.thrust = Vector3<double>(144.1,1333.9,1653.008);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> t0, t1;
     std::chrono::milliseconds dt, bare_loop_dt;

@@ -1,7 +1,7 @@
 #include "macro_iterators.hpp"
 
 #include <string>
-#include <string.h>
+#include <string.h> // Needed for strncpy
 #include <sstream>
 #include "byte_reordering.hpp"
 
@@ -42,11 +42,14 @@ struct Element
 
     bool json(std::string* s)
     {
-        // @TODO This probably isn't efficient.
-        std::ostringstream os;
-        os.precision(6); // Use std::fixed inline below as well to specify the output precision.
-        os << std::fixed << value;
-        s->append(os.str());
+        // // The ostream approach is more flexible, but less efficient.
+        // // It is about 30-40% slower for JSON (still like 2M elements/s, or 100MB/s)
+        // // But the std::to_string() option is better overall.
+        // std::ostringstream os;
+        // os.precision(6); // Use std::fixed inline below as well to specify the output precision.
+        // os << std::fixed << value;
+        // s->append(os.str());
+        s->append(std::to_string(value));
         return true;
     }
 };
