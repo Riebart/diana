@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdint>
 
+#include "byte_reordering.hpp"
+
 template <typename T>
 struct Vector3
 {
@@ -43,35 +45,35 @@ struct Vector4
 template <>
 void Element<Vector3<double>>::hton()
 {
-    value.x = htonll(value.x);
-    value.y = htonll(value.y);
-    value.z = htonll(value.z);
+    value.x = _htonll(value.x);
+    value.y = _htonll(value.y);
+    value.z = _htonll(value.z);
 }
 
 template <>
 void Element<Vector4<double>>::hton()
 {
-    value.w = htonll(value.w);
-    value.x = htonll(value.x);
-    value.y = htonll(value.y);
-    value.z = htonll(value.z);
+    value.w = _htonll(value.w);
+    value.x = _htonll(value.x);
+    value.y = _htonll(value.y);
+    value.z = _htonll(value.z);
 }
 
 template <>
 void Element<Vector3<double>>::ntoh()
 {
-    value.x = ntohll(value.x);
-    value.y = ntohll(value.y);
-    value.z = ntohll(value.z);
+    value.x = _ntohll(value.x);
+    value.y = _ntohll(value.y);
+    value.z = _ntohll(value.z);
 }
 
 template <>
 void Element<Vector4<double>>::ntoh()
 {
-    value.w = ntohll(value.w);
-    value.x = ntohll(value.x);
-    value.y = ntohll(value.y);
-    value.z = ntohll(value.z);
+    value.w = _ntohll(value.w);
+    value.x = _ntohll(value.x);
+    value.y = _ntohll(value.y);
+    value.z = _ntohll(value.z);
 }
 
 template <> void Element<std::string>::hton() {}
