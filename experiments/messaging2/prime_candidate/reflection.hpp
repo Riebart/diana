@@ -8,10 +8,7 @@
 template<size_t N>
 struct StringLiteral
 {
-    constexpr StringLiteral(const char (&str) [N])
-    {
-        std::copy_n(str, N, value);
-    }
+    constexpr StringLiteral(const char (&str) [N]) { std::copy_n(str, N, value); }
     char value[N];
 };
 
@@ -21,16 +18,34 @@ struct Element
     T value;
 
     Element() { value = T(); }
-    bool read(std::uint8_t* data) { value = *(T*)data; return data + sizeof(T); }
+    Element(T value) { this->value = value; }
     void hton() { __hton<T>(value); }
-    std::size_t dump_size() { return sizeof(T); }
+    void ntoh() { __ntoh<T>(value); }
+
+    std::size_t binary_size() { return sizeof(T); }
+    std::size_t binary_read(std::uint8_t* data)
+    {
+        this->operator=(*(T*)data);
+        this->ntoh();
+        return sizeof(T);
+    }
+    std::size_t binary_write(std::uint8_t* buf)
+    {
+        auto dest = (Element<T>*)buf;
+        dest->operator=(value);
+        dest->hton();
+        return sizeof(T);
+    }
+
     void operator=(T newval) { this->value = newval; }
     operator T() const { return value; }
 
     bool json(std::string* s)
     {
+        // @TODO This probably isn't efficient.
         std::ostringstream os;
-        os << value;
+        os.precision(6); // Use std::fixed inline below as well to specify the output precision.
+        os << std::fixed << value;
         s->append(os.str());
         return true;
     }
@@ -42,14 +57,23 @@ struct Element<const char*>
     const char* value = NULL;
     std::size_t num_chars = 0;
 
-    void hton() {}
-    std::size_t dump_size() { return num_chars + 1; }
+    Element() : value(NULL), num_chars(0) {}
+    void hton() {}; void ntoh() {}
 
-    void operator=(const char* newval)
+    std::size_t binary_size() { return num_chars + 1; }
+    std::size_t binary_read(std::uint8_t* data)
     {
-        this->value = newval;
-        this->num_chars = strnlen(this->value, 4096);
+        this->operator=((const char*)data);
+        return num_chars + 1;
     }
+    std::size_t binary_write(std::uint8_t* buf)
+    {
+        memcpy(buf, value, num_chars + 1);
+        return num_chars + 1;
+    }
+
+    void operator=(const char* newval) { this->value = newval; this->num_chars = strnlen(this->value, 4096); }
+    operator const char*() const { return value; }
 
     bool json(std::string* s)
     {
@@ -65,8 +89,6 @@ struct Element<const char*>
         }
         return true;
     }
-
-    operator const char*() const { return value; }
 };
 
 template <typename T>
@@ -74,25 +96,22 @@ struct Optional : Element<T>
 {
     bool present;
 
-    Optional() : present(false), Element<T>() {}
-
-    bool read(std::uint8_t* data) { return (present ? Element<T>::read(data) : data); }
-    std::size_t dump_size() { return 1 + (present ? Element<T>::dump_size() : 0); }
-
-    void operator=(T newval)
+    Optional() : Element<T>(), present(false) {}
+    
+    std::size_t binary_size() { return 1 + (present ? Element<T>::binary_size() : 0); }
+    std::size_t binary_read(std::uint8_t* data)
     {
-        this->present = true;
-        Element<T>::operator = (newval);
+        present = (bool)data[0];
+        return 1 + (present ? Element<T>::binary_read(data + 1) : 0);
     }
-
-    bool json(std::string* s)
+    std::size_t binary_write(std::uint8_t* buf)
     {
-        if (present)
-        {
-            Element<T>::json(s);
-        }
-        return present;
+        buf[0] = present;
+        return 1 + (present ? Element<T>::binary_write(buf + 1) : 0);
     }
+    
+    void operator=(T newval) { this->present = true; Element<T>::operator = (newval); }
+    bool json(std::string* s) { if (present) { Element<T>::json(s); } return present; }
     
     operator bool() const { return present; }
 };
@@ -148,20 +167,24 @@ struct Link
     T value;
     TNext next;
 
-    std::size_t dump_size()
+    std::size_t binary_size() { return value.binary_size() + next.binary_size(); }
+    std::size_t binary_read(std::uint8_t* data)
     {
-        return value.dump_size() + next.dump_size();
+        std::size_t count = 0;
+        count += value.binary_read(data);
+        data += count;
+        count += next.binary_read(data);
+        return count;
     }
-
-    bool json(std::string* s)
+    std::size_t binary_write(std::uint8_t* buf)
     {
-        bool result = next.json(s);
-        if (result)
-        {
-            s->append(",");
-        }
-        return value.json(s);
+        std::size_t count = 0;
+        count += value.binary_write(buf);
+        buf += count;
+        count += next.binary_write(buf);
+        return count;
     }
+    bool json(std::string* s) { bool result = next.json(s); if (result) { s->append(","); } return value.json(s); }
 };
 
 template<typename T>
@@ -169,15 +192,22 @@ struct Link<T, Empty>
 {
     T value;
 
-    std::size_t dump_size()
+    std::size_t binary_size() { return value.binary_size(); }
+    std::size_t binary_read(std::uint8_t* data)
     {
-        return value.dump_size();
+        std::size_t count = 0;
+        count += value.binary_read(data);
+        data += count;
+        return count;
     }
-
-    bool json(std::string* s)
+    std::size_t binary_write(std::uint8_t* buf)
     {
-        return value.json(s);
+        std::size_t count = 0;
+        count += value.binary_write(buf);
+        buf += count;
+        return count;
     }
+    bool json(std::string* s) { return value.json(s); }
 };
 
 #define MEMBER(FQTV) TYPEOF(FQTV) NAMEOF(FQTV);
@@ -189,8 +219,13 @@ struct Link<T, Empty>
     struct Empty \
     FOR_EACH(CLOSE_TEMPLATE, __VA_ARGS__) 
 
+#define LIST_THIS(...) auto list_this = ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this);
+
 #define REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH(MEMBER, __VA_ARGS__); \
-    std::size_t dump_size() { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this)->dump_size(); }\
-    std::string json() { std::string s("{"); ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this)->json(&s); s.append("}"); return s; }\
+    std::size_t binary_size() { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
+    std::uint8_t* binary_write() { std::uint8_t* buf = new std::uint8_t[this->binary_size()]; this->binary_write(buf); return buf; } \
+    std::size_t binary_write(std::uint8_t* buf) { LIST_THIS(__VA_ARGS__); return list_this->binary_write(buf); } \
+    std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
+    std::string json() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json(&s); s.append("}"); return s; }\
 };

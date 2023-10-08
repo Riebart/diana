@@ -15,7 +15,7 @@ struct Vector3
 
     friend std::ostream& operator<<(std::ostream& os, const struct Vector3<T>& v)
     {
-        os << "{\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
+        os << "{\"x\":"<< v.x << ",\"y\":" << v.y << ",\"z\":" << v.z << "}";
         return os;
     }
 };
@@ -35,7 +35,7 @@ struct Vector4
 
     friend std::ostream& operator<<(std::ostream& os, const struct Vector4<T>& v)
     {
-        os << "{\"w\": " << v.w << "\"x\": "<< v.x << ",\"y\": " << v.y << ",\"z\": " << v.z << "}";
+        os << "{\"w\":" << v.w << "\"x\":"<< v.x << ",\"y\":" << v.y << ",\"z\":" << v.z << "}";
         return os;
     }
 };
@@ -57,8 +57,26 @@ void Element<Vector4<double>>::hton()
     value.z = htonll(value.z);
 }
 
+template <>
+void Element<Vector3<double>>::ntoh()
+{
+    value.x = ntohll(value.x);
+    value.y = ntohll(value.y);
+    value.z = ntohll(value.z);
+}
+
+template <>
+void Element<Vector4<double>>::ntoh()
+{
+    value.w = ntohll(value.w);
+    value.x = ntohll(value.x);
+    value.y = ntohll(value.y);
+    value.z = ntohll(value.z);
+}
+
 template <> void Element<std::string>::hton() {}
-template <> std::size_t Element<std::string>::dump_size()
+template <> void Element<std::string>::ntoh() {}
+template <> std::size_t Element<std::string>::binary_size()
 {
     return this->value.size();
 }
