@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     msg.object_type = "This is some stuff!"; // strnlen() = 19 + null
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     msg.position = Vector3<double>(1.1, 2.2, 3.3);
+    msg.orientation = Vector4<double>(-100.1,-200.2,-300.3,-400.4);
     std::cout << msg.binary_size() << " " << msg.json() << std::endl;
     std::cout << msg.json() << std::endl;
 
