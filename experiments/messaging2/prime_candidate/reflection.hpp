@@ -170,12 +170,12 @@ struct NamedElement : Element<T>
         return true;
     }
 
-    bool json(std::string* s, int N)
+    bool json(std::string* s, int n)
     {
         s->append("\"");
         s->append(Name.value);
         s->append("\":{\"index\":");
-        s->append(std::to_string(N));
+        s->append(std::to_string(n));
         s->append(",\"value\":");
         Element<T>::json(s);
         s->append("}");
@@ -200,12 +200,12 @@ struct NamedElement<Optional<OptionalT>, Name> : Optional<OptionalT>
         return this->present;
     }
 
-    bool json(std::string* s, int N)
+    bool json(std::string* s, int n)
     {
         s->append("\"");
         s->append(Name.value);
         s->append("\":{\"index\":");
-        s->append(std::to_string(N));
+        s->append(std::to_string(n));
         s->append(",\"value\":");
         if (this->present)
         {
@@ -232,7 +232,7 @@ struct Empty { };
 
 // This assumes that T is a NamedElement, and TNext is another Link.
 // Otherwise this won't compile.
-template <typename T, int N, typename TNext> ///@TODO Remove the N as a template parameter, we don't need it.
+template <typename T, typename TNext>
 struct Link
 {
     T value;
@@ -258,14 +258,14 @@ struct Link
         count += next.binary_write(buf);
         return count;
     }
-    bool json(std::string* s) { bool result = next.json(s); if (result) { s->append(","); } return value.json(s); }
-    bool json_n(std::string* s) { bool result = next.json_n(s); if (result) { s->append(","); } return value.json(s, N); }
+    bool json(std::string* s) { bool result = value.json(s); if (result) { s->append(","); } return next.json(s); }
+    bool json_n(std::string* s, int n) { bool result = value.json(s, n); if (result) { s->append(","); } return next.json_n(s, n + 1); }
 
-    bool operator==(const Link<T, N, TNext>& other) const { return (value == other.value) && (next == other.next); }
+    bool operator==(const Link<T, TNext>& other) const { return (value == other.value) && (next == other.next); }
 };
 
-template<typename T, int N>
-struct Link<T, N, Empty>
+template<typename T>
+struct Link<T, Empty>
 {
     T value;
 
@@ -288,9 +288,9 @@ struct Link<T, N, Empty>
         return count;
     }
     bool json(std::string* s) { return value.json(s); }
-    bool json_n(std::string* s) { return value.json(s, N); }
+    bool json_n(std::string* s, int n) { return value.json(s, n); }
 
-    bool operator==(const Link<T, N, Empty>& other) const { return value == other.value; }
+    bool operator==(const Link<T, Empty>& other) const { return value == other.value; }
 };
 
 #define _UNDERSCORE(X) _##X
@@ -299,7 +299,7 @@ struct Link<T, N, Empty>
 #define MEMBER_CONSTRUCTOR(FQTV) NAMEOF(FQTV)(UNDERSCORE(NAMEOF(FQTV))),
 #define DEFAULT_MEMBER_CONSTRUCTOR(FQTV) NAMEOF(FQTV)(),
 #define MEMBER(FQTV) TYPEOF(FQTV) NAMEOF(FQTV);
-#define LINKED_MEMBER(FQTV, N) struct Link<NamedElement<TYPEOF(FQTV), STRINGIZE(NAMEOF(FQTV))>, N,
+#define LINKED_MEMBER(FQTV, N) struct Link<NamedElement<TYPEOF(FQTV), STRINGIZE(NAMEOF(FQTV))>,
 #define CLOSE_TEMPLATE(X) >
 
 #define LINKED_DATA_STRUCTURE(...) \
@@ -312,7 +312,7 @@ struct Link<T, N, Empty>
 #define __REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH(MEMBER, __VA_ARGS__); \
     STRUCT_NAME() : REMOVE_TRAILING_COMMA(FOR_EACH(DEFAULT_MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
-    STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, REVERSE(__VA_ARGS__)))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
+    STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, __VA_ARGS__))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
     inline LINKED_DATA_STRUCTURE(__VA_ARGS__)* as_link() { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this); } \
     std::size_t binary_size() const { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
     std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
@@ -322,7 +322,7 @@ struct Link<T, N, Empty>
     std::size_t bson_write() const { return 0; } \
     void json(std::string* s) const { LIST_THIS(__VA_ARGS__); s->append("{"); list_this->json(s); if (s->back() == ',') { s->pop_back(); } s->append("}"); } \
     std::string json() const { std::string s{}; json(&s); return s; } \
-    std::string json_n() const { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json_n(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
+    std::string json_n() const { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json_n(&s, 0); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
     bool operator==(const STRUCT_NAME& other) const { LIST_THIS(__VA_ARGS__); return list_this->operator==(*((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)(&other))); }; \
     friend std::ostream& operator<<(std::ostream& os, const STRUCT_NAME& v) { os << v.json(); return os; }\
 }; \
@@ -335,6 +335,6 @@ template <> void Element<STRUCT_NAME>::ntoh() { value.as_link()->ntoh(); }
 // the arguments so that things come out in the order specified.
 //
 // This is also important for BSON and other structures where order may matter.
-#define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, REVERSE(__VA_ARGS__))
+#define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, __VA_ARGS__)
 
 #endif
