@@ -32,29 +32,29 @@ struct Element
         this->value = value;
     }
 
-    void hton()
+    inline void hton()
     {
         __hton<T>(value);
     }
 
-    void ntoh()
+    inline void ntoh()
     {
         __ntoh<T>(value);
     }
 
-    std::size_t binary_size() const
+    inline std::size_t binary_size() const
     {
         return sizeof(T);
     }
 
-    std::size_t binary_read(std::uint8_t* data)
+    inline std::size_t binary_read(std::uint8_t* data)
     {
         this->operator=(*(T*)data);
         this->ntoh();
         return sizeof(T);
     }
 
-    std::size_t binary_write(std::uint8_t* buf) const
+    inline std::size_t binary_write(std::uint8_t* buf) const
     {
         auto dest = (Element<T>*)buf;
         dest->operator=(value);
@@ -62,28 +62,28 @@ struct Element
         return sizeof(T);
     }
 
-    void operator=(T newval)
+    inline void operator=(T newval)
     {
         this->value = newval;
     }
 
-    operator T() const
+    inline operator T() const
     {
         return value;
     }
 
-    bool operator==(const Element<T>& other) const
+    inline bool operator==(const Element<T>& other) const
     {
         // std::cerr << value << " " << other.value << std::endl;
         return value == other.value;
     }
 
-    bool operator==(const T& other) const
+    inline bool operator==(const T& other) const
     {
         return value == other;
     }
 
-    bool json(std::string* s) const
+    inline bool json(std::string* s) const
     {
         // // The ostream approach is more flexible, but less efficient.
         // // It is about 30-40% slower for JSON (still like 2M elements/s, or 100MB/s)
@@ -97,25 +97,25 @@ struct Element
     }
 };
 
-template <> void Element<std::string>::hton() {}
-template <> void Element<std::string>::ntoh() {}
-template <> bool Element<std::string>::json(std::string* s) const
+template <> inline void Element<std::string>::hton() {}
+template <> inline void Element<std::string>::ntoh() {}
+template <> inline bool Element<std::string>::json(std::string* s) const
 {
     s->append("\"");
     s->append(value);
     s->append("\"");
     return true;
 }
-template <> std::size_t Element<std::string>::binary_size() const
+template <> inline std::size_t Element<std::string>::binary_size() const
 {
     return this->value.length(); /*This is a synonym for .size()*/
 }
-template <> std::size_t Element<std::string>::binary_read(std::uint8_t* data)
+template <> inline std::size_t Element<std::string>::binary_read(std::uint8_t* data)
 {
     value = (const char*)data;
     return value.length() + 1;
 }
-template <> std::size_t Element<std::string>::binary_write(std::uint8_t* buf) const
+template <> inline std::size_t Element<std::string>::binary_write(std::uint8_t* buf) const
 {
     std::size_t num_chars = value.length();
     memcpy(buf, value.c_str(), num_chars);
@@ -131,9 +131,10 @@ struct Element<const char*>
     bool free_mem = false;
 
     Element() : value(NULL), num_chars(0), free_mem(false) {}
-    // ~Element() { if (free_mem) { delete value; }}
+    ~Element() { if (free_mem) { delete value; }}
+
     inline void hton() {};
-    void ntoh() {}
+    inline void ntoh() {}
 
     inline std::size_t binary_size() const
     {
@@ -488,9 +489,9 @@ struct Link<T, Empty>
     bool operator==(const STRUCT_NAME& other) const { LIST_THIS(__VA_ARGS__); return list_this->operator==(*((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)(&other))); }; \
     friend std::ostream& operator<<(std::ostream& os, const STRUCT_NAME& v) { os << v.json(); return os; }\
 }; \
-template <> bool Element<STRUCT_NAME>::json(std::string* s) const { value.json(s); return true; } \
-template <> void Element<STRUCT_NAME>::hton() { value.as_link()->hton(); } \
-template <> void Element<STRUCT_NAME>::ntoh() { value.as_link()->ntoh(); }
+template <> inline bool Element<STRUCT_NAME>::json(std::string* s) const { value.json(s); return true; } \
+template <> inline void Element<STRUCT_NAME>::hton() { value.as_link()->hton(); } \
+template <> inline void Element<STRUCT_NAME>::ntoh() { value.as_link()->ntoh(); }
 
 #define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, __VA_ARGS__)
 
