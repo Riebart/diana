@@ -1,8 +1,13 @@
-#include "macro_iterators.hpp"
+#ifndef REFLECTION_HPP
+#define REFLECTION_HPP
 
-#include <string>
-#include <string.h> // Needed for strncpy
+#include <cstdint>
+#include <iostream>
 #include <sstream>
+#include <string.h> // Needed for strncpy
+#include <string>
+
+#include "macro_iterators.hpp"
 #include "byte_reordering.hpp"
 
 template<size_t N>
@@ -17,7 +22,7 @@ struct Element
 {
     T value;
 
-    Element() { value = T(); }
+    Element() : value() { }
     Element(T value) { this->value = value; }
     void hton() { __hton<T>(value); }
     void ntoh() { __ntoh<T>(value); }
@@ -39,6 +44,12 @@ struct Element
 
     void operator=(T newval) { this->value = newval; }
     operator T() const { return value; }
+    bool operator==(const Element<T>& other) const
+    {
+        // std::cerr << value << " " << other.value << std::endl;
+        return value == other.value;
+    }
+    bool operator==(const T& other) const { return value == other; }
 
     bool json(std::string* s)
     {
@@ -54,19 +65,32 @@ struct Element
     }
 };
 
+template <> void Element<std::string>::hton() {}
+template <> void Element<std::string>::ntoh() {}
+template <> std::size_t Element<std::string>::binary_size()
+{
+    return this->value.length(); // This is a synonym for .size()
+}
+
 template<>
 struct Element<const char*>
 {
     const char* value = NULL;
     std::size_t num_chars = 0;
+    bool free_mem = false;
 
-    Element() : value(NULL), num_chars(0) {}
+    Element() : value(NULL), num_chars(0) , free_mem(false) {}
+    // ~Element() { if (free_mem) { delete value; }}
     void hton() {}; void ntoh() {}
 
     std::size_t binary_size() { return num_chars + 1; }
     std::size_t binary_read(std::uint8_t* data)
     {
         this->operator=((const char*)data);
+        char* copy = new char[num_chars + 1];
+        memcpy(copy, value, num_chars + 1);
+        value = copy;
+        free_mem = true;
         return num_chars + 1;
     }
     std::size_t binary_write(std::uint8_t* buf)
@@ -75,7 +99,8 @@ struct Element<const char*>
         return num_chars + 1;
     }
 
-    void operator=(const char* newval) { this->value = newval; this->num_chars = strnlen(this->value, 4096); }
+    void operator=(const char* newval) { if (free_mem) { delete value; free_mem = false; } this->value = newval; this->num_chars = strnlen(this->value, 4096); }
+    bool operator==(const Element<const char*>& other) const { return (num_chars == other.num_chars) && (strncmp(value, other.value, num_chars) == 0); }
     operator const char*() const { return value; }
 
     bool json(std::string* s)
@@ -100,6 +125,18 @@ struct Optional : Element<T>
     bool present;
 
     Optional() : Element<T>(), present(false) {}
+    bool operator==(const Optional<T>& other) const {
+        bool result = (present == other.present);
+        if (result && present)
+        {
+            result = Element<T>::operator==(static_cast<Element<T>>(other));
+        }
+        return result; }
+    bool operator==(const T& other) const {
+        if (present)
+        {
+            return (this->value == other);
+        } else { return false; }}
     
     std::size_t binary_size() { return 1 + (present ? Element<T>::binary_size() : 0); }
     std::size_t binary_read(std::uint8_t* data)
@@ -195,11 +232,14 @@ struct Empty { };
 
 // This assumes that T is a NamedElement, and TNext is another Link.
 // Otherwise this won't compile.
-template <typename T, int N, typename TNext>
+template <typename T, int N, typename TNext> ///@TODO Remove the N as a template parameter, we don't need it.
 struct Link
 {
     T value;
     TNext next;
+
+    void hton() { value.hton(); next.hton(); }
+    void ntoh() { value.ntoh(); next.ntoh(); }
 
     std::size_t binary_size() { return value.binary_size() + next.binary_size(); }
     std::size_t binary_read(std::uint8_t* data)
@@ -220,12 +260,17 @@ struct Link
     }
     bool json(std::string* s) { bool result = next.json(s); if (result) { s->append(","); } return value.json(s); }
     bool json_n(std::string* s) { bool result = next.json_n(s); if (result) { s->append(","); } return value.json(s, N); }
+
+    bool operator==(const Link<T, N, TNext>& other) const { return (value == other.value) && (next == other.next); }
 };
 
 template<typename T, int N>
 struct Link<T, N, Empty>
 {
     T value;
+
+    void hton() { value.hton(); }
+    void ntoh() { value.ntoh(); }
 
     std::size_t binary_size() { return value.binary_size(); }
     std::size_t binary_read(std::uint8_t* data)
@@ -244,8 +289,15 @@ struct Link<T, N, Empty>
     }
     bool json(std::string* s) { return value.json(s); }
     bool json_n(std::string* s) { return value.json(s, N); }
+
+    bool operator==(const Link<T, N, Empty>& other) const { return value == other.value; }
 };
 
+#define _UNDERSCORE(X) _##X
+#define UNDERSCORE(X) _UNDERSCORE(X)
+#define MEMBER_INITIALIZER(FQTV) TYPEOF(FQTV) UNDERSCORE(NAMEOF(FQTV)),
+#define MEMBER_CONSTRUCTOR(FQTV) NAMEOF(FQTV)(UNDERSCORE(NAMEOF(FQTV))),
+#define DEFAULT_MEMBER_CONSTRUCTOR(FQTV) NAMEOF(FQTV)(),
 #define MEMBER(FQTV) TYPEOF(FQTV) NAMEOF(FQTV);
 #define LINKED_MEMBER(FQTV, N) struct Link<NamedElement<TYPEOF(FQTV), STRINGIZE(NAMEOF(FQTV))>, N,
 #define CLOSE_TEMPLATE(X) >
@@ -259,15 +311,24 @@ struct Link<T, N, Empty>
 
 #define __REFLECTION_STRUCT(STRUCT_NAME, ...) struct STRUCT_NAME { \
     FOR_EACH(MEMBER, __VA_ARGS__); \
-    std::size_t binary_size() { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
+    STRUCT_NAME() : REMOVE_TRAILING_COMMA(FOR_EACH(DEFAULT_MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
+    STRUCT_NAME(REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_INITIALIZER, __VA_ARGS__))) : REMOVE_TRAILING_COMMA(FOR_EACH(MEMBER_CONSTRUCTOR, __VA_ARGS__)) {}; \
+    inline LINKED_DATA_STRUCTURE(__VA_ARGS__)* as_link() { return ((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)this); } \
+    std::size_t binary_size() const { LIST_THIS(__VA_ARGS__); return list_this->binary_size(); } \
     std::size_t binary_read(std::uint8_t* data) { LIST_THIS(__VA_ARGS__); return list_this->binary_read(data); } \
-    std::uint8_t* binary_write() { std::uint8_t* buf = new std::uint8_t[this->binary_size()]; this->binary_write(buf); return buf; } \
-    std::size_t binary_write(std::uint8_t* buf) { LIST_THIS(__VA_ARGS__); return list_this->binary_write(buf); } \
+    std::uint8_t* binary_write() const { std::uint8_t* buf = new std::uint8_t[this->binary_size()]; this->binary_write(buf); return buf; } \
+    std::size_t binary_write(std::uint8_t* buf) const { LIST_THIS(__VA_ARGS__); return list_this->binary_write(buf); } \
     std::size_t bson_read() { return 0; } \
-    std::size_t bson_write() { return 0; } \
-    std::string json() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
-    std::string json_n() { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json_n(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
-};
+    std::size_t bson_write() const { return 0; } \
+    void json(std::string* s) const { LIST_THIS(__VA_ARGS__); s->append("{"); list_this->json(s); if (s->back() == ',') { s->pop_back(); } s->append("}"); } \
+    std::string json() const { std::string s{}; json(&s); return s; } \
+    std::string json_n() const { LIST_THIS(__VA_ARGS__); std::string s("{"); list_this->json_n(&s); if (s.back() == ',') { s.pop_back(); } s.append("}"); return s; } \
+    bool operator==(const STRUCT_NAME& other) const { LIST_THIS(__VA_ARGS__); return list_this->operator==(*((LINKED_DATA_STRUCTURE(__VA_ARGS__)*)(&other))); }; \
+    friend std::ostream& operator<<(std::ostream& os, const STRUCT_NAME& v) { os << v.json(); return os; }\
+}; \
+template <> bool Element<STRUCT_NAME>::json(std::string* s) { value.json(s); return true; } \
+template <> void Element<STRUCT_NAME>::hton() { value.as_link()->hton(); } \
+template <> void Element<STRUCT_NAME>::ntoh() { value.as_link()->ntoh(); }
 
 // Because we do tail-up recursion for emitting the JSON, the fields the serialization appear
 // in the wrong (reversed) order that they were specified in. This just reverses the order of
@@ -275,3 +336,5 @@ struct Link<T, N, Empty>
 //
 // This is also important for BSON and other structures where order may matter.
 #define REFLECTION_STRUCT(STRUCT_NAME, ...) __REFLECTION_STRUCT(STRUCT_NAME, REVERSE(__VA_ARGS__))
+
+#endif
