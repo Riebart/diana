@@ -4,6 +4,39 @@
 
 #include "reflection.hpp"
 
+// template <int N, typename T>
+// struct PointerArray
+// {
+//     T v[N];
+
+//     inline bool operator==(const PointerArray<N, T>& other) const
+//     {
+//         bool result = true;
+//         for (int i = 0 ; i < N ; i++)
+//         {
+//             result &= (v[i] == other.v[i]);
+//             if (!result) break;
+//         }
+//         return result;
+//     }
+
+//     inline bool json(std::string* s)
+//     {
+//         s->append("[");
+//         for (int i = 0 ; i < N ; i++)
+//         {
+//             s->append(v[i]);
+//             if (i != N-1) s->append(",");
+//         }
+//         s->append("]");
+//         return true;
+//     }
+// };
+
+// template <int N, typename T> inline bool Element<PointerArray<N, T>>::json(std::string* s) { value.json(s); return true; }
+
+// REFLECTION_STRUCT(TestArray, (struct PointerArray<10, std::int_fast64_t>) v);
+
 REFLECTION_STRUCT(Vector3,
                   (double) x,
                   (double) y,
@@ -29,7 +62,7 @@ REFLECTION_STRUCT(PhysicalPropertiesMsg,
                   (Optional<Vector3>) velocity,
                   (Optional<Vector3>) thrust,
                   (Optional<Vector4>) orientation
-                 )
+                 );
 
 REFLECTION_STRUCT(BenchmarkResults,
                   (int) loop_count,
@@ -37,7 +70,7 @@ REFLECTION_STRUCT(BenchmarkResults,
                   (int) bytes_json_n, (int) ms_json_n, (float) rate_json_n,
                   (int) bytes_binary_write, (int) ms_binary_write, (float) rate_binary_write,
                   (int) bytes_binary_read, (int) ms_binary_read, (float) rate_binary_read
-                 )
+                 );
 
 std::uint8_t buf[4096];
 
