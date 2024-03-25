@@ -14,6 +14,7 @@ import math
 import string
 from pathlib import Path
 
+GAMEFILES_PATH = "gamefiles"
 
 random.seed(5)
 
@@ -27,7 +28,7 @@ def load_data(dest, key):
     dictdata = dict()
     listdata = []
 
-    for res_file in Path(f'gamefiles/{key}/').glob('*.yml'):
+    for res_file in Path(f'${GAMEFILES_PATH}/{key}/').glob('*.yml'):
         tmp = yaml.safe_load(res_file.read_text())[key]
         if isinstance(tmp, dict):
             dictdata = dictdata | tmp
