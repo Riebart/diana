@@ -1,9 +1,0 @@
-industries:
-  #to model situations where a planet has a natural, abundant resource
-  natural_water_source:
-    input:
-    output:
-      water: 1000
-    build_restrictions:
-      has_water: true
-    size: 0

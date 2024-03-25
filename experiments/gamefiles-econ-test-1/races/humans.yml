@@ -29,21 +29,7 @@ races:
 
     #per unit of pop.
     resource_demands:
-      #the resource category 'food' has a deman of 1.0 per unit of pop, and can be satisfied by eg grain or meat
-      food:
-        demand: 1.0
-        subtypes:
-          - grain
-          - meat
-      textiles: 1.0
-      alcohol: 0.5
-      water: 1.0
-      data: 0.1
-      entertainment:
-        demand: 0.4
-        subtypes:
-          - who
-          - knows
+      iron: 1.0
 
     classes:
       #this allows us to tweak resource demands of the various classes over the base or common resource demands
@@ -51,7 +37,5 @@ races:
         resource_demands:
       middle_class:
         resource_demands:
-          art: 0.1
       upper_class:
         resource_demands:
-          art: 0.3

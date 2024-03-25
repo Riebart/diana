@@ -1,65 +1,11 @@
 industries:
-  quartzite_mine:
-    input:
-      water: 0.1
-      energy: 0.5
-    output:
-      quartzite: 1.0
-      pollution: 0.5
-    build_cost:
-      credits: 1000000
-      some_resources: 10.0
-    build_restrictions:
-      has_quartzite: true
-    size: 10
   iron_mine:
     input:
-      water: 0.1
-      energy: 0.5
     output:
       iron_ore: 1.0
-      pollution: 0.5
     build_cost:
       credits: 1000000
       some_resources: 10.0
     build_restrictions:
       has_iron: true
-    size: 10
-  copper_mine:
-    input:
-      water: 0.1
-      energy: 0.5
-    output:
-      copper_ore: 1.0
-      pollution: 0.5
-    build_cost:
-      credits: 1000000
-      some_resources: 10.0
-    build_restrictions:
-      has_copper: true
-    size: 10
-  hydrocarbon_extractor:
-    input:
-      water: 0.1
-      energy: 0.5
-    output:
-      carbon: 1.0
-      pollution: 0.5
-    build_cost:
-      credits: 1000000
-    build_restrictions:
-      has_hydrocarbon: true
-    size: 10
-
-  uranium_mine:
-    input:
-      water: 0.1
-      energy: 0.5
-    output:
-      uranium_ore: 1.0
-      pollution: 0.5
-    build_cost:
-      credits: 1000000
-    build_restrictions:
-      has_uranium: true
     size: 10

@@ -26,21 +26,10 @@ planets:
       sharing: free #free = freely shares resource data, reciprocal = only shares if first shared with, closed = never shares
       all_data: true #shares everything it knows, false = only shares its own data
     industries:
-      natural_water_source:
-        quantity: 10
-      solar_plant:
-        quantity: 10
-      quartzite_mine:
-        quantity: 2
-      basic_farm:
-        quantity: 10
-      silicon_refinery:
-        quantity: 2
-        #can have multiple instances of same type
-      silicon_refinery:
-        quantity: 5
-      maintenance_depot:
-        quantity: 2
+      iron_mine:
+        quantity: 1
+      iron_smelter:
+        quantity: 1
     resource_availability: #anything not listed is assumed to be 'default'
       default: normal
       rich:
