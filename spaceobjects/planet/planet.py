@@ -29,15 +29,15 @@ class Planet(SmartObject):
             values["done"] = False
 
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
-            if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
-                for input, value in self.osim.data["industries"][industry]["input"].items():
-                    self.delayed_resources[input] = self.delayed_resources[input] + (float(value) * 10)
+            # if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
+            #     for input, value in self.osim.data["industries"][industry]["input"].items():
+            #         self.delayed_resources[input] = self.delayed_resources[input] + (float(value) * 10)
         
-        #give some resources to the pops, too
-        for pop, values in self.population.items():
-            for pop_class, pop_count in values.items():
-                for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
-                    self.warehouse[resource] = self.warehouse[resource] + 1000
+        # #give some resources to the pops, too
+        # for pop, values in self.population.items():
+        #     for pop_class, pop_count in values.items():
+        #         for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
+        #             self.warehouse[resource] = self.warehouse[resource] + 1000
 
              
         print(f"Industries: {self.industries}")
@@ -84,10 +84,10 @@ class Planet(SmartObject):
             self.warehouse[industry] = 0
 
         #need to produce a base amount of these
-        self.warehouse["energy"] = 20
-        self.warehouse["maintenance"] = 1
-        self.supplied_resources["energy"] = 20
-        self.supplied_resources["maintenance"] = 1
+        # self.warehouse["energy"] = 20
+        # self.warehouse["maintenance"] = 1
+        # self.supplied_resources["energy"] = 20
+        # self.supplied_resources["maintenance"] = 1
 
         #move delayed resources into the warehouse, so industries can access them
         for resource, count in self.delayed_resources.items():

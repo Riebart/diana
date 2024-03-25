@@ -29,7 +29,7 @@ races:
 
     #per unit of pop.
     resource_demands:
-      iron: 1.0
+      iron: 0.1
 
     classes:
       #this allows us to tweak resource demands of the various classes over the base or common resource demands

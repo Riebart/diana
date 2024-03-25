@@ -14,7 +14,7 @@ import math
 import string
 from pathlib import Path
 
-GAMEFILES_PATH = "gamefiles"
+GAMEFILES_PATH = "experiments/gamefiles-econ-test-1"
 
 random.seed(5)
 
@@ -143,7 +143,7 @@ for res_file in Path(f'{GAMEFILES_PATH}/planets/').glob('*.yml'):
         st.add_object(planet)
 
 
-
+"""
 for i in range(0, 0):
     planet = random_planet(template_data['templates']['planet'])
     #print(planet)
@@ -168,7 +168,7 @@ for planet_id, values in st.objects.items():
     print(f"{values.known_planets}")
 
 print("Done\n")
-
+"""
 
 
 st.start()
