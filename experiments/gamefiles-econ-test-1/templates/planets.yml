@@ -1,0 +1,71 @@
+templates:
+  planet:
+    gravity:
+      derived: true #from density and size
+    mass:
+      derived: true #from density and size
+    density:
+      min: 600 #kg/m3, Saturn is 0.69
+      max: 6000 #kg/m3, Earth is 5.5
+    radius:
+      max: 100000000 #m, Jupiter is ~70M
+      min: 2000000 # m, Mercury is ~2.5M
+    temperature: #will ultimately be derived from insolation
+      min: 20 #Kelvin
+      max: 1000
+    pressure: #probably derive this?
+      min: 0.005 #Mars is ~6%
+      max: 100 #bars, Venus is ~92
+    atmosphere: #there could be constraints on this based on pressure and temperature
+      nitrogen:
+        max: 1.0
+        min: 0
+      oxygen:
+        max: 1.0
+        min: 0
+      co2:
+        max: 1.0
+        min: 0
+      methane:
+        max: 1.0
+        min: 0
+      trace:
+        max: 0.2
+        min: 0
+
+  habitable_planet: #by which I mean for humans; long-term, derive these values from the races.yml
+    gravity:
+      derived: true #from density and size
+    mass:
+      derived: true #from density and size
+    density:
+      min: 600 #kg/m3, Saturn is 0.69
+      max: 6000 #kg/m3, Earth is 5.5
+    radius:
+      max: 10000000 #m, Jupiter is ~70k
+      min: 4000000 #m, Mercury is ~2.5k
+    temperature: #will ultimately be derived from insolation
+      min: 234 #Kelvin
+      max: 323
+    pressure: #probably derive this?
+      min: 0.47 #Mars is ~6%
+      max: 7 #bars, Venus is ~92
+    atmosphere: #there could be constraints on this based on pressure and temperature
+      nitrogen:
+        max: 0.8
+        min: 0
+      oxygen:
+        max: 1.0
+        min: 0.2
+      co2:
+        max: 0.8
+        min: 0
+      methane:
+        max: 0.8
+        min: 0
+      trace:
+        max: 0.2
+        min: 0
+    population:
+      min: 100
+      max: 10000

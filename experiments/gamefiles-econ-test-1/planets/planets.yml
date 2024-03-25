@@ -1,0 +1,49 @@
+planets:
+  Earth:
+    gravity: 1.0
+    size: 1.0
+    radius: 6371000 #in meters
+    mass: 597220000000000000000000.0 #in kg, I think
+    temperature: 293.15 #long-term make this a calculated value based on insolance, atmosphere, etc
+    pressure: 1.0
+    atmosphere:
+      nitrogen: 0.78
+      oxygen: 0.19
+      co2: 0.01
+      methane: 0.01
+      trace: 0.01
+    population:
+      human:
+        lower_class: 150
+        middle_class: 100
+        upper_class: 50
+    taxes:
+      lower_class: 0.1
+      middle_class: 0.2
+      upper_class: 0.3
+      tariff: 0.02 #maybe make this more fine-grained in the future, per resource
+    trade_style:
+      sharing: free #free = freely shares resource data, reciprocal = only shares if first shared with, closed = never shares
+      all_data: true #shares everything it knows, false = only shares its own data
+    industries:
+      natural_water_source:
+        quantity: 10
+      solar_plant:
+        quantity: 10
+      quartzite_mine:
+        quantity: 2
+      basic_farm:
+        quantity: 10
+      silicon_refinery:
+        quantity: 2
+        #can have multiple instances of same type
+      silicon_refinery:
+        quantity: 5
+      maintenance_depot:
+        quantity: 2
+    resource_availability: #anything not listed is assumed to be 'default'
+      default: normal
+      rich:
+      rare:
+      none:
+       - unobtainium_ore

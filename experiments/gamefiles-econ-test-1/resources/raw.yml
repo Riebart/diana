@@ -1,0 +1,26 @@
+resources:
+  quartzite: #aka silicon ore
+  carbon:
+  iron_ore:
+  copper_ore:
+  uranium_ore:
+  meat:
+  unobtainium_ore:
+  water:
+  grain:
+  hydrocarbon:
+
+  #not sure this is a raw resource, but it can't be transported
+  energy:
+    exportable: false
+    storable: false
+    delayed: true
+  pollution:
+    exportable: false
+  maintenance:
+    exportable: false
+    storable: false
+    delayed: true
+  heat:
+    exportable: false
+
