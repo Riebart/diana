@@ -28,7 +28,7 @@ def load_data(dest, key):
     dictdata = dict()
     listdata = []
 
-    for res_file in Path(f'${GAMEFILES_PATH}/{key}/').glob('*.yml'):
+    for res_file in Path(f'{GAMEFILES_PATH}/{key}/').glob('*.yml'):
         tmp = yaml.safe_load(res_file.read_text())[key]
         if isinstance(tmp, dict):
             dictdata = dictdata | tmp
@@ -128,7 +128,7 @@ template_data = dict()
 load_data(template_data, 'templates')
 
 print("\nLoading planets...")
-for res_file in Path('gamefiles/planets/').glob('*.yml'):
+for res_file in Path(f'{GAMEFILES_PATH}/planets/').glob('*.yml'):
     planets = yaml.safe_load(res_file.read_text())['planets']
     for name, planet_data in planets.items():
         print(planet_data)
