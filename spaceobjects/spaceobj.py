@@ -168,8 +168,8 @@ class SmartObject(SpaceObject, threading.Thread):
         return message.PhysicalPropertiesMsg.send(self.sock, self.phys_id, self.osim_id, pm.build())
 
     def set_orientation(self, fX, fY = None, uX = None, uY = None):
-        if y == None:
-            return self.set_orientation(osim_id, fX[0], fX[1], fX[2], fX[3])
+        if fY == None:
+            return self.set_orientation(self.osim_id, fX[0], fX[1], fX[2], fX[3])
 
         [ self.forward, self.up, self.right ] = [fX, fY, uX, uY]
         pm = message.PhysicalPropertiesMsg()
