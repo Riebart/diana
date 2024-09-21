@@ -1,6 +1,7 @@
 industries:
   iron_mine:
     input:
+      labor: 1.0
     output:
       iron_ore: 1.0
     build_cost:

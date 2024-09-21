@@ -1,5 +1,7 @@
 from .. spaceobj import SmartObject, CommBeam
 from collections import defaultdict
+from sortedcontainers import SortedList
+from . structure import *
 import math
 import time
 import json
@@ -14,36 +16,43 @@ class Planet(SmartObject):
         SmartObject.__init__(self, osim, independent = False)
         self.ticks_done = 0
         self.industries = dict()
-        self.population = dict()
+        self.populations = dict()
         self.warehouse = defaultdict(lambda: 0)
         self.delayed_resources = defaultdict(lambda: 0)
         self.supplied_resources = defaultdict(lambda: 0)
         self.demanded_resources = defaultdict(lambda: 0)
+        self.buy_orders = defaultdict(lambda: SortedList(key=lambda x: x.price))
+        self.sell_orders = defaultdict(lambda: SortedList(key=lambda x: x.price))
         self.local_price_list = defaultdict(lambda: 1.0)
         self.known_price_list = dict()
         self.known_planets = dict()
 
+    def parse_in(self, data, name=None):
+        super().parse_in(data, name)
+        # print(self.industries)
+        self.industries = {k: Industry(v) for k, v in self.industries.items()}
+        print(self.population)
+        print( quant for quant in (classes for race, classes in self.population.items()).values() )
+        #self.populations = {k: Population(v) for k, v in 
+        print(self.population)
 
     def init_econ(self):
         for industry, values in self.industries.items():
-            values["done"] = False
+            values.done = False
 
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
             # if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
             #     for input, value in self.osim.data["industries"][industry]["input"].items():
             #         self.delayed_resources[input] = self.delayed_resources[input] + (float(value) * 10)
         
-        # #give some resources to the pops, too
+        #give some initial wealth to the pops, too
         # for pop, values in self.population.items():
-        #     for pop_class, pop_count in values.items():
-        #         for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
-        #             self.warehouse[resource] = self.warehouse[resource] + 1000
+        #     for pop_class, values in values.items():
+        #         values.wealth = 1000
+        #         values.done = False
 
-             
         print(f"Industries: {self.industries}")
         print(f"Warehouse: {self.warehouse}")
-        print(f"Local prices: {self.local_price_list}")
-    
 
     #####
     # Loop-code (code related to running the loops)
@@ -59,15 +68,18 @@ class Planet(SmartObject):
         self.reset_econ()
         self.do_industries()
         self.do_populations()
-        self.adjust_prices()
-        print(f" Supplied resources of {self.object_name}: { {i: v for i, v in self.supplied_resources.items() if v > 0.0} }")
-        print(f" Demanded resources of {self.object_name}: { {i: v for i, v in self.demanded_resources.items() if v > 0.0} }")
+        #self.adjust_prices()
+        # print(f" Supplied resources of {self.object_name}: { {i: v for i, v in self.supplied_resources.items() if v > 0.0} }")
+        # print(f" Demanded resources of {self.object_name}: { {i: v for i, v in self.demanded_resources.items() if v > 0.0} }")
 
-        print(f" Warehouse of {self.object_name}: { {i: v for i, v in self.warehouse.items() if v > 0.0} }")
-        print(f" Price list of {self.object_name}: { {i: v for i, v in self.local_price_list.items() if v != 1.0} }")
-        
+        # print(f" Warehouse of {self.object_name}: { {i: v for i, v in self.warehouse.items() if v > 0.0} }")
+        # print(f" Price list of {self.object_name}: { {i: v for i, v in self.local_price_list.items() if v != 1.0} }")
+        print(f" Buy orders: { {i: v for i, v in self.buy_orders.items()} }")
+        print(f" Sell orders: { {i: v for i, v in self.sell_orders.items()} }")
+
         if self.ticks_done % NOTIFICATION_FREQUENCY == 0:
-            self.alert_neighbors()
+            pass
+            #self.alert_neighbors()
         
         self.ticks_done = self.ticks_done + 1
         
@@ -77,11 +89,11 @@ class Planet(SmartObject):
         self.demanded_resources.clear()
 
         for industry, values in self.industries.items():
-            values["done"] = False
+            values.done = False
 
         #reset the quantity of non-stock-pilable resources to zero
-        for industry in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
-            self.warehouse[industry] = 0
+        for resource in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
+            self.warehouse[resource] = 0
 
         #need to produce a base amount of these
         # self.warehouse["energy"] = 20
@@ -99,8 +111,30 @@ class Planet(SmartObject):
         print(f" Doing industries for {self.object_name}")
 
         #Can maybe improve this conditional
+        # while len([i for i in self.industries if self.industries[i]["done"] == False]) > 0:
+
+        for industry, values in self.industries.items():
+
+            total_revenue = 0
+            #1. for each output, determine how much value can be made:
+            for output, count in self.osim.data["industries"][industry]["output"].items():
+                total_revenue = total_revenue + self.calc_buyval(output, count)[0]
+
+            total_inputs = 0
+            #2a. Count total inputs
+            for input, count in self.osim.data["industries"][industry]["input"].items():
+                total_inputs = total_inputs + count
+
+            #2b. Create buy orders
+            for input, count in self.osim.data["industries"][industry]["input"].items():
+                self.create_buy_order(input, count, total_revenue+total_inputs/count, industry)
+
+    def do_industries_old(self):
+        print(f" Doing industries for {self.object_name}")
+
+        #Can maybe improve this conditional
         while len([i for i in self.industries if self.industries[i]["done"] == False]) > 0:
-        
+
             #1. determine which industry would generate the most wealth per
             max_industry = max({i: v for i, v in self.industries.items() if v["done"] == False}, key=self.calc_value)
             print(f" Max industry {max_industry} can produce {self.calc_value(max_industry)}")
@@ -134,10 +168,20 @@ class Planet(SmartObject):
             #3. mark that industry as 'done'
             self.industries[max_industry]["done"] = True
             #4. repeat until industry done
-        pass
 
 
     def do_populations(self):
+        for pop, values in self.population.items():
+            print(f" Doing pop for {pop}")
+            for pop_class, pop_count in values.items():
+                #determine how much of each resource we want to buy
+                for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
+                    if isinstance(count, (int, float)):
+                        demand = count * pop_count
+                #split our wealth across the resources with buy orders
+
+
+    def do_populations_old(self):
         #for each pop, consume goods as they exist
         for pop, values in self.population.items():
             print(f" Doing pop for {pop}")
@@ -191,9 +235,9 @@ class Planet(SmartObject):
 
                             for subtype in count["subtypes"]:
                                 self.demanded_resources[subtype] = self.demanded_resources[subtype] + count["demand"] * pop_count / len(count["subtypes"])
-            
-        
-    def adjust_prices(self):
+
+
+    def adjust_prices_old(self):
         for resource, value in self.osim.data["resources"].items():
             supplied = self.supplied_resources[resource]
             supplied = supplied + self.warehouse[resource] * WAREHOUSE_DISCOUNT #warehouse supplies count as 1/4, because why not
@@ -204,7 +248,7 @@ class Planet(SmartObject):
 
 
     #calculate the value the industry would generate, based on current prices
-    def calc_value(self, industry):
+    def calc_value_old(self, industry):
         #first, what is the maximum we can produce?
         max_ticks = self.industries[industry]["quantity"]
         costs = 0
@@ -214,12 +258,32 @@ class Planet(SmartObject):
 
             for input, quantity in self.osim.data["industries"][industry]["input"].items():
                 costs = costs + quantity * self.local_price_list[input] * max_ticks
-            
+
         revenue = 0
         for output, quantity in self.osim.data["industries"][industry]["output"].items():
             revenue = revenue + quantity * self.local_price_list[output] * max_ticks
-        
+
         return revenue - costs
+
+    # for a given resource and quantity, calculate how much could be earned by selling at the current prices
+    # returns a tuple of (value, quantity_fulfilled)
+    def calc_buyval(self, input, quantity):
+        orig_quantity = quantity
+        current_val = 0
+        bos = iter(self.buy_orders[input])
+
+        for bo in bos:
+            current_val = current_val + (bo.price * min(quantity, bo.quantity))
+            quantity = quantity - min(quantity, bo.quantity)
+            if quantity == 0:
+                break
+
+        return (current_val, orig_quantity - quantity)
+
+    def create_buy_order(self, resource, quantity, price, agent):
+        self.buy_orders[resource].add(BuyOrder(quantity, price, agent))
+        pass
+
 
     """For reference, the format of the known_planets list, in yaml:
     known_planets:
@@ -278,7 +342,33 @@ class Planet(SmartObject):
                         self.known_planets[planet]["time_updated"] = time.time()
 
         else:
-            print(f"{self.object_name} Recieved message: {msg.comm_msg}")
+            print(f"{self.object_name} Received message: {msg.comm_msg}")
 
     def handle_phys(self, msg):
         print(f"*** {self.object_name} Collided with something! {msg}")
+
+
+
+#don't really do anything at this time
+class Order:
+    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+        self.quantity = quantity
+        self.price = price
+        self.agent = agent
+
+    def __repr__(self):
+        return f'{self.quantity}@{self.price} by {self.agent}'
+
+class BuyOrder(Order):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+        super().__init__(quantity, price, agent)
+
+class SellOrder(Order):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+        super().__init__(quantity, price, agent)

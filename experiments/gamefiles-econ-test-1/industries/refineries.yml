@@ -2,6 +2,7 @@ industries:
   iron_smelter:
     input:
       iron_ore: 1.0
+      labor: 1.0
     output:
       iron: 1.0
     build_cost:

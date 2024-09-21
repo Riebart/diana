@@ -1,3 +1,6 @@
 resources:
   art:
   alcohol:
+  labor:
+    exportable: false
+    storable: false
