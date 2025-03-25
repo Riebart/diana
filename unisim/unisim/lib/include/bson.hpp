@@ -42,7 +42,7 @@ public:
     struct Element
     {
         std::map<std::string, struct Element>* map_val = NULL;
-        
+
         int32_t  bin_len;
         uint8_t* bin_val;
 
@@ -768,7 +768,7 @@ private:
             tag_index++;
             return array_name;
         }
-        // If it's not an array, and the name isn't NULL (that is, it is specified), 
+        // If it's not an array, and the name isn't NULL (that is, it is specified),
         // then use the name we got.
         else
         {

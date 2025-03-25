@@ -28,13 +28,13 @@ template <typename T>
 struct option
 {
     option() : short_option(""),
-               long_option(""),
-               default_value(T{}),
-               option_description(""),
-               is_flag(false),
-               is_required(false),
-               validator(NULL),
-               result() {}
+        long_option(""),
+        default_value(T{}),
+        option_description(""),
+        is_flag(false),
+        is_required(false),
+        validator(NULL),
+        result() {}
 
     std::string short_option;
     std::string long_option;
@@ -186,7 +186,7 @@ public:
         std::cout << "Usage: " << this->progname;
 
         for (std::vector<struct arg_help>::iterator it = this->arg_help_strings.begin();
-             it != this->arg_help_strings.end(); ++it)
+                it != this->arg_help_strings.end(); ++it)
         {
             if (it->is_required)
             {
@@ -218,10 +218,10 @@ public:
                       << std::setw(this->max_arg_length + 2)
                       << it->name
                       << this->wrap_string(
-                             (it->is_flag ? "(flag) " : "") +
-                                 it->description,
-                             this->descrption_wrap_width,
-                             description_wrap_padding)
+                          (it->is_flag ? "(flag) " : "") +
+                          it->description,
+                          this->descrption_wrap_width,
+                          description_wrap_padding)
                       << std::endl;
         }
     }
@@ -368,9 +368,9 @@ public:
             T result = optr.option_value; // Set it to the current value, which by construction is the default value;
             // Technically, we should check the error code to make sure nothing bad happened.
             auto [prt, ec] = std::from_chars(
-                optr.option_string.data(),
-                optr.option_string.data() + optr.option_string.length(),
-                result);
+                                 optr.option_string.data(),
+                                 optr.option_string.data() + optr.option_string.length(),
+                                 result);
             optr.option_valid = (ec == std::errc()); // All OK
             return result;
         };
