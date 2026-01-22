@@ -15,12 +15,12 @@ planets:
     population:
       human:
         lower_class: 150
-        middle_class: 100
-        upper_class: 50
+        # middle_class: 100
+        # upper_class: 50
     taxes:
       lower_class: 0.1
-      middle_class: 0.2
-      upper_class: 0.3
+      # middle_class: 0.2
+      # upper_class: 0.3
       tariff: 0.02 #maybe make this more fine-grained in the future, per resource
     trade_style:
       sharing: free #free = freely shares resource data, reciprocal = only shares if first shared with, closed = never shares

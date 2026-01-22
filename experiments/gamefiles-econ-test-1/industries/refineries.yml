@@ -1,11 +1,12 @@
 industries:
   iron_smelter:
     input:
-      iron_ore: 1.0
-      labor: 1.0
+      iron_ore: 1
+      #labor: 0
     output:
-      iron: 1.0
+      iron: 1
     build_cost:
       credits: 1000000
       some_resource: 10.0
     size: 4
+    ticks: 5

@@ -5,6 +5,7 @@ from . structure import *
 import math
 import time
 import json
+import re
 from vector import Vector3
 
 #Pulling out some constants
@@ -17,11 +18,11 @@ class Planet(SmartObject):
         self.ticks_done = 0
         self.industries = dict()
         self.populations = dict()
-        self.warehouse = defaultdict(lambda: 0)
-        self.delayed_resources = defaultdict(lambda: 0)
-        self.supplied_resources = defaultdict(lambda: 0)
-        self.demanded_resources = defaultdict(lambda: 0)
-        self.buy_orders = defaultdict(lambda: SortedList(key=lambda x: x.price))
+        # self.warehouse = defaultdict(lambda: 0)
+        # self.delayed_resources = defaultdict(lambda: 0)
+        # self.supplied_resources = defaultdict(lambda: 0)
+        # self.demanded_resources = defaultdict(lambda: 0)
+        self.buy_orders = defaultdict(lambda: SortedList(key=lambda x: x.price * -1)) #The -1 reverse-sorts the list. I'm sure this hack will never come back to bite me
         self.sell_orders = defaultdict(lambda: SortedList(key=lambda x: x.price))
         self.local_price_list = defaultdict(lambda: 1.0)
         self.known_price_list = dict()
@@ -31,14 +32,21 @@ class Planet(SmartObject):
         super().parse_in(data, name)
         # print(self.industries)
         self.industries = {k: Industry(v) for k, v in self.industries.items()}
+        #print( quant for quant in (classes for race, classes in self.population.items()).values() )
         print(self.population)
-        print( quant for quant in (classes for race, classes in self.population.items()).values() )
-        #self.populations = {k: Population(v) for k, v in 
-        print(self.population)
+        #self.populations = {k: Population(v) for k, v in {a:b.items() for a, b in self.population.items()}}
+        self.populations = {
+            f"{outer_key},{inner_key}": Population(value)
+            for outer_key, inner_dict in self.population.items()
+            for inner_key, value in inner_dict.items()
+        }
+        print(self.populations)
+        
 
     def init_econ(self):
         for industry, values in self.industries.items():
             values.done = False
+            values.cur_tickcount = self.osim.data["industries"][industry]["ticks"]
 
             #start off with the warehouse containing enough material for each industry to 'tick' 10 times
             # if "input" in self.osim.data["industries"][industry] and self.osim.data["industries"][industry]["input"] is not None:
@@ -52,7 +60,7 @@ class Planet(SmartObject):
         #         values.done = False
 
         print(f"Industries: {self.industries}")
-        print(f"Warehouse: {self.warehouse}")
+        #print(f"Warehouse: {self.warehouse}")
 
     #####
     # Loop-code (code related to running the loops)
@@ -61,7 +69,7 @@ class Planet(SmartObject):
     #reset the economy for the next tick
         
     def do_tick(self):
-        if not hasattr(self, "population"):
+        if not hasattr(self, "populations"):
             return
         
         print(f"Doing econ for {self.object_name}")
@@ -74,8 +82,9 @@ class Planet(SmartObject):
 
         # print(f" Warehouse of {self.object_name}: { {i: v for i, v in self.warehouse.items() if v > 0.0} }")
         # print(f" Price list of {self.object_name}: { {i: v for i, v in self.local_price_list.items() if v != 1.0} }")
-        print(f" Buy orders: { {i: v for i, v in self.buy_orders.items()} }")
-        print(f" Sell orders: { {i: v for i, v in self.sell_orders.items()} }")
+        re_pattern = r'\[(.*?)\]'
+        print(f" Buy orders: { {i: '['+re.search(re_pattern, str(v)).group(1)+']' for i, v in self.buy_orders.items()} }")
+        print(f" Sell orders: { {i: '['+re.search(re_pattern, str(v)).group(1)+']' for i, v in self.sell_orders.items()} }")
 
         if self.ticks_done % NOTIFICATION_FREQUENCY == 0:
             pass
@@ -85,15 +94,15 @@ class Planet(SmartObject):
         
 
     def reset_econ(self):
-        self.supplied_resources.clear()
-        self.demanded_resources.clear()
+        # self.supplied_resources.clear()
+        # self.demanded_resources.clear()
 
         for industry, values in self.industries.items():
             values.done = False
 
         #reset the quantity of non-stock-pilable resources to zero
-        for resource in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
-            self.warehouse[resource] = 0
+        # for resource in { i: v for i, v in self.osim.data["resources"].items() if v and "storable" in v and v["storable"] == False}:
+        #     self.warehouse[resource] = 0
 
         #need to produce a base amount of these
         # self.warehouse["energy"] = 20
@@ -102,32 +111,91 @@ class Planet(SmartObject):
         # self.supplied_resources["maintenance"] = 1
 
         #move delayed resources into the warehouse, so industries can access them
-        for resource, count in self.delayed_resources.items():
-            self.warehouse[resource] = self.warehouse[resource] + count
+        # for resource, count in self.delayed_resources.items():
+        #     self.warehouse[resource] = self.warehouse[resource] + count
 
-        self.delayed_resources.clear()
+        # self.delayed_resources.clear()
 
     def do_industries(self):
         print(f" Doing industries for {self.object_name}")
+        #self.do_industries_aggressive()
+        self.do_industries_conservative()
 
-        #Can maybe improve this conditional
-        # while len([i for i in self.industries if self.industries[i]["done"] == False]) > 0:
+
+    def do_industries_conservative(self):
+
+        for industry, values in self.industries.items():
+            
+            total_revenue = 0
+            #2a. for each output, determine how much value can be made from existing buy orders
+            for output, count in self.get_industry_outputs(industry):
+                total_revenue = total_revenue + self.calc_sellval(output, count)[0]
+
+            total_cost = 0
+            #2c. Determine the cost to produce from creating new buy orders
+            for input, count in self.get_industry_inputs(industry):
+                total_cost = total_cost + self.calc_sellval(input, count)[0] + count #The +count is because we'd have to outbid existing buy orders
+
+            if total_revenue > total_cost:
+                #Attempt to Buy inputs at market rate
+                quantity_produceable = values.quantity
+                for input, count in self.get_industry_inputs(industry):
+                    if count == 0:
+                        continue
+                    #buy the necessary quantity, ensuring that we outbid current outstanding buy orders
+                    target_value = 1 if len(self.buy_orders[input]) == 0 else self.buy_orders[input][0].price +1
+                    self.create_buy_order(input, (count*values.quantity - values.inventory[input]), target_value, industry)
+                    quantity_produceable = min(quantity_produceable, math.floor(values.inventory[input]/count) )
+
+                if quantity_produceable > 0:
+                        
+                    for input, count in self.get_industry_inputs(industry):
+                        values.inventory[input] = values.inventory[input] - quantity_produceable*count
+                    for output, count in self.get_industry_outputs(industry):
+                        values.inventory[output] = values.inventory[output] + quantity_produceable*count
+
+            #sell our output at the market rate
+            for output, count in self.get_industry_outputs(industry):
+                if values.inventory[output] > 0:
+                    #cancel any outstanding sell orders
+                    for order in self.sell_orders[output]:
+                        if order.agent == industry:
+                            self.sell_orders[output].discard(order)
+                    #create new ones at market rate
+                    self.create_sell_order(output, values.inventory[output], self.buy_orders[output][0].price, industry)
+
+
+    def do_industries_aggressive(self):
 
         for industry, values in self.industries.items():
 
-            total_revenue = 0
-            #1. for each output, determine how much value can be made:
-            for output, count in self.osim.data["industries"][industry]["output"].items():
-                total_revenue = total_revenue + self.calc_buyval(output, count)[0]
+            quantity_produced = values.quantity
+            #check our inventory and issue buy orders for anything missing
+            for input, count in self.get_industry_inputs(industry):
+                if count == 0:
+                    continue
+                if values.inventory[input] < (count * values.quantity):
+                    #buy the necessary quantity, ensuring that we outbid current outstanding buy orders
+                    target_value = 1 if len(self.buy_orders[input]) == 0 else self.buy_orders[input][0].price +1
+                    self.create_buy_order(input, (count*values.quantity - values.inventory[input]), target_value, industry)
 
-            total_inputs = 0
-            #2a. Count total inputs
-            for input, count in self.osim.data["industries"][industry]["input"].items():
-                total_inputs = total_inputs + count
+                #After purchases, see how much we can produce
+                quantity_produced = min(quantity_produced, math.floor(values.inventory[input]/count) )
 
-            #2b. Create buy orders
-            for input, count in self.osim.data["industries"][industry]["input"].items():
-                self.create_buy_order(input, count, total_revenue+total_inputs/count, industry)
+            if quantity_produced > 0:
+
+                for input, count in self.get_industry_inputs(industry):
+                    values.inventory[input] = values.inventory[input] - quantity_produced*count
+                for output, count in self.get_industry_outputs(industry):
+                    values.inventory[output] = values.inventory[output] + quantity_produced*count
+
+            #attempt to sell our inventory, if any
+            for output, count in self.get_industry_outputs(industry):
+                if values.inventory[output] > 0:
+                    #TODO Estimate target_value based on input cost
+                    target_value = 1 if len(self.sell_orders[output]) == 0 else self.sell_orders[output][0].price -1
+                    self.create_sell_order(output, values.inventory[output], target_value, industry)
+
 
     def do_industries_old(self):
         print(f" Doing industries for {self.object_name}")
@@ -171,17 +239,29 @@ class Planet(SmartObject):
 
 
     def do_populations(self):
-        for pop, values in self.population.items():
+        for pop, attrs in self.populations.items():
+            pop_race = pop.split(',')[0]
+            #determine how much of each resource we want to buy
+            for resource, count in self.osim.data["races"][pop_race]["resource_demands"].items():
+                if isinstance(count, (int, float)):
+                    demand = count * attrs.quantity
+                    target_value = 1 if len(self.buy_orders[resource]) == 0 else self.buy_orders[resource][0].price +1
+                    self.create_buy_order(resource, demand, target_value, pop)
+
+    def do_populations_old(self):
+        for pop, values in self.populations.items():
             print(f" Doing pop for {pop}")
             for pop_class, pop_count in values.items():
                 #determine how much of each resource we want to buy
                 for resource, count in self.osim.data["races"][pop]["resource_demands"].items():
                     if isinstance(count, (int, float)):
                         demand = count * pop_count
+                        target_value = 1 if len(self.buy_orders[resource]) == 0 else self.buy_orders[resource][0].price +1
+                        self.create_buy_order(resource, demand, target_value, pop)
                 #split our wealth across the resources with buy orders
 
 
-    def do_populations_old(self):
+    def do_populations_old_old(self):
         #for each pop, consume goods as they exist
         for pop, values in self.population.items():
             print(f" Doing pop for {pop}")
@@ -265,25 +345,99 @@ class Planet(SmartObject):
 
         return revenue - costs
 
+    def calc_buycost(self, resource, quantity):
+        return self.calc_sellval(resource, quantity, selling=False)
+    
     # for a given resource and quantity, calculate how much could be earned by selling at the current prices
     # returns a tuple of (value, quantity_fulfilled)
-    def calc_buyval(self, input, quantity):
+    def calc_sellval(self, resource, quantity, selling=True):
         orig_quantity = quantity
         current_val = 0
-        bos = iter(self.buy_orders[input])
+        orders = iter(self.buy_orders[resource] if selling else self.sell_orders[resource])
 
-        for bo in bos:
-            current_val = current_val + (bo.price * min(quantity, bo.quantity))
-            quantity = quantity - min(quantity, bo.quantity)
+        for order in orders:
+            current_val = current_val + (order.price * min(quantity, order.quantity))
+            quantity = quantity - min(quantity, order.quantity)
             if quantity == 0:
                 break
 
         return (current_val, orig_quantity - quantity)
 
-    def create_buy_order(self, resource, quantity, price, agent):
-        self.buy_orders[resource].add(BuyOrder(quantity, price, agent))
-        pass
+    def create_sell_order(self, resource, quantity, price, agent) -> int:
+        return self.create_buy_order(resource, quantity, price, agent, buying = False)
 
+    def create_buy_order(self, resource, quantity, price, agent, buying = True) -> int:
+        orders_filled = 0
+        orders = self.sell_orders[resource] if buying else self.buy_orders[resource]
+        #1. Try to match as many orders at specified price
+        for order in orders:
+            #TODO: logic for sell orders
+            if buying and order.price > price:
+                break
+            if price > order.price:
+                break
+
+            #Can't buy from yourself
+            if order.agent == agent:
+                continue
+
+            seller = self.industries[order.agent] if order.agent in self.industries else self.populations[order.agent]
+            buyer = self.industries[agent] if agent in self.industries else self.populations[agent]
+
+            if not buying:
+                buyer = self.industries[order.agent] if order.agent in self.industries else self.populations[order.agent]
+                seller = self.industries[agent] if agent in self.industries else self.populations[agent]
+
+            #remove old order from list
+            orders.remove(order)
+
+            outstanding_order = quantity - orders_filled
+
+            print(f'  Order matched! {agent if buying else order.agent} ({buyer}) buying {min(outstanding_order, order.quantity)} {resource} from {order.agent if buying else agent} ({seller}) at {order.price}')
+
+            #They have enough for us
+            if order.quantity >= outstanding_order:
+
+                #update the inventories. TODO invert the operation if selling
+                buyer.inventory[resource] = buyer.inventory[resource] + outstanding_order
+                buyer.wealth = buyer.wealth - (outstanding_order * order.price)
+
+                seller.inventory[resource] = seller.inventory[resource] - outstanding_order
+                seller.wealth = seller.wealth + (outstanding_order * order.price)
+
+                orders_filled = quantity
+
+                #if necessary, repost the old order with the new, reduced quantity
+                if order.quantity > outstanding_order:
+                    if buying:
+                        orders.add(SellOrder(order.quantity - outstanding_order, order.price, order.agent))
+                    else:
+                        orders.add(BuyOrder(order.quantity - outstanding_order, order.price, order.agent))
+
+            #they don't have enough
+            if order.quantity < outstanding_order:
+                buyer.inventory[resource] = buyer.inventory[resource] + outstanding_order
+                buyer.wealth = buyer.wealth - (outstanding_order * order.price)
+
+                orders_filled = orders_filled + order.quantity
+                seller.inventory[resource] = seller.inventory[resource] - outstanding_order
+                seller.wealth = seller.wealth + (outstanding_order * order.price)
+            
+        #2. create new orders
+        if orders_filled < quantity:
+            if buying:
+                self.buy_orders[resource].add(BuyOrder(quantity - orders_filled, price, agent))
+            else:
+                self.sell_orders[resource].add(SellOrder(quantity - orders_filled, price, agent))
+
+        return orders_filled
+
+    #should maybe be a method on industry instead
+    def get_industry_inputs(self, industry):
+        return self.osim.data["industries"][industry]["input"].items()
+
+    def get_industry_outputs(self, industry):
+        return self.osim.data["industries"][industry]["output"].items()        
 
     """For reference, the format of the known_planets list, in yaml:
     known_planets:
@@ -351,24 +505,24 @@ class Planet(SmartObject):
 
 #don't really do anything at this time
 class Order:
-    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+    def __init__(self, quantity=0, price=0, agent=None) -> None:
         self.quantity = quantity
         self.price = price
         self.agent = agent
 
     def __repr__(self):
-        return f'{self.quantity}@{self.price} by {self.agent}'
+        return f'{self.quantity} @ ${self.price} by {self.agent}'
 
 class BuyOrder(Order):
     def __init__(self) -> None:
         super().__init__()
 
-    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+    def __init__(self, quantity=0, price=0, agent=None) -> None:
         super().__init__(quantity, price, agent)
 
 class SellOrder(Order):
     def __init__(self) -> None:
         super().__init__()
 
-    def __init__(self, quantity=0, price=0.0, agent=None) -> None:
+    def __init__(self, quantity=0, price=0, agent=None) -> None:
         super().__init__(quantity, price, agent)
